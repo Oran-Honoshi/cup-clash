@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Palette } from "lucide-react";
+import { Palette, RotateCcw } from "lucide-react";
 import { useTheme } from "@/components/theme-provider";
 import { ALL_COUNTRIES } from "@/lib/countries";
 import { cn } from "@/lib/utils";
@@ -10,20 +10,20 @@ export function CountryPickerSection() {
   const { country, setCountry } = useTheme();
 
   return (
-    <section className="bg-white py-20 sm:py-28">
+    <section className="relative py-24 sm:py-32">
       <div className="mx-auto max-w-7xl px-5 sm:px-8">
         <div className="grid gap-12 lg:grid-cols-12 lg:gap-16 items-center">
           <div className="lg:col-span-5">
-            <div className="inline-flex items-center gap-2 mb-4 label-caps">
-              <Palette size={14} />
+            <div className="label-caps inline-flex items-center gap-2 mb-4">
+              <Palette size={13} />
               Personalization
             </div>
-            <h2 className="h-display text-3xl sm:text-5xl text-ink-900">
+            <h2 className="font-display text-4xl sm:text-6xl uppercase text-white leading-[0.95] tracking-tight">
               Your team,
               <br />
               <span className="gradient-text-accent">your colors.</span>
             </h2>
-            <p className="mt-5 text-lg text-ink-500 max-w-md">
+            <p className="mt-6 text-lg text-pitch-300 max-w-md">
               Pick your country and the whole app re-skins around it. Try it —
               click any flag and watch every accent on this page shift in real
               time.
@@ -31,9 +31,10 @@ export function CountryPickerSection() {
             {country && (
               <button
                 onClick={() => setCountry(null)}
-                className="mt-5 text-sm font-semibold text-ink-500 hover:text-ink-900 transition-colors"
+                className="mt-6 inline-flex items-center gap-2 text-sm font-bold uppercase tracking-widest text-pitch-300 hover:text-white transition-colors"
               >
-                ← Reset to default
+                <RotateCcw size={14} />
+                Reset to default
               </button>
             )}
           </div>
@@ -55,26 +56,36 @@ export function CountryPickerSection() {
                     aria-pressed={active}
                     className={cn(
                       "group relative flex flex-col items-center gap-2 rounded-2xl p-4 transition-all duration-200",
-                      "border bg-white",
+                      "border backdrop-blur-md",
                       active
-                        ? "border-accent shadow-cta -translate-y-0.5"
-                        : "border-ink-100 hover:border-ink-300 hover:-translate-y-0.5 hover:shadow-card"
+                        ? "bg-white/[0.06] -translate-y-0.5"
+                        : "bg-white/[0.02] border-white/[0.08] hover:bg-white/[0.05] hover:-translate-y-0.5"
                     )}
+                    style={
+                      active
+                        ? {
+                            borderColor: "rgb(var(--accent) / 0.5)",
+                            boxShadow:
+                              "0 0 0 1px rgb(var(--accent) / 0.3), 0 8px 24px rgb(var(--accent) / 0.25)",
+                          }
+                        : undefined
+                    }
                   >
-                    <span className="text-2xl leading-none" aria-hidden>
+                    <span className="text-3xl leading-none" aria-hidden>
                       {c.flag}
                     </span>
                     <span
                       className={cn(
-                        "font-mono text-[11px] font-bold tracking-wider",
-                        active ? "text-accent" : "text-ink-500"
+                        "font-mono text-[11px] font-bold tracking-widest",
+                        active ? "text-white" : "text-pitch-400"
                       )}
+                      style={active ? { color: "rgb(var(--accent-glow))" } : undefined}
                     >
                       {c.code}
                     </span>
                     {active && (
                       <span
-                        className="absolute -top-1.5 -right-1.5 h-3 w-3 rounded-full ring-2 ring-white"
+                        className="absolute -top-1.5 -right-1.5 h-3 w-3 rounded-full ring-2 ring-pitch-950"
                         style={{ backgroundColor: "rgb(var(--accent))" }}
                       />
                     )}
