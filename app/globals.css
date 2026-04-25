@@ -1,0 +1,189 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Country accent — overridden by ThemeProvider when a country is selected */
+  --accent: 99 102 241;          /* Indigo as default brand */
+  --accent-glow: 165 180 252;
+  --brand: 99 102 241;            /* Permanent brand color */
+  --brand-2: 139 92 246;          /* Brand gradient endpoint (violet) */
+
+  --font-inter: "Inter", system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  background: #F9FAFB;
+  color: #111827;
+  font-family: var(--font-inter);
+  font-feature-settings: "cv11", "ss01";
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* === TYPOGRAPHY UTILITIES (per spec) === */
+
+.h-display {
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+}
+
+.h-page {
+  font-size: clamp(22px, 2vw, 24px);
+  font-weight: 900;
+  letter-spacing: -0.02em;
+}
+
+.h-card {
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.label-caps {
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: #6B7280;
+}
+
+.tabular {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
+}
+
+/* === GRADIENT TEXT (used in hero + brand) === */
+
+.gradient-text {
+  background: linear-gradient(
+    135deg,
+    rgb(var(--brand)),
+    rgb(var(--brand-2))
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.gradient-text-accent {
+  background: linear-gradient(
+    135deg,
+    rgb(var(--accent)),
+    rgb(var(--accent-glow))
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* === HERO BLOB BACKGROUND === */
+
+.blob-bg {
+  position: relative;
+}
+
+.blob-bg::before,
+.blob-bg::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(80px);
+  pointer-events: none;
+  z-index: 0;
+}
+
+.blob-bg::before {
+  top: -10%;
+  left: -10%;
+  width: 50%;
+  height: 60%;
+  background: radial-gradient(
+    circle,
+    rgb(var(--brand) / 0.15),
+    transparent 70%
+  );
+}
+
+.blob-bg::after {
+  bottom: -10%;
+  right: -10%;
+  width: 50%;
+  height: 60%;
+  background: radial-gradient(
+    circle,
+    rgb(var(--accent) / 0.15),
+    transparent 70%
+  );
+}
+
+/* === COUNTDOWN STADIUM GLOW (the one place we keep stadium energy) === */
+
+.countdown-card {
+  background: linear-gradient(
+    180deg,
+    rgb(17 24 39) 0%,
+    rgb(15 23 42) 100%
+  );
+  border: 1px solid rgb(255 255 255 / 0.06);
+  position: relative;
+  overflow: hidden;
+}
+
+.countdown-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(
+      ellipse 80% 50% at 50% 0%,
+      rgb(var(--accent) / 0.25),
+      transparent 60%
+    );
+  pointer-events: none;
+}
+
+.countdown-numeral {
+  text-shadow:
+    0 0 24px rgb(var(--accent-glow) / 0.45),
+    0 0 48px rgb(var(--accent-glow) / 0.2);
+}
+
+/* === FROSTED GLASS (app preview card) === */
+
+.frost {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+
+/* === SELECTION === */
+
+::selection {
+  background: rgb(var(--brand) / 0.2);
+  color: #111827;
+}
+
+/* === MOTION ACCESSIBILITY === */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
