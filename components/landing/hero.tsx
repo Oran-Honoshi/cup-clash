@@ -2,9 +2,11 @@
 
 import { motion } from "framer-motion";
 import { ArrowRight, Sparkles, Zap } from "lucide-react";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/card";
 import { CountdownCard } from "@/components/landing/countdown-card";
+import { COUNTRIES, HOST_NATIONS, flagUrl } from "@/lib/countries";
 
 interface HeroProps {
   matchLabel: string;
@@ -52,6 +54,42 @@ export function Hero({ matchLabel, target }: HeroProps) {
               all settled. No spreadsheets. No arguments.
             </motion.p>
 
+            {/* Host nations */}
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.25 }}
+              className="mt-6 flex items-center gap-3"
+            >
+              <span className="text-xs font-bold uppercase tracking-widest text-pitch-400">
+                Hosted by
+              </span>
+              <div className="flex items-center gap-2">
+                {HOST_NATIONS.map((code) => {
+                  const c = COUNTRIES[code];
+                  return (
+                    <div
+                      key={code}
+                      className="flex items-center gap-1.5 glass rounded-lg px-2.5 py-1.5"
+                    >
+                      <div className="relative w-6 h-4 rounded-sm overflow-hidden shadow-sm shrink-0">
+                        <Image
+                          src={flagUrl(c.flagCode, 40)}
+                          alt={c.name}
+                          fill
+                          className="object-cover"
+                          unoptimized
+                        />
+                      </div>
+                      <span className="text-xs font-bold text-pitch-200 uppercase tracking-wider">
+                        {c.name}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </motion.div>
+
             <motion.div
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
@@ -79,7 +117,7 @@ export function Hero({ matchLabel, target }: HeroProps) {
               <span className="hidden sm:inline opacity-30">·</span>
               <span>No credit card</span>
               <span className="hidden sm:inline opacity-30">·</span>
-              <span>Up to 60 players</span>
+              <span>48 teams · 104 matches</span>
             </motion.div>
           </div>
 

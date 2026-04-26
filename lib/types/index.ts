@@ -1,28 +1,30 @@
 // Domain types for Cup Clash.
 // These mirror what the Supabase schema will eventually return.
 
+// All 48 qualified nations for FIFA World Cup 2026
 export type CountryCode =
-  | "ARG"
-  | "BRA"
-  | "ENG"
-  | "FRA"
-  | "ESP"
-  | "GER"
-  | "POR"
-  | "ITA"
-  | "NED"
-  | "ISR"
-  | "USA"
-  | "MEX";
+  // CONCACAF (8 spots — hosts get automatic bids)
+  | "USA" | "CAN" | "MEX" | "JAM" | "PAN" | "CRC" | "HON" | "TTO"
+  // CONMEBOL (6 spots)
+  | "ARG" | "BRA" | "COL" | "URU" | "ECU" | "VEN"
+  // UEFA (16 spots)
+  | "ENG" | "FRA" | "ESP" | "GER" | "POR" | "NED" | "BEL" | "ITA"
+  | "AUT" | "CHE" | "SCO" | "DNK" | "HUN" | "SRB" | "SVK" | "GRE"
+  // CAF (9 spots)
+  | "MAR" | "SEN" | "NGA" | "EGY" | "CMR" | "CIV" | "MLI" | "RSA" | "TUN"
+  // AFC (8 spots)
+  | "JPN" | "KOR" | "IRN" | "AUS" | "JOR" | "IRQ" | "UZB" | "OMA"
+  // OFC (1 spot)
+  | "NZL";
 
 export interface Country {
   code: CountryCode;
   name: string;
-  flag: string; // emoji
-  // Theme tokens — fed into CSS variables for dynamic theming
+  /** ISO 3166-1 alpha-2 code for flagcdn.com (e.g. "ar" for Argentina) */
+  flagCode: string;
   theme: {
-    accent: string;     // e.g. "135 213 255"  (sky blue, RGB triplet)
-    accentGlow: string; // e.g. "200 230 255"
+    accent: string;     // RGB triplet e.g. "117 192 232"
+    accentGlow: string;
   };
 }
 
@@ -50,8 +52,8 @@ export interface Match {
   id: string;
   home: string;
   away: string;
-  homeFlag?: string;
-  awayFlag?: string;
+  homeFlagCode?: string;
+  awayFlagCode?: string;
   time: string; // ISO 8601
   stage?: "Group" | "R16" | "QF" | "SF" | "Final";
 }
