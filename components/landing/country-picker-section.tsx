@@ -2,8 +2,9 @@
 
 import { motion } from "framer-motion";
 import { Palette, RotateCcw } from "lucide-react";
+import Image from "next/image";
 import { useTheme } from "@/components/theme-provider";
-import { ALL_COUNTRIES } from "@/lib/countries";
+import { ALL_COUNTRIES, flagUrl } from "@/lib/countries";
 import { cn } from "@/lib/utils";
 
 export function CountryPickerSection() {
@@ -24,9 +25,8 @@ export function CountryPickerSection() {
               <span className="gradient-text-accent">your colors.</span>
             </h2>
             <p className="mt-6 text-lg text-pitch-300 max-w-md">
-              Pick your country and the whole app re-skins around it. Try it —
-              click any flag and watch every accent on this page shift in real
-              time.
+              Pick your country and the whole app re-skins around it — buttons,
+              glows, accents. Try it now.
             </p>
             {country && (
               <button
@@ -45,7 +45,7 @@ export function CountryPickerSection() {
               whileInView={{ opacity: 1 }}
               viewport={{ once: true }}
               transition={{ duration: 0.4 }}
-              className="grid grid-cols-3 sm:grid-cols-4 gap-2.5"
+              className="grid grid-cols-4 sm:grid-cols-6 gap-2"
             >
               {ALL_COUNTRIES.map((c) => {
                 const active = c.code === country;
@@ -54,11 +54,11 @@ export function CountryPickerSection() {
                     key={c.code}
                     onClick={() => setCountry(active ? null : c.code)}
                     aria-pressed={active}
+                    title={c.name}
                     className={cn(
-                      "group relative flex flex-col items-center gap-2 rounded-2xl p-4 transition-all duration-200",
-                      "border backdrop-blur-md",
+                      "group relative flex flex-col items-center gap-2 rounded-xl p-2.5 transition-all duration-200 border backdrop-blur-md",
                       active
-                        ? "bg-white/[0.06] -translate-y-0.5"
+                        ? "bg-white/[0.08] -translate-y-0.5"
                         : "bg-white/[0.02] border-white/[0.08] hover:bg-white/[0.05] hover:-translate-y-0.5"
                     )}
                     style={
@@ -71,21 +71,33 @@ export function CountryPickerSection() {
                         : undefined
                     }
                   >
-                    <span className="text-3xl leading-none" aria-hidden>
-                      {c.flag}
-                    </span>
+                    <div className="relative w-8 h-5 rounded-sm overflow-hidden shadow-sm">
+                      <Image
+                        src={flagUrl(c.flagCode, 40)}
+                        alt={c.name}
+                        fill
+                        className="object-cover"
+                        unoptimized
+                      />
+                    </div>
+
                     <span
                       className={cn(
-                        "font-mono text-[11px] font-bold tracking-widest",
+                        "font-mono text-[10px] font-bold tracking-wider leading-none",
                         active ? "text-white" : "text-pitch-400"
                       )}
-                      style={active ? { color: "rgb(var(--accent-glow))" } : undefined}
+                      style={
+                        active
+                          ? { color: "rgb(var(--accent-glow))" }
+                          : undefined
+                      }
                     >
                       {c.code}
                     </span>
+
                     {active && (
                       <span
-                        className="absolute -top-1.5 -right-1.5 h-3 w-3 rounded-full ring-2 ring-pitch-950"
+                        className="absolute -top-1 -right-1 h-2.5 w-2.5 rounded-full ring-2 ring-pitch-950"
                         style={{ backgroundColor: "rgb(var(--accent))" }}
                       />
                     )}
@@ -93,6 +105,17 @@ export function CountryPickerSection() {
                 );
               })}
             </motion.div>
+
+            {country && (
+              <motion.div
+                initial={{ opacity: 0, y: 4 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mt-5 text-sm font-bold uppercase tracking-widest text-center"
+                style={{ color: "rgb(var(--accent-glow))" }}
+              >
+                {ALL_COUNTRIES.find((c) => c.code === country)?.name} selected
+              </motion.div>
+            )}
           </div>
         </div>
       </div>
