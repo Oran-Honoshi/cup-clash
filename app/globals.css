@@ -4,10 +4,10 @@
 
 :root {
   /* Country accent — overridden by ThemeProvider when a country is selected */
-  --accent: 99 102 241;          /* Indigo as default brand */
-  --accent-glow: 165 180 252;
-  --brand: 99 102 241;            /* Permanent brand color */
-  --brand-2: 139 92 246;          /* Brand gradient endpoint (violet) */
+  --accent: 42 57 141;           /* Hermes Blue as default brand */
+  --accent-glow: 100 120 210;
+  --brand: 42 57 141;            /* Hermes Blue #2A398D */
+  --brand-2: 230 29 37;          /* Torch Red #E61D25 */
 
   --font-inter: "Inter", system-ui, sans-serif;
   --font-display: "Barlow Condensed", "Inter", sans-serif;
@@ -20,7 +20,7 @@
 
 html {
   scroll-behavior: smooth;
-  background: #020617; /* slate-950 — fallback before stadium effect mounts */
+  background: #0A0A0A; /* Stadium Dark */
 }
 
 html,
@@ -34,37 +34,28 @@ body {
   text-rendering: optimizeLegibility;
 }
 
-/* === STADIUM ATMOSPHERE (CSS-only, no image) ===
-   Layered radial gradients simulate floodlights raking the pitch.
-   The accent-tinted ones re-color when the user picks a country. */
-
 body {
   background:
-    /* Top floodlight (accent-tinted) */
     radial-gradient(
       ellipse 90% 50% at 50% -10%,
-      rgb(var(--accent) / 0.18) 0%,
+      rgb(var(--accent) / 0.22) 0%,
       transparent 55%
     ),
-    /* Bottom-left floodlight */
     radial-gradient(
       ellipse 60% 50% at 0% 100%,
-      rgb(var(--brand) / 0.12) 0%,
+      rgb(var(--brand) / 0.15) 0%,
       transparent 60%
     ),
-    /* Bottom-right floodlight */
     radial-gradient(
       ellipse 60% 50% at 100% 100%,
-      rgb(var(--accent-glow) / 0.10) 0%,
+      rgb(var(--brand-2) / 0.08) 0%,
       transparent 60%
     ),
-    /* Pitch-deep base */
-    linear-gradient(180deg, #020617 0%, #0F172A 50%, #020617 100%);
+    linear-gradient(180deg, #0A0A0A 0%, #111827 50%, #0A0A0A 100%);
   background-attachment: fixed;
   min-height: 100vh;
 }
 
-/* Subtle grain to break up gradient banding */
 body::before {
   content: "";
   position: fixed;
@@ -76,7 +67,6 @@ body::before {
   mix-blend-mode: overlay;
 }
 
-/* Light streak across the top — the stadium "horizon" */
 body::after {
   content: "";
   position: fixed;
@@ -95,8 +85,6 @@ body::after {
   z-index: 1;
   filter: blur(1px);
 }
-
-/* === TYPOGRAPHY UTILITIES === */
 
 .h-display {
   font-family: var(--font-display);
@@ -134,8 +122,6 @@ body::after {
   font-feature-settings: "tnum";
 }
 
-/* === GRADIENT TEXT === */
-
 .gradient-text {
   background: linear-gradient(
     135deg,
@@ -158,10 +144,8 @@ body::after {
   -webkit-text-fill-color: transparent;
 }
 
-/* === GLASSMORPHISM CARDS — the new default surface === */
-
 .glass {
-  background: rgba(15, 23, 42, 0.55);     /* slate-900 / 55 */
+  background: rgba(10, 10, 10, 0.6);
   backdrop-filter: blur(16px) saturate(140%);
   -webkit-backdrop-filter: blur(16px) saturate(140%);
   border: 1px solid rgba(255, 255, 255, 0.08);
@@ -171,7 +155,7 @@ body::after {
 }
 
 .glass-strong {
-  background: rgba(15, 23, 42, 0.75);
+  background: rgba(10, 10, 10, 0.8);
   backdrop-filter: blur(20px) saturate(160%);
   -webkit-backdrop-filter: blur(20px) saturate(160%);
   border: 1px solid rgba(255, 255, 255, 0.10);
@@ -183,7 +167,7 @@ body::after {
 .glass-accent {
   background:
     linear-gradient(135deg, rgb(var(--accent) / 0.08), rgb(var(--accent) / 0.02)),
-    rgba(15, 23, 42, 0.65);
+    rgba(10, 10, 10, 0.7);
   backdrop-filter: blur(16px) saturate(140%);
   -webkit-backdrop-filter: blur(16px) saturate(140%);
   border: 1px solid rgb(var(--accent) / 0.25);
@@ -191,8 +175,6 @@ body::after {
     inset 0 1px 0 rgb(var(--accent-glow) / 0.15),
     0 16px 40px rgb(var(--accent) / 0.15);
 }
-
-/* === GLOW EFFECTS (used on countdown numerals, focus rings) === */
 
 .text-glow {
   text-shadow:
@@ -203,8 +185,6 @@ body::after {
 .text-glow-soft {
   text-shadow: 0 0 20px rgb(var(--accent-glow) / 0.35);
 }
-
-/* === SCAN LINE / TICKER (decorative for hero header) === */
 
 @keyframes scanline {
   from { transform: translateX(-100%); }
@@ -229,14 +209,10 @@ body::after {
   animation: scanline 4s ease-in-out infinite;
 }
 
-/* === SELECTION === */
-
 ::selection {
   background: rgb(var(--accent) / 0.4);
   color: #F8FAFC;
 }
-
-/* === MOTION ACCESSIBILITY === */
 
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -249,8 +225,6 @@ body::after {
     display: none;
   }
 }
-
-/* === FOCUS RING (replaces default browser outlines) === */
 
 :focus-visible {
   outline: 2px solid rgb(var(--accent));
