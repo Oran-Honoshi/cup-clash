@@ -11,6 +11,8 @@ const TOURNAMENT_PICKS = {
   topAssist: { name: "Kylian Mbappé", team: "France",  locked: true },
 };
 
+export const dynamic = "force-dynamic";
+
 export default async function PredictionsPage() {
   const upcoming = await getUpcomingMatches();
 

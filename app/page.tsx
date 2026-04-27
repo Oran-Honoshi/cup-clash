@@ -41,6 +41,8 @@ export const metadata: Metadata = {
   },
 };
 
+export const dynamic = "force-dynamic";
+
 export default async function HomePage() {
   const nextMatch = await getNextMatch();
   const target = nextMatch ? new Date(nextMatch.time) : getTournamentStart();

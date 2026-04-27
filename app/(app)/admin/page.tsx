@@ -3,6 +3,8 @@ import { Card } from "@/components/ui/card";
 import { BuyInStatus } from "@/components/dashboard/buy-in-status";
 import { getGroup, getMembers } from "@/lib/services/groups";
 
+export const dynamic = "force-dynamic";
+
 export default async function AdminPage() {
   const [group, members] = await Promise.all([
     getGroup("grp_titans"),

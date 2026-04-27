@@ -1,6 +1,8 @@
 import { Leaderboard } from "@/components/dashboard/leaderboard";
 import { getMembers } from "@/lib/services/groups";
 
+export const dynamic = "force-dynamic";
+
 export default async function LeaderboardPage() {
   const members = await getMembers("grp_titans");
 
