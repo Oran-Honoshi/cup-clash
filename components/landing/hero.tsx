@@ -16,12 +16,14 @@ interface HeroProps {
 
 export function Hero({ matchLabel, target }: HeroProps) {
   return (
-    <section className="relative overflow-hidden pt-28 pb-16 sm:pt-36 sm:pb-24">
+    <section className="relative overflow-hidden pt-28 pb-16 sm:pt-36 sm:pb-20">
       <div className="relative mx-auto max-w-7xl px-5 sm:px-8">
-        <div className="grid gap-10 lg:grid-cols-12 lg:gap-8 items-center">
 
-          {/* ── LEFT: Copy ── */}
-          <div className="lg:col-span-5 relative z-10">
+        {/* ── DESKTOP: Side-by-side layout ── */}
+        <div className="hidden lg:grid lg:grid-cols-2 lg:gap-12 xl:gap-16 items-center">
+
+          {/* Left: Copy */}
+          <div className="relative z-10">
             <motion.div
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
@@ -39,7 +41,7 @@ export function Hero({ matchLabel, target }: HeroProps) {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.1 }}
               className="font-display uppercase text-white leading-[0.88] tracking-tight"
-              style={{ fontSize: "clamp(44px, 5.5vw, 84px)" }}
+              style={{ fontSize: "clamp(52px, 5.5vw, 88px)" }}
             >
               Predict every
               <br />
@@ -126,80 +128,136 @@ export function Hero({ matchLabel, target }: HeroProps) {
                 <Zap size={12} className="text-success" />
                 Free under 4 players
               </span>
-              <span className="hidden sm:inline opacity-30">·</span>
+              <span className="opacity-30">·</span>
               <span>No credit card</span>
-              <span className="hidden sm:inline opacity-30">·</span>
+              <span className="opacity-30">·</span>
               <span>48 teams · 104 matches</span>
             </motion.div>
           </div>
 
-          {/* ── MIDDLE: Trophy photo ── */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.96, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            transition={{ duration: 0.9, delay: 0.3, ease: [0.2, 0.8, 0.2, 1] }}
-            className="hidden lg:block lg:col-span-4 relative"
-          >
-            {/* Glow behind trophy */}
-            <div
-              className="absolute inset-0 rounded-full pointer-events-none"
-              style={{
-                background:
-                  "radial-gradient(ellipse 60% 50% at 50% 70%, rgba(212,175,55,0.2) 0%, transparent 70%)",
-                zIndex: 0,
-              }}
-            />
-
-            <div className="relative z-10" style={{ maxWidth: 320, margin: "0 auto" }}>
+          {/* Right: Trophy + Countdown stacked */}
+          <div className="flex flex-col items-center gap-8">
+            {/* Trophy photo */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              transition={{ duration: 0.9, delay: 0.3, ease: [0.2, 0.8, 0.2, 1] }}
+              className="relative w-full max-w-xs xl:max-w-sm mx-auto"
+            >
+              <div
+                className="absolute inset-0 rounded-full pointer-events-none"
+                style={{
+                  background:
+                    "radial-gradient(ellipse 70% 40% at 50% 80%, rgba(212,175,55,0.25) 0%, transparent 70%)",
+                }}
+              />
               <Image
                 src="/trophy-stadium.jpg"
-                alt="FIFA World Cup Trophy in a stadium"
-                width={320}
-                height={463}
-                className="w-full h-auto object-contain"
+                alt="FIFA World Cup Trophy"
+                width={400}
+                height={580}
+                className="w-full h-auto relative z-10"
                 style={{
                   filter:
-                    "drop-shadow(0 0 40px rgba(212, 175, 55, 0.35)) drop-shadow(0 20px 40px rgba(0,0,0,0.6))",
+                    "drop-shadow(0 0 40px rgba(212, 175, 55, 0.4)) drop-shadow(0 20px 50px rgba(0,0,0,0.7))",
                   maskImage:
-                    "linear-gradient(to bottom, black 60%, transparent 100%)",
+                    "linear-gradient(to bottom, black 55%, transparent 100%)",
                   WebkitMaskImage:
-                    "linear-gradient(to bottom, black 60%, transparent 100%)",
+                    "linear-gradient(to bottom, black 55%, transparent 100%)",
+                  maxHeight: 340,
+                  objectFit: "cover",
+                  objectPosition: "top",
                 }}
                 priority
               />
-            </div>
-          </motion.div>
+            </motion.div>
 
-          {/* ── RIGHT: Countdown card ── */}
-          <div className="lg:col-span-3">
-            <CountdownCard target={target} matchLabel={matchLabel} />
+            {/* Countdown — gets full width of the right column */}
+            <div className="w-full">
+              <CountdownCard target={target} matchLabel={matchLabel} />
+            </div>
           </div>
         </div>
 
-        {/* Mobile trophy — shown below CTAs on small screens */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.8, delay: 0.5 }}
-          className="lg:hidden mt-8 flex justify-center"
-        >
-          <div className="relative w-48">
-            <Image
-              src="/trophy-stadium.jpg"
-              alt="FIFA World Cup Trophy"
-              width={200}
-              height={290}
-              className="w-full h-auto"
-              style={{
-                filter: "drop-shadow(0 0 24px rgba(212, 175, 55, 0.3))",
-                maskImage:
-                  "linear-gradient(to bottom, black 55%, transparent 100%)",
-                WebkitMaskImage:
-                  "linear-gradient(to bottom, black 55%, transparent 100%)",
-              }}
-            />
+        {/* ── MOBILE: Stacked layout ── */}
+        <div className="lg:hidden space-y-8">
+          {/* Copy */}
+          <div>
+            <motion.div
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+              className="mb-5"
+            >
+              <Badge tone="accent" className="scanline">
+                <Sparkles size={11} />
+                FIFA World Cup 2026
+              </Badge>
+            </motion.div>
+
+            <motion.h1
+              initial={{ opacity: 0, y: 16 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.1 }}
+              className="font-display uppercase text-white leading-[0.88] tracking-tight text-[clamp(44px,12vw,72px)]"
+            >
+              Predict every match.
+              <br />
+              <span className="gradient-text">Beat your friends.</span>
+            </motion.h1>
+
+            <p className="mt-4 text-base text-pitch-300 leading-relaxed">
+              Private prediction leagues for your group chat, office, or family.
+            </p>
+
+            {/* Host nations — mobile */}
+            <div className="mt-4 flex items-center gap-2 flex-wrap">
+              <span className="text-[10px] font-bold uppercase tracking-widest text-pitch-500">Hosted by</span>
+              {HOST_NATIONS.map((code) => {
+                const c = COUNTRIES[code];
+                return (
+                  <div key={code} className="flex items-center gap-1 glass rounded-lg px-2 py-1">
+                    <div className="relative w-4 h-3 rounded-sm overflow-hidden">
+                      <Image src={flagUrl(c.flagCode, 20)} alt={c.name} fill className="object-cover" unoptimized />
+                    </div>
+                    <span className="text-[10px] font-bold text-pitch-200 uppercase">{c.name}</span>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="mt-6 flex flex-wrap gap-3">
+              <Link href="/signup">
+                <Button size="md" rightIcon={<ArrowRight size={16} />}>Start a group — free</Button>
+              </Link>
+              <Link href="/dashboard">
+                <Button size="md" variant="outline">Preview app</Button>
+              </Link>
+            </div>
           </div>
-        </motion.div>
+
+          {/* Countdown — full width on mobile, no squishing */}
+          <CountdownCard target={target} matchLabel={matchLabel} />
+
+          {/* Trophy — small, below countdown on mobile */}
+          <div className="flex justify-center">
+            <div className="relative w-40">
+              <Image
+                src="/trophy-stadium.jpg"
+                alt="FIFA World Cup Trophy"
+                width={160}
+                height={232}
+                className="w-full h-auto"
+                style={{
+                  filter: "drop-shadow(0 0 20px rgba(212, 175, 55, 0.3))",
+                  maskImage: "linear-gradient(to bottom, black 50%, transparent 100%)",
+                  WebkitMaskImage: "linear-gradient(to bottom, black 50%, transparent 100%)",
+                }}
+              />
+            </div>
+          </div>
+        </div>
+
       </div>
     </section>
   );

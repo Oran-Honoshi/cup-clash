@@ -23,10 +23,10 @@ function getTimeUnits(target: Date): TimeUnit[] {
   const minutes = Math.floor((totalSeconds % 3600) / 60);
   const seconds = totalSeconds % 60;
   return [
-    { value: days, label: "DAYS" },
-    { value: hours, label: "HRS" },
-    { value: minutes, label: "MIN" },
-    { value: seconds, label: "SEC" },
+    { value: days,    label: "DAYS" },
+    { value: hours,   label: "HRS"  },
+    { value: minutes, label: "MIN"  },
+    { value: seconds, label: "SEC"  },
   ];
 }
 
@@ -47,9 +47,9 @@ export function CountdownCard({ target, matchLabel }: CountdownProps) {
       initial={{ opacity: 0, y: 24 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, delay: 0.3, ease: [0.2, 0.8, 0.2, 1] }}
-      className="glass-strong relative rounded-3xl p-6 sm:p-8 overflow-hidden"
+      className="glass-strong relative rounded-3xl p-5 overflow-hidden w-full"
     >
-      {/* Top accent line — picks up country color */}
+      {/* Top accent line */}
       <div
         className="absolute top-0 left-8 right-8 h-px"
         style={{
@@ -58,8 +58,8 @@ export function CountdownCard({ target, matchLabel }: CountdownProps) {
         }}
       />
 
-      {/* Header: live indicator + match name */}
-      <div className="relative flex items-center justify-between text-pitch-300 mb-6">
+      {/* Header */}
+      <div className="relative flex items-center justify-between text-pitch-300 mb-4">
         <div className="flex items-center gap-2">
           <span className="relative flex h-2 w-2">
             <span
@@ -78,30 +78,34 @@ export function CountdownCard({ target, matchLabel }: CountdownProps) {
         <Radio size={14} className="text-white/30" />
       </div>
 
-      {/* Match name — display font, big and bold */}
-      <div className="relative mb-6">
-        <div className="font-display text-3xl sm:text-4xl uppercase tracking-tight text-white leading-none">
+      {/* Match name */}
+      <div className="relative mb-4">
+        <div className="font-display text-2xl uppercase tracking-tight text-white leading-tight">
           {matchLabel}
         </div>
-        <div className="text-pitch-400 text-xs font-mono mt-2">
-          {formatInTimeZone(target, "UTC", "EEE, dd MMM · HH:mm 'UTC'")}
+        <div className="text-pitch-400 text-xs font-mono mt-1" suppressHydrationWarning>
+          {mounted
+            ? formatInTimeZone(target, "UTC", "EEE, dd MMM · HH:mm 'UTC'")
+            : "—"}
         </div>
       </div>
 
-      {/* The numerals */}
-      <div className="relative grid grid-cols-4 gap-2 sm:gap-3">
+      {/* Countdown numerals — 4 equal boxes in a row */}
+      <div className="relative grid grid-cols-4 gap-2">
         {units.map((unit) => (
           <div
             key={unit.label}
-            className="rounded-2xl bg-white/[0.03] border border-white/[0.08] px-1 py-4 sm:py-5 text-center"
+            className="rounded-xl bg-white/[0.04] border border-white/[0.08] py-3 text-center flex flex-col items-center justify-center"
           >
+            {/* Number — uses viewport-independent sizing so it doesn't overflow */}
             <div
-              className="text-glow tabular text-white font-display text-4xl sm:text-6xl tracking-tight leading-none"
+              className="text-glow tabular text-white font-display leading-none font-bold"
+              style={{ fontSize: "clamp(22px, 4vw, 44px)" }}
               suppressHydrationWarning
             >
               {mounted ? String(unit.value).padStart(2, "0") : "--"}
             </div>
-            <div className="text-[9px] sm:text-[10px] font-bold tracking-[0.2em] text-pitch-400 mt-2">
+            <div className="text-[9px] font-bold tracking-[0.2em] text-pitch-500 mt-1.5 uppercase">
               {unit.label}
             </div>
           </div>
@@ -109,7 +113,7 @@ export function CountdownCard({ target, matchLabel }: CountdownProps) {
       </div>
 
       {/* Hint */}
-      <div className="relative mt-6 pt-5 border-t border-white/[0.06] text-[11px] text-pitch-400 text-center uppercase tracking-widest">
+      <div className="relative mt-4 pt-4 border-t border-white/[0.06] text-[10px] text-pitch-500 text-center uppercase tracking-widest">
         Bets lock 5 min before kickoff
       </div>
     </motion.div>
