@@ -46,6 +46,7 @@ export interface Member {
   points: number;
   paid: boolean;
   country: string;
+  avatarUrl?: string | null;
 }
 
 export interface Match {

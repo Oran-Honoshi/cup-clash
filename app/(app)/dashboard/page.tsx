@@ -4,6 +4,7 @@ import { Leaderboard } from "@/components/dashboard/leaderboard";
 import { NextMatchCard } from "@/components/dashboard/next-match-card";
 import { BuyInStatus } from "@/components/dashboard/buy-in-status";
 import { StatCards } from "@/components/dashboard/stat-cards";
+import { DashboardPopups } from "@/components/dashboard/dashboard-popups";
 import { getLeaderboard, getMembers, getGroup } from "@/lib/services/groups";
 import { getNextMatch } from "@/lib/services/matches";
 
@@ -15,13 +16,15 @@ export default async function DashboardPage() {
     getNextMatch(),
   ]);
 
-  const currentUser = members.find((m) => m.id === "1")!;
+  const currentUser = members.find((m) => m.id === "1") ?? members[0];
   const rank = members.findIndex((m) => m.id === "1") + 1;
 
   return (
     <div className="space-y-6">
+      <DashboardPopups memberName={currentUser?.name ?? "Champion"} groupName={group.name} />
+
       <div>
-        <div className="label-caps mb-1">Tech Titans World Cup</div>
+        <div className="label-caps mb-1">{group.name}</div>
         <h1 className="font-display text-4xl sm:text-5xl uppercase text-white tracking-tight">
           Dashboard
         </h1>

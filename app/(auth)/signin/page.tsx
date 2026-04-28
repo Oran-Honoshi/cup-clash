@@ -70,7 +70,7 @@ export default function SigninPage() {
           <div>
             <div className="flex items-center justify-between mb-1.5">
               <label className="block text-xs font-bold uppercase tracking-widest text-pitch-400">Password</label>
-              <a href="#" className="text-[11px] text-pitch-500 hover:text-pitch-300 transition-colors">Forgot password?</a>
+              <Link href="/reset-password" className="text-[11px] text-pitch-500 hover:text-pitch-300 transition-colors">Forgot password?</Link>
             </div>
             <div className="relative">
               <Lock size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-pitch-500" />

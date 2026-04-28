@@ -1,10 +1,12 @@
 "use client";
 
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
-import { LayoutDashboard, Trophy, Target, ShieldCheck, LogOut, Users, FlaskConical, GitBranch } from "lucide-react";
+import { LayoutDashboard, Trophy, Target, ShieldCheck, LogOut, FlaskConical, GitBranch, UserCircle } from "lucide-react";
+import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { Logo } from "@/components/logo";
 import { cn } from "@/lib/utils";
+import { useEffect, useState } from "react";
 
 const NAV_ITEMS = [
   { href: "/dashboard",   icon: LayoutDashboard, label: "Dashboard"       },
@@ -15,15 +17,55 @@ const NAV_ITEMS = [
   { href: "/testing",     icon: FlaskConical,     label: "Testing 🧪"     },
 ];
 
+interface UserProfile {
+  name: string;
+  country: string;
+  avatar_url: string | null;
+}
+
 export function AppSidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+  const [profile, setProfile] = useState<UserProfile | null>(null);
+
+  useEffect(() => {
+    async function loadProfile() {
+      if (!process.env.NEXT_PUBLIC_SUPABASE_URL) return;
+      const sb = createSupabaseClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+      );
+      const { data: { user } } = await sb.auth.getUser();
+      if (!user) return;
+      const { data } = await sb.from("profiles")
+        .select("name, country, avatar_url")
+        .eq("id", user.id)
+        .single();
+      if (data) setProfile(data as UserProfile);
+    }
+    loadProfile();
+  }, []);
+
+  const handleSignOut = async () => {
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL) { router.push("/signin"); return; }
+    const sb = createSupabaseClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
+    await sb.auth.signOut();
+    router.push("/signin");
+    router.refresh();
+  };
+
+  const displayName = profile?.name ?? "Loading...";
+  const displayCountry = profile?.country ?? "";
 
   return (
     <aside className="hidden lg:flex fixed left-0 top-0 bottom-0 w-60 flex-col z-40 border-r border-white/[0.08] glass-strong">
       <div className="px-4 py-5 border-b border-white/[0.08]">
         <Logo size="sm" />
         <p className="mt-1 text-[10px] text-pitch-400 uppercase tracking-widest pl-0.5">
-          Tech Titans WC
+          World Cup 2026
         </p>
       </div>
 
@@ -49,20 +91,35 @@ export function AppSidebar() {
         })}
       </nav>
 
-      <div className="px-3 py-3 border-t border-white/[0.08]">
-        <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl bg-white/[0.03]">
-          <div className="h-8 w-8 rounded-full flex items-center justify-center shrink-0 text-white text-xs font-bold"
-            style={{ backgroundImage: "linear-gradient(135deg, rgb(var(--brand)), rgb(var(--brand-2)))" }}>
-            <Users size={14} />
+      {/* User section */}
+      <div className="px-3 py-3 border-t border-white/[0.08] space-y-1">
+        <Link href="/profile"
+          className={cn(
+            "flex items-center gap-2.5 px-3 py-2.5 rounded-xl transition-all hover:bg-white/[0.04]",
+            pathname === "/profile" && "bg-white/[0.06]"
+          )}>
+          {profile?.avatar_url ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={profile.avatar_url} alt={displayName}
+              className="h-8 w-8 rounded-full object-cover shrink-0 ring-2 ring-white/20" />
+          ) : (
+            <div className="h-8 w-8 rounded-full flex items-center justify-center shrink-0 text-white text-xs font-bold"
+              style={{ backgroundImage: "linear-gradient(135deg, rgb(var(--brand)), rgb(var(--brand-2)))" }}>
+              {displayName.charAt(0).toUpperCase()}
+            </div>
+          )}
+          <div className="min-w-0 flex-1">
+            <div className="text-xs font-bold text-pitch-200 truncate">{displayName}</div>
+            <div className="text-[10px] text-pitch-400 uppercase tracking-wider truncate">{displayCountry}</div>
           </div>
-          <div className="min-w-0">
-            <div className="text-xs font-bold text-pitch-200 truncate">Amit</div>
-            <div className="text-[10px] text-pitch-400 uppercase tracking-wider">🇦🇷 Argentina</div>
-          </div>
-          <button className="ml-auto text-pitch-500 hover:text-danger transition-colors">
-            <LogOut size={15} />
-          </button>
-        </div>
+          <UserCircle size={14} className="text-pitch-600 shrink-0" />
+        </Link>
+
+        <button onClick={handleSignOut}
+          className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-pitch-500 hover:text-danger hover:bg-danger/10 transition-all text-xs font-bold uppercase tracking-widest">
+          <LogOut size={14} />
+          Sign out
+        </button>
       </div>
     </aside>
   );

@@ -3,6 +3,7 @@
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Target, Check, Trophy, Star } from "lucide-react";
 import type { Member } from "@/lib/types";
+import { MemberAvatar } from "@/components/ui/member-avatar";
 
 // Mock point history — will come from Supabase later
 const MOCK_HISTORY = [
@@ -51,15 +52,7 @@ export function PlayerDrawer({ member, onClose }: PlayerDrawerProps) {
             {/* Header */}
             <div className="sticky top-0 glass-strong border-b border-white/[0.08] px-5 py-4 flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div
-                  className="h-10 w-10 rounded-full flex items-center justify-center text-white font-bold text-lg"
-                  style={{
-                    backgroundImage:
-                      "linear-gradient(135deg, rgb(var(--brand)), rgb(var(--brand-2)))",
-                  }}
-                >
-                  {member.name.charAt(0)}
-                </div>
+                <MemberAvatar name={member.name} avatarUrl={member.avatarUrl} size="lg" />
                 <div>
                   <div className="font-display text-xl uppercase text-white">
                     {member.name}

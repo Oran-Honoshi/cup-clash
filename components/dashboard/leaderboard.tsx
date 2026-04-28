@@ -5,6 +5,7 @@ import { Trophy, TrendingUp, TrendingDown, Minus, ChevronRight } from "lucide-re
 import { Card } from "@/components/ui/card";
 import { PlayerDrawer } from "@/components/dashboard/player-drawer";
 import { cn } from "@/lib/utils";
+import { MemberAvatar } from "@/components/ui/member-avatar";
 import type { Member } from "@/lib/types";
 
 interface LeaderboardProps {
@@ -89,16 +90,12 @@ export function Leaderboard({ members, currentUserId }: LeaderboardProps) {
                 </div>
 
                 {/* Avatar */}
-                <div
-                  className="h-9 w-9 rounded-full flex items-center justify-center shrink-0 text-white text-sm font-bold transition-transform group-hover:scale-105"
-                  style={{
-                    backgroundImage:
-                      "linear-gradient(135deg, rgb(var(--brand)), rgb(var(--brand-2)))",
-                    opacity: isCurrentUser ? 1 : 0.75,
-                  }}
-                >
-                  {member.name.charAt(0)}
-                </div>
+                <MemberAvatar
+                  name={member.name}
+                  avatarUrl={member.avatarUrl}
+                  size="md"
+                  dim={!isCurrentUser}
+                />
 
                 {/* Name + country */}
                 <div className="flex-1 min-w-0 text-left">
