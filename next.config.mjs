@@ -3,10 +3,8 @@ const nextConfig = {
   reactStrictMode: true,
   images: {
     remotePatterns: [
-      {
-        protocol: "https",
-        hostname: "flagcdn.com",
-      },
+      { protocol: "https", hostname: "flagcdn.com" },
+      { protocol: "https", hostname: "api.dicebear.com" },
     ],
   },
 };
