@@ -2,7 +2,7 @@
 
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
-import { LayoutDashboard, Trophy, Target, ShieldCheck, LogOut, FlaskConical, GitBranch, UserCircle } from "lucide-react";
+import { LayoutDashboard, Trophy, Target, ShieldCheck, LogOut, FlaskConical, GitBranch, BarChart2, UserCircle } from "lucide-react";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { Logo } from "@/components/logo";
 import { cn } from "@/lib/utils";
@@ -13,6 +13,7 @@ const NAV_ITEMS = [
   { href: "/leaderboard", icon: Trophy,           label: "Leaderboard"    },
   { href: "/predictions", icon: Target,           label: "My Predictions" },
   { href: "/bracket",     icon: GitBranch,        label: "Bracket"        },
+  { href: "/standings",   icon: BarChart2,        label: "Standings"      },
   { href: "/admin",       icon: ShieldCheck,      label: "Admin"          },
   { href: "/testing",     icon: FlaskConical,     label: "Testing 🧪"     },
 ];

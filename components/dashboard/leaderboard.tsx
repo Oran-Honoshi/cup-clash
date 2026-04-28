@@ -25,6 +25,9 @@ const RANK_GLOWS = [
   "0 0 20px rgba(180, 83, 9, 0.35)",
 ];
 
+// Soccer ball medal overlays for top 3
+const RANK_MEDALS = ["🥇", "🥈", "🥉"];
+
 export function Leaderboard({ members, currentUserId }: LeaderboardProps) {
   const [selected, setSelected] = useState<Member | null>(null);
   const sorted = [...members].sort((a, b) => b.points - a.points);
@@ -89,13 +92,23 @@ export function Leaderboard({ members, currentUserId }: LeaderboardProps) {
                   )}
                 </div>
 
-                {/* Avatar */}
-                <MemberAvatar
-                  name={member.name}
-                  avatarUrl={member.avatarUrl}
-                  size="md"
-                  dim={!isCurrentUser}
-                />
+                {/* Avatar with medal for top 3 */}
+                <div className="relative shrink-0">
+                  <MemberAvatar
+                    name={member.name}
+                    avatarUrl={member.avatarUrl}
+                    size="md"
+                    dim={!isCurrentUser}
+                  />
+                  {isTop3 && (
+                    <span
+                      className="absolute -bottom-1 -right-1 text-sm leading-none"
+                      title={`${rank === 1 ? "1st" : rank === 2 ? "2nd" : "3rd"} place`}
+                    >
+                      {RANK_MEDALS[i]}
+                    </span>
+                  )}
+                </div>
 
                 {/* Name + country */}
                 <div className="flex-1 min-w-0 text-left">

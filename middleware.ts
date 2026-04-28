@@ -2,8 +2,8 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 const PROTECTED_PREFIXES = [
-  "/dashboard", "/leaderboard", "/predictions",
-  "/admin", "/create-group", "/bracket", "/testing", "/profile",
+  "/dashboard", "/leaderboard", "/predictions", "/admin",
+  "/create-group", "/bracket", "/testing", "/profile", "/standings",
 ];
 const AUTH_ROUTES = ["/signin", "/signup"];
 
