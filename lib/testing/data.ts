@@ -8,6 +8,7 @@ export interface MockPrediction {
   matchId: string;
   homeScore: number;
   awayScore: number;
+  advancementPick?: string; // team name — only for knockout matches
 }
 
 export interface MockMember {
@@ -24,11 +25,14 @@ export interface SimulatedResult {
   away: string;
   homeFlagCode: string;
   awayFlagCode: string;
-  homeScore: number;
-  awayScore: number;
+  homeScore: number;       // 90-min score
+  awayScore: number;       // 90-min score
   stage: string;
   stadium: string;
   city: string;
+  isKnockout?: boolean;
+  advancedTeam?: string;   // who actually advanced (may differ from 90-min winner due to pens)
+  wentToPenalties?: boolean;
 }
 
 // The matches we'll simulate results for, in order
@@ -45,6 +49,13 @@ export const SIMULATED_MATCHES: SimulatedResult[] = [
   { matchId: "g010", home: "Portugal",  away: "Iran",      homeFlagCode: "pt", awayFlagCode: "ir", homeScore: 1, awayScore: 1, stage: "Group J", stadium: "Arrowhead Stadium",       city: "Kansas City"  },
   { matchId: "g011", home: "Netherlands", away: "Australia", homeFlagCode: "nl", awayFlagCode: "au", homeScore: 2, awayScore: 1, stage: "Group K", stadium: "Levi's Stadium",      city: "San Francisco"},
   { matchId: "g012", home: "Italy",     away: "Egypt",     homeFlagCode: "it", awayFlagCode: "eg", homeScore: 2, awayScore: 0, stage: "Group L", stadium: "Estadio Akron",          city: "Guadalajara"  },
+  // KNOCKOUT STAGE — Round of 32 (simulated)
+  { matchId: "r32-1", home: "Mexico", away: "France", homeFlagCode: "mx", awayFlagCode: "fr", homeScore: 1, awayScore: 1, stage: "Round of 32", stadium: "MetLife Stadium", city: "New York/NJ", isKnockout: true, advancedTeam: "France", wentToPenalties: true },
+  { matchId: "r32-2", home: "Argentina", away: "USA", homeFlagCode: "ar", awayFlagCode: "us", homeScore: 2, awayScore: 0, stage: "Round of 32", stadium: "SoFi Stadium", city: "Los Angeles", isKnockout: true, advancedTeam: "Argentina", wentToPenalties: false },
+  // QUARTER-FINAL (simulated)
+  { matchId: "qf-1", home: "France", away: "Spain", homeFlagCode: "fr", awayFlagCode: "es", homeScore: 2, awayScore: 1, stage: "Quarter-Final", stadium: "MetLife Stadium", city: "New York/NJ", isKnockout: true, advancedTeam: "France", wentToPenalties: false },
+  // SEMI-FINAL (simulated)
+  { matchId: "sf-1", home: "Argentina", away: "France", homeFlagCode: "ar", awayFlagCode: "fr", homeScore: 1, awayScore: 1, stage: "Semi-Final", stadium: "MetLife Stadium", city: "New York/NJ", isKnockout: true, advancedTeam: "Argentina", wentToPenalties: true },
 ];
 
 // 4 mock members with varied predictions — some right, some wrong, some exact
@@ -67,6 +78,11 @@ export const MOCK_TEST_MEMBERS: MockMember[] = [
       { matchId: "g010", homeScore: 2, awayScore: 0 }, // WRONG ✗ 0
       { matchId: "g011", homeScore: 2, awayScore: 1 }, // EXACT ✓ +25
       { matchId: "g012", homeScore: 2, awayScore: 0 }, // EXACT ✓ +25
+      // Knockout picks
+      { matchId: "r32-1", homeScore: 1, awayScore: 1, advancementPick: "France" },    // draw EXACT ✓ +25, advancement ✓ +20
+      { matchId: "r32-2", homeScore: 2, awayScore: 0, advancementPick: "Argentina" }, // EXACT ✓ +25, advancement ✓ +20
+      { matchId: "qf-1",  homeScore: 1, awayScore: 0, advancementPick: "France" },    // OUTCOME ✓ +10, advancement ✓ +20
+      { matchId: "sf-1",  homeScore: 1, awayScore: 1, advancementPick: "France" },    // draw EXACT ✓ +25, advancement ✗ 0
     ],
   },
   {
@@ -87,6 +103,11 @@ export const MOCK_TEST_MEMBERS: MockMember[] = [
       { matchId: "g010", homeScore: 1, awayScore: 1 }, // EXACT ✓ +25
       { matchId: "g011", homeScore: 1, awayScore: 0 }, // OUTCOME ✓ +10
       { matchId: "g012", homeScore: 1, awayScore: 0 }, // OUTCOME ✓ +10
+      // Knockout picks
+      { matchId: "r32-1", homeScore: 0, awayScore: 1, advancementPick: "France" },    // WRONG ✗ 0, advancement ✓ +20
+      { matchId: "r32-2", homeScore: 1, awayScore: 0, advancementPick: "Argentina" }, // WRONG ✗ 0, advancement ✓ +20
+      { matchId: "qf-1",  homeScore: 2, awayScore: 1, advancementPick: "Spain" },     // OUTCOME ✓ +10, advancement ✗ 0
+      { matchId: "sf-1",  homeScore: 0, awayScore: 1, advancementPick: "Argentina" }, // WRONG ✗ 0, advancement ✓ +20
     ],
   },
   {
@@ -107,6 +128,11 @@ export const MOCK_TEST_MEMBERS: MockMember[] = [
       { matchId: "g010", homeScore: 0, awayScore: 0 }, // OUTCOME ✓ +10
       { matchId: "g011", homeScore: 3, awayScore: 0 }, // WRONG ✗ 0
       { matchId: "g012", homeScore: 2, awayScore: 0 }, // EXACT ✓ +25
+      // Knockout picks
+      { matchId: "r32-1", homeScore: 2, awayScore: 0, advancementPick: "Mexico" },    // WRONG ✗ 0, advancement ✗ 0
+      { matchId: "r32-2", homeScore: 2, awayScore: 0, advancementPick: "Argentina" }, // EXACT ✓ +25, advancement ✓ +20
+      { matchId: "qf-1",  homeScore: 2, awayScore: 1, advancementPick: "France" },    // OUTCOME ✓ +10, advancement ✓ +20
+      { matchId: "sf-1",  homeScore: 2, awayScore: 0, advancementPick: "Argentina" }, // WRONG ✗ 0, advancement ✓ +20
     ],
   },
   {
@@ -127,16 +153,21 @@ export const MOCK_TEST_MEMBERS: MockMember[] = [
       { matchId: "g010", homeScore: 2, awayScore: 1 }, // WRONG ✗ 0
       { matchId: "g011", homeScore: 2, awayScore: 1 }, // EXACT ✓ +25
       { matchId: "g012", homeScore: 1, awayScore: 0 }, // OUTCOME ✓ +10
+      // Knockout picks
+      { matchId: "r32-1", homeScore: 1, awayScore: 1, advancementPick: "Mexico" },    // EXACT ✓ +25, advancement ✗ 0
+      { matchId: "r32-2", homeScore: 1, awayScore: 0, advancementPick: "Argentina" }, // OUTCOME ✓ +10, advancement ✓ +20
+      { matchId: "qf-1",  homeScore: 1, awayScore: 0, advancementPick: "France" },    // OUTCOME ✓ +10, advancement ✓ +20
+      { matchId: "sf-1",  homeScore: 1, awayScore: 1, advancementPick: "Argentina" }, // EXACT ✓ +25, advancement ✓ +20
     ],
   },
 ];
 
 // Score a prediction against a result
 export function scorePrediction(
-  pred: { homeScore: number; awayScore: number },
-  result: { homeScore: number; awayScore: number },
+  pred: { homeScore: number; awayScore: number; advancementPick?: string },
+  result: SimulatedResult,
   rules: ScoringRules
-): { points: number; isExact: boolean } {
+): { points: number; isExact: boolean; breakdown: string[] } {
   const predOutcome = Math.sign(pred.homeScore - pred.awayScore);
   const realOutcome = Math.sign(result.homeScore - result.awayScore);
 
@@ -144,14 +175,33 @@ export function scorePrediction(
     pred.homeScore === result.homeScore &&
     pred.awayScore === result.awayScore;
 
-  if (isExact) return { points: rules.exactScore, isExact: true };
-  if (predOutcome === realOutcome) return { points: rules.correctOutcome, isExact: false };
-  return { points: 0, isExact: false };
+  let points = 0;
+  const breakdown: string[] = [];
+
+  // 90-min score points
+  if (isExact) {
+    points += rules.exactScore;
+    breakdown.push(`Exact score +${rules.exactScore}`);
+  } else if (predOutcome === realOutcome) {
+    points += rules.correctOutcome;
+    breakdown.push(`Correct outcome +${rules.correctOutcome}`);
+  }
+
+  // Knockout advancement bonus (+20)
+  if (result.isKnockout && pred.advancementPick && result.advancedTeam) {
+    if (pred.advancementPick === result.advancedTeam) {
+      points += rules.knockoutAdvancement;
+      breakdown.push(`Correct advancement +${rules.knockoutAdvancement}`);
+    }
+  }
+
+  return { points, isExact, breakdown };
 }
 
 export interface ScoringRules {
   correctOutcome: number;
   exactScore: number;
+  knockoutAdvancement: number; // +20 for correctly picking who advances
   tournamentWinner: number;
   topScorer: number;
   topAssister: number;
@@ -160,6 +210,7 @@ export interface ScoringRules {
 export const DEFAULT_SCORING_RULES: ScoringRules = {
   correctOutcome: 10,
   exactScore: 25,
+  knockoutAdvancement: 20,
   tournamentWinner: 100,
   topScorer: 50,
   topAssister: 50,
@@ -179,16 +230,20 @@ export function calculateLeaderboard(
       home: string;
       away: string;
       predicted: string;
+      advancementPick?: string;
       actual: string;
+      advancedTeam?: string;
       points: number;
       isExact: boolean;
+      breakdown: string[];
+      isKnockout: boolean;
     }> = [];
 
     results.forEach((result) => {
       const pred = member.predictions.find((p) => p.matchId === result.matchId);
       if (!pred) return;
 
-      const { points, isExact } = scorePrediction(pred, result, rules);
+      const { points, isExact, breakdown } = scorePrediction(pred, result, rules);
       totalPoints += points;
       if (isExact) exactCount++;
 
@@ -197,9 +252,13 @@ export function calculateLeaderboard(
         home: result.home,
         away: result.away,
         predicted: `${pred.homeScore}–${pred.awayScore}`,
+        advancementPick: pred.advancementPick,
         actual: `${result.homeScore}–${result.awayScore}`,
+        advancedTeam: result.advancedTeam,
         points,
         isExact,
+        breakdown,
+        isKnockout: result.isKnockout ?? false,
       });
     });
 
@@ -215,9 +274,15 @@ export function getMatchWinners(
 ) {
   const scores = members.map((member) => {
     const pred = member.predictions.find((p) => p.matchId === result.matchId);
-    if (!pred) return { member, points: 0, isExact: false, predicted: "—" };
+    if (!pred) return { member, points: 0, isExact: false, predicted: "—", advancementPick: undefined as string | undefined };
     const { points, isExact } = scorePrediction(pred, result, rules);
-    return { member, points, isExact, predicted: `${pred.homeScore}–${pred.awayScore}` };
+    return {
+      member,
+      points,
+      isExact,
+      predicted: `${pred.homeScore}–${pred.awayScore}`,
+      advancementPick: pred.advancementPick,
+    };
   });
 
   const maxPoints = Math.max(...scores.map((s) => s.points));

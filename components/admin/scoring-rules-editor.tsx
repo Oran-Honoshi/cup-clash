@@ -91,11 +91,12 @@ export function ScoringRulesEditor({ groupId }: ScoringRulesEditorProps) {
     desc: string;
     per: string;
   }> = [
-    { key: "correctOutcome",   featureKey: "matchOutcome",     label: "Correct outcome",    desc: "W/D/L correct",              per: "per match" },
-    { key: "exactScore",       featureKey: "exactScore",       label: "Exact score",        desc: "Exact scoreline e.g. 2-1",   per: "per match" },
-    { key: "tournamentWinner", featureKey: "tournamentWinner", label: "Tournament winner",  desc: "Pre-tournament pick",        per: "one-time"  },
-    { key: "topScorer",        featureKey: "topScorer",        label: "Top scorer",         desc: "Pre-tournament pick",        per: "one-time"  },
-    { key: "topAssister",      featureKey: "topAssister",      label: "Top assister",       desc: "Pre-tournament pick",        per: "one-time"  },
+    { key: "correctOutcome",      featureKey: "matchOutcome",     label: "Correct outcome",       desc: "W/D/L correct after 90 min",         per: "per match"  },
+    { key: "exactScore",          featureKey: "exactScore",       label: "Exact score",           desc: "Exact 90-min scoreline e.g. 2-1",    per: "per match"  },
+    { key: "knockoutAdvancement", featureKey: "matchOutcome",     label: "Knockout advancement",  desc: "Who advances (R32 through Final)",    per: "per KO match" },
+    { key: "tournamentWinner",    featureKey: "tournamentWinner", label: "Tournament winner",     desc: "Pre-tournament pick",                per: "one-time"   },
+    { key: "topScorer",           featureKey: "topScorer",        label: "Top scorer",            desc: "Pre-tournament pick",                per: "one-time"   },
+    { key: "topAssister",         featureKey: "topAssister",      label: "Top assister",          desc: "Pre-tournament pick",                per: "one-time"   },
   ];
 
   return (
@@ -181,6 +182,11 @@ export function ScoringRulesEditor({ groupId }: ScoringRulesEditorProps) {
               <span className="font-bold text-white">{rules.correctOutcome * TOTAL_MATCHES}</span>
             </div>
           )}
+          {/* Knockout advancement: 16+8+4+2+1+1 = 32 knockout matches */}
+          <div className="flex justify-between text-pitch-300">
+            <span>Knockout advancement (32 matches × {rules.knockoutAdvancement}pts)</span>
+            <span className="font-bold text-white">{rules.knockoutAdvancement * 32}</span>
+          </div>
           {enabled.tournamentWinner && (
             <div className="flex justify-between text-pitch-300">
               <span>Tournament winner</span>
