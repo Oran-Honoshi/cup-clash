@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import { AdminPanel } from "@/components/admin/admin-panel";
+import { ScoringRulesEditor } from "@/components/admin/scoring-rules-editor";
 import { getGroup, getMembers } from "@/lib/services/groups";
 
 export default async function AdminPage() {
@@ -18,6 +19,7 @@ export default async function AdminPage() {
         </h1>
       </div>
       <AdminPanel group={group} initialMembers={members} />
+      <ScoringRulesEditor groupId={group.id} />
     </div>
   );
 }

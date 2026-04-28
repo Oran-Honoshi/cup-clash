@@ -1,9 +1,11 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
-import type { ResponseCookie } from "next/dist/compiled/@edge-runtime/cookies";
 
-const PROTECTED_PREFIXES = ["/dashboard", "/leaderboard", "/predictions", "/admin", "/create-group"];
-const AUTH_ROUTES        = ["/signin", "/signup"];
+const PROTECTED_PREFIXES = [
+  "/dashboard", "/leaderboard", "/predictions",
+  "/admin", "/create-group", "/bracket", "/testing",
+];
+const AUTH_ROUTES = ["/signin", "/signup"];
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -22,10 +24,14 @@ export async function middleware(request: NextRequest) {
         getAll() {
           return request.cookies.getAll();
         },
-        setAll(cookiesToSet: Array<{ name: string; value: string; options?: Partial<ResponseCookie> }>) {
-          cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
+        setAll(cookiesToSet: Array<{ name: string; value: string; options?: Record<string, unknown> }>) {
+          cookiesToSet.forEach(({ name, value }: { name: string; value: string }) =>
+            request.cookies.set(name, value)
+          );
           response = NextResponse.next({ request: { headers: request.headers } });
-          cookiesToSet.forEach(({ name, value, options }) => response.cookies.set(name, value, options));
+          cookiesToSet.forEach(({ name, value, options }: { name: string; value: string; options?: Record<string, unknown> }) =>
+            response.cookies.set(name, value, options as Parameters<typeof response.cookies.set>[2])
+          );
         },
       },
     }
