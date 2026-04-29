@@ -5,17 +5,15 @@ import { COUNTRIES } from "@/lib/countries";
 import type { CountryCode } from "@/lib/types";
 
 interface ThemeContextValue {
-  /** null = use brand default; CountryCode = country accent active */
   country: CountryCode | null;
   setCountry: (code: CountryCode | null) => void;
 }
 
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
-// Default accent — Pitch Green (#10b981) for a modern SaaS feel.
-// Country theming overrides this when a user selects their nation.
-const BRAND_ACCENT      = "16 185 129";   // Pitch Green #10b981
-const BRAND_ACCENT_GLOW = "52 211 153";   // Lighter green for glow #34d399
+// Default: Neon Mint + Electric Cyan
+const BRAND_ACCENT      = "0 255 136";    // #00FF88
+const BRAND_ACCENT_GLOW = "0 212 255";    // #00D4FF
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [country, setCountry] = useState<CountryCode | null>(null);
@@ -23,11 +21,11 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     const root = document.documentElement;
     if (country === null) {
-      root.style.setProperty("--accent", BRAND_ACCENT);
+      root.style.setProperty("--accent",      BRAND_ACCENT);
       root.style.setProperty("--accent-glow", BRAND_ACCENT_GLOW);
     } else {
       const theme = COUNTRIES[country].theme;
-      root.style.setProperty("--accent", theme.accent);
+      root.style.setProperty("--accent",      theme.accent);
       root.style.setProperty("--accent-glow", theme.accentGlow);
     }
   }, [country]);
