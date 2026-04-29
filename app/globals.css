@@ -9,8 +9,8 @@
 
 :root {
   /* Brand colors */
-  --brand:       42 57 141;          /* Cup Clash blue #2A398D */
-  --brand-2:     230 29 37;          /* Torch red #E61D25 */
+  --brand:       16 185 129;          /* Pitch Green #10b981 */
+  --brand-2:     59 130 246;          /* Electric Blue #3b82f6 */
 
   /* Country accent — overridden by ThemeProvider */
   --accent:      16 185 129;         /* Pitch Green #10b981 (default) */
