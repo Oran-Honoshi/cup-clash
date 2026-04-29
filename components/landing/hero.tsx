@@ -1,263 +1,346 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ArrowRight, Sparkles, Zap } from "lucide-react";
-import Image from "next/image";
+import { ArrowRight, Zap } from "lucide-react";
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/card";
 import { CountdownCard } from "@/components/landing/countdown-card";
-import { COUNTRIES, HOST_NATIONS, flagUrl } from "@/lib/countries";
 
-interface HeroProps {
-  matchLabel: string;
-  target: Date;
+const KICKOFF = new Date("2026-06-11T20:00:00Z");
+
+// Simulated phone screen UI — shown tilted as a "floating" mockup
+function PhoneMockup() {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 30, rotate: -8 }}
+      animate={{ opacity: 1, y: 0, rotate: -12 }}
+      transition={{ duration: 0.8, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
+      className="relative mx-auto"
+      style={{
+        width: 280,
+        filter: "drop-shadow(0 40px 80px rgba(16,185,129,0.25)) drop-shadow(0 20px 40px rgba(0,0,0,0.8))",
+        animation: "float 4s ease-in-out infinite",
+      }}
+    >
+      {/* Phone shell */}
+      <div className="relative rounded-[2.5rem] overflow-hidden"
+        style={{
+          background: "#111d27",
+          border: "2px solid rgba(255,255,255,0.12)",
+          boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.06)",
+        }}>
+        {/* Notch */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-6 rounded-b-2xl z-10"
+          style={{ background: "#050a0f" }} />
+
+        {/* Screen content */}
+        <div className="pt-8 pb-4 px-4 space-y-3" style={{ background: "#050a0f" }}>
+          {/* Status bar */}
+          <div className="flex justify-between items-center px-1">
+            <span className="text-[10px] text-white font-bold">9:41</span>
+            <div className="flex gap-1">
+              <div className="w-3 h-1.5 rounded-sm bg-white/40" />
+              <div className="w-3 h-1.5 rounded-sm bg-white/40" />
+              <div className="w-3 h-1.5 rounded-sm" style={{ background: "#10b981" }} />
+            </div>
+          </div>
+
+          {/* Header */}
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="text-[9px] font-bold uppercase tracking-widest" style={{ color: "#10b981" }}>Cup Clash</div>
+              <div className="text-white font-bold text-sm">Tech Titans 🏆</div>
+            </div>
+            <div className="h-7 w-7 rounded-full flex items-center justify-center text-xs font-bold text-white"
+              style={{ background: "linear-gradient(135deg, #2A398D, #10b981)" }}>A</div>
+          </div>
+
+          {/* Leaderboard */}
+          <div className="rounded-2xl p-3 space-y-2" style={{ background: "#111d27" }}>
+            <div className="text-[9px] font-bold uppercase tracking-widest" style={{ color: "#94a3b8" }}>Leaderboard</div>
+            {[
+              { rank: "🥇", name: "Amit",  pts: 145, you: true  },
+              { rank: "🥈", name: "Sarah", pts: 130, you: false },
+              { rank: "🥉", name: "John",  pts: 95,  you: false },
+            ].map(p => (
+              <div key={p.name} className="flex items-center gap-2"
+                style={p.you ? { background: "rgba(16,185,129,0.1)", borderRadius: 8, padding: "4px 6px" } : { padding: "0 6px" }}>
+                <span className="text-sm w-5">{p.rank}</span>
+                <div className="h-5 w-5 rounded-full flex items-center justify-center text-[8px] font-bold text-white"
+                  style={{ background: "linear-gradient(135deg, #2A398D, #E61D25)" }}>
+                  {p.name[0]}
+                </div>
+                <span className="text-white text-[10px] font-bold flex-1">{p.name}</span>
+                <span className="font-bold text-[11px]" style={{ color: p.you ? "#10b981" : "#f5f5f5" }}>{p.pts}</span>
+              </div>
+            ))}
+          </div>
+
+          {/* Next match card */}
+          <div className="rounded-2xl p-3" style={{ background: "#111d27", border: "1px solid rgba(16,185,129,0.2)" }}>
+            <div className="text-[8px] font-bold uppercase tracking-widest mb-2" style={{ color: "#10b981" }}>Next Match</div>
+            <div className="flex items-center justify-between">
+              <div className="text-center">
+                <div className="text-sm">🇧🇷</div>
+                <div className="text-[9px] text-white font-bold">BRA</div>
+              </div>
+              <div className="flex gap-1">
+                <div className="w-7 h-7 rounded-lg flex items-center justify-center text-sm font-bold text-white"
+                  style={{ background: "rgba(255,255,255,0.08)" }}>2</div>
+                <div className="text-white text-lg font-bold">–</div>
+                <div className="w-7 h-7 rounded-lg flex items-center justify-center text-sm font-bold text-white"
+                  style={{ background: "rgba(255,255,255,0.08)" }}>1</div>
+              </div>
+              <div className="text-center">
+                <div className="text-sm">🇫🇷</div>
+                <div className="text-[9px] text-white font-bold">FRA</div>
+              </div>
+            </div>
+            <div className="mt-2 w-full rounded-lg py-1.5 text-center text-[9px] font-bold uppercase tracking-widest text-white"
+              style={{ background: "linear-gradient(135deg, #2A398D, #10b981)" }}>
+              Lock in prediction →
+            </div>
+          </div>
+
+          {/* Bottom nav dots */}
+          <div className="flex justify-center gap-1.5 pt-1">
+            {[true, false, false, false, false].map((a, i) => (
+              <div key={i} className="rounded-full" style={{ width: a ? 16 : 6, height: 6, background: a ? "#10b981" : "rgba(255,255,255,0.15)" }} />
+            ))}
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  );
 }
 
-export function Hero({ matchLabel, target }: HeroProps) {
+// Ticker bar — scrolling social proof
+const TICKER_ITEMS = [
+  "⚽ Amit just predicted Brazil 2–1 France",
+  "🏆 Sarah leads the Tech Titans with 145 points",
+  "🔥 3 exact scores in the last match",
+  "🧠 Lior scored 18/20 in Trivia",
+  "💰 $600 pot in play — Office World Cup",
+  "🎯 John nailed the Germany vs Spain score",
+  "⚡ Predictions lock in 4 minutes",
+  "🥇 Ahmed just joined the finals prediction league",
+];
+
+export function Hero() {
   return (
-    <section className="relative overflow-hidden pt-28 pb-16 sm:pt-36 sm:pb-20">
+    <section className="relative overflow-hidden pt-24 pb-0 sm:pt-32">
+      {/* Diagonal clip at bottom */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute inset-0"
+          style={{
+            background: "radial-gradient(ellipse 80% 60% at 50% 0%, rgba(16,185,129,0.06) 0%, transparent 60%)",
+          }} />
+        {/* Pitch lines decoration */}
+        <div className="absolute top-0 left-0 right-0 h-px" style={{ background: "rgba(16,185,129,0.15)" }} />
+      </div>
+
       <div className="relative mx-auto max-w-7xl px-5 sm:px-8">
+        <div className="grid lg:grid-cols-2 gap-12 xl:gap-20 items-center min-h-[85vh] pb-20">
 
-        {/* ── DESKTOP: Side-by-side layout ── */}
-        <div className="hidden lg:grid lg:grid-cols-2 lg:gap-12 xl:gap-16 items-center">
-
-          {/* Left: Copy */}
-          <div className="relative z-10">
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              className="mb-5"
-            >
-              <Badge tone="accent" className="scanline">
-                <Sparkles size={11} />
-                FIFA World Cup 2026
-              </Badge>
-            </motion.div>
-
-            <motion.h1
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.1 }}
-              className="font-display uppercase text-white leading-[0.88] tracking-tight"
-              style={{ fontSize: "clamp(52px, 5.5vw, 88px)" }}
-            >
-              Predict every
-              <br />
-              match.
-              <br />
-              <span className="gradient-text">Beat your</span>
-              <br />
-              <span className="gradient-text">friends.</span>
-            </motion.h1>
-
-            <motion.p
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.2 }}
-              className="mt-5 text-base sm:text-lg text-pitch-300 max-w-md leading-relaxed"
-            >
-              Private prediction leagues for your group chat, office, or family.
-              Score guesses, knockout brackets, top scorers — all tracked and settled.
-            </motion.p>
-
-            {/* Host nations */}
+          {/* LEFT — Copy */}
+          <div className="relative z-10 py-12 lg:py-0">
+            {/* Eyebrow */}
             <motion.div
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: 0.25 }}
-              className="mt-5 flex items-center gap-3 flex-wrap"
-            >
-              <span className="text-[10px] font-bold uppercase tracking-widest text-pitch-500">
-                Hosted by
-              </span>
-              <div className="flex items-center gap-2">
-                {HOST_NATIONS.map((code) => {
-                  const c = COUNTRIES[code];
-                  return (
-                    <div
-                      key={code}
-                      className="flex items-center gap-1.5 glass rounded-lg px-2.5 py-1.5"
-                    >
-                      <div className="relative w-5 h-3.5 rounded-sm overflow-hidden shadow-sm shrink-0">
-                        <Image
-                          src={flagUrl(c.flagCode, 40)}
-                          alt={c.name}
-                          fill
-                          className="object-cover"
-                          unoptimized
-                        />
-                      </div>
-                      <span className="text-[11px] font-bold text-pitch-200 uppercase tracking-wider">
-                        {c.name}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-            </motion.div>
-
-            {/* CTAs */}
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, delay: 0.35 }}
-              className="mt-8 flex flex-wrap items-center gap-3"
-            >
-              <Link href="/signup">
-                <Button size="lg" rightIcon={<ArrowRight size={18} />}>
-                  Start a group — free
-                </Button>
-              </Link>
-              <Link href="/dashboard">
-                <Button size="lg" variant="outline">
-                  Preview the app
-                </Button>
-              </Link>
-            </motion.div>
-
-            {/* Trust bar */}
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.6, delay: 0.5 }}
-              className="mt-6 flex flex-wrap items-center gap-x-5 gap-y-2 text-[11px] uppercase tracking-widest text-pitch-500"
-            >
-              <span className="flex items-center gap-1.5">
-                <Zap size={12} className="text-success" />
-                Free under 4 players
-              </span>
-              <span className="opacity-30">·</span>
-              <span>No credit card</span>
-              <span className="opacity-30">·</span>
-              <span>48 teams · 104 matches</span>
-            </motion.div>
-          </div>
-
-          {/* Right: Trophy + Countdown stacked */}
-          <div className="flex flex-col items-center gap-8">
-            {/* Trophy photo */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
-              animate={{ opacity: 1, scale: 1, y: 0 }}
-              transition={{ duration: 0.9, delay: 0.3, ease: [0.2, 0.8, 0.2, 1] }}
-              className="relative w-full max-w-xs xl:max-w-sm mx-auto"
-            >
-              <div
-                className="absolute inset-0 rounded-full pointer-events-none"
-                style={{
-                  background:
-                    "radial-gradient(ellipse 70% 40% at 50% 80%, rgba(212,175,55,0.25) 0%, transparent 70%)",
-                }}
-              />
-              <Image
-                src="/trophy-stadium.jpg"
-                alt="FIFA World Cup Trophy"
-                width={400}
-                height={580}
-                className="w-full h-auto relative z-10"
-                style={{
-                  filter:
-                    "drop-shadow(0 0 40px rgba(212, 175, 55, 0.4)) drop-shadow(0 20px 50px rgba(0,0,0,0.7))",
-                  maskImage:
-                    "linear-gradient(to bottom, black 55%, transparent 100%)",
-                  WebkitMaskImage:
-                    "linear-gradient(to bottom, black 55%, transparent 100%)",
-                  maxHeight: 340,
-                  objectFit: "cover",
-                  objectPosition: "top",
-                }}
-                priority
-              />
-            </motion.div>
-
-            {/* Countdown — gets full width of the right column */}
-            <div className="w-full">
-              <CountdownCard target={target} matchLabel={matchLabel} />
-            </div>
-          </div>
-        </div>
-
-        {/* ── MOBILE: Stacked layout ── */}
-        <div className="lg:hidden space-y-8">
-          {/* Copy */}
-          <div>
-            <motion.div
-              initial={{ opacity: 0, y: 16 }}
-              animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
-              className="mb-5"
+              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border mb-6"
+              style={{ borderColor: "rgba(16,185,129,0.3)", background: "rgba(16,185,129,0.08)" }}
             >
-              <Badge tone="accent" className="scanline">
-                <Sparkles size={11} />
-                FIFA World Cup 2026
-              </Badge>
+              <Zap size={12} style={{ color: "#10b981" }} />
+              <span className="text-xs font-bold uppercase tracking-widest" style={{ color: "#10b981" }}>
+                World Cup 2026 — Jun 11 to Jul 19
+              </span>
             </motion.div>
 
+            {/* Main headline */}
             <motion.h1
               initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 0.1 }}
-              className="font-display uppercase text-white leading-[0.88] tracking-tight text-[clamp(44px,12vw,72px)]"
+              className="font-display leading-[0.88] tracking-tight text-white mb-6"
+              style={{ fontSize: "clamp(3rem, 7vw, 5.5rem)", fontWeight: 900 }}
             >
-              Predict every match.
-              <br />
-              <span className="gradient-text">Beat your friends.</span>
+              PREDICT<br />
+              EVERY<br />
+              <span style={{
+                background: "linear-gradient(135deg, #10b981, #3b82f6)",
+                WebkitBackgroundClip: "text",
+                backgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+              }}>MATCH.</span><br />
+              BEAT YOUR<br />
+              <span style={{ color: "#E61D25" }}>FRIENDS.</span>
             </motion.h1>
 
-            <p className="mt-4 text-base text-pitch-300 leading-relaxed">
-              Private prediction leagues for your group chat, office, or family.
-            </p>
+            {/* Sub-copy */}
+            <motion.p
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              className="text-lg leading-relaxed mb-8 max-w-md"
+              style={{ color: "#94a3b8", fontFamily: "var(--font-inter)" }}
+            >
+              The private World Cup league your group has been waiting for.
+              Score predictions, live leaderboard, trivia, and a pot of money on the line.
+              <strong style={{ color: "#f5f5f5" }}> No spreadsheets. No WhatsApp chaos. Just glory.</strong>
+            </motion.p>
 
-            {/* Host nations — mobile */}
-            <div className="mt-4 flex items-center gap-2 flex-wrap">
-              <span className="text-[10px] font-bold uppercase tracking-widest text-pitch-500">Hosted by</span>
-              {HOST_NATIONS.map((code) => {
-                const c = COUNTRIES[code];
-                return (
-                  <div key={code} className="flex items-center gap-1 glass rounded-lg px-2 py-1">
-                    <div className="relative w-4 h-3 rounded-sm overflow-hidden">
-                      <Image src={flagUrl(c.flagCode, 20)} alt={c.name} fill className="object-cover" unoptimized />
-                    </div>
-                    <span className="text-[10px] font-bold text-pitch-200 uppercase">{c.name}</span>
-                  </div>
-                );
-              })}
-            </div>
-
-            <div className="mt-6 flex flex-wrap gap-3">
+            {/* CTAs */}
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+              className="flex flex-wrap gap-3 mb-10"
+            >
               <Link href="/signup">
-                <Button size="md" rightIcon={<ArrowRight size={16} />}>Start a group — free</Button>
+                <button className="flex items-center gap-2 px-7 py-4 rounded-full font-bold text-base uppercase tracking-wider text-white transition-all hover:-translate-y-0.5"
+                  style={{
+                    background: "linear-gradient(135deg, #10b981, #059669)",
+                    boxShadow: "0 4px 24px rgba(16,185,129,0.5)",
+                  }}>
+                  Start for free <ArrowRight size={18} />
+                </button>
               </Link>
-              <Link href="/dashboard">
-                <Button size="md" variant="outline">Preview app</Button>
+              <Link href="/schedule">
+                <button className="flex items-center gap-2 px-7 py-4 rounded-full font-bold text-base uppercase tracking-wider transition-all hover:bg-white/10"
+                  style={{ border: "1px solid rgba(255,255,255,0.15)", color: "#94a3b8" }}>
+                  View schedule
+                </button>
               </Link>
-            </div>
+            </motion.div>
+
+            {/* Social proof */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.5 }}
+              className="flex items-center gap-4 flex-wrap"
+            >
+              {/* Avatars stack */}
+              <div className="flex -space-x-2">
+                {["#10b981","#3b82f6","#E61D25","#f59e0b","#8b5cf6"].map((c, i) => (
+                  <div key={i} className="h-8 w-8 rounded-full border-2 flex items-center justify-center text-xs font-bold text-white"
+                    style={{ background: `linear-gradient(135deg, ${c}, ${c}88)`, borderColor: "#050a0f" }}>
+                    {["A","S","J","L","M"][i]}
+                  </div>
+                ))}
+              </div>
+              <div>
+                <div className="text-sm font-bold text-white">1,200+ groups active</div>
+                <div className="text-xs" style={{ color: "#64748b" }}>across 40+ countries</div>
+              </div>
+              <div className="flex gap-0.5">
+                {[1,2,3,4,5].map(s => <span key={s} style={{ color: "#f59e0b" }}>★</span>)}
+              </div>
+            </motion.div>
+
+            {/* Countdown */}
+            <motion.div
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6 }}
+              className="mt-10"
+            >
+              <div className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: "#64748b" }}>
+                First match kicks off in
+              </div>
+              <CountdownCard target={KICKOFF} matchLabel="Mexico vs South Africa — Opening Match" />
+            </motion.div>
           </div>
 
-          {/* Countdown — full width on mobile, no squishing */}
-          <CountdownCard target={target} matchLabel={matchLabel} />
-
-          {/* Trophy — small, below countdown on mobile */}
-          <div className="flex justify-center">
-            <div className="relative w-40">
-              <Image
-                src="/trophy-stadium.jpg"
-                alt="FIFA World Cup Trophy"
-                width={160}
-                height={232}
-                className="w-full h-auto"
-                style={{
-                  filter: "drop-shadow(0 0 20px rgba(212, 175, 55, 0.3))",
-                  maskImage: "linear-gradient(to bottom, black 50%, transparent 100%)",
-                  WebkitMaskImage: "linear-gradient(to bottom, black 50%, transparent 100%)",
-                }}
-              />
+          {/* RIGHT — Tilted phone mockup */}
+          <motion.div
+            initial={{ opacity: 0, x: 40 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
+            className="hidden lg:flex items-center justify-center relative"
+          >
+            {/* Glow behind phone */}
+            <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+              <div className="h-96 w-96 rounded-full blur-3xl opacity-20"
+                style={{ background: "#10b981" }} />
             </div>
+
+            {/* Fan image — blurred behind a glass overlay */}
+            <div className="absolute inset-0 rounded-3xl overflow-hidden opacity-20">
+              <div className="absolute inset-0"
+                style={{ background: "linear-gradient(180deg, transparent 0%, #050a0f 90%)" }} />
+            </div>
+
+            <PhoneMockup />
+
+            {/* Floating badges */}
+            <motion.div
+              animate={{ y: [0, -6, 0] }}
+              transition={{ duration: 3, repeat: Infinity, delay: 1 }}
+              className="absolute top-16 -left-4 glass rounded-2xl px-3 py-2 text-xs font-bold"
+              style={{ border: "1px solid rgba(16,185,129,0.3)" }}
+            >
+              <span style={{ color: "#10b981" }}>🔥 +25 pts</span>
+              <div className="text-[10px]" style={{ color: "#64748b" }}>Exact score!</div>
+            </motion.div>
+
+            <motion.div
+              animate={{ y: [0, 8, 0] }}
+              transition={{ duration: 3.5, repeat: Infinity, delay: 0.5 }}
+              className="absolute bottom-24 -right-4 glass rounded-2xl px-3 py-2 text-xs font-bold"
+              style={{ border: "1px solid rgba(59,130,246,0.3)" }}
+            >
+              <span style={{ color: "#3b82f6" }}>🏆 $240 pot</span>
+              <div className="text-[10px]" style={{ color: "#64748b" }}>12 members</div>
+            </motion.div>
+          </motion.div>
+        </div>
+      </div>
+
+      {/* Host nations bar */}
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.8 }}
+        className="border-t border-b py-4 px-5"
+        style={{ borderColor: "rgba(255,255,255,0.06)", background: "rgba(17,29,39,0.5)" }}
+      >
+        <div className="max-w-7xl mx-auto flex items-center justify-between gap-6 flex-wrap">
+          <div className="text-xs font-bold uppercase tracking-widest" style={{ color: "#64748b" }}>
+            Host Nations
+          </div>
+          <div className="flex items-center gap-6">
+            {[
+              { flag: "🇺🇸", name: "United States", matches: "60 matches" },
+              { flag: "🇲🇽", name: "Mexico",        matches: "22 matches" },
+              { flag: "🇨🇦", name: "Canada",        matches: "13 matches" },
+            ].map(({ flag, name, matches }) => (
+              <div key={name} className="flex items-center gap-2">
+                <span className="text-2xl">{flag}</span>
+                <div>
+                  <div className="text-xs font-bold text-white">{name}</div>
+                  <div className="text-[10px]" style={{ color: "#64748b" }}>{matches}</div>
+                </div>
+              </div>
+            ))}
+          </div>
+          <div className="text-xs font-bold" style={{ color: "#64748b" }}>
+            48 teams · 104 matches · 16 host cities
           </div>
         </div>
+      </motion.div>
 
+      {/* Live ticker */}
+      <div className="overflow-hidden py-2.5" style={{ background: "rgba(16,185,129,0.06)", borderBottom: "1px solid rgba(16,185,129,0.15)" }}>
+        <div className="flex animate-ticker whitespace-nowrap">
+          {[...TICKER_ITEMS, ...TICKER_ITEMS].map((item, i) => (
+            <span key={i} className="text-xs font-bold uppercase tracking-widest mx-8"
+              style={{ color: "#10b981" }}>
+              {item}
+            </span>
+          ))}
+        </div>
       </div>
     </section>
   );

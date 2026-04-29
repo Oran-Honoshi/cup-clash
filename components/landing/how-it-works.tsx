@@ -1,100 +1,88 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { UserPlus, Pencil, Trophy } from "lucide-react";
 
 const STEPS = [
   {
-    n: "01",
-    icon: UserPlus,
-    title: "Create your group",
-    body: "Set your buy-in, scoring rules, and payout splits. Get a private invite link to share.",
-    badge: "1 minute",
+    number: "01",
+    emoji: "🛡️",
+    title: "Draft Your League",
+    body: "Drop the spreadsheet. Create a private group in 30 seconds, set your buy-in, and define your payout split. We handle the math — you handle the glory.",
+    detail: "Set rules, scoring system, and invite link in under a minute.",
+    color: "#10b981",
   },
   {
-    n: "02",
-    icon: Pencil,
-    title: "Predict every match",
-    body: "Pick scores, top scorers, and tournament winners. Bets stay hidden until kickoff.",
-    badge: "All tournament",
+    number: "02",
+    emoji: "👥",
+    title: "Recruit the Squad",
+    body: "Send your unique invite link to the group chat. Watch as your friends' custom avatars fill the locker room. No more chasing people for \"Who's in?\"",
+    detail: "Works on WhatsApp, email, or any messaging platform.",
+    color: "#3b82f6",
   },
   {
-    n: "03",
-    icon: Trophy,
-    title: "Settle up at the final",
-    body: "Live leaderboard tracks the climb. Export a payout report when it's all over.",
-    badge: "One tap",
+    number: "03",
+    emoji: "🏆",
+    title: "Predict & Conquer",
+    body: "Enter scores, track the live bracket, and climb the leaderboard in real-time. From the opening kick in Mexico City to the Final in New York — every goal changes the standings.",
+    detail: "104 matches. 38 days. One champion.",
+    color: "#E61D25",
   },
 ];
 
 export function HowItWorks() {
   return (
-    <section id="how-it-works" className="relative py-24 sm:py-32">
-      <div className="mx-auto max-w-7xl px-5 sm:px-8">
-        <div className="max-w-2xl mx-auto text-center mb-16">
-          <div className="label-caps mb-4">How it works</div>
-          <h2 className="font-display text-4xl sm:text-6xl uppercase text-white leading-[0.95] tracking-tight">
-            From group chat to <span className="gradient-text">grand final</span>.
+    <section className="py-24 px-5 sm:px-8">
+      <div className="max-w-7xl mx-auto">
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="text-center mb-16"
+        >
+          <div className="label-caps mb-3">Simple by design</div>
+          <h2 className="font-display text-4xl sm:text-5xl lg:text-6xl uppercase text-white">
+            Up and running in{" "}
+            <span style={{ color: "#10b981" }}>3 minutes.</span>
           </h2>
-        </div>
+          <p className="mt-4 text-lg max-w-xl mx-auto" style={{ color: "#94a3b8" }}>
+            We built Cup Clash to be so simple that your group's least technical member sets it up.
+          </p>
+        </motion.div>
 
-        <div className="grid gap-6 md:grid-cols-3 relative">
+        <div className="relative">
           {/* Connector line */}
-          <div
-            aria-hidden
-            className="hidden md:block absolute top-10 left-[16%] right-[16%] h-px"
-            style={{
-              background:
-                "linear-gradient(90deg, transparent, rgb(var(--accent) / 0.3), transparent)",
-            }}
-          />
+          <div className="hidden lg:block absolute top-20 left-[16.67%] right-[16.67%] h-px"
+            style={{ background: "linear-gradient(90deg, #10b981, #3b82f6, #E61D25)" }} />
 
-          {STEPS.map((step, i) => (
-            <motion.div
-              key={step.n}
-              initial={{ opacity: 0, y: 20 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.4, delay: i * 0.1 }}
-              className="glass relative rounded-2xl p-7"
-            >
-              {/* Numbered circle */}
-              <div className="relative inline-flex">
-                <div
-                  className="h-20 w-20 rounded-full flex items-center justify-center text-white font-display font-bold text-3xl"
-                  style={{
-                    backgroundImage:
-                      "linear-gradient(135deg, rgb(var(--accent)), rgb(var(--brand-2)))",
-                    boxShadow:
-                      "0 0 0 1px rgb(var(--accent) / 0.5), 0 12px 32px rgb(var(--accent) / 0.4)",
-                  }}
-                >
-                  {step.n}
+          <div className="grid lg:grid-cols-3 gap-8">
+            {STEPS.map((step, i) => (
+              <motion.div key={step.number}
+                initial={{ opacity: 0, y: 24 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.15 }}
+                className="relative"
+              >
+                {/* Number bubble */}
+                <div className="flex justify-center lg:justify-start mb-6">
+                  <div className="relative h-14 w-14 rounded-2xl flex items-center justify-center"
+                    style={{ background: `${step.color}20`, border: `1px solid ${step.color}40` }}>
+                    <span className="text-3xl">{step.emoji}</span>
+                    <div className="absolute -top-3 -right-3 h-6 w-6 rounded-full flex items-center justify-center text-[10px] font-bold text-white"
+                      style={{ background: step.color }}>
+                      {step.number}
+                    </div>
+                  </div>
                 </div>
-                <div
-                  className="absolute -bottom-1 -right-1 h-8 w-8 rounded-full flex items-center justify-center"
-                  style={{
-                    backgroundColor: "rgb(15 23 42)",
-                    border: "1px solid rgb(var(--accent) / 0.4)",
-                    color: "rgb(var(--accent-glow))",
-                  }}
-                >
-                  <step.icon size={14} />
+
+                <div className="text-center lg:text-left">
+                  <h3 className="font-display text-2xl uppercase text-white mb-3">{step.title}</h3>
+                  <p className="text-base leading-relaxed mb-3" style={{ color: "#94a3b8" }}>{step.body}</p>
+                  <p className="text-sm font-bold" style={{ color: step.color }}>{step.detail}</p>
                 </div>
-              </div>
-
-              <h3 className="font-display text-2xl uppercase tracking-tight mt-6 text-white">
-                {step.title}
-              </h3>
-              <p className="mt-3 text-[14px] text-pitch-300 leading-relaxed">
-                {step.body}
-              </p>
-
-              <div className="mt-5 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-pitch-200 text-[10px] font-bold uppercase tracking-widest">
-                {step.badge}
-              </div>
-            </motion.div>
-          ))}
+              </motion.div>
+            ))}
+          </div>
         </div>
       </div>
     </section>
