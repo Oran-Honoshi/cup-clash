@@ -16,10 +16,12 @@ export async function POST(request: NextRequest) {
   if (!signature) return NextResponse.json({ error: "No signature" }, { status: 400 });
 
   try {
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const Stripe = require("stripe");
-    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: "2024-04-10" });
-    const event  = stripe.webhooks.constructEvent(body, signature, process.env.STRIPE_WEBHOOK_SECRET);
+    const pkg = "stripe";
+    const stripeModule = await import(pkg as string).catch(() => null) as { default: new (key: string, opts: object) => { webhooks: { constructEvent: (body: string, sig: string, secret: string) => { type: string; data: { object: unknown } } } } } | null;
+    if (!stripeModule) return NextResponse.json({ error: "stripe not installed" }, { status: 503 });
+    const Stripe = stripeModule.default;
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: "2024-04-10" });
+    const event  = stripe.webhooks.constructEvent(body, signature, process.env.STRIPE_WEBHOOK_SECRET!);
 
     if (event.type === "checkout.session.completed") {
       const session  = event.data.object as { metadata?: { groupId?: string; tier?: string } };

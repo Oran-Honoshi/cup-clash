@@ -23,8 +23,12 @@ export function WinnerPoster({ group, members }: WinnerPosterProps) {
     // Use html2canvas if available, otherwise guide user
     try {
       const pkg = "html2canvas";
-      const mod = await import(pkg as string) as { default: (el: HTMLElement, opts?: object) => Promise<HTMLCanvasElement> };
-      const canvas = await mod.default(posterRef.current, { backgroundColor: "#0A0A0A", scale: 2 });
+      const html2canvas = await import(pkg as string).then((m: { default: (el: HTMLElement, opts?: object) => Promise<HTMLCanvasElement> }) => m.default).catch(() => null);
+      if (!html2canvas) {
+        alert("To download the poster, install html2canvas:\nnpm install html2canvas\n\nOr take a screenshot of the poster below.");
+        return;
+      }
+      const canvas = await html2canvas(posterRef.current, { backgroundColor: "#0A0A0A", scale: 2 });
 
       // Download as PNG
       const link = document.createElement("a");

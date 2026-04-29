@@ -24,10 +24,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid tier" }, { status: 400 });
     }
 
-    // Lazy-import Stripe so the app builds even without the package installed
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const Stripe = require("stripe");
-    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY, { apiVersion: "2024-04-10" });
+    const pkg = "stripe";
+    const stripeModule = await import(pkg as string).catch(() => null) as { default: new (key: string, opts: object) => { checkout: { sessions: { create: (opts: object) => Promise<{ url: string }> } } } } | null;
+    if (!stripeModule) {
+      return NextResponse.json({ error: "stripe package not installed — run: npm install stripe" }, { status: 503 });
+    }
+    const Stripe = stripeModule.default;
+    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, { apiVersion: "2024-04-10" });
 
     const session = await stripe.checkout.sessions.create({
       line_items: [{ price: priceId, quantity: 1 }],

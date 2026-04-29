@@ -24,30 +24,34 @@ const jetbrains = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Cup Clash — The World Cup 2026 Prediction League for Your Group",
+  title: "Cup Clash | World Cup 2026 Prediction League & Office Pool",
   description:
-    "Predict every match. Beat your friends. Cup Clash is the private World Cup 2026 prediction league — score guesses, live leaderboard, knockout bracket, trivia. Free to start.",
+    "Ditch Excel. Run your World Cup 2026 group with Cup Clash. Live leaderboards, brackets, and trivia for the 48-team tournament. Ad-free & mobile-ready.",
   applicationName: "Cup Clash",
   manifest: "/manifest.webmanifest",
   keywords: [
-    "World Cup 2026 prediction game",
-    "FIFA 2026 office pool",
-    "World Cup sweepstake app",
-    "football prediction league",
-    "soccer prediction game friends",
-    "World Cup 2026 group prediction",
+    "World Cup 2026 office pool platform",
+    "private World Cup prediction league for friends",
+    "FIFA 2026 bracket challenge for groups",
+    "best World Cup sweepstake app 2026",
+    "automated World Cup leaderboard generator",
+    "World Cup 2026 group betting tracker",
+    "soccer prediction software for coworkers",
+    "online World Cup pool manager with buy-in",
+    "48-team World Cup bracket maker",
+    "custom World Cup trivia game for members",
   ],
   appleWebApp: { capable: true, statusBarStyle: "default", title: "Cup Clash" },
   openGraph: {
-    title: "Cup Clash — World Cup 2026 Prediction League",
-    description: "Predict every match. Beat your friends. The private World Cup prediction app your group has been waiting for.",
+    title: "Cup Clash | World Cup 2026 Prediction League & Office Pool",
+    description: "Ditch Excel. Run your World Cup 2026 group with Cup Clash. Live leaderboards, brackets, and trivia for the 48-team tournament. Ad-free & mobile-ready.",
     type: "website",
     images: [{ url: "/trophy-stadium.jpg", width: 1200, height: 630 }],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Cup Clash — World Cup 2026 Prediction League",
-    description: "Predict every match. Beat your friends.",
+    title: "Cup Clash | World Cup 2026 Prediction League",
+    description: "Ditch Excel. Run your World Cup pool like a pro. Live leaderboards, brackets, trivia. Ad-free.",
   },
   icons: {
     icon: [

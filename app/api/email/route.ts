@@ -147,9 +147,13 @@ export async function POST(request: NextRequest) {
 
     // If Resend is configured, send real emails
     if (process.env.RESEND_API_KEY) {
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const { Resend } = require("resend");
-      const resend = new Resend(process.env.RESEND_API_KEY);
+      const pkg = "resend";
+      const resendModule = await import(pkg as string).catch(() => null) as { Resend: new (key: string) => { emails: { send: (opts: object) => Promise<unknown> } } } | null;
+      if (!resendModule) {
+        return NextResponse.json({ error: "resend package not installed — run: npm install resend" }, { status: 503 });
+      }
+      const { Resend } = resendModule;
+      const resend = new Resend(process.env.RESEND_API_KEY!);
 
       const results = await Promise.allSettled(
         body.memberEmails.map((email, i) =>
