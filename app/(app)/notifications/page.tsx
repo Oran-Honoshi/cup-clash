@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import { NotificationsClient } from "@/components/notifications/notifications-client";
+import { NotificationSettings } from "@/components/notifications/notification-settings";
 
 export default function NotificationsPage() {
   return (
@@ -11,7 +12,17 @@ export default function NotificationsPage() {
           Notifications
         </h1>
       </div>
-      <NotificationsClient />
+
+      <div className="grid gap-6 lg:grid-cols-2 lg:items-start">
+        <div>
+          <div className="label-caps mb-3">Recent</div>
+          <NotificationsClient />
+        </div>
+        <div>
+          <div className="label-caps mb-3">Settings</div>
+          <NotificationSettings />
+        </div>
+      </div>
     </div>
   );
 }

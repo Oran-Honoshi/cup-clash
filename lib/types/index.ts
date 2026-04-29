@@ -47,6 +47,10 @@ export interface Member {
   paid: boolean;
   country: string;
   avatarUrl?: string | null;
+  rankDelta?: number;      // +2, -1, 0 since last match
+  exactScores?: number;    // for Wall of Shame / tie-breaking
+  correctPredictions?: number;
+  isGhost?: boolean;       // true for the Global Average ghost player
 }
 
 export interface Match {

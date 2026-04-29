@@ -7,6 +7,8 @@ import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { NudgeButton } from "@/components/admin/nudge-button";
+import { MemberAvatar } from "@/components/ui/member-avatar";
 import type { Group, Member } from "@/lib/types";
 
 function getClient() {
@@ -102,14 +104,20 @@ export function AdminPanel({ group, initialMembers }: AdminPanelProps) {
         <div className="space-y-2">
           {members.map((m) => (
             <div key={m.id} className="flex items-center gap-3 py-2.5 border-b border-white/[0.05] last:border-0">
-              <div className="h-8 w-8 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0"
-                style={{ backgroundImage: "linear-gradient(135deg, rgb(var(--brand)), rgb(var(--brand-2)))" }}>
-                {m.name.charAt(0)}
-              </div>
+              <MemberAvatar name={m.name} avatarUrl={m.avatarUrl} size="sm" />
               <div className="flex-1 min-w-0">
                 <div className="text-sm font-bold text-white truncate">{m.name}</div>
                 <div className="text-[11px] text-pitch-500">{m.country}</div>
               </div>
+              {/* Nudge button for members who haven't predicted */}
+              <NudgeButton
+                memberName={m.name}
+                matchLabel="Next match"
+                groupName={group.name}
+                minutesToKickoff={90}
+                hasPredicted={false}
+                size="sm"
+              />
               {group.buyInAmount > 0 && <span className="text-sm font-bold text-pitch-300 shrink-0">${group.buyInAmount}</span>}
               <button onClick={() => togglePaid(m.id, m.paid)}
                 className={cn("flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider px-2.5 py-1.5 rounded-full border transition-all",
