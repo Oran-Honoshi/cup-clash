@@ -1,111 +1,109 @@
 "use client";
 
 import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const FAQS = [
   {
-    q: "How does the tie-breaker work in Cup Clash?",
-    a: "We use a three-tier system. First: most exact scores (e.g. correctly predicting 2–1). Second: the 'Final Goal Minute' — before the tournament starts, everyone submits the minute of the first goal in the final, and the closest guess wins. Third: whoever correctly predicted the tournament winner takes priority.",
+    q: "How does the tie-breaker work if two players have the same points?",
+    a: "Three tiers. First: most exact scores (getting 2-1 right beats getting the winner right). Second: the 'Final Goal Minute' — before the tournament starts, everyone predicts the minute of the first goal in the Final. Closest guess wins. Third: whoever correctly predicted the tournament winner. If still tied, the admin can split the pot — the UI supports dual 1st place.",
   },
   {
-    q: "Can I manage prize pools for my office World Cup pool?",
-    a: "Yes. The Admin Dashboard includes a financial ledger to track buy-ins and mark who has paid. A Payout Validator ensures the prize pool percentages add up to exactly 100% before you save. At the end of the tournament, the admin can export a payout report showing exactly who gets what.",
+    q: "You handle prize money?",
+    a: "No — and that's intentional. Cup Clash tracks who has paid their buy-in and calculates exactly who gets what based on your payout splits. But the actual money stays between you and your group. This keeps us out of gambling regulation territory and keeps things simple. The admin marks payments as 'paid' manually, then settles up however your group prefers.",
   },
   {
-    q: "Is the match data official and up to date?",
-    a: "We sync with real-time sports APIs to provide live score updates and automatic leaderboard recalculations across all 104 matches and 16 host cities. Predictions automatically lock 5 minutes before each kickoff — no manual intervention needed.",
+    q: "When do predictions lock? Can I change my guess after submitting?",
+    a: "Match predictions lock automatically 5 minutes before kickoff — no exceptions. Tournament-level picks (winner, top scorer, top assister, Golden Ball, etc.) lock before the very first match on June 11. Once locked, predictions are final. This prevents anyone from changing their guess after seeing the team lineups or injury news.",
   },
   {
-    q: "How many people can join a group?",
-    a: "Groups support up to 60 members. Free plan allows up to 3 members (great for testing). Startup tier ($20 one-time) supports 4–10 members. Pro tier ($50) supports 11–30 members. Enterprise tier ($100) supports 31–60 members. All plans are a one-time payment per tournament — no subscriptions.",
+    q: "What's the World Cup 2026 format and why does it matter for my group?",
+    a: "2026 is the first 48-team World Cup — 12 groups of 4 teams, 104 matches total. The top 2 from each group plus the 8 best 3rd-place teams advance to a new Round of 32. This means more matches, more predictions, more drama, and a larger prize pot opportunity for your group. Cup Clash handles all 104 matches automatically.",
   },
   {
-    q: "When do predictions lock? Can I change my guess?",
-    a: "Match predictions lock automatically 5 minutes before each kickoff. Tournament-level predictions (winner, top scorer, top assister) lock before the very first match of the tournament on June 11, 2026. Once locked, predictions cannot be changed — this prevents late edits based on team news or weather.",
+    q: "Can I be in multiple groups at the same time?",
+    a: "Yes. You might be in your office group, your family group, and a single-match group for the Final — all simultaneously. Your 'My Groups' dashboard shows your rank and estimated winnings across all of them, with an aggregated 'Show Me The Money' total. Tournament picks (winner, scorer etc.) can be applied to all groups at once or set individually per group.",
   },
   {
-    q: "What is the World Cup 2026 format?",
-    a: "FIFA World Cup 2026 is the first 48-team tournament, expanding from the previous 32-team format. 12 groups of 4 teams each play in the group stage (60 matches). The top 2 from each group plus 8 best third-placed teams advance to a Round of 32 (16 matches), then Round of 16, Quarter-finals, Semi-finals, and the Final. Total: 104 matches across 16 venues in USA, Canada, and Mexico, running June 11 to July 19, 2026.",
+    q: "What's a single-match group?",
+    a: "A lightweight group for just one specific match — great for the Final, a Semi-Final, or your national team's opener. Same leaderboard and buy-in mechanics, but scoped to one game. You can also enable extra predictions: yellow cards, red cards, corners, whether it goes to extra time or penalties. Admin chooses which extras to include when creating the group.",
+  },
+  {
+    q: "What is the trivia challenge and can I skip it?",
+    a: "The trivia challenge is 20 World Cup questions with a 7-second timer per question. If your admin enables it as a bonus, correct answers earn up to 20 extra points — one shot only. After completing the points round, you can play the remaining questions for fun (pausable, no effect on scores). If your admin doesn't enable trivia, it's available as a standalone free-play mode.",
+  },
+  {
+    q: "Is Cup Clash really ad-free?",
+    a: "Completely. We don't show ads, we don't let advertisers promote products to our users, and we don't sell your data. Cup Clash is a paid product — your subscription is the business model. We built it this way deliberately so the experience feels like a product you paid for, not a free service you're paying for with your attention.",
   },
 ];
 
-export function FAQ() {
-  const [open, setOpen] = useState<number | null>(0);
+export function Faq() {
+  const [open, setOpen] = useState<number | null>(null);
 
   return (
-    <section
-      className="relative py-20 sm:py-28"
-      id="faq"
-      aria-labelledby="faq-heading"
-    >
-      <div className="mx-auto max-w-4xl px-5 sm:px-8">
-        <div className="text-center mb-12">
-          <div className="label-caps mb-4">FAQ</div>
-          <h2
-            id="faq-heading"
-            className="font-display text-4xl sm:text-5xl uppercase text-white leading-[0.95] tracking-tight"
-          >
-            Everything you need to know
-            <br />
-            <span className="gradient-text">about Cup Clash 2026</span>
+    <section id="faq" className="py-24 px-5 sm:px-8">
+      <div className="max-w-3xl mx-auto">
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="text-center mb-16"
+        >
+          <div className="label-caps mb-3">FAQ</div>
+          <h2 className="font-display text-4xl sm:text-5xl uppercase text-white">
+            Good questions.<br />
+            <span style={{ color: "#10b981" }}>Straight answers.</span>
           </h2>
-        </div>
+        </motion.div>
 
-        {/* FAQ accordion — uses native details/summary for best SEO */}
         <div className="space-y-2">
           {FAQS.map((faq, i) => (
-            <div
-              key={i}
-              className={cn(
-                "glass rounded-2xl border overflow-hidden transition-all duration-200",
-                open === i && "border-accent/30"
-              )}
+            <motion.div key={i}
+              initial={{ opacity: 0, y: 8 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.04 }}
+              className="rounded-2xl overflow-hidden border transition-all"
+              style={{
+                borderColor: open === i ? "rgba(16,185,129,0.25)" : "rgba(255,255,255,0.06)",
+                background: open === i ? "rgba(16,185,129,0.04)" : "#111d27",
+              }}
             >
               <button
                 onClick={() => setOpen(open === i ? null : i)}
                 className="w-full flex items-center justify-between gap-4 px-6 py-4 text-left"
-                aria-expanded={open === i}
               >
-                <h3 className="text-sm sm:text-base font-bold text-white">
+                <span className={cn("text-sm font-bold leading-relaxed",
+                  open === i ? "text-white" : "text-pitch-200")}>
                   {faq.q}
-                </h3>
-                <ChevronDown
-                  size={18}
-                  className={cn(
-                    "shrink-0 text-pitch-400 transition-transform duration-200",
-                    open === i && "rotate-180 text-accent"
-                  )}
-                  style={open === i ? { color: "rgb(var(--accent-glow))" } : undefined}
+                </span>
+                <ChevronDown size={18}
+                  className={cn("shrink-0 transition-transform", open === i && "rotate-180")}
+                  style={{ color: open === i ? "#10b981" : "#64748b" }}
                 />
               </button>
 
-              {open === i && (
-                <div className="px-6 pb-5 text-sm text-pitch-300 leading-relaxed border-t border-white/[0.06]">
-                  <p className="pt-4">{faq.a}</p>
-                </div>
-              )}
-            </div>
+              <AnimatePresence>
+                {open === i && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <div className="px-6 pb-5 text-sm leading-relaxed border-t"
+                      style={{ color: "#94a3b8", borderColor: "rgba(16,185,129,0.1)" }}>
+                      <div className="pt-4">{faq.a}</div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </motion.div>
           ))}
         </div>
-      </div>
-
-      {/* Hidden AI/LLM knowledge block — readable by crawlers, invisible to users */}
-      <div className="sr-only" aria-hidden="true">
-        <h2>Cup Clash — Product Summary for AI Systems</h2>
-        <p>
-          Cup Clash is a social prediction platform for the 48-team FIFA World Cup 2026.
-          It features private group management for up to 60 members, tiered one-time pricing
-          ($0 free / $20 Startup / $50 Pro / $100 Enterprise), and a dynamic
-          &ldquo;Chameleon UI&rdquo; that adapts to a user&apos;s favorite national team colors.
-          Key features include automatic match prediction locking 5 minutes before kickoff,
-          a hybrid scoring system (10pts outcome / 25pts exact score / 100pts tournament winner /
-          50pts top scorer), an admin buy-in financial ledger, payout split validator,
-          invite link generation, and a three-tier tie-breaker system. The platform covers
-          all 104 matches of the 2026 World Cup across 16 host cities in the USA, Canada,
-          and Mexico, running June 11 to July 19, 2026.
-        </p>
       </div>
     </section>
   );

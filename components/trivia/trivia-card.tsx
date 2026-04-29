@@ -185,12 +185,31 @@ export function TriviaCard({
             exit={{ opacity: 0 }}
             className="glass rounded-2xl overflow-hidden"
           >
-            {/* Placeholder image */}
-            <div className="h-32 bg-gradient-to-br from-pitch-800 to-pitch-900 flex items-center justify-center">
-              <div className="text-center text-pitch-500 text-xs">
-                <span className="text-3xl">📸</span>
-                <div className="mt-1">Image: {question.imagePlaceholder?.split("/").pop()}</div>
-              </div>
+            {/* Image with zoom-in animation (from the brief) */}
+            <div className="relative h-36 overflow-hidden">
+              {question.imagePlaceholder?.startsWith("http") ? (
+                // Real image URL
+                // eslint-disable-next-line @next/next/no-img-element
+                <motion.img
+                  src={question.imagePlaceholder}
+                  alt={question.answer}
+                  className="w-full h-full object-cover"
+                  initial={{ scale: 1.1 }}
+                  animate={{ scale: 1 }}
+                  transition={{ duration: 0.6, ease: "easeOut" }}
+                />
+              ) : (
+                // Placeholder for images not yet sourced
+                <div className="h-full bg-gradient-to-br from-pitch-800 to-pitch-900 flex items-center justify-center">
+                  <div className="text-center text-pitch-500 text-xs">
+                    <span className="text-3xl">📸</span>
+                    <div className="mt-1">{question.imagePlaceholder?.split("/").pop()}</div>
+                  </div>
+                </div>
+              )}
+              {/* Dark overlay for text readability */}
+              <div className="absolute inset-0"
+                style={{ background: "linear-gradient(to bottom, rgba(0,0,0,0.2) 0%, rgba(17,29,39,0.9) 100%)" }} />
             </div>
             <div className="p-4">
               <div className="text-xs font-bold uppercase tracking-widest text-pitch-400 mb-1">

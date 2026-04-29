@@ -1,87 +1,103 @@
-import { ArrowRight, ExternalLink } from "lucide-react";
-import Link from "next/link";
+"use client";
+
+import { motion } from "framer-motion";
+import { ArrowUpRight } from "lucide-react";
 
 const NEWS = [
   {
     tag: "Strategy",
-    headline: "Expansion Era: How the 48-team format changes your prediction strategy",
-    sub: "With 12 groups instead of 8, more upsets are statistically guaranteed. Here's how to adapt your scoring picks for the new format.",
+    headline: "48 teams changes everything — here's how to predict the chaos",
+    body: "The new Round of 32 means more upsets, more 3rd-place drama, and more points on the table. Your scoring strategy needs to adapt.",
+    emoji: "🧩",
+    color: "#10b981",
     href: "/schedule",
-    cta: "See full schedule",
   },
   {
-    tag: "The Final",
-    headline: "The MetLife Miracle: Why New York/NJ was chosen for the July 19 Final",
-    sub: "MetLife Stadium seats 82,500, has a retractable field, and sits 15 miles from Manhattan. Inside the politics of the biggest match in US sports history.",
-    href: "/schedule#final",
-    cta: "Final details",
+    tag: "Venue",
+    headline: "MetLife Stadium: why the Final venue gives the home crowd an edge",
+    body: "East Rutherford, New Jersey. 82,500 fans. The largest World Cup Final ever. Here's what the host advantage actually means for the odds.",
+    emoji: "🏟️",
+    color: "#3b82f6",
+    href: "/schedule",
   },
   {
-    tag: "Dark Horses",
-    headline: "Debutants to Watch: Can Haiti or Curaçao pull off a Group Stage upset?",
-    sub: "Both nations qualify for their first-ever World Cup. Curaçao's dual-nationality squad includes several Eredivisie regulars. Don't sleep on them in your predictions.",
+    tag: "Dark horses",
+    headline: "5 teams your group hasn't picked to win — but probably should",
+    body: "Morocco proved Africa can go deep. Japan is built for knockouts. USA are hosting. The 2026 winner might be in your group chat's blind spot.",
+    emoji: "🐎",
+    color: "#f59e0b",
     href: "/schedule",
-    cta: "Group stage matches",
   },
 ];
 
 export function FeaturedNews() {
   return (
-    <section className="relative py-20 sm:py-24 border-t border-white/[0.06]">
-      <div className="mx-auto max-w-7xl px-5 sm:px-8">
-        <div className="flex items-end justify-between mb-10">
+    <section className="py-24 px-5 sm:px-8"
+      style={{ background: "rgba(17,29,39,0.3)" }}>
+      <div className="max-w-7xl mx-auto">
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="flex items-end justify-between mb-12 flex-wrap gap-4"
+        >
           <div>
-            <div className="label-caps mb-3">Insights</div>
-            <h2 className="font-display text-3xl sm:text-5xl uppercase text-white leading-[0.95] tracking-tight">
-              Tournament Intel
+            <div className="label-caps mb-3">Intel</div>
+            <h2 className="font-display text-4xl sm:text-5xl uppercase text-white">
+              Know more.<br />
+              <span style={{ color: "#10b981" }}>Win more.</span>
             </h2>
           </div>
-          <Link
-            href="/schedule"
-            className="hidden sm:flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest text-pitch-400 hover:text-white transition-colors"
-          >
-            Full schedule <ArrowRight size={13} />
-          </Link>
-        </div>
+          <a href="/schedule"
+            className="flex items-center gap-1.5 text-sm font-bold uppercase tracking-widest transition-colors hover:text-white"
+            style={{ color: "#64748b" }}>
+            Full 2026 schedule <ArrowUpRight size={15} />
+          </a>
+        </motion.div>
 
-        <div className="grid gap-4 md:grid-cols-3">
+        <div className="grid md:grid-cols-3 gap-5">
           {NEWS.map((item, i) => (
-            <Link
-              key={i}
+            <motion.a key={item.headline}
               href={item.href}
-              className="group glass rounded-2xl p-6 hover:-translate-y-1 transition-all duration-200 hover:shadow-card block"
+              initial={{ opacity: 0, y: 16 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.1 }}
+              whileHover={{ y: -4 }}
+              className="group flex flex-col rounded-2xl overflow-hidden border transition-all"
+              style={{
+                borderColor: "rgba(255,255,255,0.06)",
+                background: "#111d27",
+              }}
             >
-              {/* Tag */}
-              <span
-                className="inline-block text-[10px] font-bold uppercase tracking-widest mb-3 px-2.5 py-1 rounded-full border"
-                style={{
-                  color: "rgb(var(--accent-glow))",
-                  borderColor: "rgb(var(--accent) / 0.3)",
-                  backgroundColor: "rgb(var(--accent) / 0.08)",
-                }}
-              >
-                {item.tag}
-              </span>
-
-              {/* Headline */}
-              <h3 className="font-bold text-white text-base leading-snug mb-2 group-hover:text-pitch-100 transition-colors">
-                {item.headline}
-              </h3>
-
-              {/* Sub */}
-              <p className="text-sm text-pitch-400 leading-relaxed">
-                {item.sub}
-              </p>
-
-              {/* CTA */}
-              <div
-                className="mt-4 flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest transition-colors"
-                style={{ color: "rgb(var(--accent-glow))" }}
-              >
-                {item.cta}
-                <ExternalLink size={11} />
+              {/* Image placeholder — fan/stadium atmosphere */}
+              <div className="h-44 flex items-center justify-center relative overflow-hidden"
+                style={{ background: `linear-gradient(135deg, ${item.color}15, rgba(17,29,39,1))` }}>
+                <span className="text-7xl opacity-60">{item.emoji}</span>
+                <div className="absolute inset-0"
+                  style={{ background: "linear-gradient(to bottom, transparent 40%, #111d27 100%)" }} />
               </div>
-            </Link>
+
+              <div className="p-5 flex-1 flex flex-col">
+                {/* Tag */}
+                <div className="inline-flex items-center text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full mb-3 self-start"
+                  style={{ background: `${item.color}15`, color: item.color }}>
+                  {item.tag}
+                </div>
+
+                <h3 className="font-display text-lg uppercase text-white leading-tight mb-2 group-hover:text-opacity-90 transition-colors">
+                  {item.headline}
+                </h3>
+                <p className="text-sm leading-relaxed flex-1" style={{ color: "#64748b" }}>
+                  {item.body}
+                </p>
+
+                <div className="flex items-center gap-1 mt-4 text-xs font-bold uppercase tracking-widest transition-colors"
+                  style={{ color: item.color }}>
+                  Read more <ArrowUpRight size={12} />
+                </div>
+              </div>
+            </motion.a>
           ))}
         </div>
       </div>
