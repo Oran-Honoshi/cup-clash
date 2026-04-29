@@ -3,7 +3,8 @@ import { NextResponse, type NextRequest } from "next/server";
 
 const PROTECTED_PREFIXES = [
   "/dashboard", "/leaderboard", "/predictions", "/admin",
-  "/create-group", "/bracket", "/testing", "/profile", "/standings",
+  "/create-group", "/bracket", "/testing", "/profile",
+  "/standings", "/trivia",
 ];
 const AUTH_ROUTES = ["/signin", "/signup"];
 
