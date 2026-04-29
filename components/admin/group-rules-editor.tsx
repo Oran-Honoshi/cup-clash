@@ -74,7 +74,7 @@ export function GroupRulesEditor({
             <input type="number" min={0} max={50} step={0.5}
               value={adminFee}
               onChange={e => { setAdminFee(Number(e.target.value)); setSaved(false); }}
-              className="w-full px-4 py-2.5 rounded-xl text-sm text-white bg-white/[0.06] border border-white/[0.12] focus:outline-none focus:border-accent text-center font-display text-2xl" />
+              className="w-full px-4 py-2.5 rounded-xl text-sm text-white bg-white border border-slate-200 focus:outline-none focus:border-accent text-center font-display text-2xl" />
           </div>
           <span className="text-pitch-400 font-bold text-lg">%</span>
         </div>
@@ -129,7 +129,7 @@ export function GroupRulesEditor({
           onChange={e => { setRulesText(e.target.value); setSaved(false); }}
           placeholder="e.g. No changing predictions after discussing with others. Buy-ins collected by June 10. Disputes resolved by admin."
           rows={6}
-          className="w-full px-4 py-3 rounded-xl text-sm text-white bg-white/[0.06] border border-white/[0.12] placeholder:text-pitch-600 focus:outline-none focus:border-accent resize-none"
+          className="w-full px-4 py-3 rounded-xl text-sm text-white bg-white border border-slate-200 placeholder:text-pitch-600 focus:outline-none focus:border-accent resize-none"
         />
 
         {/* Scoring examples */}

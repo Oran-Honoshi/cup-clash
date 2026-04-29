@@ -202,7 +202,7 @@ export function ScoringRulesEditor({ groupId }: ScoringRulesEditorProps) {
                 <input type="number" min={0} max={999} value={rules[key]}
                   disabled={!isOn || locked}
                   onChange={e => { setRules(r => ({ ...r, [key]: Number(e.target.value) })); setSaved(false); }}
-                  className="w-16 rounded-lg px-2 py-1.5 text-sm text-white text-center bg-white/[0.06] border border-white/[0.12] focus:outline-none focus:border-accent disabled:opacity-30 disabled:cursor-not-allowed" />
+                  className="w-16 rounded-lg px-2 py-1.5 text-sm text-white text-center bg-white border border-slate-200 focus:outline-none focus:border-cyan-400 disabled:opacity-30 disabled:cursor-not-allowed" />
                 <span className="text-xs text-pitch-500">pts</span>
               </div>
             </div>

@@ -55,7 +55,7 @@ export function HowItWorks() {
                   </div>
                 </div>
                 <h3 className="font-display text-2xl uppercase text-white mb-3">{step.title}</h3>
-                <p className="text-base leading-relaxed mb-3" style={{ color: "#94a3b8" }}>{step.body}</p>
+                <p className="text-base leading-relaxed mb-3" style={{ color: "#64748b" }}>{step.body}</p>
                 <p className="text-sm font-bold" style={{ color: step.color }}>{step.detail}</p>
               </motion.div>
             ))}

@@ -50,7 +50,7 @@ export function Pricing() {
             <span style={{ color: "#10b981" }}>No Ads.</span>
           </h2>
           {/* Gemini sub-header */}
-          <p className="mt-4 text-lg max-w-xl mx-auto" style={{ color: "#94a3b8" }}>
+          <p className="mt-4 text-lg max-w-xl mx-auto" style={{ color: "#64748b" }}>
             Choose the capacity your squad needs. No monthly fees, ever.
           </p>
         </motion.div>
@@ -83,7 +83,7 @@ export function Pricing() {
                 </div>
                 <ul className="space-y-2.5 flex-1 mb-6">
                   {tier.features.map(f => (
-                    <li key={f} className="flex items-start gap-2.5 text-sm" style={{ color: "#94a3b8" }}>
+                    <li key={f} className="flex items-start gap-2.5 text-sm" style={{ color: "#64748b" }}>
                       <Check size={14} className="shrink-0 mt-0.5" style={{ color: "#10b981" }} />{f}
                     </li>
                   ))}

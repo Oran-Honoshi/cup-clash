@@ -106,6 +106,8 @@ export function NextMatchCard({ match, groupId = "grp_titans" }: NextMatchCardPr
       return;
     }
     setSaveState("saved");
+    // Fire event so the first-prediction popup can trigger
+    window.dispatchEvent(new CustomEvent("cupclash:first_prediction"));
   };
 
   return (
@@ -194,8 +196,22 @@ function ScoreInput({ value, onChange, label, disabled }: { value: string; onCha
   return (
     <input type="number" min="0" max="99" value={value} onChange={(e) => onChange(e.target.value)}
       placeholder="–" disabled={disabled} aria-label={`${label} score`}
-      className={cn("w-14 h-14 text-center font-display text-3xl text-white rounded-xl bg-white/[0.06] border border-white/[0.12] focus:outline-none focus:border-accent focus:bg-white/[0.1] [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed")}
-      style={{ caretColor: "rgb(var(--accent))" }}
+      className="w-14 h-14 text-center font-display text-3xl rounded-xl [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none transition-all duration-150 disabled:opacity-40 disabled:cursor-not-allowed"
+      style={{
+        color: "#0F172A",
+        background: "rgba(0,212,255,0.05)",
+        border: "1px solid #e2e8f0",
+        fontWeight: 900,
+        outline: "none",
+      }}
+      onFocus={e => {
+        e.target.style.border = "1px solid #00D4FF";
+        e.target.style.boxShadow = "0 0 0 3px rgba(0,212,255,0.12)";
+      }}
+      onBlur={e => {
+        e.target.style.border = "1px solid #e2e8f0";
+        e.target.style.boxShadow = "none";
+      }}
     />
   );
 }

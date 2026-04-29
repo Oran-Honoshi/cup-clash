@@ -66,8 +66,8 @@ export function FeaturedNews() {
               whileHover={{ y: -4 }}
               className="group flex flex-col rounded-2xl overflow-hidden border transition-all"
               style={{
-                borderColor: "rgba(255,255,255,0.06)",
-                background: "#111d27",
+                borderColor: "rgba(0,212,255,0.15)",
+                background: "rgba(255,255,255,0.85)",
               }}
             >
               {/* Image placeholder — fan/stadium atmosphere */}

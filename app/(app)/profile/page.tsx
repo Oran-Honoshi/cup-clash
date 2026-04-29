@@ -264,7 +264,7 @@ export default function ProfilePage() {
         <input type="text" value={profile.name}
           onChange={e => setProfile(p => ({ ...p, name: e.target.value }))}
           placeholder="How your friends will see you"
-          className="w-full px-4 py-2.5 rounded-xl text-sm text-white bg-white/[0.06] border border-white/[0.12] placeholder:text-pitch-500 focus:outline-none focus:border-accent transition-all" />
+          className="w-full px-4 py-2.5 rounded-xl text-sm text-white bg-white border border-slate-200 placeholder:text-slate-400 focus:outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100 text-slate-900 transition-all" />
         <p className="text-[11px] text-pitch-500 mt-2">Your auto avatar updates live as you type.</p>
       </Card>
 

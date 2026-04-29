@@ -1,4 +1,6 @@
-import { CheckCircle, XCircle, Wallet } from "lucide-react";
+"use client";
+
+import { DollarSign } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import type { Group, Member } from "@/lib/types";
 
@@ -8,100 +10,59 @@ interface BuyInStatusProps {
 }
 
 export function BuyInStatus({ group, members }: BuyInStatusProps) {
-  const totalPot = members.length * group.buyInAmount;
-  const paidCount = members.filter((m) => m.paid).length;
-  const unpaidCount = members.length - paidCount;
+  if (!group.buyInAmount || group.buyInAmount === 0) return null;
 
-  const payouts = [
-    { place: "1st", pct: group.payouts.first, amount: Math.round(totalPot * 0.6) },
-    { place: "2nd", pct: group.payouts.second, amount: Math.round(totalPot * 0.3) },
-    { place: "3rd", pct: group.payouts.third, amount: Math.round(totalPot * 0.1) },
-  ];
+  const paidCount   = members.filter(m => m.paid).length;
+  const totalPot    = members.length * group.buyInAmount;
+  const paidPot     = paidCount * group.buyInAmount;
+  const paidPct     = members.length ? (paidCount / members.length) * 100 : 0;
+  const first  = Math.round(paidPot * Number(group.payouts.first.replace("%",  "")) / 100);
+  const second = Math.round(paidPot * Number(group.payouts.second.replace("%", "")) / 100);
+  const third  = Math.round(paidPot * Number(group.payouts.third.replace("%",  "")) / 100);
 
   return (
     <Card variant="glass" className="p-5">
-      {/* Header */}
-      <div className="flex items-center gap-2.5 mb-5">
-        <Wallet size={18} style={{ color: "rgb(var(--accent-glow))" }} />
-        <span className="font-display text-xl uppercase text-white tracking-tight">
+      <div className="flex items-center gap-2.5 mb-4">
+        <DollarSign size={18} strokeWidth={1.5} style={{ color: "#059669" }} />
+        <span className="font-display text-xl uppercase tracking-tight" style={{ color: "#0F172A" }}>
           Buy-in Tracker
         </span>
       </div>
 
-      {/* Pot total */}
-      <div className="text-center py-4 mb-4 rounded-xl bg-white/[0.03] border border-white/[0.06]">
-        <div
-          className="font-display text-5xl text-white"
-          style={{ color: "rgb(var(--accent-glow))" }}
-        >
-          ${totalPot}
-        </div>
-        <div className="label-caps mt-1">Total pot</div>
-        <div className="text-xs text-pitch-400 mt-1">
+      {/* Big pot number */}
+      <div className="text-center py-4 mb-4 rounded-xl" style={{ background: "#f8fafc", border: "1px solid #e2e8f0" }}>
+        <div className="font-display text-5xl font-black" style={{ color: "#0891B2" }}>${paidPot}</div>
+        <div className="text-xs uppercase tracking-widest mt-1" style={{ color: "#94a3b8" }}>Total Pot</div>
+        <div className="text-xs mt-0.5" style={{ color: "#64748b" }}>
           {paidCount}/{members.length} paid · ${group.buyInAmount}/player
         </div>
       </div>
 
       {/* Progress bar */}
-      <div className="mb-5">
-        <div className="flex justify-between text-[11px] text-pitch-400 mb-1.5">
-          <span>{paidCount} paid</span>
-          <span>{unpaidCount} outstanding</span>
-        </div>
-        <div className="h-2 rounded-full bg-white/[0.06] overflow-hidden">
-          <div
-            className="h-full rounded-full transition-all duration-500"
-            style={{
-              width: `${(paidCount / members.length) * 100}%`,
-              backgroundImage:
-                "linear-gradient(90deg, rgb(var(--brand)), rgb(var(--accent-glow)))",
-            }}
-          />
-        </div>
+      <div className="h-2 rounded-full overflow-hidden mb-4" style={{ background: "#e2e8f0" }}>
+        <div className="h-full rounded-full transition-all"
+          style={{ width: `${paidPct}%`, background: "linear-gradient(90deg, #00D4FF, #00FF88)" }} />
+      </div>
+      <div className="flex justify-between text-xs mb-5" style={{ color: "#64748b" }}>
+        <span>{paidCount} paid</span>
+        <span>{members.length - paidCount} outstanding</span>
       </div>
 
-      {/* Payout splits */}
+      {/* Payout breakdown */}
       <div className="space-y-2">
-        {payouts.map((p) => (
-          <div
-            key={p.place}
-            className="flex items-center justify-between py-2 border-b border-white/[0.05] last:border-0"
-          >
-            <span className="text-sm font-bold text-pitch-300">{p.place} place</span>
-            <div className="flex items-center gap-3">
-              <span className="text-xs text-pitch-500">{p.pct}</span>
-              <span
-                className="font-display text-xl tabular"
-                style={{ color: "rgb(var(--accent-glow))" }}
-              >
-                ${p.amount}
-              </span>
+        {[
+          { label: "1st place", pct: group.payouts.first,  amount: first,  color: "#d97706" },
+          { label: "2nd place", pct: group.payouts.second, amount: second, color: "#64748b" },
+          { label: "3rd place", pct: group.payouts.third,  amount: third,  color: "#b45309" },
+        ].map(({ label, pct, amount, color }) => (
+          <div key={label} className="flex justify-between items-center py-1">
+            <span className="text-sm" style={{ color: "#475569" }}>{label}</span>
+            <div className="flex items-center gap-2">
+              <span className="text-xs" style={{ color: "#94a3b8" }}>{pct}</span>
+              <span className="font-bold text-base" style={{ color }}>${amount}</span>
             </div>
           </div>
         ))}
-      </div>
-
-      {/* Payment status list */}
-      <div className="mt-5 pt-4 border-t border-white/[0.06]">
-        <div className="label-caps mb-3">Payment status</div>
-        <div className="space-y-2">
-          {members.map((m) => (
-            <div key={m.id} className="flex items-center justify-between">
-              <span className="text-sm text-pitch-200">{m.name}</span>
-              {m.paid ? (
-                <span className="flex items-center gap-1 text-success text-xs font-bold uppercase tracking-wider">
-                  <CheckCircle size={13} />
-                  Paid
-                </span>
-              ) : (
-                <span className="flex items-center gap-1 text-danger text-xs font-bold uppercase tracking-wider">
-                  <XCircle size={13} />
-                  Pending
-                </span>
-              )}
-            </div>
-          ))}
-        </div>
       </div>
     </Card>
   );

@@ -59,7 +59,7 @@ export function Faq() {
             <motion.div key={i}
               initial={{ opacity: 0, y: 8 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.04 }}
               className="rounded-2xl overflow-hidden border transition-all"
-              style={{ borderColor: open === i ? "rgba(16,185,129,0.25)" : "rgba(255,255,255,0.06)", background: open === i ? "rgba(16,185,129,0.04)" : "#111d27" }}
+              style={{ borderColor: open === i ? "rgba(0,212,255,0.3)" : "#e2e8f0", background: open === i ? "rgba(0,212,255,0.03)" : "rgba(255,255,255,0.85)" }}
             >
               <button onClick={() => setOpen(open === i ? null : i)}
                 className="w-full flex items-center justify-between gap-4 px-6 py-4 text-left">

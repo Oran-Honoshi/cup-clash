@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { Trophy, TrendingUp, TrendingDown, Minus, ChevronRight, Ghost } from "lucide-react";
-import { Card } from "@/components/ui/card";
 import { PlayerDrawer } from "@/components/dashboard/player-drawer";
 import { MemberAvatar } from "@/components/ui/member-avatar";
 import { cn } from "@/lib/utils";
@@ -11,49 +10,29 @@ import type { Member } from "@/lib/types";
 interface LeaderboardProps {
   members: Member[];
   currentUserId?: string;
-  showGhost?: boolean;   // show the Global Average ghost player
+  showGhost?: boolean;
 }
 
-const RANK_MEDALS = ["🥇", "🥈", "🥉"];
-const RANK_GLOWS = [
-  "0 0 20px rgba(250,204,21,0.35)",
-  "0 0 16px rgba(148,163,184,0.25)",
-  "0 0 14px rgba(180,83,9,0.3)",
-];
+const RANK_LABELS = ["1st", "2nd", "3rd"];
+const RANK_COLORS = ["#d97706", "#64748b", "#b45309"];
 
-// Ghost player — represents the "global average" benchmark
 function buildGhostPlayer(members: Member[]): Member {
   const avg = members.length
     ? Math.round(members.reduce((s, m) => s + m.points, 0) / members.length)
     : 0;
-  return {
-    id: "__ghost__",
-    name: "The Expert",
-    points: avg,
-    paid: false,
-    country: "🌍 Global Average",
-    avatarUrl: null,
-    isGhost: true,
-    rankDelta: 0,
-    exactScores: 0,
-  };
+  return { id: "__ghost__", name: "The Expert", points: avg, paid: false, country: "Global Average", avatarUrl: null, isGhost: true, rankDelta: 0 };
 }
 
-// Delta indicator component
 function DeltaBadge({ delta }: { delta: number }) {
-  if (delta === 0) return (
-    <span className="flex items-center gap-0.5 text-[10px] font-bold text-pitch-600">
-      <Minus size={9} />
-    </span>
-  );
+  if (delta === 0) return <Minus size={12} style={{ color: "#cbd5e1" }} />;
   if (delta > 0) return (
-    <span className="flex items-center gap-0.5 text-[10px] font-bold text-success">
-      <TrendingUp size={10} />+{delta}
+    <span className="flex items-center gap-0.5 text-[10px] font-bold" style={{ color: "#059669" }}>
+      <TrendingUp size={11} />+{delta}
     </span>
   );
   return (
-    <span className="flex items-center gap-0.5 text-[10px] font-bold text-danger">
-      <TrendingDown size={10} />{delta}
+    <span className="flex items-center gap-0.5 text-[10px] font-bold" style={{ color: "#dc2626" }}>
+      <TrendingDown size={11} />{delta}
     </span>
   );
 }
@@ -61,95 +40,96 @@ function DeltaBadge({ delta }: { delta: number }) {
 export function Leaderboard({ members, currentUserId, showGhost = true }: LeaderboardProps) {
   const [selected, setSelected] = useState<Member | null>(null);
 
-  // Build display list — real members sorted, then optionally inject ghost
   const sorted = [...members].sort((a, b) => b.points - a.points);
   const ghost  = buildGhostPlayer(members);
 
-  // Insert ghost at correct rank position
   let display: Member[] = sorted;
   if (showGhost && sorted.length > 0) {
     const insertAt = sorted.findIndex(m => m.points <= ghost.points);
-    if (insertAt === -1) {
-      display = [...sorted, ghost];
-    } else {
-      display = [...sorted.slice(0, insertAt), ghost, ...sorted.slice(insertAt)];
-    }
+    display = insertAt === -1
+      ? [...sorted, ghost]
+      : [...sorted.slice(0, insertAt), ghost, ...sorted.slice(insertAt)];
   }
-
-  const isTop3 = (i: number) => i < 3;
 
   return (
     <>
-      <Card variant="glass" className="overflow-hidden">
+      {/* Full-width white table */}
+      <div className="glass rounded-2xl overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-white/[0.06]">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
           <div className="flex items-center gap-2.5">
-            <Trophy size={18} style={{ color: "#D4AF37" }} />
-            <span className="font-display text-xl uppercase text-white tracking-tight">Leaderboard</span>
+            <Trophy size={18} strokeWidth={1.5} style={{ color: "#d97706" }} />
+            <span className="font-display text-xl uppercase" style={{ color: "#0F172A" }}>Leaderboard</span>
           </div>
           <div className="flex items-center gap-3">
             {showGhost && (
-              <div className="flex items-center gap-1 text-[10px] text-pitch-500 uppercase tracking-widest">
-                <Ghost size={11} /> Global avg
-              </div>
+              <span className="text-[10px] font-bold uppercase tracking-widest flex items-center gap-1" style={{ color: "#94a3b8" }}>
+                <Ghost size={11} /> Benchmark
+              </span>
             )}
-            <span className="text-xs text-pitch-500">{members.length} players</span>
+            <span className="text-xs" style={{ color: "#94a3b8" }}>{members.length} players</span>
           </div>
         </div>
 
         {/* Column headers */}
-        <div className="hidden sm:flex items-center px-5 py-2 border-b border-white/[0.04]">
-          <div className="w-8 shrink-0" />
-          <div className="w-10 shrink-0" />
-          <div className="flex-1 text-[10px] font-bold uppercase tracking-widest text-pitch-600">Player</div>
-          <div className="w-12 text-center text-[10px] font-bold uppercase tracking-widest text-pitch-600">Δ</div>
-          <div className="w-16 text-center text-[10px] font-bold uppercase tracking-widest text-pitch-600">Pts</div>
-          <div className="w-6 shrink-0" />
+        <div className="hidden sm:grid grid-cols-[2rem_2.5rem_1fr_3rem_4rem_1.5rem] gap-2 items-center px-5 py-2 border-b border-slate-50"
+          style={{ background: "#f8fafc" }}>
+          <div />
+          <div />
+          <div className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "#94a3b8" }}>Player</div>
+          <div className="text-[10px] font-bold uppercase tracking-widest text-center" style={{ color: "#94a3b8" }}>Δ</div>
+          <div className="text-[10px] font-bold uppercase tracking-widest text-right" style={{ color: "#94a3b8" }}>Pts</div>
+          <div />
         </div>
 
         {/* Rows */}
-        <div className="divide-y divide-white/[0.04]">
+        <div className="divide-y divide-slate-50">
           {display.map((member, i) => {
             const isCurrentUser = member.id === currentUserId;
             const isGhost       = member.isGhost;
-            const top3          = isTop3(i);
-            const rank          = i + 1;
+            const top3          = i < 3 && !isGhost;
 
             return (
               <div key={member.id}
                 onClick={() => !isGhost && setSelected(member)}
                 className={cn(
                   "flex items-center gap-3 px-5 py-3 transition-all",
-                  !isGhost && "cursor-pointer hover:bg-white/[0.02] group",
-                  isCurrentUser && "bg-white/[0.03]",
+                  !isGhost && "cursor-pointer hover:bg-slate-50 group",
                   isGhost && "opacity-60",
                 )}
-                style={isCurrentUser ? { borderLeft: "2px solid rgb(var(--accent))" } : undefined}
+                style={isCurrentUser ? {
+                  background: "rgba(0,255,136,0.06)",
+                  borderLeft: "3px solid #00FF88",
+                  paddingLeft: "calc(1.25rem - 3px)",
+                } : undefined}
               >
-                {/* Rank number */}
-                <div className="w-8 shrink-0 text-center">
-                  {top3 && !isGhost ? (
-                    <span className="font-display text-xl" style={{ filter: `drop-shadow(${RANK_GLOWS[i]})` }}>
-                      {RANK_MEDALS[i]}
+                {/* Rank */}
+                <div className="w-8 text-center shrink-0">
+                  {top3 ? (
+                    <span className="text-xs font-black" style={{ color: RANK_COLORS[i] }}>
+                      {RANK_LABELS[i]}
                     </span>
                   ) : (
-                    <span className={cn("font-bold text-sm", isCurrentUser ? "text-white" : "text-pitch-600")}>
-                      {isGhost ? "—" : rank}
+                    <span className="text-xs font-bold" style={{ color: isCurrentUser ? "#0891B2" : "#94a3b8" }}>
+                      {isGhost ? "—" : i + 1}
                     </span>
                   )}
                 </div>
 
-                {/* Avatar with medal */}
-                <div className="relative shrink-0">
+                {/* Avatar */}
+                <div className="relative w-10 shrink-0">
                   {isGhost ? (
-                    <div className="h-9 w-9 rounded-full flex items-center justify-center border border-dashed border-white/20 bg-white/[0.03]">
-                      <Ghost size={16} className="text-pitch-600" />
+                    <div className="h-9 w-9 rounded-full flex items-center justify-center border border-dashed border-slate-200 bg-slate-50">
+                      <Ghost size={15} style={{ color: "#cbd5e1" }} />
                     </div>
                   ) : (
                     <>
-                      <MemberAvatar name={member.name} avatarUrl={member.avatarUrl} size="md" dim={!isCurrentUser} />
+                      <MemberAvatar name={member.name} avatarUrl={member.avatarUrl} size="md" />
                       {top3 && (
-                        <span className="absolute -bottom-1 -right-1 text-sm leading-none">{RANK_MEDALS[i]}</span>
+                        <div className="absolute -bottom-0.5 -right-0.5 h-4 w-4 rounded-full flex items-center justify-center text-white text-[8px] font-black"
+                          style={{ background: RANK_COLORS[i], fontSize: "8px" }}>
+                          {i + 1}
+                        </div>
                       )}
                     </>
                   )}
@@ -158,59 +138,55 @@ export function Leaderboard({ members, currentUserId, showGhost = true }: Leader
                 {/* Name + country */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className={cn("text-sm font-bold truncate",
-                      isCurrentUser ? "text-white" : isGhost ? "text-pitch-500 italic" : "text-pitch-200")}>
+                    <span className="text-sm font-bold truncate" style={{ color: isCurrentUser ? "#0F172A" : isGhost ? "#94a3b8" : "#334155" }}>
                       {member.name}
                     </span>
                     {isCurrentUser && (
-                      <span className="text-[9px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded-full bg-white/10 text-pitch-300 shrink-0">
-                        You
-                      </span>
+                      <span className="text-[9px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded-full shrink-0"
+                        style={{ background: "rgba(0,255,136,0.15)", color: "#059669" }}>You</span>
                     )}
                     {isGhost && (
                       <span className="text-[9px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded-full shrink-0"
-                        style={{ background: "rgba(100,116,139,0.15)", color: "#64748b" }}>
-                        Benchmark
-                      </span>
+                        style={{ background: "#f1f5f9", color: "#94a3b8" }}>Benchmark</span>
                     )}
                   </div>
-                  <div className="text-[11px] text-pitch-600 truncate">{member.country}</div>
+                  <div className="text-[11px] truncate" style={{ color: "#94a3b8" }}>{member.country}</div>
                 </div>
 
-                {/* Rank delta */}
+                {/* Delta */}
                 <div className="w-12 flex justify-center shrink-0">
                   {!isGhost && <DeltaBadge delta={member.rankDelta ?? 0} />}
                 </div>
 
-                {/* Points */}
+                {/* Points — monospace, cyan */}
                 <div className="w-16 text-right shrink-0">
-                  <span className={cn("font-display text-2xl leading-none",
-                    isCurrentUser ? "text-white" : isGhost ? "text-pitch-600" : "text-pitch-200")}>
+                  <span className="font-mono font-black text-2xl leading-none"
+                    style={{ color: isCurrentUser ? "#0891B2" : isGhost ? "#94a3b8" : "#0F172A" }}>
                     {member.points}
                   </span>
                 </div>
 
                 {/* Chevron */}
                 {!isGhost && (
-                  <ChevronRight size={15} className="text-pitch-700 group-hover:text-pitch-400 transition-colors shrink-0" />
+                  <ChevronRight size={14} className="shrink-0 group-hover:translate-x-0.5 transition-transform"
+                    style={{ color: "#cbd5e1" }} />
                 )}
               </div>
             );
           })}
         </div>
 
-        {/* Ghost explanation footer */}
+        {/* Ghost footer */}
         {showGhost && (
-          <div className="px-5 py-2.5 border-t border-white/[0.04] flex items-center gap-2 text-[10px] text-pitch-600">
+          <div className="px-5 py-2.5 border-t border-slate-50 flex items-center gap-2 text-[10px]"
+            style={{ background: "#f8fafc", color: "#94a3b8" }}>
             <Ghost size={11} />
-            <span><strong className="text-pitch-500">The Expert</strong> shows the group average — beat it to stay ahead of the field.</span>
+            <span><strong style={{ color: "#64748b" }}>The Expert</strong> shows the group average — a benchmark to beat.</span>
           </div>
         )}
-      </Card>
+      </div>
 
-      {selected && (
-        <PlayerDrawer member={selected} onClose={() => setSelected(null)} />
-      )}
+      {selected && <PlayerDrawer member={selected} onClose={() => setSelected(null)} />}
     </>
   );
 }

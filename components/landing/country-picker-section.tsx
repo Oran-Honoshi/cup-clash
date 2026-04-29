@@ -32,7 +32,7 @@ export function CountryPickerSection() {
             Your flag.<br />
             <span style={{ color: "#10b981" }}>Your colors.</span>
           </h2>
-          <p className="mt-4 text-base max-w-lg mx-auto" style={{ color: "#94a3b8" }}>
+          <p className="mt-4 text-base max-w-lg mx-auto" style={{ color: "#64748b" }}>
             Select your team below — the entire app theme changes to match your nation's colors.
             {selected && (
               <span className="font-bold text-white"> You picked {selected}! </span>
@@ -86,7 +86,7 @@ export function CountryPickerSection() {
             animate={{ opacity: 1, y: 0 }}
             className="text-center"
           >
-            <p className="text-sm mb-4" style={{ color: "#94a3b8" }}>
+            <p className="text-sm mb-4" style={{ color: "#64748b" }}>
               Nice! Your theme is now set to{" "}
               <strong className="text-white">{selected}</strong>. Sign up to keep it.
             </p>

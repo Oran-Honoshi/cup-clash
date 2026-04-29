@@ -14,7 +14,7 @@ const STAGES = ["All", "Group", "R32", "R16", "QF", "SF", "Final"];
 const COUNTRIES = ["All", "USA", "CAN", "MEX"];
 
 const STAGE_COLORS: Record<string, string> = {
-  Group:  "bg-white/[0.05] text-pitch-300 border-white/[0.08]",
+  Group:  "bg-slate-100 text-slate-600 border-slate-200",
   R32:    "bg-blue-500/10 text-blue-300 border-blue-500/20",
   R16:    "bg-violet-500/10 text-violet-300 border-violet-500/20",
   QF:     "bg-amber-500/10 text-amber-300 border-amber-500/20",
@@ -46,13 +46,13 @@ export default function SchedulePageContent() {
           {/* Semantic breadcrumb */}
           <nav aria-label="Breadcrumb" className="mb-4">
             <ol className="flex items-center gap-2 text-[11px] uppercase tracking-widest text-pitch-500">
-              <li><Link href="/" className="hover:text-white transition-colors">Cup Clash</Link></li>
+              <li><Link href="/" className="hover:text-cyan-600 transition-colors">Cup Clash</Link></li>
               <li>/</li>
               <li className="text-pitch-300">Schedule</li>
             </ol>
           </nav>
 
-          <h1 className="font-display text-4xl sm:text-6xl uppercase text-white tracking-tight leading-[0.9]">
+          <h1 className="font-display text-4xl sm:text-6xl uppercase tracking-tight leading-[0.9]" style={{ color: "#0F172A" }}>
             FIFA World Cup 2026
             <br />
             <span className="gradient-text">Full Schedule</span>
@@ -76,8 +76,8 @@ export default function SchedulePageContent() {
                 className={cn(
                   "flex items-center gap-2 px-3 py-1.5 rounded-full border text-xs font-bold transition-all",
                   countryFilter === h.country
-                    ? "bg-white/10 border-accent text-white"
-                    : "border-white/10 text-pitch-400 hover:text-white hover:border-white/20"
+                    ? "border-cyan-400 bg-cyan-50 text-cyan-700"
+                    : "border-slate-200 text-slate-500 hover:text-slate-900 hover:border-slate-300"
                 )}
               >
                 <div className="relative w-5 h-3.5 rounded-sm overflow-hidden">
@@ -104,8 +104,8 @@ export default function SchedulePageContent() {
                 className={cn(
                   "px-3 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wider border transition-all",
                   stageFilter === s
-                    ? "bg-white/10 border-accent text-white"
-                    : "border-white/10 text-pitch-500 hover:text-white hover:border-white/20"
+                    ? "border-cyan-400 bg-cyan-50 text-cyan-700"
+                    : "border-slate-200 text-slate-500 hover:text-slate-900 hover:border-slate-300"
                 )}
               >
                 {s === "All" ? "All stages" : STAGE_LABELS[s] ?? s}
@@ -138,14 +138,14 @@ export default function SchedulePageContent() {
                   <div className="flex items-center gap-3 mb-3">
                     <div className="flex items-center gap-2">
                       <Calendar size={14} className="text-pitch-500" />
-                      <h2 className="font-display text-2xl uppercase text-white tracking-tight">
+                      <h2 className="font-display text-2xl uppercase tracking-tight" style={{ color: "#0F172A" }}>
                         {dayLabel}
                       </h2>
                       <span className="text-pitch-400 font-mono text-sm">
                         {dateLabel}
                       </span>
                     </div>
-                    <div className="flex-1 h-px bg-white/[0.06]" />
+                    <div className="flex-1 h-px bg-slate-100" />
                     <span className="text-[10px] text-pitch-600 uppercase tracking-widest">
                       {matches.length} {matches.length === 1 ? "match" : "matches"}
                     </span>
@@ -178,7 +178,7 @@ export default function SchedulePageContent() {
                                 <Image src={flagUrl(match.homeFlagCode, 20)} alt={match.home} fill className="object-cover" unoptimized />
                               </div>
                             )}
-                            <span className="font-display text-lg uppercase text-white tracking-tight truncate">
+                            <span className="font-display text-lg uppercase tracking-tight truncate keep-dark">
                               {match.home}
                             </span>
                             <span className="text-pitch-600 font-bold mx-1">vs</span>
@@ -187,7 +187,7 @@ export default function SchedulePageContent() {
                                 <Image src={flagUrl(match.awayFlagCode, 20)} alt={match.away} fill className="object-cover" unoptimized />
                               </div>
                             )}
-                            <span className="font-display text-lg uppercase text-white tracking-tight truncate">
+                            <span className="font-display text-lg uppercase tracking-tight truncate keep-dark">
                               {match.away}
                             </span>
                           </div>
@@ -203,7 +203,7 @@ export default function SchedulePageContent() {
                             </div>
                             <div className="flex items-center gap-1.5">
                               <Clock size={11} className="text-pitch-500" />
-                              <span className="font-mono text-sm font-bold text-white">
+                              <span className="font-mono text-sm font-bold" style={{ color: "#0891B2" }}>
                                 {match.time}
                               </span>
                               <span className="text-[10px] text-pitch-500">
@@ -228,7 +228,7 @@ export default function SchedulePageContent() {
         {/* CTA at bottom */}
         <div className="mt-16 text-center">
           <Card variant="glass-accent" className="p-8 max-w-xl mx-auto">
-            <h3 className="font-display text-3xl uppercase text-white mb-2">
+            <h3 className="font-display text-3xl uppercase keep-dark mb-2">
               Predict every one of these matches
             </h3>
             <p className="text-pitch-300 text-sm mb-6">
