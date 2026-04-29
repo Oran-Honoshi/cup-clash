@@ -87,6 +87,8 @@ export default function SigninPage() {
         </div>
       </div>
 
+      <SocialAuth className="mt-4" />
+
       <p className="text-center text-sm text-pitch-500 mt-5">
         Don&apos;t have an account?{" "}
         <Link href="/signup" className="font-bold text-pitch-300 hover:text-white transition-colors">Create one free</Link>
@@ -94,6 +96,8 @@ export default function SigninPage() {
     </div>
   );
 }
+
+import { SocialAuth } from "@/components/auth/social-auth";
 
 const inputCls = cn(
   "w-full pl-10 pr-4 py-2.5 rounded-xl text-sm text-white",

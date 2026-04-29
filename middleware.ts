@@ -4,7 +4,7 @@ import { NextResponse, type NextRequest } from "next/server";
 const PROTECTED_PREFIXES = [
   "/dashboard", "/leaderboard", "/predictions", "/admin",
   "/create-group", "/bracket", "/testing", "/profile",
-  "/standings", "/trivia",
+  "/standings", "/trivia", "/groups", "/notifications",
 ];
 const AUTH_ROUTES = ["/signin", "/signup"];
 
@@ -22,9 +22,7 @@ export async function middleware(request: NextRequest) {
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
     {
       cookies: {
-        getAll() {
-          return request.cookies.getAll();
-        },
+        getAll() { return request.cookies.getAll(); },
         setAll(cookiesToSet: Array<{ name: string; value: string; options?: Record<string, unknown> }>) {
           cookiesToSet.forEach(({ name, value }: { name: string; value: string }) =>
             request.cookies.set(name, value)

@@ -1,18 +1,20 @@
 "use client";
 
 import { useState } from "react";
-import { Trophy, Star, Users } from "lucide-react";
+import { Trophy, Star, Users, Brain } from "lucide-react";
 import { Leaderboard } from "@/components/dashboard/leaderboard";
 import { TopScorersLeaderboard, TopAssistersLeaderboard } from "@/components/dashboard/player-stats-leaderboard";
+import { TriviaLeaderboard } from "@/components/trivia/trivia-leaderboard";
 import { cn } from "@/lib/utils";
 import type { Member } from "@/lib/types";
 
-type Tab = "predictions" | "scorers" | "assisters";
+type Tab = "predictions" | "scorers" | "assisters" | "trivia";
 
 const TABS: Array<{ id: Tab; label: string; icon: typeof Trophy }> = [
-  { id: "predictions", label: "Predictions",  icon: Trophy },
-  { id: "scorers",     label: "Top Scorers",  icon: Star   },
-  { id: "assisters",   label: "Top Assisters", icon: Users  },
+  { id: "predictions", label: "Predictions", icon: Trophy  },
+  { id: "scorers",     label: "Scorers",     icon: Star    },
+  { id: "assisters",   label: "Assisters",   icon: Users   },
+  { id: "trivia",      label: "Trivia",      icon: Brain   },
 ];
 
 interface LeaderboardTabsProps {
@@ -52,12 +54,9 @@ export function LeaderboardTabs({ members }: LeaderboardTabsProps) {
       {active === "predictions" && (
         <Leaderboard members={members} currentUserId="1" />
       )}
-      {active === "scorers" && (
-        <TopScorersLeaderboard />
-      )}
-      {active === "assisters" && (
-        <TopAssistersLeaderboard />
-      )}
+      {active === "scorers"     && <TopScorersLeaderboard />}
+      {active === "assisters"   && <TopAssistersLeaderboard />}
+      {active === "trivia"      && <TriviaLeaderboard currentUserId="1" />}
     </div>
   );
 }
