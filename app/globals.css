@@ -20,7 +20,7 @@
   --pitch-green: 16 185 129;         /* #10b981 — CTAs, live indicators, correct answers */
   --electric-blue: 59 130 246;       /* #3b82f6 — secondary accents */
   --deep-stadium: 5 10 15;           /* #050a0f — main bg */
-  --surface-navy: 17 29 39;          /* #111d27 — cards, modals */
+  --surface-navy: 15 23 35;          /* #0f1723 — cards, slightly lighter */
 
   /* Typography */
   --font-display: "Urbanist", system-ui, sans-serif;
@@ -32,7 +32,7 @@
 
 html {
   scroll-behavior: smooth;
-  background: #050a0f;
+  background: #0a0f14;
 }
 
 html, body {
@@ -46,11 +46,11 @@ html, body {
 /* ── STADIUM ATMOSPHERE BACKGROUND ── */
 body {
   background:
-    radial-gradient(ellipse 100% 60% at 50% -5%, rgb(16 185 129 / 0.08) 0%, transparent 50%),
-    radial-gradient(ellipse 70% 50% at 0% 100%, rgb(42 57 141 / 0.12) 0%, transparent 60%),
-    radial-gradient(ellipse 60% 50% at 100% 100%, rgb(230 29 37 / 0.06) 0%, transparent 60%),
-    radial-gradient(ellipse 80% 40% at 50% 50%, rgb(var(--accent) / 0.04) 0%, transparent 70%),
-    #050a0f;
+    radial-gradient(ellipse 120% 50% at 50% -10%, rgba(16,185,129,0.07) 0%, transparent 55%),
+    radial-gradient(ellipse 60% 40% at 0% 80%, rgba(59,130,246,0.04) 0%, transparent 50%),
+    radial-gradient(ellipse 50% 40% at 100% 80%, rgba(16,185,129,0.03) 0%, transparent 50%),
+    
+    #0a0f14;
 }
 
 /* ── FONT CLASSES ── */
@@ -163,3 +163,29 @@ h1, h2, h3, .font-display {
 .animate-pulse-glow { animation: pulse-glow 2s ease-in-out infinite; }
 .animate-float      { animation: float 4s ease-in-out infinite; }
 .animate-ticker     { animation: ticker 25s linear infinite; }
+
+/* ── UPDATED GLASS — lighter, more SaaS ── */
+.glass {
+  background: rgba(15, 23, 35, 0.65) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+.glass-strong {
+  background: rgba(10, 15, 20, 0.90) !important;
+  backdrop-filter: blur(24px) !important;
+  -webkit-backdrop-filter: blur(24px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+}
+
+/* ── LABEL CAPS — pitch green instead of CSS var ── */
+.label-caps {
+  color: #10b981 !important;
+}
+
+/* ── CARD DEFAULTS — use explicit dark surface color ── */
+.rounded-2xl.glass,
+.rounded-xl.glass {
+  background: rgba(12, 18, 28, 0.7) !important;
+}

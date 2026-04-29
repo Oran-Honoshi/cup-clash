@@ -5,16 +5,17 @@ import { COUNTRIES } from "@/lib/countries";
 import type { CountryCode } from "@/lib/types";
 
 interface ThemeContextValue {
+  /** null = use brand default; CountryCode = country accent active */
   country: CountryCode | null;
   setCountry: (code: CountryCode | null) => void;
 }
 
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
-// Brand defaults — 2026 World Cup official palette.
-// Hermes Blue (#2A398D) as default, Torch Red (#E61D25) as gradient end.
-const BRAND_ACCENT = "42 57 141";       // Hermes Blue
-const BRAND_ACCENT_GLOW = "100 120 210"; // lighter blue for glow
+// Default accent — Pitch Green (#10b981) for a modern SaaS feel.
+// Country theming overrides this when a user selects their nation.
+const BRAND_ACCENT      = "16 185 129";   // Pitch Green #10b981
+const BRAND_ACCENT_GLOW = "52 211 153";   // Lighter green for glow #34d399
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [country, setCountry] = useState<CountryCode | null>(null);

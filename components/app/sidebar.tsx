@@ -19,10 +19,10 @@ const NAV_ITEMS = [
   { href: "/predictions",    icon: Target,          label: "My Predictions"  },
   { href: "/standings",      icon: BarChart2,       label: "Standings"       },
   { href: "/bracket",        icon: GitBranch,       label: "Bracket"         },
-  { href: "/trivia",         icon: Brain,           label: "Trivia 🧠"       },
+  { href: "/trivia",         icon: Brain,           label: "Trivia"          },
   { href: "/notifications",  icon: Bell,            label: "Notifications"   },
   { href: "/admin",          icon: ShieldCheck,     label: "Admin"           },
-  { href: "/testing",        icon: FlaskConical,    label: "Testing 🧪"      },
+  { href: "/testing",        icon: FlaskConical,    label: "Testing"         },
 ];
 
 interface UserProfile { name: string; country: string; avatar_url: string | null; }

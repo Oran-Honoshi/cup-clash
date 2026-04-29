@@ -55,13 +55,9 @@ export function NudgeButton({
     <button
       onClick={(e) => { e.stopPropagation(); handleNudge(); }}
       className={cn(
-        "flex items-center gap-1.5 font-bold uppercase tracking-widest rounded-full border transition-all hover:-translate-y-0.5",
-        size === "sm"
-          ? "text-[9px] px-2 py-1"
-          : "text-xs px-3 py-1.5",
-        minutesToKickoff <= 30
-          ? "text-danger border-danger/30 bg-danger/10 hover:bg-danger/20"
-          : "text-warning border-warning/30 bg-warning/10 hover:bg-warning/20"
+        "flex items-center gap-1.5 font-bold uppercase tracking-widest rounded-lg border transition-all hover:opacity-80",
+        size === "sm" ? "text-[9px] px-2 py-1" : "text-xs px-3 py-1.5",
+        "text-pitch-400 border-white/10 bg-white/[0.04] hover:border-white/20 hover:text-white"
       )}
       title={`Send WhatsApp nudge to ${memberName}`}
     >
