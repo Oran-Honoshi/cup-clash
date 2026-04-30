@@ -28,14 +28,14 @@ export function CountryPickerSection() {
           className="text-center mb-10"
         >
           <div className="label-caps mb-3">Pick your team</div>
-          <h2 className="font-display text-4xl sm:text-5xl uppercase text-white">
+          <h2 className="font-display text-4xl sm:text-5xl uppercase" style={{ color: "#0F172A" }}>
             Your flag.<br />
-            <span style={{ color: "#10b981" }}>Your colors.</span>
+            <span style={{ background: "linear-gradient(135deg, #00D4FF, #00FF88)", WebkitBackgroundClip: "text", backgroundClip: "text", WebkitTextFillColor: "transparent" }}>Your colors.</span>
           </h2>
           <p className="mt-4 text-base max-w-lg mx-auto" style={{ color: "#64748b" }}>
             Select your team below — the entire app theme changes to match your nation's colors.
             {selected && (
-              <span className="font-bold text-white"> You picked {selected}! </span>
+              <span className="font-bold" style={{ color: "#0B141B" }}> You picked {selected}! </span>
             )}
           </p>
         </motion.div>
@@ -53,12 +53,12 @@ export function CountryPickerSection() {
                 title={c.name}
                 className="relative flex flex-col items-center gap-1 p-1.5 rounded-xl border transition-all"
                 style={active ? {
-                  borderColor: "rgba(16,185,129,0.5)",
-                  background: "rgba(16,185,129,0.1)",
-                  boxShadow: "0 0 12px rgba(16,185,129,0.3)",
+                  borderColor: "rgba(0,212,255,0.4)",
+                  background: "rgba(0,212,255,0.08)",
+                  boxShadow: "0 0 12px rgba(0,212,255,0.25)",
                 } : {
-                  borderColor: "rgba(255,255,255,0.06)",
-                  background: "rgba(255,255,255,0.02)",
+                  borderColor: "#e2e8f0",
+                  background: "rgba(255,255,255,0.8)",
                 }}
               >
                 <div className="relative w-8 h-5 rounded-sm overflow-hidden">
@@ -71,7 +71,7 @@ export function CountryPickerSection() {
                   />
                 </div>
                 <span className="text-[8px] font-bold"
-                  style={{ color: active ? "#10b981" : "#475569" }}>
+                  style={{ color: active ? "#0891B2" : "#475569" }}>
                   {c.code}
                 </span>
               </motion.button>
@@ -88,11 +88,11 @@ export function CountryPickerSection() {
           >
             <p className="text-sm mb-4" style={{ color: "#64748b" }}>
               Nice! Your theme is now set to{" "}
-              <strong className="text-white">{selected}</strong>. Sign up to keep it.
+              <strong className="font-bold" style={{ color: "#0B141B" }}>{selected}</strong>. Sign up to keep it.
             </p>
             <Link href="/signup">
               <button className="inline-flex items-center gap-2 px-6 py-3 rounded-full font-bold text-sm uppercase tracking-wider text-white transition-all hover:-translate-y-0.5"
-                style={{ background: "linear-gradient(135deg, #10b981, #059669)", boxShadow: "0 4px 16px rgba(16,185,129,0.4)" }}>
+                style={{ background: "linear-gradient(135deg, #00FF88, #00D4FF)", boxShadow: "0 4px 16px rgba(0,255,136,0.25)" }}>
                 Create your group <ArrowRight size={16} />
               </button>
             </Link>

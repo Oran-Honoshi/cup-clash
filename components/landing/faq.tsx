@@ -48,9 +48,9 @@ export function Faq() {
       <div className="max-w-3xl mx-auto">
         <motion.div initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-16">
           <div className="label-caps mb-3">FAQ</div>
-          <h2 className="font-display text-4xl sm:text-5xl uppercase text-white">
+          <h2 className="font-display text-4xl sm:text-5xl uppercase" style={{ color: "#0F172A" }}>
             Good questions.<br />
-            <span style={{ color: "#10b981" }}>Straight answers.</span>
+            <span style={{ background: "linear-gradient(135deg, #00D4FF, #00FF88)", WebkitBackgroundClip: "text", backgroundClip: "text", WebkitTextFillColor: "transparent" }}>Straight answers.</span>
           </h2>
         </motion.div>
 
@@ -63,9 +63,9 @@ export function Faq() {
             >
               <button onClick={() => setOpen(open === i ? null : i)}
                 className="w-full flex items-center justify-between gap-4 px-6 py-4 text-left">
-                <span className="text-sm font-bold leading-relaxed" style={{ color: open === i ? "#ffffff" : "#cbd5e1" }}>{faq.q}</span>
+                <span className="text-sm font-bold leading-relaxed" style={{ color: "#0F172A" }}>{faq.q}</span>
                 <ChevronDown size={18} className={`shrink-0 transition-transform ${open === i ? "rotate-180" : ""}`}
-                  style={{ color: open === i ? "#10b981" : "#64748b" }} />
+                  style={{ color: open === i ? "#00D4FF" : "#94a3b8" }} />
               </button>
               <AnimatePresence>
                 {open === i && (

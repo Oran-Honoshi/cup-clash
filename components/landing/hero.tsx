@@ -79,7 +79,7 @@ function PhoneMockup() {
             style={{ background: "rgba(255,255,255,0.9)", border: "1px solid rgba(0,255,136,0.25)", boxShadow: "0 4px 16px rgba(0,255,136,0.1)" }}>
             <div className="text-[8px] font-bold uppercase tracking-widest mb-2" style={{ color: "#00D4FF" }}>Next Match</div>
             <div className="flex items-center justify-between mb-3">
-              <div className="text-center"><div className="text-sm">🇧🇷</div><div className="text-[9px] font-bold" style={{ color: "#0B141B" }}>BRA</div></div>
+              <div className="text-center"><div className="relative h-5 w-6 rounded-sm overflow-hidden"><img src="https://flagcdn.com/w20/br.png" alt="Brazil" className="w-full h-full object-cover" /></div><div className="text-[9px] font-bold" style={{ color: "#0B141B" }}>BRA</div></div>
               <div className="flex gap-1 items-center">
                 <div className="w-7 h-7 rounded-lg flex items-center justify-center text-sm font-bold"
                   style={{ background: "rgba(0,212,255,0.08)", color: "#0B141B", border: "1px solid rgba(0,212,255,0.2)" }}>2</div>
@@ -87,7 +87,7 @@ function PhoneMockup() {
                 <div className="w-7 h-7 rounded-lg flex items-center justify-center text-sm font-bold"
                   style={{ background: "rgba(0,212,255,0.08)", color: "#0B141B", border: "1px solid rgba(0,212,255,0.2)" }}>1</div>
               </div>
-              <div className="text-center"><div className="text-sm">🇫🇷</div><div className="text-[9px] font-bold" style={{ color: "#0B141B" }}>FRA</div></div>
+              <div className="text-center"><div className="relative h-5 w-6 rounded-sm overflow-hidden"><img src="https://flagcdn.com/w20/fr.png" alt="France" className="w-full h-full object-cover" /></div><div className="text-[9px] font-bold" style={{ color: "#0B141B" }}>FRA</div></div>
             </div>
             <button className="w-full rounded-xl py-2 text-[9px] font-bold uppercase tracking-widest"
               style={{ background: "linear-gradient(135deg, #00FF88, #00D4FF)", color: "#0B141B", boxShadow: "0 4px 12px rgba(0,255,136,0.35)" }}>
@@ -211,7 +211,7 @@ export function Hero() {
                 <div className="text-sm font-bold" style={{ color:"#0B141B" }}>1,200+ groups active</div>
                 <div className="text-xs" style={{ color:"#94a3b8" }}>across 40+ countries</div>
               </div>
-              <div className="flex gap-0.5">{[1,2,3,4,5].map(s=><span key={s} style={{ color:"#d97706" }}>★</span>)}</div>
+              <div className="flex gap-0.5">{[1,2,3,4,5].map(s=><svg key={s} width="14" height="14" viewBox="0 0 24 24" fill="#d97706" stroke="none"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>)}</div>
             </motion.div>
 
             {/* Countdown */}
@@ -274,12 +274,12 @@ export function Hero() {
           <div className="text-xs font-bold uppercase tracking-widest" style={{ color:"#94a3b8" }}>Host Nations</div>
           <div className="flex items-center gap-6">
             {[
-              { flag:"🇺🇸", name:"United States", matches:"60 matches" },
-              { flag:"🇲🇽", name:"Mexico",        matches:"22 matches" },
-              { flag:"🇨🇦", name:"Canada",        matches:"13 matches" },
+              { flag:"us", name:"United States", matches:"60 matches" },
+              { flag:"mx", name:"Mexico",        matches:"22 matches" },
+              { flag:"ca", name:"Canada",        matches:"13 matches" },
             ].map(({ flag, name, matches }) => (
               <div key={name} className="flex items-center gap-2">
-                <span className="text-2xl">{flag}</span>
+                <span className="relative h-6 w-8 rounded-sm overflow-hidden inline-block"><img src={`https://flagcdn.com/w20/${flag}.png`} alt={name} className="w-full h-full object-cover" /></span>
                 <div>
                   <div className="text-xs font-bold" style={{ color:"#0B141B" }}>{name}</div>
                   <div className="text-[10px]" style={{ color:"#94a3b8" }}>{matches}</div>
