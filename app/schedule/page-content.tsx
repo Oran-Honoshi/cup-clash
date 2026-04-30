@@ -35,7 +35,12 @@ export default function SchedulePageContent() {
     });
   }, [stageFilter, countryFilter]);
 
-  const grouped = useMemo(() => groupMatchesByDate(filtered), [filtered]);
+  const groupedArr = useMemo(() => groupMatchesByDate(filtered), [filtered]);
+  const grouped = useMemo(() => {
+    const map: Record<string, typeof filtered> = {};
+    groupedArr.forEach(({ date, matches }) => { map[date] = matches; });
+    return map;
+  }, [groupedArr, filtered]);
   const dates = Object.keys(grouped).sort();
 
   return (
