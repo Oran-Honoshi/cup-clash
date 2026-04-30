@@ -8,7 +8,7 @@ const nextConfig = {
       { protocol: "https", hostname: "images.unsplash.com" },
       { protocol: "https", hostname: "upload.wikimedia.org" },
       { protocol: "https", hostname: "www.linkshuttle.com" },
-      { protocol: "https", hostname: "*.supabase.co" },
+      { protocol: "https", hostname: "ljivgwkczgqvcqkdzsxr.supabase.co" },
     ],
   },
 };
