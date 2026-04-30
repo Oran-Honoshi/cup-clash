@@ -36,11 +36,11 @@ export function NudgeButton({
     : `${Math.round(minutesToKickoff / 60)} hours`;
 
   const whatsappText = encodeURIComponent(
-    `${urgency} ${memberName}! ⚽\n\n` +
+    `${urgency} ${memberName}!\n\n` +
     `You haven't predicted the score for *${matchLabel}* yet.\n\n` +
     `Predictions lock in *${timeLeft}* — don't miss out on points!\n\n` +
     `👉 Open Cup Clash now: ${typeof window !== "undefined" ? window.location.origin : "https://cupclash.com"}/predictions\n\n` +
-    `— Your ${groupName} admin 🏆`
+    `— Your ${groupName} admin`
   );
 
   const handleNudge = () => {

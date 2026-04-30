@@ -107,7 +107,7 @@ export function TriviaPageClient({
             transition={{ type: "spring", damping: 12 }}
             className="text-6xl"
           >
-            🧠
+            
           </motion.div>
           <h1 className="font-display text-5xl sm:text-6xl uppercase text-white leading-[0.9] tracking-tight">
             Think you know
@@ -186,7 +186,7 @@ export function TriviaPageClient({
               <p>You have <strong className="text-white">one shot</strong> to earn up to 20 points — 1 point per correct answer.</p>
               <p>Each question has a <strong className="text-white">{SECONDS_PER_QUESTION}-second</strong> countdown. Answer before time runs out.</p>
               <p>After the points round, you can play the remaining questions for fun (pausable, no effect on scores).</p>
-              <p>The <strong className="text-white">Trivia Champion 🏆</strong> badge goes to the member with the most correct answers. Ties are broken by total answer time.</p>
+              <p>The <strong className="text-white">Trivia Champion</strong> badge goes to the member with the most correct answers. Ties are broken by total answer time.</p>
             </>
           ) : (
             <>

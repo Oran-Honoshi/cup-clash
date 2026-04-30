@@ -10,7 +10,7 @@ const MOCK_HISTORY = [
   { id: "1", match: "Israel vs France",     date: "Jun 12", type: "exact",   points: 25, detail: "Predicted 2–1 ✓" },
   { id: "2", match: "Argentina vs Brazil",  date: "Jun 13", type: "outcome", points: 10, detail: "Predicted Argentina win ✓" },
   { id: "3", match: "England vs Spain",     date: "Jun 14", type: "miss",    points: 0,  detail: "Predicted England win ✗" },
-  { id: "4", match: "Tournament Winner",    date: "Pre-tourney", type: "tournament", points: 100, detail: "Picked Argentina 🏆" },
+  { id: "4", match: "Tournament Winner",    date: "Pre-tourney", type: "tournament", points: 100, detail: "Picked Argentina" },
   { id: "5", match: "Top Scorer",           date: "Pre-tourney", type: "scorer", points: 0, detail: "Picked Mbappé (pending)" },
 ];
 

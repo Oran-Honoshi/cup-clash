@@ -41,17 +41,21 @@ const MOCK_TOP_ASSISTERS: PlayerStat[] = [
   { rank: 10, name: "Sofyan Amrabat",  team: "Morocco",     teamFlagCode: "ma",     count: 0, matches: 0 },
 ];
 
-const RANK_MEDALS: Record<number, string> = { 1: "🥇", 2: "🥈", 3: "🥉" };
+const RANK_COLORS: Record<number, string> = { 1: "#d97706", 2: "#64748b", 3: "#b45309" };
+const RANK_LABELS: Record<number, string> = { 1: "1st", 2: "2nd", 3: "3rd" };
 
 function PlayerRow({ player, statLabel }: { player: PlayerStat; statLabel: string }) {
+  const isTop3   = player.rank <= 3;
+  const rankColor = RANK_COLORS[player.rank] ?? "#94a3b8";
+
   return (
-    <div className="flex items-center gap-3 px-5 py-3 border-b border-white/[0.04] last:border-0 hover:bg-white/[0.02] transition-colors">
+    <div className="flex items-center gap-3 px-5 py-3 border-b border-slate-50 last:border-0 hover:bg-slate-50 transition-colors">
       {/* Rank */}
-      <div className="w-7 text-center shrink-0">
-        {RANK_MEDALS[player.rank] ? (
-          <span className="text-base">{RANK_MEDALS[player.rank]}</span>
+      <div className="w-8 text-center shrink-0">
+        {isTop3 ? (
+          <span className="text-xs font-black" style={{ color: rankColor }}>{RANK_LABELS[player.rank]}</span>
         ) : (
-          <span className="text-sm font-bold text-pitch-500">{player.rank}</span>
+          <span className="text-sm font-bold" style={{ color: "#94a3b8" }}>{player.rank}</span>
         )}
       </div>
 

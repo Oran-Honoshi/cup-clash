@@ -28,7 +28,7 @@ const TIERS = [
 
 // Key upcoming matches for single-match groups
 const FEATURED_MATCHES = [
-  { id: "final",  label: "🏆 Final",                  detail: "MetLife Stadium · Jul 19" },
+  { id: "final",  label: "Final",                  detail: "MetLife Stadium · Jul 19" },
   { id: "sf-1",   label: "Semi-Final 1",               detail: "MetLife Stadium · Jul 21" },
   { id: "sf-2",   label: "Semi-Final 2",               detail: "AT&T Stadium · Jul 22"    },
   { id: "qf-1",   label: "Quarter-Final 1",            detail: "MetLife Stadium · Jul 15" },
@@ -336,12 +336,20 @@ export default function CreateGroupPage() {
         </div>
         <div className="space-y-3">
           {[
-            { label: "1st", key: "payoutFirst"  as const, medal: "🥇" },
-            { label: "2nd", key: "payoutSecond" as const, medal: "🥈" },
-            { label: "3rd", key: "payoutThird"  as const, medal: "🥉" },
-          ].map(({ label, key, medal }) => (
+            { label: "1st", key: "payoutFirst"  as const, medal: "1" },
+            { label: "2nd", key: "payoutSecond" as const, medal: "2" },
+            { label: "3rd", key: "payoutThird"  as const, medal: "3" },
+          ].map(({ label, key, medal }, i) => (
             <div key={key} className="flex items-center gap-3">
-              <span className="w-16 text-sm text-pitch-300">{medal} {label}</span>
+              <div className="h-6 w-6 rounded-full flex items-center justify-center text-[10px] font-black shrink-0"
+                style={{
+                  background: i === 0 ? "rgba(217,119,6,0.12)" : i === 1 ? "rgba(100,116,139,0.12)" : "rgba(180,83,9,0.12)",
+                  color: i === 0 ? "#d97706" : i === 1 ? "#64748b" : "#b45309",
+                  border: `1px solid ${i === 0 ? "rgba(217,119,6,0.25)" : i === 1 ? "rgba(100,116,139,0.25)" : "rgba(180,83,9,0.25)"}`,
+                }}>
+                {medal}
+              </div>
+              <span className="w-10 text-sm font-bold" style={{ color: "#475569" }}>{label}</span>
               <input type="number" min={0} max={100} value={form[key]}
                 onChange={e => update(key, Number(e.target.value))}
                 className="flex-1 rounded-xl px-3 py-2 text-sm text-white text-right bg-white/[0.06] border border-white/[0.12] focus:outline-none focus:border-accent" />

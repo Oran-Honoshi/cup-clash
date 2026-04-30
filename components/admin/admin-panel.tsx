@@ -173,12 +173,16 @@ export function AdminPanel({ group, initialMembers }: AdminPanelProps) {
 
           <div className="space-y-3 mb-4">
             {([
-              { label: "1st", emoji: "🥇", key: "first"  as const, amount: firstAmount  },
-              { label: "2nd", emoji: "🥈", key: "second" as const, amount: secondAmount },
-              { label: "3rd", emoji: "🥉", key: "third"  as const, amount: thirdAmount  },
-            ]).map(({ label, emoji, key, amount }) => (
+              { label: "1st", icon: "1", key: "first"  as const, amount: firstAmount,  color: "#d97706" },
+              { label: "2nd", icon: "2", key: "second" as const, amount: secondAmount, color: "#64748b" },
+              { label: "3rd", icon: "3", key: "third"  as const, amount: thirdAmount,  color: "#b45309" },
+            ]).map(({ label, icon, key, amount, color }) => (
               <div key={key} className="flex items-center gap-3">
-                <span className="text-sm font-bold w-8" style={{ color: "#64748b" }}>{emoji} {label}</span>
+                <div className="h-6 w-6 rounded-full flex items-center justify-center text-[10px] font-black shrink-0"
+                  style={{ background: `${color}15`, color, border: `1px solid ${color}30` }}>
+                  {icon}
+                </div>
+                <span className="text-sm font-bold w-6" style={{ color: "#64748b" }}>{label}</span>
                 <div className="flex-1 relative">
                   <input type="number" min={0} max={100} value={payouts[key]}
                     onChange={e => { setPayouts(p => ({ ...p, [key]: Number(e.target.value) })); setPayoutSaved(false); }}

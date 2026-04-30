@@ -256,7 +256,7 @@ export function TournamentPicks({ groupId, locked = false, config: configOverrid
           <Trophy size={18} style={{ color: "#D4AF37" }} />
           <span className="font-display text-xl uppercase text-white">Tournament Picks</span>
         </div>
-        <CountryPicker pickKey="winner" label="🥇 Tournament Winner" pts={config.tournamentWinner} />
+        <CountryPicker pickKey="winner" label="Tournament Winner" pts={config.tournamentWinner} />
       </Card>
 
       {/* 2nd and 3rd place */}
@@ -266,8 +266,8 @@ export function TournamentPicks({ groupId, locked = false, config: configOverrid
             <Medal size={18} style={{ color: "rgb(var(--accent-glow))" }} />
             <span className="font-display text-xl uppercase text-white">Podium Picks</span>
           </div>
-          {config.enableSecond && <CountryPicker pickKey="second" label="🥈 2nd Place" pts={config.second} />}
-          {config.enableThird  && <CountryPicker pickKey="third"  label="🥉 3rd Place" pts={config.third}  />}
+          {config.enableSecond && <CountryPicker pickKey="second" label="2nd Place" pts={config.second} />}
+          {config.enableThird  && <CountryPicker pickKey="third"  label="3rd Place" pts={config.third}  />}
         </Card>
       )}
 
@@ -290,10 +290,10 @@ export function TournamentPicks({ groupId, locked = false, config: configOverrid
             <Star size={18} className="text-warning" />
             <span className="font-display text-xl uppercase text-white">Player Awards</span>
           </div>
-          {config.enableTopScorer   && <PlayerPicker pickKey="topScorer"   label="⚽ Top Scorer (Golden Boot)"   pts={config.topScorer}   />}
-          {config.enableTopAssister && <PlayerPicker pickKey="topAssister" label="🎯 Top Assister"                pts={config.topAssister} />}
-          {config.enableGoldenBall  && <PlayerPicker pickKey="goldenBall"  label="🏅 Golden Ball (Best Player)"   pts={config.goldenBall}  />}
-          {config.enableGoldenGlove && <PlayerPicker pickKey="goldenGlove" label="🧤 Golden Glove (Best GK)"       pts={config.goldenGlove} />}
+          {config.enableTopScorer   && <PlayerPicker pickKey="topScorer"   label="Top Scorer — Golden Boot"   pts={config.topScorer}   />}
+          {config.enableTopAssister && <PlayerPicker pickKey="topAssister" label="Top Assister"                pts={config.topAssister} />}
+          {config.enableGoldenBall  && <PlayerPicker pickKey="goldenBall"  label="Golden Ball — Best Player"   pts={config.goldenBall}  />}
+          {config.enableGoldenGlove && <PlayerPicker pickKey="goldenGlove" label="Golden Glove — Best GK"       pts={config.goldenGlove} />}
         </Card>
       )}
 

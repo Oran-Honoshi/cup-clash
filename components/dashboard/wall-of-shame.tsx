@@ -1,10 +1,9 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { AlertTriangle } from "lucide-react";
+import { TrendingDown, ThumbsDown, Frown, Meh } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { MemberAvatar } from "@/components/ui/member-avatar";
-import { cn } from "@/lib/utils";
 import type { Member } from "@/lib/types";
 
 interface WallOfShameProps {
@@ -15,7 +14,6 @@ interface WallOfShameProps {
 export function WallOfShame({ members, totalMatches = 20 }: WallOfShameProps) {
   if (members.length < 3) return null;
 
-  // Sort by accuracy ascending — lowest first
   const sorted = [...members]
     .filter(m => !m.isGhost && (m.correctPredictions ?? 0) + (m.exactScores ?? 0) > 0)
     .sort((a, b) => {
@@ -27,27 +25,31 @@ export function WallOfShame({ members, totalMatches = 20 }: WallOfShameProps) {
   const bottom3 = sorted.slice(0, 3);
   if (bottom3.length === 0) return null;
 
-  const SHAME_LABELS = [
-    { emoji: "🧱", label: "The Wall",    sub: "Worst accuracy this week" },
-    { emoji: "💀", label: "Dead Cert",   sub: "Second worst" },
-    { emoji: "🤦", label: "The Pundit",  sub: "Third worst" },
+  const SHAME_ITEMS = [
+    { Icon: ThumbsDown, label: "The Wall",   sub: "Worst accuracy",  color: "#dc2626", bg: "rgba(220,38,38,0.08)",   border: "rgba(220,38,38,0.15)"  },
+    { Icon: Frown,      label: "Dead Cert",  sub: "Second worst",    color: "#d97706", bg: "rgba(217,119,6,0.06)",   border: "rgba(217,119,6,0.12)"  },
+    { Icon: Meh,        label: "The Pundit", sub: "Third worst",      color: "#64748b", bg: "rgba(100,116,139,0.06)", border: "rgba(100,116,139,0.12)" },
   ];
 
   return (
     <Card variant="glass" className="overflow-hidden">
-      <div className="px-5 py-4 border-b border-white/[0.06] flex items-center gap-2.5">
-        <AlertTriangle size={16} style={{ color: "#f59e0b" }} />
-        <span className="font-display text-xl uppercase text-white tracking-tight">Wall of Shame</span>
-        <span className="ml-auto text-[10px] text-pitch-600 uppercase tracking-widest">Lowest accuracy</span>
+      <div className="px-5 py-4 border-b border-slate-100 flex items-center gap-2.5">
+        <TrendingDown size={16} strokeWidth={1.5} style={{ color: "#dc2626" }} />
+        <span className="font-display text-xl uppercase tracking-tight" style={{ color: "#0F172A" }}>
+          Wall of Shame
+        </span>
+        <span className="ml-auto text-[10px] font-bold uppercase tracking-widest" style={{ color: "#94a3b8" }}>
+          Lowest accuracy
+        </span>
       </div>
 
       <div className="p-4 space-y-2">
-        <p className="text-xs text-pitch-500 mb-3">
-          In a good group, the losers are just as celebrated as the winners. 🏅
+        <p className="text-xs mb-3" style={{ color: "#94a3b8" }}>
+          In a good group, the losers are just as celebrated as the winners.
         </p>
 
         {bottom3.map((member, i) => {
-          const { emoji, label, sub } = SHAME_LABELS[i];
+          const { Icon, label, sub, color, bg, border } = SHAME_ITEMS[i];
           const accuracy = totalMatches > 0
             ? Math.round(((member.correctPredictions ?? 0) + (member.exactScores ?? 0)) / totalMatches * 100)
             : 0;
@@ -57,45 +59,47 @@ export function WallOfShame({ members, totalMatches = 20 }: WallOfShameProps) {
               initial={{ opacity: 0, x: -8 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: i * 0.08 }}
-              className={cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-xl",
-                i === 0 ? "border border-warning/20" : "border border-white/[0.04]"
-              )}
-              style={i === 0 ? { background: "rgba(245,158,11,0.06)" } : { background: "rgba(255,255,255,0.02)" }}
+              className="flex items-center gap-3 px-3 py-2.5 rounded-xl"
+              style={{ background: bg, border: `1px solid ${border}` }}
             >
-              {/* Shame emoji */}
-              <span className="text-xl w-7 text-center shrink-0">{emoji}</span>
+              {/* Icon badge */}
+              <div className="h-8 w-8 rounded-lg flex items-center justify-center shrink-0"
+                style={{ background: `${color}15`, border: `1px solid ${color}25` }}>
+                <Icon size={15} strokeWidth={1.5} style={{ color }} />
+              </div>
 
               {/* Avatar */}
-              <MemberAvatar name={member.name} avatarUrl={member.avatarUrl} size="sm" dim />
+              <MemberAvatar name={member.name} avatarUrl={member.avatarUrl} size="sm" />
 
-              {/* Name */}
+              {/* Name + label */}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <span className="text-sm font-bold text-pitch-300 truncate">{member.name}</span>
+                  <span className="text-sm font-bold truncate" style={{ color: "#334155" }}>
+                    {member.name}
+                  </span>
                   {i === 0 && (
                     <span className="text-[9px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded-full shrink-0"
-                      style={{ background: "rgba(245,158,11,0.15)", color: "#f59e0b" }}>
+                      style={{ background: "rgba(220,38,38,0.1)", color: "#dc2626" }}>
                       {label}
                     </span>
                   )}
                 </div>
-                <div className="text-[10px] text-pitch-600">{sub}</div>
+                <div className="text-[10px]" style={{ color: "#94a3b8" }}>{sub}</div>
               </div>
 
               {/* Accuracy */}
               <div className="text-right shrink-0">
-                <div className="font-display text-xl" style={{ color: i === 0 ? "#f59e0b" : "#64748b" }}>
+                <div className="font-mono font-black text-xl" style={{ color }}>
                   {accuracy}%
                 </div>
-                <div className="text-[10px] text-pitch-600">accuracy</div>
+                <div className="text-[10px]" style={{ color: "#94a3b8" }}>accuracy</div>
               </div>
             </motion.div>
           );
         })}
       </div>
 
-      <div className="px-5 py-2 border-t border-white/[0.04] text-[10px] text-pitch-600 text-center">
+      <div className="px-5 py-2 border-t border-slate-50 text-[10px] text-center" style={{ color: "#94a3b8" }}>
         Updated after every match · only shown when 3+ matches played
       </div>
     </Card>

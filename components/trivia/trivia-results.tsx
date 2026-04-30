@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import { Share2, RotateCcw, Home, Trophy } from "lucide-react";
+import { Share2, RotateCcw, Home, Trophy, Crown, Zap, Target, Clock, BookOpen } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { generateShareText } from "@/lib/trivia/session";
 import type { TriviaSession } from "@/lib/trivia/session";
@@ -19,11 +19,11 @@ interface TriviaResultsProps {
 // Grade thresholds
 function getGrade(correct: number, total: number) {
   const pct = (correct / total) * 100;
-  if (pct === 100) return { label: "Perfect! 🏆", color: "#D4AF37", emoji: "🏆" };
-  if (pct >= 80)   return { label: "Oracle! 🔮",  color: "#22c55e", emoji: "🔮" };
-  if (pct >= 60)   return { label: "Sharp! ⚽",   color: "#6ee7b7", emoji: "⚽" };
-  if (pct >= 40)   return { label: "Getting there", color: "#f59e0b", emoji: "📚" };
-  return               { label: "Keep studying", color: "#ef4444", emoji: "😅" };
+  if (pct === 100) return { label: "Perfect!",       color: "#D4AF37", icon: "crown"  };
+  if (pct >= 80)   return { label: "Oracle!",         color: "#22c55e", icon: "zap"    };
+  if (pct >= 60)   return { label: "Sharp!",          color: "#6ee7b7", icon: "target" };
+  if (pct >= 40)   return { label: "Getting there",   color: "#f59e0b", icon: "clock"  };
+  return               {   label: "Keep studying",    color: "#ef4444", icon: "book"   };
 }
 
 export function TriviaResults({
@@ -80,9 +80,14 @@ export function TriviaResults({
         initial={{ scale: 0 }}
         animate={{ scale: 1 }}
         transition={{ type: "spring", damping: 12, stiffness: 200, delay: 0.2 }}
-        className="text-7xl"
+        className="h-20 w-20 rounded-full mx-auto flex items-center justify-center"
+        style={{ background: `${grade.color}18`, border: `2px solid ${grade.color}40` }}
       >
-        {grade.emoji}
+        {grade.icon === "crown"  && <Crown  size={36} strokeWidth={1.5} style={{ color: grade.color }} />}
+        {grade.icon === "zap"    && <Zap    size={36} strokeWidth={1.5} style={{ color: grade.color }} />}
+        {grade.icon === "target" && <Target size={36} strokeWidth={1.5} style={{ color: grade.color }} />}
+        {grade.icon === "clock"  && <Clock  size={36} strokeWidth={1.5} style={{ color: grade.color }} />}
+        {grade.icon === "book"   && <BookOpen size={36} strokeWidth={1.5} style={{ color: grade.color }} />}
       </motion.div>
 
       {/* Score */}

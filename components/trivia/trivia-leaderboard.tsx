@@ -120,7 +120,7 @@ export function TriviaLeaderboard({ scores = MOCK_TRIVIA_SCORES, currentUserId }
                   {player.isChampion && (
                     <span className="text-[9px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded-full shrink-0"
                       style={{ backgroundColor: "rgba(212,175,55,0.15)", color: "#D4AF37" }}>
-                      Champion 🏆
+                      Champion
                     </span>
                   )}
                   {isCurrentUser && (
