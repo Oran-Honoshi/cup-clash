@@ -46,10 +46,10 @@ export function CountryPickerSection() {
             const active = selected === c.name;
             return (
               <motion.button
-                key={c.code}
+                key={c.code ?? c.flagCode}
                 whileHover={{ scale: 1.15, zIndex: 10 }}
                 whileTap={{ scale: 0.95 }}
-                onClick={() => handlePick(c.code, c.name)}
+                onClick={() => handlePick((c.code ?? c.flagCode), c.name)}
                 title={c.name}
                 className="relative flex flex-col items-center gap-1 p-1.5 rounded-xl border transition-all"
                 style={active ? {
@@ -72,7 +72,7 @@ export function CountryPickerSection() {
                 </div>
                 <span className="text-[8px] font-bold"
                   style={{ color: active ? "#0891B2" : "#475569" }}>
-                  {c.code}
+                  {c.code ?? c.flagCode}
                 </span>
               </motion.button>
             );

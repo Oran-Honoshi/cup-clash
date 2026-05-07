@@ -143,7 +143,7 @@ export function TournamentPicks({ groupId, locked = false, config: configOverrid
   const CountryPicker = ({ pickKey, label, pts, max }: { pickKey: keyof Picks; label: string; pts: number; max?: number }) => {
     const s = search[pickKey] ?? "";
     const filtered = ALL_COUNTRIES.filter(c =>
-      c.name.toLowerCase().includes(s.toLowerCase()) || c.code.toLowerCase().includes(s.toLowerCase())
+      c.name.toLowerCase().includes(s.toLowerCase()) || (c.code ?? c.flagCode).toLowerCase().includes(s.toLowerCase())
     ).slice(0, 48);
     const value = picks[pickKey];
     const isArray = Array.isArray(value);
@@ -167,7 +167,7 @@ export function TournamentPicks({ groupId, locked = false, config: configOverrid
               : value === c.name;
             const isDisabled = isArray && !isSelected && (value as string[]).length >= (max ?? 99);
             return (
-              <button key={c.code} title={c.name} disabled={locked || isDisabled}
+              <button key={c.code ?? c.flagCode} title={c.name} disabled={locked || isDisabled}
                 onClick={() => isArray ? toggleBestThird(c.name) : setPicks(p => ({ ...p, [pickKey]: c.name }))}
                 className={cn("flex flex-col items-center gap-0.5 p-1.5 rounded-lg border transition-all",
                   isSelected ? "border-accent/50 bg-accent/10" : "border-white/[0.06] hover:border-white/20",
@@ -176,7 +176,7 @@ export function TournamentPicks({ groupId, locked = false, config: configOverrid
                 <div className="relative w-7 h-4.5 rounded-sm overflow-hidden">
                   <Image src={flagUrl(c.flagCode, 20)} alt={c.name} fill className="object-cover" unoptimized />
                 </div>
-                <span className="text-[8px] font-bold text-pitch-600 truncate w-full text-center">{c.code}</span>
+                <span className="text-[8px] font-bold text-pitch-600 truncate w-full text-center">{c.code ?? c.flagCode}</span>
               </button>
             );
           })}
