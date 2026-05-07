@@ -328,20 +328,32 @@ function QualifiersSummary({
 
 interface GroupStagePredictionsProps {
   groupId: string;
+  userId?: string;
   locked?: boolean;
 }
 
-export function GroupStagePredictions({ groupId, locked = false }: GroupStagePredictionsProps) {
+export function GroupStagePredictions({ groupId, locked = false, userId }: GroupStagePredictionsProps) {
   const [activeGroup, setActiveGroup] = useState("A");
   const [predictions,  setPredictions]  = useState<GroupPredictions>({});
   const [saving,       setSaving]       = useState(false);
   const [savedGroup,   setSavedGroup]   = useState<string | null>(null);
 
-  // Load saved predictions from localStorage (Supabase in prod)
+  // Load from Supabase on mount
   useEffect(() => {
-    const saved = localStorage.getItem(`cupclash_group_preds_${groupId}`);
-    if (saved) setPredictions(JSON.parse(saved) as GroupPredictions);
-  }, [groupId]);
+    if (!userId) return;
+    import("@/lib/services/predictions").then(({ getUserPredictions }) => {
+      getUserPredictions(userId, groupId).then(saved => {
+        if (Object.keys(saved).length > 0) {
+          // Convert from {homeScore, awayScore} to {home, away} format
+          const converted: GroupPredictions = {};
+          Object.entries(saved).forEach(([matchId, p]) => {
+            converted[matchId] = { home: p.homeScore, away: p.awayScore };
+          });
+          setPredictions(converted);
+        }
+      });
+    });
+  }, [userId, groupId]);
 
   const setScore = (matchId: string, home: string, away: string) => {
     setPredictions(prev => ({ ...prev, [matchId]: { home, away } }));
@@ -349,10 +361,25 @@ export function GroupStagePredictions({ groupId, locked = false }: GroupStagePre
 
   const saveGroup = async (group: string) => {
     setSaving(true);
-    const toSave = JSON.stringify(predictions);
-    localStorage.setItem(`cupclash_group_preds_${groupId}`, toSave);
-    // TODO: persist to Supabase group_predictions table
-    await new Promise(r => setTimeout(r, 300));
+    // Save all predictions for this group to Supabase
+    if (userId) {
+      const { saveGroupPrediction } = await import("@/lib/services/predictions");
+      const matchesToSave = getGroupMatches(group);
+      await Promise.all(
+        matchesToSave
+          .filter(m => {
+            const p = predictions[m.id];
+            return p && p.home !== "" && p.away !== "";
+          })
+          .map(m => saveGroupPrediction({
+            userId,
+            groupId,
+            matchId:   m.id,
+            homeScore: parseInt(predictions[m.id].home, 10),
+            awayScore: parseInt(predictions[m.id].away, 10),
+          }))
+      );
+    }
     setSaving(false);
     setSavedGroup(group);
     setTimeout(() => setSavedGroup(null), 2000);

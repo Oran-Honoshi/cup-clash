@@ -1,36 +1,29 @@
 export const dynamic = "force-dynamic";
 
-import { Leaderboard } from "@/components/dashboard/leaderboard";
-import { NextMatchCard } from "@/components/dashboard/next-match-card";
-import { BuyInStatus } from "@/components/dashboard/buy-in-status";
-import { StatCards } from "@/components/dashboard/stat-cards";
-import { DashboardPopups } from "@/components/dashboard/dashboard-popups";
-import { WallOfShame } from "@/components/dashboard/wall-of-shame";
+import { redirect }         from "next/navigation";
+import { Leaderboard }      from "@/components/dashboard/leaderboard";
+import { NextMatchCard }    from "@/components/dashboard/next-match-card";
+import { BuyInStatus }      from "@/components/dashboard/buy-in-status";
+import { StatCards }        from "@/components/dashboard/stat-cards";
+import { DashboardPopups }  from "@/components/dashboard/dashboard-popups";
+import { WallOfShame }      from "@/components/dashboard/wall-of-shame";
 import { getLeaderboard, getMembers, getGroup } from "@/lib/services/groups";
-import { getNextMatch } from "@/lib/services/matches";
+import { getNextMatch }     from "@/lib/services/matches";
 import { getCurrentUserGroup, getCurrentUserProfile } from "@/lib/services/user-group";
 
-// Inject mock rank deltas + accuracy stats until real match data flows
-function injectMockDeltas(members: ReturnType<typeof Array.prototype.map>) {
-  const MOCK_DELTAS = [0, 2, -1, 1, -2, 0, 3, -1];
-  const MOCK_EXACT  = [8, 6, 4, 3, 5, 2, 7, 1];
-  const MOCK_CORRECT = [24, 22, 18, 15, 20, 12, 19, 10];
-  return (members as Array<{
-    id: string; name: string; points: number; paid: boolean;
-    country: string; avatarUrl?: string | null;
-  }>).map((m, i) => ({
-    ...m,
-    rankDelta:          MOCK_DELTAS[i % MOCK_DELTAS.length],
-    exactScores:        MOCK_EXACT[i % MOCK_EXACT.length],
-    correctPredictions: MOCK_CORRECT[i % MOCK_CORRECT.length],
-  }));
-}
-
 export default async function DashboardPage() {
-  const [{ groupId, isMock }, userProfile] = await Promise.all([
+  const [userGroup, userProfile] = await Promise.all([
     getCurrentUserGroup(),
     getCurrentUserProfile(),
   ]);
+
+  // Not logged in — redirect to sign in
+  if (!userProfile) redirect("/signin");
+
+  // No group yet — redirect to create or join
+  if (!userGroup.groupId) redirect("/create-group");
+
+  const { groupId, isAdmin, isPaid } = userGroup;
 
   const [members, top8, group, nextMatch] = await Promise.all([
     getMembers(groupId),
@@ -39,50 +32,57 @@ export default async function DashboardPage() {
     getNextMatch(),
   ]);
 
-  const membersWithStats = injectMockDeltas(members) as typeof members;
-  const top8WithStats    = injectMockDeltas(top8)    as typeof top8;
-
-  const currentMember = userProfile
-    ? membersWithStats.find((m) => m.id === userProfile.id) ?? membersWithStats[0]
-    : membersWithStats[0];
-  const rank = userProfile
-    ? membersWithStats.findIndex((m) => m.id === userProfile.id) + 1
-    : 1;
+  const currentMember = members.find(m => m.id === userProfile.id) ?? members[0];
+  const rank = members.findIndex(m => m.id === userProfile.id) + 1;
 
   return (
     <div className="space-y-6">
       <DashboardPopups
-        memberName={userProfile?.name ?? currentMember?.name ?? "Champion"}
+        memberName={userProfile.name}
         groupName={group.name}
       />
 
       <div>
         <div className="label-caps mb-1">{group.name}</div>
-        <h1 className="font-display text-4xl sm:text-5xl uppercase text-white tracking-tight">
+        <h1 className="font-display text-4xl sm:text-5xl uppercase tracking-tight" style={{ color: "#0F172A" }}>
           Dashboard
         </h1>
-        {isMock && (
-          <p className="text-[11px] text-warning mt-1">
-            Preview mode — <a href="/create-group" className="underline">create a group</a> to see live data
+        {!isPaid && (
+          <p className="text-sm mt-1" style={{ color: "#d97706" }}>
+            Pay the $2 entry fee to unlock predictions and appear on the leaderboard.{" "}
+            <a href={`/join/${group.passkey}`} style={{ color: "#0891B2" }} className="underline font-bold">
+              Pay now →
+            </a>
+          </p>
+        )}
+        {isAdmin && (
+          <p className="text-[11px] mt-1" style={{ color: "#94a3b8" }}>
+            You&apos;re the admin · Passkey: <span className="font-mono font-bold">{group.passkey}</span>
           </p>
         )}
       </div>
 
       <StatCards
-        rank={rank}
+        rank={isPaid ? rank : 0}
         points={currentMember?.points ?? 0}
-        totalPlayers={members.length}
+        totalPlayers={members.filter(m => m.paid).length}
         correctPredictions={currentMember?.correctPredictions ?? 0}
         exactScores={currentMember?.exactScores ?? 0}
       />
 
       <div className="grid gap-5 lg:grid-cols-12">
         <div className="lg:col-span-7 space-y-5">
-          <Leaderboard members={top8WithStats} currentUserId={userProfile?.id ?? "1"} showGhost />
-          <WallOfShame members={membersWithStats} totalMatches={20} />
+          <Leaderboard
+            members={top8}
+            currentUserId={userProfile.id}
+            showGhost
+          />
+          <WallOfShame members={members} totalMatches={48} />
         </div>
         <div className="lg:col-span-5 space-y-5">
-          {nextMatch && <NextMatchCard match={nextMatch} groupId={groupId} />}
+          {nextMatch && (
+            <NextMatchCard match={nextMatch} groupId={groupId} />
+          )}
           <BuyInStatus group={group} members={members} />
         </div>
       </div>

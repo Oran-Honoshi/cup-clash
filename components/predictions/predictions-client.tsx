@@ -13,9 +13,11 @@ const TABS = [
 
 interface PredictionsClientProps {
   groupId: string;
+  userId:  string;
+  isPaid:  boolean;
 }
 
-export function PredictionsClient({ groupId }: PredictionsClientProps) {
+export function PredictionsClient({ groupId, userId, isPaid }: PredictionsClientProps) {
   const [tab, setTab] = useState<"group" | "tournament">("group");
 
   return (
@@ -64,7 +66,7 @@ export function PredictionsClient({ groupId }: PredictionsClientProps) {
 
       {/* Content */}
       {tab === "group" && (
-        <GroupStagePredictions groupId={groupId} locked={false} />
+        <GroupStagePredictions groupId={groupId} userId={userId} locked={!isPaid} />
       )}
       {tab === "tournament" && (
         <TournamentPicks groupId={groupId} locked={false} />

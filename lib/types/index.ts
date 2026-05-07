@@ -1,70 +1,73 @@
-// Domain types for Cup Clash.
-// These mirror what the Supabase schema will eventually return.
-
-// All 48 qualified nations for FIFA World Cup 2026
-export type CountryCode =
-  // CONCACAF (8 spots — hosts get automatic bids)
-  | "USA" | "CAN" | "MEX" | "JAM" | "PAN" | "CRC" | "HON" | "TTO"
-  // CONMEBOL (6 spots)
-  | "ARG" | "BRA" | "COL" | "URU" | "ECU" | "VEN"
-  // UEFA (16 spots)
-  | "ENG" | "FRA" | "ESP" | "GER" | "POR" | "NED" | "BEL" | "ITA"
-  | "AUT" | "CHE" | "SCO" | "DNK" | "HUN" | "SRB" | "SVK" | "GRE"
-  // CAF (9 spots)
-  | "MAR" | "SEN" | "NGA" | "EGY" | "CMR" | "CIV" | "MLI" | "RSA" | "TUN"
-  // AFC (8 spots)
-  | "JPN" | "KOR" | "IRN" | "AUS" | "JOR" | "IRQ" | "UZB" | "OMA"
-  // OFC (1 spot)
-  | "NZL";
-
-export interface Country {
-  code: CountryCode;
-  name: string;
-  /** ISO 3166-1 alpha-2 code for flagcdn.com (e.g. "ar" for Argentina) */
-  flagCode: string;
-  theme: {
-    accent: string;     // RGB triplet e.g. "117 192 232"
-    accentGlow: string;
-  };
-}
+// ── Core types ────────────────────────────────────────────────────────────────
 
 export interface Group {
-  id: string;
-  name: string;
-  admin: string;
-  buyInAmount: number;
+  id:                  string;
+  name:                string;
+  admin:               string;
+  buyInAmount:         number;
+  passkey:             string;
+  maxMembers:          number;
+  enrollmentFeeCents:  number;
+  enrollmentDeadline:  string | null;
   payouts: {
-    first: string;
-    second: string;
-    third: string;
+    first:  string;  // "60%"
+    second: string;  // "30%"
+    third:  string;  // "10%"
   };
 }
 
 export interface Member {
-  id: string;
-  name: string;
-  points: number;
-  paid: boolean;
-  country: string;
-  avatarUrl?: string | null;
-  rankDelta?: number;      // +2, -1, 0 since last match
-  exactScores?: number;    // for Wall of Shame / tie-breaking
+  id:                  string;
+  name:                string;
+  points:              number;
+  paid:                boolean;
+  country:             string;
+  avatarUrl?:          string | null;
+  rankDelta?:          number;
+  exactScores?:        number;
   correctPredictions?: number;
-  isGhost?: boolean;       // true for the Global Average ghost player
+  isGhost?:            boolean;
+  canPredict?:         boolean;
+  stakePaid?:          boolean;
+  joinedAt?:           string;
 }
 
 export interface Match {
-  id: string;
-  home: string;
-  away: string;
+  id:           string;
+  home:         string;
+  away:         string;
   homeFlagCode?: string;
   awayFlagCode?: string;
-  time: string; // ISO 8601
-  stage?: "Group" | "R16" | "QF" | "SF" | "Final";
+  time:         string;
+  utcTime?:     string;
+  stage:        "Group" | "R32" | "R16" | "QF" | "SF" | "3rd" | "Final";
+  group?:       string;
+  stadium?:     string;
+  city?:        string;
+  homeScore?:   number;
+  awayScore?:   number;
+  status?:      string;
 }
 
-export interface LeaderboardRow {
-  rank: number;
-  member: Member;
-  delta: number; // change since last match
+export interface Prediction {
+  matchId:    string;
+  homeScore:  number;
+  awayScore:  number;
+  lockedAt?:  string | null;
+  pointsEarned?: number;
+  isExact?:   boolean;
 }
+
+export interface Payment {
+  id:               string;
+  userId:           string | null;
+  groupId:          string;
+  email:            string;
+  status:           "pending" | "paid" | "refunded";
+  amountCents:      number;
+  paymentTimestamp: string | null;
+  refundExpiry:     string | null;
+  stakePaid:        boolean;
+}
+
+export type CountryCode = string;
