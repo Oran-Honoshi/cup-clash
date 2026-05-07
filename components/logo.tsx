@@ -9,24 +9,24 @@ interface LogoProps {
 
 export function Logo({ size = "md", className, showWordmark = true }: LogoProps) {
   const dims = {
-    sm: { px: 28, text: "text-base"  },
-    md: { px: 36, text: "text-xl"    },
-    lg: { px: 48, text: "text-3xl"   },
+    sm: { px: 32,  text: "text-base" },
+    md: { px: 44,  text: "text-xl"   },
+    lg: { px: 56,  text: "text-3xl"  },
   }[size];
 
   return (
     <div className={cn("flex items-center gap-2.5", className)}>
-      <div className="shrink-0 rounded-xl overflow-hidden"
-        style={{ width: dims.px, height: dims.px }}>
-        <Image
-          src="/favicon-32x32.png"
-          alt="Cup Clash"
-          width={dims.px}
-          height={dims.px}
-          className="object-cover w-full h-full"
-          unoptimized
-        />
-      </div>
+      {/* Use the 192px version for crisp rendering at all sizes */}
+      <Image
+        src="/icon-192.png"
+        alt="Cup Clash"
+        width={dims.px}
+        height={dims.px}
+        quality={100}
+        className="shrink-0"
+        style={{ borderRadius: 10 }}
+        unoptimized
+      />
       {showWordmark && (
         <span className={cn("font-display font-bold uppercase tracking-tight", dims.text)}
           style={{ color: "#0F172A" }}>

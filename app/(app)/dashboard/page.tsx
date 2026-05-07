@@ -20,8 +20,39 @@ export default async function DashboardPage() {
   // Not logged in — redirect to sign in
   if (!userProfile) redirect("/signin");
 
-  // No group yet — redirect to create or join
-  if (!userGroup.groupId) redirect("/create-group");
+  // No group yet — show welcome screen instead of redirect
+  if (!userGroup.groupId) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center space-y-6 px-4">
+        <div className="h-20 w-20 rounded-3xl overflow-hidden mx-auto">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/icon-192.png" alt="Cup Clash" className="w-full h-full object-cover" />
+        </div>
+        <div>
+          <h1 className="font-display text-4xl uppercase font-black mb-2" style={{ color: "#0F172A" }}>
+            Welcome, {userProfile.name}!
+          </h1>
+          <p className="text-lg" style={{ color: "#64748b" }}>
+            You&apos;re not in a group yet. Create one or join with a passkey.
+          </p>
+        </div>
+        <div className="flex gap-3 flex-wrap justify-center">
+          <a href="/create-group">
+            <button className="px-6 py-3 rounded-xl font-bold text-sm uppercase tracking-wider"
+              style={{ background: "linear-gradient(135deg, #00FF88, #00D4FF)", color: "#0B141B" }}>
+              Create a Group
+            </button>
+          </a>
+          <a href="/join">
+            <button className="px-6 py-3 rounded-xl font-bold text-sm uppercase tracking-wider"
+              style={{ border: "1px solid rgba(0,212,255,0.25)", color: "#0891B2", background: "rgba(0,212,255,0.05)" }}>
+              Join with Passkey
+            </button>
+          </a>
+        </div>
+      </div>
+    );
+  }
 
   const { groupId, isAdmin, isPaid } = userGroup;
 
