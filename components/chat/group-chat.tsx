@@ -157,7 +157,7 @@ export function GroupChat({ groupId, currentUserId, currentUserName, isPaid }: G
     if (!query.trim()) return;
     setGifLoading(true);
     try {
-      const key = process.env.NEXT_PUBLIC_GIPHY_API_KEY ?? "dc6zaTOxFJmzC"; // public beta key
+      const key = "dc6zaTOxFJmzC"; // Giphy public beta key - safe to be in client code // public beta key
       const res = await fetch(
         `https://api.giphy.com/v1/gifs/search?api_key=${key}&q=${encodeURIComponent(query)}&limit=12&rating=g`
       );

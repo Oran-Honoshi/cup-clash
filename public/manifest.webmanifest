@@ -1,31 +1,19 @@
 {
   "name": "Cup Clash",
   "short_name": "Cup Clash",
-  "description": "Private prediction leagues for the 2026 World Cup. Predict every match, beat your friends.",
-  "start_url": "/",
+  "description": "World Cup 2026 Prediction League — $2 for the whole tournament",
+  "start_url": "/dashboard",
   "display": "standalone",
+  "background_color": "#F8FAFC",
+  "theme_color": "#00D4FF",
   "orientation": "portrait",
-  "background_color": "#0A0A0A",
-  "theme_color": "#2A398D",
-  "categories": ["sports", "games", "social"],
   "icons": [
-    {
-      "src": "/icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "/icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "any"
-    },
-    {
-      "src": "/icon-maskable.png",
-      "sizes": "512x512",
-      "type": "image/png",
-      "purpose": "maskable"
-    }
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ],
+  "screenshots": [],
+  "shortcuts": [
+    { "name": "My Predictions", "url": "/predictions", "description": "Enter your match predictions" },
+    { "name": "Leaderboard",    "url": "/leaderboard",  "description": "See the group standings"      }
   ]
 }
