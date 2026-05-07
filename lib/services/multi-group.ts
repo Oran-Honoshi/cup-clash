@@ -14,10 +14,13 @@ export interface UserGroupSummary {
   groupType:         string;
   memberCount:       number;
   rank:              number;
+  userRank:          number;   // alias for rank — used by multi-group-dashboard
   totalMembers:      number;
   points:            number;
   currentEarnings:   number;
   potTotal:          number;
+  paidPot:           number;   // alias for potTotal
+  adminFeePercent:   number;   // always 0 for now
   inviteCode:        string;
   isAdmin:           boolean;
   isPaid:            boolean;
@@ -78,10 +81,13 @@ export async function getUserGroups(userId: string): Promise<UserGroupSummary[]>
       groupType:       "tournament",
       memberCount:     paid,
       rank:            rank || (paid + 1),
+      userRank:        rank || (paid + 1),
       totalMembers:    paid,
       points:          userPoints,
       currentEarnings: earnings,
       potTotal:        pot,
+      paidPot:         pot,
+      adminFeePercent: 0,
       inviteCode:      g.passkey,
       isAdmin:         g.admin_id === userId,
       isPaid:          m.payment_status === "paid",
