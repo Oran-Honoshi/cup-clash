@@ -1,5 +1,13 @@
 // ── Core types ────────────────────────────────────────────────────────────────
 
+export type CountryCode = string;
+
+export interface Country {
+  name:     string;
+  flagCode: CountryCode;
+  flag?:    string;
+}
+
 export interface Group {
   id:                  string;
   name:                string;
@@ -69,5 +77,3 @@ export interface Payment {
   refundExpiry:     string | null;
   stakePaid:        boolean;
 }
-
-export type CountryCode = string;
