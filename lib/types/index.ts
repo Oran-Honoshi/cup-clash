@@ -5,6 +5,7 @@ export type CountryCode = string;
 export interface Country {
   name:     string;
   flagCode: CountryCode;
+  code?:    CountryCode;  // alias for flagCode used by country-selector
   flag?:    string;
 }
 
