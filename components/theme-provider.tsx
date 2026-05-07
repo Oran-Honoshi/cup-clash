@@ -24,9 +24,11 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
       root.style.setProperty("--accent",      BRAND_ACCENT);
       root.style.setProperty("--accent-glow", BRAND_ACCENT_GLOW);
     } else {
-      const theme = COUNTRIES[country].theme;
-      root.style.setProperty("--accent",      theme.accent);
-      root.style.setProperty("--accent-glow", theme.accentGlow);
+      const theme = COUNTRIES[country]?.theme;
+      if (theme) {
+        root.style.setProperty("--accent",      theme.accent);
+        root.style.setProperty("--accent-glow", theme.accentGlow);
+      }
     }
   }, [country]);
 
