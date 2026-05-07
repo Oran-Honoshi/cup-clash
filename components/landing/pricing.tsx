@@ -1,138 +1,135 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Check, Zap, Ban, CreditCard, Shield } from "lucide-react";
+import { Check, Ban, CreditCard, Shield, Coffee } from "lucide-react";
 import Link from "next/link";
-import { cn } from "@/lib/utils";
 
-const TIERS = [
-  {
-    name: "Free",       price: "$0",   period: "forever",  highlight: false, badge: null,
-    geminiName: "The \"Sunday League\" Special",
-    members: "Up to 3 members",
-    features: ["All scoring rules", "Auto-locking predictions", "Live leaderboard", "Trivia challenge", "DiceBear avatars", "Mobile-friendly"],
-    cta: "Start My Group — Free", ctaHref: "/signup",
-  },
-  {
-    name: "Startup",    price: "$20",  period: "one-time", highlight: false, badge: null,
-    geminiName: "The \"Benchwarmers\"",
-    members: "Up to 10 members",
-    features: ["Everything in Free", "Buy-in & prize tracker", "Custom payout splits", "Welcome email invites", "Tie-breaker rules", "Nudge unpredicted members"],
-    cta: "Choose Startup", ctaHref: "/create-group?tier=startup",
-  },
-  {
-    name: "Pro",        price: "$50",  period: "one-time", highlight: true,  badge: "Most Popular",
-    geminiName: "The \"First Team\"",
-    members: "Up to 30 members",
-    features: ["Everything in Startup", "Admin finance panel", "Winner poster export", "CSV leaderboard export", "Multiple groups", "Admin fee management"],
-    cta: "Choose Pro", ctaHref: "/create-group?tier=pro",
-  },
-  {
-    name: "Enterprise", price: "$100", period: "one-time", highlight: false, badge: null,
-    geminiName: "The \"Galácticos\"",
-    members: "Up to 60 members",
-    features: ["Everything in Pro", "60 member slots", "Single match groups", "Priority support", "Custom rules text", "Full audit trail"],
-    cta: "Choose Enterprise", ctaHref: "/create-group?tier=enterprise",
-  },
+const FEATURES_FREE = [
+  "Create your group",
+  "Set scoring rules",
+  "Generate invite passkey",
+  "Manage buy-in tracking",
+  "Up to 100 members",
+];
+
+const FEATURES_MEMBER = [
+  "Full predictions — all 104 matches",
+  "Live leaderboard access",
+  "Real-time group chat + GIFs",
+  "Tournament picks (winner, boot, etc.)",
+  "Knockout bracket predictions",
+  "Trivia challenge — bonus points",
+  "7-day refund guarantee",
 ];
 
 const FOOTNOTES = [
-  { Icon: Ban,        text: "No ads. Ever. We mean it."                         },
-  { Icon: CreditCard, text: "One-time payment. No auto-renew. No subscription." },
-  { Icon: Shield,     text: "Prize money stays with your group. We never touch it." },
+  { Icon: Ban,        text: "No ads. No subscriptions. Ever."               },
+  { Icon: CreditCard, text: "One $2 payment. Whole tournament. No surprises." },
+  { Icon: Shield,     text: "7-day refund if your group doesn't go ahead."  },
 ];
 
 export function Pricing() {
   return (
     <section id="pricing" className="py-24 px-5 sm:px-8" style={{ background: "#F8FAFC" }}>
-      <div className="max-w-7xl mx-auto">
-        <motion.div
-          initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
-          className="text-center mb-16"
-        >
+      <div className="max-w-5xl mx-auto">
+        <motion.div initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+          className="text-center mb-16">
           <div className="label-caps mb-3">Pricing</div>
           <h2 className="font-display text-4xl sm:text-5xl lg:text-6xl uppercase" style={{ color: "#0F172A" }}>
-            One Tournament.<br />
-            One Payment.<br />
+            The excitement of the tournament<br />
             <span style={{ background: "linear-gradient(135deg, #00D4FF, #00FF88)", WebkitBackgroundClip: "text", backgroundClip: "text", WebkitTextFillColor: "transparent" }}>
-              No Ads.
+              for the price of a coffee.
             </span>
           </h2>
-          <p className="mt-4 text-lg max-w-xl mx-auto" style={{ color: "#64748b" }}>
-            Choose the capacity your squad needs. No monthly fees, ever.
+          <p className="mt-4 text-xl max-w-lg mx-auto font-bold" style={{ color: "#0F172A" }}>
+            $2 per person. That's it.
+          </p>
+          <p className="mt-2 text-base max-w-lg mx-auto" style={{ color: "#64748b" }}>
+            Admin creates the group for free. Every member — including the admin — pays $2 to join the leaderboard, unlock predictions, and access the group chat.
           </p>
         </motion.div>
 
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 items-stretch">
-          {TIERS.map((tier, i) => (
-            <motion.div key={tier.name}
-              initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }} transition={{ delay: i * 0.08 }}
-              className="relative flex flex-col rounded-2xl overflow-hidden"
-              style={tier.highlight ? {
-                background: "linear-gradient(160deg, rgba(0,255,136,0.06) 0%, rgba(255,255,255,0.9) 60%)",
-                border: "1px solid rgba(0,212,255,0.25)",
-                boxShadow: "0 4px 24px rgba(0,212,255,0.08)",
-              } : {
-                background: "rgba(255,255,255,0.85)",
-                border: "1px solid #e2e8f0",
-                boxShadow: "0 2px 8px rgba(0,212,255,0.04)",
-              }}
-            >
-              {tier.badge && (
-                <div className="absolute top-0 left-0 right-0 py-1.5 text-center text-[10px] font-bold uppercase tracking-widest"
-                  style={{ background: "linear-gradient(90deg, #00D4FF, #00FF88)", color: "#0B141B" }}>
-                  {tier.badge}
-                </div>
-              )}
+        <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto mb-12">
+          {/* Admin — Free */}
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }} transition={{ delay: 0.1 }}
+            className="rounded-2xl p-6"
+            style={{ background: "rgba(255,255,255,0.85)", border: "1px solid #e2e8f0" }}>
+            <div className="label-caps mb-2">Admin</div>
+            <div className="font-display text-5xl font-black mb-1" style={{ color: "#0F172A" }}>Free</div>
+            <div className="text-sm mb-5" style={{ color: "#64748b" }}>Create and manage your group at no cost.</div>
+            <ul className="space-y-2.5 mb-6">
+              {FEATURES_FREE.map(f => (
+                <li key={f} className="flex items-center gap-2.5 text-sm" style={{ color: "#475569" }}>
+                  <Check size={14} style={{ color: "#0891B2" }} className="shrink-0" />{f}
+                </li>
+              ))}
+            </ul>
+            <Link href="/signup">
+              <button className="w-full py-3 rounded-xl font-bold text-sm uppercase tracking-wider transition-all hover:-translate-y-0.5"
+                style={{ border: "1px solid rgba(0,212,255,0.25)", color: "#0891B2", background: "rgba(0,212,255,0.05)" }}>
+                Create Group — Free
+              </button>
+            </Link>
+          </motion.div>
 
-              <div className={cn("p-6 flex-1 flex flex-col", tier.badge && "pt-10")}>
-                <div className="mb-6">
-                  <div className="text-xs font-bold uppercase tracking-widest mb-0.5" style={{ color: "#64748b" }}>{tier.name}</div>
-                  <div className="text-xs italic mb-2" style={{ color: "#0891B2" }}>{tier.geminiName}</div>
-                  <div className="flex items-end gap-1.5 mb-1">
-                    <span className="font-display text-5xl leading-none font-black" style={{ color: "#0F172A" }}>{tier.price}</span>
-                    <span className="text-xs pb-1.5" style={{ color: "#94a3b8" }}>{tier.period}</span>
-                  </div>
-                  <div className="text-xs font-bold" style={{ color: "#00c46a" }}>{tier.members}</div>
-                </div>
-
-                <ul className="space-y-2.5 flex-1 mb-6">
-                  {tier.features.map(f => (
-                    <li key={f} className="flex items-start gap-2.5 text-sm" style={{ color: "#475569" }}>
-                      <Check size={14} className="shrink-0 mt-0.5" style={{ color: "#00c46a" }} />
-                      {f}
-                    </li>
-                  ))}
-                </ul>
-
-                <Link href={tier.ctaHref}>
-                  <button
-                    className="w-full py-3 rounded-xl font-bold text-sm uppercase tracking-wider transition-all hover:-translate-y-0.5"
-                    style={tier.highlight ? {
-                      background: "linear-gradient(135deg, #00FF88, #00D4FF)",
-                      color: "#0B141B",
-                      boxShadow: "0 4px 16px rgba(0,255,136,0.25)",
-                    } : {
-                      border: "1px solid rgba(0,212,255,0.2)",
-                      color: "#64748b",
-                      background: "transparent",
-                    }}
-                  >
-                    {tier.highlight && <Zap size={14} className="inline mr-1.5" />}
-                    {tier.cta}
-                  </button>
-                </Link>
-              </div>
-            </motion.div>
-          ))}
+          {/* Member — $2 */}
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }} transition={{ delay: 0.2 }}
+            className="relative rounded-2xl p-6 overflow-hidden"
+            style={{ background: "rgba(255,255,255,0.9)", border: "1px solid rgba(0,212,255,0.3)", boxShadow: "0 8px 32px rgba(0,212,255,0.10)" }}>
+            {/* Top bar */}
+            <div className="absolute top-0 left-0 right-0 h-1" style={{ background: "linear-gradient(90deg, #00D4FF, #00FF88)" }} />
+            <div className="flex items-center gap-2 mb-1">
+              <Coffee size={16} style={{ color: "#d97706" }} />
+              <div className="label-caps">Every Member</div>
+            </div>
+            <div className="flex items-end gap-2 mb-1">
+              <div className="font-display text-5xl font-black" style={{ color: "#0F172A" }}>$2</div>
+              <div className="text-sm pb-1.5" style={{ color: "#94a3b8" }}>one-time</div>
+            </div>
+            <div className="text-sm mb-5" style={{ color: "#64748b" }}>
+              Full access for the entire World Cup. June 11 – July 19.
+            </div>
+            <ul className="space-y-2.5 mb-6">
+              {FEATURES_MEMBER.map(f => (
+                <li key={f} className="flex items-center gap-2.5 text-sm" style={{ color: "#475569" }}>
+                  <Check size={14} style={{ color: "#00c46a" }} className="shrink-0" />{f}
+                </li>
+              ))}
+            </ul>
+            <div className="text-xs text-center py-2 rounded-xl"
+              style={{ background: "rgba(0,255,136,0.08)", color: "#059669", border: "1px solid rgba(0,255,136,0.2)" }}>
+              Paid when joining a group via invite link or passkey
+            </div>
+          </motion.div>
         </div>
 
-        <motion.div
-          initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}
-          className="mt-10 grid sm:grid-cols-3 gap-4 text-center text-sm"
-          style={{ color: "#64748b" }}
-        >
+        {/* How it works summary */}
+        <motion.div initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+          className="rounded-2xl p-6 mb-10 text-center"
+          style={{ background: "rgba(0,212,255,0.04)", border: "1px solid rgba(0,212,255,0.12)" }}>
+          <div className="flex items-center justify-center gap-3 flex-wrap text-sm font-bold" style={{ color: "#0F172A" }}>
+            <span className="px-3 py-1.5 rounded-full" style={{ background: "rgba(0,212,255,0.1)", color: "#0891B2" }}>
+              1. Admin creates group free
+            </span>
+            <span style={{ color: "#cbd5e1" }}>→</span>
+            <span className="px-3 py-1.5 rounded-full" style={{ background: "rgba(0,212,255,0.1)", color: "#0891B2" }}>
+              2. Shares passkey
+            </span>
+            <span style={{ color: "#cbd5e1" }}>→</span>
+            <span className="px-3 py-1.5 rounded-full" style={{ background: "rgba(0,255,136,0.1)", color: "#059669" }}>
+              3. Members pay $2
+            </span>
+            <span style={{ color: "#cbd5e1" }}>→</span>
+            <span className="px-3 py-1.5 rounded-full" style={{ background: "rgba(0,255,136,0.1)", color: "#059669" }}>
+              4. Everyone predicts
+            </span>
+          </div>
+        </motion.div>
+
+        <motion.div initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}
+          className="grid sm:grid-cols-3 gap-4 text-center text-sm" style={{ color: "#64748b" }}>
           {FOOTNOTES.map(({ Icon, text }) => (
             <div key={text} className="flex items-center justify-center gap-2">
               <Icon size={15} style={{ color: "#0891B2" }} />

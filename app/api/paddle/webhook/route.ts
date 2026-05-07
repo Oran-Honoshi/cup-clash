@@ -1,135 +1,109 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
-const TIER_MAX_MEMBERS: Record<string, number> = {
-  startup:    10,
-  pro:        30,
-  enterprise: 60,
-};
-
-// Verify Paddle webhook signature
-// https://developer.paddle.com/webhooks/signature-verification
-async function verifyPaddleSignature(
-  body: string,
-  signatureHeader: string | null,
-  secret: string
-): Promise<boolean> {
-  if (!signatureHeader) return false;
-
+async function verifyPaddleSignature(body: string, sig: string | null, secret: string) {
+  if (!sig) return false;
   try {
-    // Paddle sends: ts=timestamp;h1=hash
-    const parts = Object.fromEntries(
-      signatureHeader.split(";").map(p => p.split("=") as [string, string])
-    );
-    const ts   = parts["ts"];
-    const hash = parts["h1"];
-    if (!ts || !hash) return false;
-
-    const signed = `${ts}:${body}`;
-    const key    = await crypto.subtle.importKey(
-      "raw",
-      new TextEncoder().encode(secret),
-      { name: "HMAC", hash: "SHA-256" },
-      false,
-      ["sign"]
-    );
-    const sig = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(signed));
-    const computed = Array.from(new Uint8Array(sig))
-      .map(b => b.toString(16).padStart(2, "0"))
-      .join("");
-
-    return computed === hash;
-  } catch {
-    return false;
-  }
+    const parts = Object.fromEntries(sig.split(";").map(p => p.split("=") as [string, string]));
+    const signed = `${parts["ts"]}:${body}`;
+    const key    = await crypto.subtle.importKey("raw", new TextEncoder().encode(secret),
+      { name: "HMAC", hash: "SHA-256" }, false, ["sign"]);
+    const raw    = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(signed));
+    const computed = Array.from(new Uint8Array(raw)).map(b => b.toString(16).padStart(2, "0")).join("");
+    return computed === parts["h1"];
+  } catch { return false; }
 }
 
 export async function POST(request: NextRequest) {
-  const body      = await request.text();
-  const signature = request.headers.get("paddle-signature");
+  const body = await request.text();
+  const sig  = request.headers.get("paddle-signature");
 
-  const webhookSecret = process.env.PADDLE_WEBHOOK_SECRET;
-  if (!webhookSecret) {
-    return NextResponse.json({ error: "Paddle webhook secret not configured" }, { status: 503 });
+  if (!process.env.PADDLE_WEBHOOK_SECRET) {
+    return NextResponse.json({ error: "Not configured" }, { status: 503 });
   }
 
-  // Verify signature
-  const valid = await verifyPaddleSignature(body, signature, webhookSecret);
-  if (!valid) {
-    console.error("Invalid Paddle webhook signature");
-    return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
-  }
+  const valid = await verifyPaddleSignature(body, sig, process.env.PADDLE_WEBHOOK_SECRET);
+  if (!valid) return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
+
+  const sb = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
 
   try {
     const event = JSON.parse(body) as {
       event_type: string;
       data: {
         id: string;
-        status: string;
-        custom_data?: {
-          groupId?: string;
-          groupName?: string;
-          tier?: string;
-        };
-        items?: Array<{ price: { id: string } }>;
+        customer?: { email?: string };
+        custom_data?: { groupId?: string; userEmail?: string; passkey?: string };
       };
     };
 
-    console.log("Paddle webhook:", event.event_type);
+    const groupId   = event.data.custom_data?.groupId;
+    const userEmail = event.data.custom_data?.userEmail ?? event.data.customer?.email;
+    const txId      = event.data.id;
 
-    // Transaction completed = payment successful
-    if (event.event_type === "transaction.completed") {
-      const groupId = event.data.custom_data?.groupId;
-      const tier    = event.data.custom_data?.tier ?? "startup";
-      const maxMembers = TIER_MAX_MEMBERS[tier] ?? 10;
+    if (event.event_type === "transaction.completed" && groupId && userEmail) {
+      const now      = new Date();
+      const refundEx = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
 
-      if (!groupId) {
-        console.warn("Paddle webhook: no groupId in custom_data");
-        return NextResponse.json({ received: true });
+      // Find user by email
+      const { data: profile } = await sb
+        .from("profiles")
+        .select("id")
+        .eq("email", userEmail)
+        .single();
+
+      const userId = profile?.id ?? null;
+
+      // Upsert payment record
+      await sb.from("payments").upsert({
+        user_id:           userId,
+        group_id:          groupId,
+        email:             userEmail,
+        paddle_tx_id:      txId,
+        amount_cents:      200,
+        status:            "paid",
+        payment_timestamp: now.toISOString(),
+        refund_expiry:     refundEx.toISOString(),
+      }, { onConflict: "paddle_tx_id" });
+
+      // Update group_member — unlock predictions
+      if (userId) {
+        await sb.from("group_members").upsert({
+          user_id:        userId,
+          group_id:       groupId,
+          payment_status: "paid",
+          can_predict:    true,
+          joined_at:      now.toISOString(),
+        }, { onConflict: "user_id,group_id" });
       }
 
-      // Unlock the group slots in Supabase
-      const sb = createClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.SUPABASE_SERVICE_ROLE_KEY! // service role needed for webhook
-      );
-
-      const { error } = await sb
-        .from("groups")
-        .update({
-          max_members: maxMembers,
-          tier,
-          paid: true,
-          paid_at: new Date().toISOString(),
-        } as Record<string, unknown>)
-        .eq("id", groupId);
-
-      if (error) {
-        console.error("Supabase update error:", error);
-        return NextResponse.json({ error: "DB update failed" }, { status: 500 });
-      }
-
-      console.log(`Unlocked ${maxMembers} slots for group ${groupId} (${tier})`);
+      console.log(`Payment confirmed: ${userEmail} → group ${groupId}`);
     }
 
-    // Refund — downgrade back to free tier limits
-    if (event.event_type === "transaction.refunded") {
-      const groupId = event.data.custom_data?.groupId;
-      if (groupId) {
-        const sb = createClient(
-          process.env.NEXT_PUBLIC_SUPABASE_URL!,
-          process.env.SUPABASE_SERVICE_ROLE_KEY!
-        );
-        await sb.from("groups")
-          .update({ max_members: 3, tier: "free", paid: false } as Record<string, unknown>)
-          .eq("id", groupId);
-        console.log(`Refund: group ${groupId} downgraded to free`);
+    if (event.event_type === "transaction.refunded" && groupId && userEmail) {
+      await sb.from("payments")
+        .update({ status: "refunded", refunded_at: new Date().toISOString() })
+        .eq("group_id", groupId)
+        .eq("email", userEmail);
+
+      // Revoke prediction access
+      const { data: profile } = await sb.from("profiles").select("id").eq("email", userEmail).single();
+      if (profile?.id) {
+        await sb.from("group_members")
+          .update({ payment_status: "refunded", can_predict: false })
+          .eq("user_id", profile.id)
+          .eq("group_id", groupId);
       }
+
+      console.log(`Refund processed: ${userEmail} → group ${groupId}`);
     }
 
     return NextResponse.json({ received: true });
   } catch (err) {
-    console.error("Paddle webhook parse error:", err);
-    return NextResponse.json({ error: "Webhook processing failed" }, { status: 400 });
+    console.error("Webhook error:", err);
+    return NextResponse.json({ error: "Failed" }, { status: 400 });
   }
 }

@@ -20,10 +20,10 @@ function createClient() {
 }
 
 const TIERS = [
-  { label: "Free",       max: 3,  price: 0,   stripeKey: ""           },
-  { label: "Startup",    max: 10, price: 20,  stripeKey: "startup"    },
-  { label: "Pro",        max: 30, price: 50,  stripeKey: "pro"        },
-  { label: "Enterprise", max: 60, price: 100, stripeKey: "enterprise" },
+  { label: "Free",       max: 3,  price: 0,   paddleKey: ""           },
+  { label: "Startup",    max: 10, price: 20,  paddleKey: "startup"    },
+  { label: "Pro",        max: 30, price: 50,  paddleKey: "pro"        },
+  { label: "Enterprise", max: 60, price: 100, paddleKey: "enterprise" },
 ];
 
 // Key upcoming matches for single-match groups
@@ -129,16 +129,16 @@ export default function CreateGroupPage() {
     }
 
     try {
-      const res = await fetch("/api/stripe", {
+      const res = await fetch("/api/paddle", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          tier: TIERS[selectedTier].stripeKey,
+          tier: TIERS[selectedTier].paddleKey,
           groupId: groupData.id, groupName: form.name,
         }),
       });
-      const { url, error: stripeError } = await res.json() as { url?: string; error?: string };
-      if (stripeError || !url) throw new Error(stripeError ?? "No URL");
+      const { url, error: paddleError } = await res.json() as { url?: string; error?: string };
+      if (paddleError || !url) throw new Error(paddleError ?? "No URL");
       window.location.href = url;
     } catch {
       setInviteCode(groupData.invite_code);
