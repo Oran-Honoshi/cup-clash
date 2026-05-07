@@ -209,7 +209,7 @@ export default function SignUpPage() {
             <p className="text-sm" style={{ color: "#64748b" }}>
               Check your email to verify your account, then start predicting.
             </p>
-            <Button onClick={() => router.push("/dashboard")} size="lg" className="w-full"
+            <Button onClick={() => { window.location.href = "/dashboard"; }} size="lg" className="w-full"
               rightIcon={<ArrowRight size={18} />}>
               Go to dashboard
             </Button>

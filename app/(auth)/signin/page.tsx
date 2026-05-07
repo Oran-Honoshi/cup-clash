@@ -33,7 +33,9 @@ export default function SignInPage() {
     const { error: signInError } = await sb.auth.signInWithPassword({ email, password });
     setLoading(false);
     if (signInError) { setError(signInError.message); return; }
-    router.push("/dashboard"); router.refresh();
+    // Hard redirect so middleware re-reads the fresh session cookie
+    const next = new URLSearchParams(window.location.search).get("next") ?? "/dashboard";
+    window.location.href = next;
   };
 
   return (
