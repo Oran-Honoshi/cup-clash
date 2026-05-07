@@ -23,7 +23,7 @@ export function CountrySelector({ value, onChange }: CountrySelectorProps) {
     return ALL_COUNTRIES.filter(
       (c) =>
         c.name.toLowerCase().includes(q) ||
-        c.code.toLowerCase().includes(q)
+        (c.code ?? c.flagCode).toLowerCase().includes(q)
     );
   }, [search]);
 
@@ -63,12 +63,12 @@ export function CountrySelector({ value, onChange }: CountrySelectorProps) {
         [&::-webkit-scrollbar-thumb]:bg-white/10"
       >
         {filtered.map((c) => {
-          const active = c.code === value;
+          const active = (c.code ?? c.flagCode) === value;
           return (
             <button
-              key={c.code}
+              key={c.code ?? c.flagCode}
               type="button"
-              onClick={() => handleSelect(c.code)}
+              onClick={() => handleSelect((c.code ?? c.flagCode) as string)}
               title={c.name}
               className={cn(
                 "relative flex flex-col items-center gap-1 p-2 rounded-xl border transition-all duration-150",
@@ -100,7 +100,7 @@ export function CountrySelector({ value, onChange }: CountrySelectorProps) {
                   active ? "text-white" : "text-pitch-500"
                 )}
               >
-                {c.code}
+                {c.code ?? c.flagCode}
               </span>
               {active && (
                 <span
@@ -126,7 +126,7 @@ export function CountrySelector({ value, onChange }: CountrySelectorProps) {
           className="text-center text-sm font-bold uppercase tracking-widest"
           style={{ color: "rgb(var(--accent-glow))" }}
         >
-          {ALL_COUNTRIES.find((c) => c.code === value)?.name}
+          {ALL_COUNTRIES.find((c) => (c.code ?? c.flagCode) === value)?.name}
         </div>
       )}
     </div>

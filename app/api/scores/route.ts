@@ -6,10 +6,16 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
 const API_FOOTBALL_URL = "https://v3.football.api-sports.io";
-// WC2026 league ID in API-Football — verify this in your API-Football dashboard
 const WC2026_LEAGUE_ID = 1;
 const WC2026_SEASON    = 2026;
-const POLL_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
+const POLL_INTERVAL_MS = 5 * 60 * 1000;
+
+// Direct API-Football key uses x-apisports-key header (not RapidAPI)
+function apiFootballHeaders() {
+  return {
+    "x-apisports-key": process.env.API_FOOTBALL_KEY!,
+  };
+}
 
 interface APIFixture {
   fixture: {
@@ -81,10 +87,10 @@ export async function POST(request: NextRequest) {
     // Fetch live + today's matches from API-Football
     const [liveRes, todayRes] = await Promise.all([
       fetch(`${API_FOOTBALL_URL}/fixtures?live=all&league=${WC2026_LEAGUE_ID}&season=${WC2026_SEASON}`, {
-        headers: { "x-apisports-key": process.env.API_FOOTBALL_KEY! },
+        headers: apiFootballHeaders(),
       }),
       fetch(`${API_FOOTBALL_URL}/fixtures?league=${WC2026_LEAGUE_ID}&season=${WC2026_SEASON}&date=${new Date().toISOString().split("T")[0]}`, {
-        headers: { "x-apisports-key": process.env.API_FOOTBALL_KEY! },
+        headers: apiFootballHeaders(),
       }),
     ]);
 
