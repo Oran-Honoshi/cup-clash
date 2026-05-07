@@ -7,23 +7,20 @@ import {
   ArrowRight, Zap, Calendar, ChevronDown,
 } from "lucide-react";
 import { z } from "zod";
-import { createClient as createSupabaseClient } from "@supabase/supabase-js";
+import { createClient as createSupabaseClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
 function createClient() {
-  return createSupabaseClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
+  return createSupabaseClient();
 }
 
 const TIERS = [
-  { label: "Free",       max: 3,  price: 0,   paddleKey: ""           },
-  { label: "Startup",    max: 10, price: 20,  paddleKey: "startup"    },
-  { label: "Pro",        max: 30, price: 50,  paddleKey: "pro"        },
-  { label: "Enterprise", max: 60, price: 100, paddleKey: "enterprise" },
+  { label: "Sunday League", max: 3,  price: 0,   paddleKey: "",          tagline: "Try it with your closest 3."           },
+  { label: "Benchwarmers",  max: 10, price: 20,  paddleKey: "startup",   tagline: "The office, the family, the regulars." },
+  { label: "First Team",    max: 30, price: 50,  paddleKey: "pro",       tagline: "Built for the league commissioner."    },
+  { label: "Galácticos",    max: 60, price: 100, paddleKey: "enterprise",tagline: "The big company World Cup pool."        },
 ];
 
 // Key upcoming matches for single-match groups

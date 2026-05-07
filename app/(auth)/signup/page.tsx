@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Mail, Lock, Eye, EyeOff, User, ArrowRight, Check, AlertCircle } from "lucide-react";
-import { createClient as createSupabaseClient } from "@supabase/supabase-js";
+import { createClient as createSupabaseClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/logo";
 import { CountrySelector } from "@/components/auth/country-selector";
@@ -12,10 +12,7 @@ import { useTheme } from "@/components/theme-provider";
 import type { CountryCode } from "@/lib/types";
 
 function getClient() {
-  return createSupabaseClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
+  return createSupabaseClient();
 }
 
 const inputCls = "w-full pl-10 pr-4 py-2.5 rounded-xl text-sm bg-white border border-slate-200 placeholder:text-slate-400 text-slate-900 focus:outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100 transition-all";

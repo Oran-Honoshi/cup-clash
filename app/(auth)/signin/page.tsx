@@ -3,7 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Eye, EyeOff, Lock, Mail, AlertCircle, ArrowRight } from "lucide-react";
-import { createClient } from "@supabase/supabase-js";
+import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/logo";
 import { SocialAuth } from "@/components/auth/social-auth";
@@ -29,10 +29,7 @@ export default function SignInPage() {
     setError(null);
     setDebug(null);
 
-    const sb = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    );
+    const sb = createClient();
 
     const { data, error: signInError } = await sb.auth.signInWithPassword({ email, password });
 
