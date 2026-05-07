@@ -8,13 +8,6 @@ import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/logo";
 import { SocialAuth } from "@/components/auth/social-auth";
 
-function getClient() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
-}
-
 const inputCls = [
   "w-full pl-10 pr-4 py-3 rounded-xl text-sm transition-all outline-none",
   "bg-white border text-slate-900 placeholder:text-slate-400",
@@ -28,14 +21,20 @@ export default function SignInPage() {
   const [showPass, setShowPass] = useState(false);
   const [loading,  setLoading]  = useState(false);
   const [error,    setError]    = useState<string | null>(null);
+  const [debug,    setDebug]    = useState<string | null>(null);
 
   const handleSignIn = async () => {
     if (!email || !password) return;
     setLoading(true);
     setError(null);
+    setDebug(null);
 
-    const sb = getClient();
-    const { error: signInError } = await sb.auth.signInWithPassword({ email, password });
+    const sb = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
+
+    const { data, error: signInError } = await sb.auth.signInWithPassword({ email, password });
 
     if (signInError) {
       setLoading(false);
@@ -43,9 +42,21 @@ export default function SignInPage() {
       return;
     }
 
-    // Hard full-page redirect — forces browser to send cookies to server
-    const next = new URLSearchParams(window.location.search).get("next") ?? "/dashboard";
-    window.location.replace(next);
+    // Show debug info before redirect
+    const sessionInfo = `Session: ${data.session ? "YES" : "NO"} | User: ${data.user?.email ?? "none"}`;
+    setDebug(sessionInfo);
+    setLoading(false);
+
+    if (!data.session) {
+      setError("Sign in succeeded but no session was created. Check Supabase logs.");
+      return;
+    }
+
+    // Wait briefly then hard redirect
+    setTimeout(() => {
+      const next = new URLSearchParams(window.location.search).get("next") ?? "/dashboard";
+      window.location.replace(next);
+    }, 800);
   };
 
   return (
@@ -70,6 +81,13 @@ export default function SignInPage() {
             </div>
           )}
 
+          {debug && (
+            <div className="rounded-xl px-4 py-3 text-xs font-mono"
+              style={{ background: "rgba(0,255,136,0.08)", border: "1px solid rgba(0,255,136,0.2)", color: "#059669" }}>
+              ✓ {debug} — redirecting...
+            </div>
+          )}
+
           <div>
             <label className="block text-xs font-bold uppercase tracking-widest mb-1.5" style={{ color: "#64748b" }}>Email</label>
             <div className="relative">
@@ -84,7 +102,7 @@ export default function SignInPage() {
           <div>
             <div className="flex items-center justify-between mb-1.5">
               <label className="block text-xs font-bold uppercase tracking-widest" style={{ color: "#64748b" }}>Password</label>
-              <Link href="/reset-password" className="text-[11px] transition-colors hover:text-cyan-600" style={{ color: "#94a3b8" }}>
+              <Link href="/reset-password" className="text-[11px]" style={{ color: "#94a3b8" }}>
                 Forgot password?
               </Link>
             </div>
@@ -95,8 +113,7 @@ export default function SignInPage() {
                 onKeyDown={e => e.key === "Enter" && handleSignIn()}
                 className={inputCls} />
               <button type="button" onClick={() => setShowPass(v => !v)}
-                className="absolute right-3.5 top-1/2 -translate-y-1/2"
-                style={{ color: "#94a3b8" }}>
+                className="absolute right-3.5 top-1/2 -translate-y-1/2" style={{ color: "#94a3b8" }}>
                 {showPass ? <EyeOff size={15} /> : <Eye size={15} />}
               </button>
             </div>
@@ -113,7 +130,7 @@ export default function SignInPage() {
 
       <p className="text-center text-sm mt-5" style={{ color: "#64748b" }}>
         Don&apos;t have an account?{" "}
-        <Link href="/signup" className="font-bold transition-colors hover:text-cyan-600" style={{ color: "#0891B2" }}>
+        <Link href="/signup" className="font-bold" style={{ color: "#0891B2" }}>
           Create one free
         </Link>
       </p>
