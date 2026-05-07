@@ -1,14 +1,13 @@
 // ============================================================
-// CUP CLASH — TESTING DATA
-// Pre-filled predictions for 4 mock members across first 12 matches
-// Used by the Test Control Panel to simulate a real tournament
+// CUP CLASH — TESTING DATA v2
+// Uses real WC2026 schedule match IDs from lib/schedule.ts
+// 5 test members with varied prediction strategies
 // ============================================================
 
 export interface MockPrediction {
   matchId: string;
   homeScore: number;
   awayScore: number;
-  advancementPick?: string; // team name — only for knockout matches
 }
 
 export interface MockMember {
@@ -16,6 +15,8 @@ export interface MockMember {
   name: string;
   country: string;
   flagCode: string;
+  isAdmin?: boolean;
+  email: string;
   predictions: MockPrediction[];
 }
 
@@ -25,267 +26,251 @@ export interface SimulatedResult {
   away: string;
   homeFlagCode: string;
   awayFlagCode: string;
-  homeScore: number;       // 90-min score
-  awayScore: number;       // 90-min score
+  homeScore: number;
+  awayScore: number;
   stage: string;
   stadium: string;
   city: string;
   isKnockout?: boolean;
-  advancedTeam?: string;   // who actually advanced (may differ from 90-min winner due to pens)
+  advancedTeam?: string;
   wentToPenalties?: boolean;
-}
-
-// The matches we'll simulate results for, in order
-export const SIMULATED_MATCHES: SimulatedResult[] = [
-  { matchId: "g001", home: "Mexico",    away: "Ecuador",   homeFlagCode: "mx", awayFlagCode: "ec", homeScore: 2, awayScore: 1, stage: "Group A", stadium: "Estadio Azteca",        city: "Mexico City"  },
-  { matchId: "g002", home: "USA",       away: "Panama",    homeFlagCode: "us", awayFlagCode: "pa", homeScore: 3, awayScore: 0, stage: "Group B", stadium: "SoFi Stadium",            city: "Los Angeles"  },
-  { matchId: "g003", home: "Canada",    away: "Honduras",  homeFlagCode: "ca", awayFlagCode: "hn", homeScore: 1, awayScore: 1, stage: "Group C", stadium: "BC Place",                city: "Vancouver"    },
-  { matchId: "g004", home: "France",    away: "Nigeria",   homeFlagCode: "fr", awayFlagCode: "ng", homeScore: 2, awayScore: 0, stage: "Group D", stadium: "MetLife Stadium",          city: "New York/NJ"  },
-  { matchId: "g005", home: "Argentina", away: "Colombia",  homeFlagCode: "ar", awayFlagCode: "co", homeScore: 1, awayScore: 0, stage: "Group E", stadium: "AT&T Stadium",             city: "Dallas"       },
-  { matchId: "g006", home: "England",   away: "Senegal",   homeFlagCode: "gb-eng", awayFlagCode: "sn", homeScore: 2, awayScore: 2, stage: "Group F", stadium: "Hard Rock Stadium", city: "Miami"        },
-  { matchId: "g007", home: "Spain",     away: "Morocco",   homeFlagCode: "es", awayFlagCode: "ma", homeScore: 3, awayScore: 1, stage: "Group G", stadium: "Lincoln Financial Field", city: "Philadelphia" },
-  { matchId: "g008", home: "Germany",   away: "Japan",     homeFlagCode: "de", awayFlagCode: "jp", homeScore: 2, awayScore: 2, stage: "Group H", stadium: "Gillette Stadium",        city: "Boston"       },
-  { matchId: "g009", home: "Brazil",    away: "Uruguay",   homeFlagCode: "br", awayFlagCode: "uy", homeScore: 3, awayScore: 0, stage: "Group I", stadium: "Estadio BBVA",           city: "Monterrey"    },
-  { matchId: "g010", home: "Portugal",  away: "Iran",      homeFlagCode: "pt", awayFlagCode: "ir", homeScore: 1, awayScore: 1, stage: "Group J", stadium: "Arrowhead Stadium",       city: "Kansas City"  },
-  { matchId: "g011", home: "Netherlands", away: "Australia", homeFlagCode: "nl", awayFlagCode: "au", homeScore: 2, awayScore: 1, stage: "Group K", stadium: "Levi's Stadium",      city: "San Francisco"},
-  { matchId: "g012", home: "Italy",     away: "Egypt",     homeFlagCode: "it", awayFlagCode: "eg", homeScore: 2, awayScore: 0, stage: "Group L", stadium: "Estadio Akron",          city: "Guadalajara"  },
-  // KNOCKOUT STAGE — Round of 32 (simulated)
-  { matchId: "r32-1", home: "Mexico", away: "France", homeFlagCode: "mx", awayFlagCode: "fr", homeScore: 1, awayScore: 1, stage: "Round of 32", stadium: "MetLife Stadium", city: "New York/NJ", isKnockout: true, advancedTeam: "France", wentToPenalties: true },
-  { matchId: "r32-2", home: "Argentina", away: "USA", homeFlagCode: "ar", awayFlagCode: "us", homeScore: 2, awayScore: 0, stage: "Round of 32", stadium: "SoFi Stadium", city: "Los Angeles", isKnockout: true, advancedTeam: "Argentina", wentToPenalties: false },
-  // QUARTER-FINAL (simulated)
-  { matchId: "qf-1", home: "France", away: "Spain", homeFlagCode: "fr", awayFlagCode: "es", homeScore: 2, awayScore: 1, stage: "Quarter-Final", stadium: "MetLife Stadium", city: "New York/NJ", isKnockout: true, advancedTeam: "France", wentToPenalties: false },
-  // SEMI-FINAL (simulated)
-  { matchId: "sf-1", home: "Argentina", away: "France", homeFlagCode: "ar", awayFlagCode: "fr", homeScore: 1, awayScore: 1, stage: "Semi-Final", stadium: "MetLife Stadium", city: "New York/NJ", isKnockout: true, advancedTeam: "Argentina", wentToPenalties: true },
-];
-
-// 4 mock members with varied predictions — some right, some wrong, some exact
-export const MOCK_TEST_MEMBERS: MockMember[] = [
-  {
-    id: "test-amit",
-    name: "Amit",
-    country: "Argentina",
-    flagCode: "ar",
-    predictions: [
-      { matchId: "g001", homeScore: 2, awayScore: 1 }, // EXACT ✓ +25
-      { matchId: "g002", homeScore: 2, awayScore: 0 }, // OUTCOME ✓ +10
-      { matchId: "g003", homeScore: 1, awayScore: 1 }, // EXACT ✓ +25
-      { matchId: "g004", homeScore: 1, awayScore: 0 }, // OUTCOME ✓ +10
-      { matchId: "g005", homeScore: 1, awayScore: 0 }, // EXACT ✓ +25
-      { matchId: "g006", homeScore: 1, awayScore: 2 }, // WRONG ✗ 0
-      { matchId: "g007", homeScore: 3, awayScore: 1 }, // EXACT ✓ +25
-      { matchId: "g008", homeScore: 2, awayScore: 1 }, // OUTCOME ✓ +10
-      { matchId: "g009", homeScore: 3, awayScore: 0 }, // EXACT ✓ +25
-      { matchId: "g010", homeScore: 2, awayScore: 0 }, // WRONG ✗ 0
-      { matchId: "g011", homeScore: 2, awayScore: 1 }, // EXACT ✓ +25
-      { matchId: "g012", homeScore: 2, awayScore: 0 }, // EXACT ✓ +25
-      // Knockout picks
-      { matchId: "r32-1", homeScore: 1, awayScore: 1, advancementPick: "France" },    // draw EXACT ✓ +25, advancement ✓ +20
-      { matchId: "r32-2", homeScore: 2, awayScore: 0, advancementPick: "Argentina" }, // EXACT ✓ +25, advancement ✓ +20
-      { matchId: "qf-1",  homeScore: 1, awayScore: 0, advancementPick: "France" },    // OUTCOME ✓ +10, advancement ✓ +20
-      { matchId: "sf-1",  homeScore: 1, awayScore: 1, advancementPick: "France" },    // draw EXACT ✓ +25, advancement ✗ 0
-    ],
-  },
-  {
-    id: "test-sarah",
-    name: "Sarah",
-    country: "Brazil",
-    flagCode: "br",
-    predictions: [
-      { matchId: "g001", homeScore: 1, awayScore: 0 }, // OUTCOME ✓ +10
-      { matchId: "g002", homeScore: 3, awayScore: 0 }, // EXACT ✓ +25
-      { matchId: "g003", homeScore: 2, awayScore: 0 }, // WRONG ✗ 0
-      { matchId: "g004", homeScore: 2, awayScore: 0 }, // EXACT ✓ +25
-      { matchId: "g005", homeScore: 2, awayScore: 1 }, // OUTCOME ✓ +10
-      { matchId: "g006", homeScore: 2, awayScore: 2 }, // EXACT ✓ +25
-      { matchId: "g007", homeScore: 2, awayScore: 0 }, // OUTCOME ✓ +10
-      { matchId: "g008", homeScore: 1, awayScore: 1 }, // OUTCOME ✓ +10
-      { matchId: "g009", homeScore: 2, awayScore: 0 }, // OUTCOME ✓ +10
-      { matchId: "g010", homeScore: 1, awayScore: 1 }, // EXACT ✓ +25
-      { matchId: "g011", homeScore: 1, awayScore: 0 }, // OUTCOME ✓ +10
-      { matchId: "g012", homeScore: 1, awayScore: 0 }, // OUTCOME ✓ +10
-      // Knockout picks
-      { matchId: "r32-1", homeScore: 0, awayScore: 1, advancementPick: "France" },    // WRONG ✗ 0, advancement ✓ +20
-      { matchId: "r32-2", homeScore: 1, awayScore: 0, advancementPick: "Argentina" }, // WRONG ✗ 0, advancement ✓ +20
-      { matchId: "qf-1",  homeScore: 2, awayScore: 1, advancementPick: "Spain" },     // OUTCOME ✓ +10, advancement ✗ 0
-      { matchId: "sf-1",  homeScore: 0, awayScore: 1, advancementPick: "Argentina" }, // WRONG ✗ 0, advancement ✓ +20
-    ],
-  },
-  {
-    id: "test-john",
-    name: "John",
-    country: "England",
-    flagCode: "gb-eng",
-    predictions: [
-      { matchId: "g001", homeScore: 0, awayScore: 1 }, // WRONG ✗ 0
-      { matchId: "g002", homeScore: 1, awayScore: 0 }, // OUTCOME ✓ +10
-      { matchId: "g003", homeScore: 0, awayScore: 0 }, // OUTCOME ✓ +10
-      { matchId: "g004", homeScore: 3, awayScore: 0 }, // OUTCOME ✓ +10
-      { matchId: "g005", homeScore: 0, awayScore: 0 }, // WRONG ✗ 0
-      { matchId: "g006", homeScore: 2, awayScore: 2 }, // EXACT ✓ +25
-      { matchId: "g007", homeScore: 2, awayScore: 1 }, // OUTCOME ✓ +10
-      { matchId: "g008", homeScore: 3, awayScore: 1 }, // OUTCOME ✓ +10
-      { matchId: "g009", homeScore: 2, awayScore: 0 }, // OUTCOME ✓ +10
-      { matchId: "g010", homeScore: 0, awayScore: 0 }, // OUTCOME ✓ +10
-      { matchId: "g011", homeScore: 3, awayScore: 0 }, // WRONG ✗ 0
-      { matchId: "g012", homeScore: 2, awayScore: 0 }, // EXACT ✓ +25
-      // Knockout picks
-      { matchId: "r32-1", homeScore: 2, awayScore: 0, advancementPick: "Mexico" },    // WRONG ✗ 0, advancement ✗ 0
-      { matchId: "r32-2", homeScore: 2, awayScore: 0, advancementPick: "Argentina" }, // EXACT ✓ +25, advancement ✓ +20
-      { matchId: "qf-1",  homeScore: 2, awayScore: 1, advancementPick: "France" },    // OUTCOME ✓ +10, advancement ✓ +20
-      { matchId: "sf-1",  homeScore: 2, awayScore: 0, advancementPick: "Argentina" }, // WRONG ✗ 0, advancement ✓ +20
-    ],
-  },
-  {
-    id: "test-lior",
-    name: "Lior",
-    country: "Israel",
-    flagCode: "il",
-    predictions: [
-      { matchId: "g001", homeScore: 1, awayScore: 1 }, // WRONG ✗ 0
-      { matchId: "g002", homeScore: 2, awayScore: 1 }, // OUTCOME ✓ +10
-      { matchId: "g003", homeScore: 2, awayScore: 1 }, // WRONG ✗ 0
-      { matchId: "g004", homeScore: 1, awayScore: 0 }, // OUTCOME ✓ +10
-      { matchId: "g005", homeScore: 2, awayScore: 0 }, // OUTCOME ✓ +10
-      { matchId: "g006", homeScore: 1, awayScore: 0 }, // WRONG ✗ 0
-      { matchId: "g007", homeScore: 3, awayScore: 1 }, // EXACT ✓ +25
-      { matchId: "g008", homeScore: 2, awayScore: 2 }, // EXACT ✓ +25
-      { matchId: "g009", homeScore: 3, awayScore: 0 }, // EXACT ✓ +25
-      { matchId: "g010", homeScore: 2, awayScore: 1 }, // WRONG ✗ 0
-      { matchId: "g011", homeScore: 2, awayScore: 1 }, // EXACT ✓ +25
-      { matchId: "g012", homeScore: 1, awayScore: 0 }, // OUTCOME ✓ +10
-      // Knockout picks
-      { matchId: "r32-1", homeScore: 1, awayScore: 1, advancementPick: "Mexico" },    // EXACT ✓ +25, advancement ✗ 0
-      { matchId: "r32-2", homeScore: 1, awayScore: 0, advancementPick: "Argentina" }, // OUTCOME ✓ +10, advancement ✓ +20
-      { matchId: "qf-1",  homeScore: 1, awayScore: 0, advancementPick: "France" },    // OUTCOME ✓ +10, advancement ✓ +20
-      { matchId: "sf-1",  homeScore: 1, awayScore: 1, advancementPick: "Argentina" }, // EXACT ✓ +25, advancement ✓ +20
-    ],
-  },
-];
-
-// Score a prediction against a result
-export function scorePrediction(
-  pred: { homeScore: number; awayScore: number; advancementPick?: string },
-  result: SimulatedResult,
-  rules: ScoringRules
-): { points: number; isExact: boolean; breakdown: string[] } {
-  const predOutcome = Math.sign(pred.homeScore - pred.awayScore);
-  const realOutcome = Math.sign(result.homeScore - result.awayScore);
-
-  const isExact =
-    pred.homeScore === result.homeScore &&
-    pred.awayScore === result.awayScore;
-
-  let points = 0;
-  const breakdown: string[] = [];
-
-  // 90-min score points
-  if (isExact) {
-    points += rules.exactScore;
-    breakdown.push(`Exact score +${rules.exactScore}`);
-  } else if (predOutcome === realOutcome) {
-    points += rules.correctOutcome;
-    breakdown.push(`Correct outcome +${rules.correctOutcome}`);
-  }
-
-  // Knockout advancement bonus (+20)
-  if (result.isKnockout && pred.advancementPick && result.advancedTeam) {
-    if (pred.advancementPick === result.advancedTeam) {
-      points += rules.knockoutAdvancement;
-      breakdown.push(`Correct advancement +${rules.knockoutAdvancement}`);
-    }
-  }
-
-  return { points, isExact, breakdown };
+  group?: string;
 }
 
 export interface ScoringRules {
   correctOutcome: number;
   exactScore: number;
-  knockoutAdvancement: number; // +20 for correctly picking who advances
-  tournamentWinner: number;
-  topScorer: number;
-  topAssister: number;
+  koAdvancement: number;
 }
 
 export const DEFAULT_SCORING_RULES: ScoringRules = {
   correctOutcome: 10,
   exactScore: 25,
-  knockoutAdvancement: 20,
-  tournamentWinner: 100,
-  topScorer: 50,
-  topAssister: 50,
+  koAdvancement: 20,
 };
 
-// Calculate running leaderboard from results uploaded so far
+// ── Real match IDs from schedule.ts ──────────────────────────────────────────
+// Using Group A–D matches (first matches of tournament) for testing
+export const SIMULATED_MATCHES: SimulatedResult[] = [
+  // Group A — Match 1
+  { matchId: "g001", home: "Mexico",       away: "South Africa",  homeFlagCode: "mx",     awayFlagCode: "za",    homeScore: 2, awayScore: 0, stage: "Group A", stadium: "Estadio Azteca",         city: "Mexico City",   group: "A" },
+  // Group B — Match 1
+  { matchId: "g003", home: "Canada",       away: "Bosnia & Herzegovina", homeFlagCode: "ca", awayFlagCode: "ba", homeScore: 1, awayScore: 1, stage: "Group B", stadium: "BMO Field",              city: "Toronto",       group: "B" },
+  // Group C — Match 1
+  { matchId: "g004", home: "Brazil",       away: "Morocco",       homeFlagCode: "br",     awayFlagCode: "ma",    homeScore: 3, awayScore: 1, stage: "Group C", stadium: "MetLife Stadium",         city: "New York/NJ",   group: "C" },
+  // Group D — Match 1
+  { matchId: "g005", home: "USA",          away: "Paraguay",      homeFlagCode: "us",     awayFlagCode: "py",    homeScore: 2, awayScore: 0, stage: "Group D", stadium: "Levi's Stadium",          city: "San Francisco", group: "D" },
+  // Group E — Match 1
+  { matchId: "g010", home: "Germany",      away: "Curaçao",       homeFlagCode: "de",     awayFlagCode: "cw",    homeScore: 4, awayScore: 0, stage: "Group E", stadium: "AT&T Stadium",            city: "Dallas",        group: "E" },
+  // Group F — Match 1
+  { matchId: "g012", home: "Netherlands",  away: "Japan",         homeFlagCode: "nl",     awayFlagCode: "jp",    homeScore: 1, awayScore: 1, stage: "Group F", stadium: "Estadio BBVA",            city: "Monterrey",     group: "F" },
+  // Group G — Match 1
+  { matchId: "g016", home: "Belgium",      away: "Egypt",         homeFlagCode: "be",     awayFlagCode: "eg",    homeScore: 2, awayScore: 0, stage: "Group G", stadium: "Rose Bowl",               city: "Los Angeles",   group: "G" },
+  // Group H — Match 1
+  { matchId: "g009", home: "Saudi Arabia", away: "Uruguay",       homeFlagCode: "sa",     awayFlagCode: "uy",    homeScore: 0, awayScore: 2, stage: "Group H", stadium: "Hard Rock Stadium",       city: "Miami",         group: "H" },
+  // Group I — Match 1
+  { matchId: "g019", home: "France",       away: "Senegal",       homeFlagCode: "fr",     awayFlagCode: "sn",    homeScore: 2, awayScore: 1, stage: "Group I", stadium: "MetLife Stadium",         city: "New York/NJ",   group: "I" },
+  // Group J — Match 1
+  { matchId: "g020", home: "Argentina",    away: "Algeria",       homeFlagCode: "ar",     awayFlagCode: "dz",    homeScore: 3, awayScore: 0, stage: "Group J", stadium: "Levi's Stadium",          city: "San Francisco", group: "J" },
+  // Group K — Match 1
+  { matchId: "g023", home: "Portugal",     away: "Congo DR",      homeFlagCode: "pt",     awayFlagCode: "cd",    homeScore: 3, awayScore: 0, stage: "Group K", stadium: "NRG Stadium",             city: "Houston",       group: "K" },
+  // Group L — Match 1
+  { matchId: "g021", home: "England",      away: "Croatia",       homeFlagCode: "gb-eng", awayFlagCode: "hr",    homeScore: 2, awayScore: 1, stage: "Group L", stadium: "BMO Field",               city: "Toronto",       group: "L" },
+  // Group A — Match 2
+  { matchId: "g027", home: "Korea Republic", away: "Czechia",     homeFlagCode: "kr",     awayFlagCode: "cz",    homeScore: 1, awayScore: 2, stage: "Group A", stadium: "Estadio Chivas",          city: "Guadalajara",   group: "A" },
+  // Group B — Match 2
+  { matchId: "g008", home: "Qatar",        away: "Switzerland",   homeFlagCode: "qa",     awayFlagCode: "ch",    homeScore: 0, awayScore: 2, stage: "Group B", stadium: "Levi's Stadium",          city: "San Francisco", group: "B" },
+  // Group C — Match 2
+  { matchId: "g007", home: "Haiti",        away: "Scotland",      homeFlagCode: "ht",     awayFlagCode: "gb-sct",homeScore: 0, awayScore: 2, stage: "Group C", stadium: "Hard Rock Stadium",       city: "Miami",         group: "C" },
+  // Round of 32 (simulated)
+  { matchId: "r001", home: "Mexico",       away: "Canada",        homeFlagCode: "mx",     awayFlagCode: "ca",    homeScore: 1, awayScore: 1, stage: "Round of 32", stadium: "MetLife Stadium",     city: "New York/NJ",   isKnockout: true, advancedTeam: "Mexico", wentToPenalties: true  },
+  { matchId: "r002", home: "Brazil",       away: "USA",           homeFlagCode: "br",     awayFlagCode: "us",    homeScore: 2, awayScore: 1, stage: "Round of 32", stadium: "Levi's Stadium",      city: "San Francisco", isKnockout: true, advancedTeam: "Brazil",  wentToPenalties: false },
+  // Quarter-Final (simulated)
+  { matchId: "qf1",  home: "Mexico",       away: "Brazil",        homeFlagCode: "mx",     awayFlagCode: "br",    homeScore: 0, awayScore: 2, stage: "Quarter-Final", stadium: "AT&T Stadium",     city: "Dallas",        isKnockout: true, advancedTeam: "Brazil",  wentToPenalties: false },
+  // Semi-Final (simulated)
+  { matchId: "sf1",  home: "Brazil",       away: "Argentina",     homeFlagCode: "br",     awayFlagCode: "ar",    homeScore: 1, awayScore: 2, stage: "Semi-Final", stadium: "MetLife Stadium",      city: "New York/NJ",   isKnockout: true, advancedTeam: "Argentina", wentToPenalties: false },
+  // Final (simulated)
+  { matchId: "final",home: "Argentina",    away: "France",        homeFlagCode: "ar",     awayFlagCode: "fr",    homeScore: 3, awayScore: 3, stage: "Final", stadium: "MetLife Stadium",           city: "New York/NJ",   isKnockout: true, advancedTeam: "Argentina", wentToPenalties: true  },
+];
+
+// ── 5 Test Members with varied prediction strategies ──────────────────────────
+export const MOCK_TEST_MEMBERS: MockMember[] = [
+  {
+    id: "test-amit", name: "Amit (Admin)", country: "Argentina", flagCode: "ar",
+    isAdmin: true, email: "amit@test.cupclash.com",
+    predictions: [
+      { matchId: "g001", homeScore: 2, awayScore: 0 }, // EXACT ✓
+      { matchId: "g003", homeScore: 1, awayScore: 1 }, // EXACT ✓
+      { matchId: "g004", homeScore: 2, awayScore: 1 }, // OUTCOME ✓
+      { matchId: "g005", homeScore: 2, awayScore: 0 }, // EXACT ✓
+      { matchId: "g010", homeScore: 3, awayScore: 0 }, // OUTCOME ✓
+      { matchId: "g012", homeScore: 1, awayScore: 1 }, // EXACT ✓
+      { matchId: "g016", homeScore: 2, awayScore: 0 }, // EXACT ✓
+      { matchId: "g009", homeScore: 0, awayScore: 1 }, // OUTCOME ✓
+      { matchId: "g019", homeScore: 2, awayScore: 0 }, // OUTCOME ✓
+      { matchId: "g020", homeScore: 2, awayScore: 0 }, // OUTCOME ✓
+      { matchId: "g023", homeScore: 3, awayScore: 0 }, // EXACT ✓
+      { matchId: "g021", homeScore: 2, awayScore: 1 }, // EXACT ✓
+      { matchId: "g027", homeScore: 0, awayScore: 2 }, // WRONG ✗
+      { matchId: "g008", homeScore: 0, awayScore: 2 }, // EXACT ✓
+      { matchId: "g007", homeScore: 0, awayScore: 2 }, // EXACT ✓
+    ],
+  },
+  {
+    id: "test-sarah", name: "Sarah", country: "Brazil", flagCode: "br",
+    isAdmin: false, email: "sarah@test.cupclash.com",
+    predictions: [
+      { matchId: "g001", homeScore: 1, awayScore: 0 }, // OUTCOME ✓
+      { matchId: "g003", homeScore: 2, awayScore: 0 }, // WRONG ✗
+      { matchId: "g004", homeScore: 3, awayScore: 1 }, // EXACT ✓
+      { matchId: "g005", homeScore: 1, awayScore: 0 }, // OUTCOME ✓
+      { matchId: "g010", homeScore: 4, awayScore: 0 }, // EXACT ✓
+      { matchId: "g012", homeScore: 2, awayScore: 0 }, // WRONG ✗
+      { matchId: "g016", homeScore: 1, awayScore: 0 }, // OUTCOME ✓
+      { matchId: "g009", homeScore: 1, awayScore: 2 }, // OUTCOME ✓
+      { matchId: "g019", homeScore: 1, awayScore: 0 }, // OUTCOME ✓
+      { matchId: "g020", homeScore: 3, awayScore: 0 }, // EXACT ✓
+      { matchId: "g023", homeScore: 2, awayScore: 0 }, // OUTCOME ✓
+      { matchId: "g021", homeScore: 1, awayScore: 0 }, // OUTCOME ✓
+      { matchId: "g027", homeScore: 1, awayScore: 2 }, // EXACT ✓
+      { matchId: "g008", homeScore: 1, awayScore: 0 }, // WRONG ✗
+      { matchId: "g007", homeScore: 0, awayScore: 1 }, // WRONG ✗ (was 0-2)
+    ],
+  },
+  {
+    id: "test-john", name: "John", country: "England", flagCode: "gb-eng",
+    isAdmin: false, email: "john@test.cupclash.com",
+    predictions: [
+      { matchId: "g001", homeScore: 2, awayScore: 1 }, // OUTCOME ✓
+      { matchId: "g003", homeScore: 1, awayScore: 1 }, // EXACT ✓
+      { matchId: "g004", homeScore: 1, awayScore: 0 }, // OUTCOME ✓
+      { matchId: "g005", homeScore: 3, awayScore: 1 }, // OUTCOME ✓
+      { matchId: "g010", homeScore: 2, awayScore: 0 }, // OUTCOME ✓
+      { matchId: "g012", homeScore: 0, awayScore: 0 }, // WRONG ✗
+      { matchId: "g016", homeScore: 2, awayScore: 1 }, // OUTCOME ✓
+      { matchId: "g009", homeScore: 2, awayScore: 3 }, // OUTCOME ✓
+      { matchId: "g019", homeScore: 2, awayScore: 1 }, // EXACT ✓
+      { matchId: "g020", homeScore: 1, awayScore: 0 }, // OUTCOME ✓
+      { matchId: "g023", homeScore: 2, awayScore: 0 }, // OUTCOME ✓
+      { matchId: "g021", homeScore: 3, awayScore: 1 }, // OUTCOME ✓
+      { matchId: "g027", homeScore: 0, awayScore: 1 }, // OUTCOME ✓ (was 1-2)
+      { matchId: "g008", homeScore: 0, awayScore: 2 }, // EXACT ✓
+      { matchId: "g007", homeScore: 1, awayScore: 2 }, // OUTCOME ✓
+    ],
+  },
+  {
+    id: "test-lior", name: "Lior", country: "Israel", flagCode: "il",
+    isAdmin: false, email: "lior@test.cupclash.com",
+    predictions: [
+      { matchId: "g001", homeScore: 0, awayScore: 1 }, // WRONG ✗
+      { matchId: "g003", homeScore: 2, awayScore: 1 }, // WRONG ✗
+      { matchId: "g004", homeScore: 2, awayScore: 0 }, // OUTCOME ✓
+      { matchId: "g005", homeScore: 2, awayScore: 0 }, // EXACT ✓
+      { matchId: "g010", homeScore: 4, awayScore: 0 }, // EXACT ✓
+      { matchId: "g012", homeScore: 1, awayScore: 1 }, // EXACT ✓
+      { matchId: "g016", homeScore: 0, awayScore: 1 }, // WRONG ✗
+      { matchId: "g009", homeScore: 0, awayScore: 2 }, // EXACT ✓
+      { matchId: "g019", homeScore: 3, awayScore: 0 }, // OUTCOME ✓
+      { matchId: "g020", homeScore: 2, awayScore: 0 }, // OUTCOME ✓
+      { matchId: "g023", homeScore: 1, awayScore: 0 }, // OUTCOME ✓
+      { matchId: "g021", homeScore: 1, awayScore: 1 }, // WRONG ✗
+      { matchId: "g027", homeScore: 1, awayScore: 2 }, // EXACT ✓
+      { matchId: "g008", homeScore: 1, awayScore: 1 }, // WRONG ✗
+      { matchId: "g007", homeScore: 0, awayScore: 2 }, // EXACT ✓
+    ],
+  },
+  {
+    id: "test-maya", name: "Maya", country: "France", flagCode: "fr",
+    isAdmin: false, email: "maya@test.cupclash.com",
+    predictions: [
+      { matchId: "g001", homeScore: 1, awayScore: 1 }, // WRONG ✗
+      { matchId: "g003", homeScore: 1, awayScore: 0 }, // WRONG ✗
+      { matchId: "g004", homeScore: 3, awayScore: 1 }, // EXACT ✓
+      { matchId: "g005", homeScore: 2, awayScore: 1 }, // OUTCOME ✓
+      { matchId: "g010", homeScore: 3, awayScore: 1 }, // OUTCOME ✓
+      { matchId: "g012", homeScore: 1, awayScore: 1 }, // EXACT ✓
+      { matchId: "g016", homeScore: 2, awayScore: 0 }, // EXACT ✓
+      { matchId: "g009", homeScore: 0, awayScore: 2 }, // EXACT ✓
+      { matchId: "g019", homeScore: 2, awayScore: 1 }, // EXACT ✓
+      { matchId: "g020", homeScore: 3, awayScore: 0 }, // EXACT ✓
+      { matchId: "g023", homeScore: 3, awayScore: 0 }, // EXACT ✓
+      { matchId: "g021", homeScore: 2, awayScore: 1 }, // EXACT ✓
+      { matchId: "g027", homeScore: 2, awayScore: 1 }, // WRONG ✗
+      { matchId: "g008", homeScore: 0, awayScore: 2 }, // EXACT ✓
+      { matchId: "g007", homeScore: 0, awayScore: 2 }, // EXACT ✓
+    ],
+  },
+];
+
+// ── Scoring engine ─────────────────────────────────────────────────────────
+export interface LeaderboardEntry {
+  member: MockMember;
+  points: number;
+  exactScores: number;
+  correctOutcomes: number;
+  breakdown: Array<{ matchId: string; pts: number; type: "exact" | "outcome" | "wrong" | "ko" }>;
+}
+
+export function scoreMatch(
+  pred: MockPrediction,
+  result: SimulatedResult,
+  rules: ScoringRules
+): { pts: number; type: "exact" | "outcome" | "wrong" | "ko" } {
+  const pHome = pred.homeScore;
+  const pAway = pred.awayScore;
+  const rHome = result.homeScore;
+  const rAway = result.awayScore;
+
+  // Exact score
+  if (pHome === rHome && pAway === rAway) return { pts: rules.exactScore, type: "exact" };
+
+  // Correct outcome
+  const predWinner = pHome > pAway ? "home" : pHome < pAway ? "away" : "draw";
+  const realWinner = rHome > rAway ? "home" : rHome < rAway ? "away" : "draw";
+  if (predWinner === realWinner) return { pts: rules.correctOutcome, type: "outcome" };
+
+  return { pts: 0, type: "wrong" };
+}
+
 export function calculateLeaderboard(
   members: MockMember[],
   results: SimulatedResult[],
   rules: ScoringRules
-) {
-  return members.map((member) => {
-    let totalPoints = 0;
-    let exactCount = 0;
-    const matchResults: Array<{
-      matchId: string;
-      home: string;
-      away: string;
-      predicted: string;
-      advancementPick?: string;
-      actual: string;
-      advancedTeam?: string;
-      points: number;
-      isExact: boolean;
-      breakdown: string[];
-      isKnockout: boolean;
-    }> = [];
+): LeaderboardEntry[] {
+  return members
+    .map(member => {
+      let points = 0;
+      let exactScores = 0;
+      let correctOutcomes = 0;
+      const breakdown: LeaderboardEntry["breakdown"] = [];
 
-    results.forEach((result) => {
-      const pred = member.predictions.find((p) => p.matchId === result.matchId);
-      if (!pred) return;
-
-      const { points, isExact, breakdown } = scorePrediction(pred, result, rules);
-      totalPoints += points;
-      if (isExact) exactCount++;
-
-      matchResults.push({
-        matchId: result.matchId,
-        home: result.home,
-        away: result.away,
-        predicted: `${pred.homeScore}–${pred.awayScore}`,
-        advancementPick: pred.advancementPick,
-        actual: `${result.homeScore}–${result.awayScore}`,
-        advancedTeam: result.advancedTeam,
-        points,
-        isExact,
-        breakdown,
-        isKnockout: result.isKnockout ?? false,
+      results.forEach(result => {
+        const pred = member.predictions.find(p => p.matchId === result.matchId);
+        if (!pred) return;
+        const { pts, type } = scoreMatch(pred, result, rules);
+        points += pts;
+        if (type === "exact") exactScores++;
+        if (type === "outcome") correctOutcomes++;
+        breakdown.push({ matchId: result.matchId, pts, type });
       });
-    });
 
-    return { member, totalPoints, exactCount, matchResults };
-  }).sort((a, b) => b.totalPoints - a.totalPoints);
+      return { member, points, exactScores, correctOutcomes, breakdown };
+    })
+    .sort((a, b) => b.points - a.points || b.exactScores - a.exactScores);
 }
 
-// Find match winners (highest scorers for a specific match)
 export function getMatchWinners(
   members: MockMember[],
   result: SimulatedResult,
   rules: ScoringRules
-) {
-  const scores = members.map((member) => {
-    const pred = member.predictions.find((p) => p.matchId === result.matchId);
-    if (!pred) return { member, points: 0, isExact: false, predicted: "—", advancementPick: undefined as string | undefined };
-    const { points, isExact } = scorePrediction(pred, result, rules);
-    return {
-      member,
-      points,
-      isExact,
-      predicted: `${pred.homeScore}–${pred.awayScore}`,
-      advancementPick: pred.advancementPick,
-    };
-  });
-
-  const maxPoints = Math.max(...scores.map((s) => s.points));
-  if (maxPoints === 0) return [];
-  return scores.filter((s) => s.points === maxPoints);
+): Array<{ member: MockMember; pts: number; type: "exact" | "outcome" | "wrong" | "ko" }> {
+  return members
+    .map(member => {
+      const pred = member.predictions.find(p => p.matchId === result.matchId);
+      if (!pred) return { member, pts: 0, type: "wrong" as const };
+      const { pts, type } = scoreMatch(pred, result, rules);
+      return { member, pts, type };
+    })
+    .filter(w => w.pts > 0)
+    .sort((a, b) => b.pts - a.pts);
 }
