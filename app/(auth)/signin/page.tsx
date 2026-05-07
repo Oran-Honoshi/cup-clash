@@ -2,24 +2,27 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { Mail, Lock, Eye, EyeOff, ArrowRight, AlertCircle } from "lucide-react";
-import { createClient as createSupabaseClient } from "@supabase/supabase-js";
+import { Eye, EyeOff, Lock, Mail, AlertCircle, ArrowRight } from "lucide-react";
+import { createClient } from "@supabase/supabase-js";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/logo";
 import { SocialAuth } from "@/components/auth/social-auth";
 
 function getClient() {
-  return createSupabaseClient(
+  return createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   );
 }
 
-const inputCls = "w-full pl-10 pr-4 py-2.5 rounded-xl text-sm bg-white border border-slate-200 placeholder:text-slate-400 text-slate-900 focus:outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100 transition-all";
+const inputCls = [
+  "w-full pl-10 pr-4 py-3 rounded-xl text-sm transition-all outline-none",
+  "bg-white border text-slate-900 placeholder:text-slate-400",
+  "focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100",
+  "border-slate-200",
+].join(" ");
 
 export default function SignInPage() {
-  const router = useRouter();
   const [email,    setEmail]    = useState("");
   const [password, setPassword] = useState("");
   const [showPass, setShowPass] = useState(false);
@@ -28,14 +31,21 @@ export default function SignInPage() {
 
   const handleSignIn = async () => {
     if (!email || !password) return;
-    setLoading(true); setError(null);
+    setLoading(true);
+    setError(null);
+
     const sb = getClient();
     const { error: signInError } = await sb.auth.signInWithPassword({ email, password });
-    setLoading(false);
-    if (signInError) { setError(signInError.message); return; }
-    // Hard redirect so middleware re-reads the fresh session cookie
+
+    if (signInError) {
+      setLoading(false);
+      setError(signInError.message);
+      return;
+    }
+
+    // Hard full-page redirect — forces browser to send cookies to server
     const next = new URLSearchParams(window.location.search).get("next") ?? "/dashboard";
-    window.location.href = next;
+    window.location.replace(next);
   };
 
   return (
@@ -85,7 +95,7 @@ export default function SignInPage() {
                 onKeyDown={e => e.key === "Enter" && handleSignIn()}
                 className={inputCls} />
               <button type="button" onClick={() => setShowPass(v => !v)}
-                className="absolute right-3.5 top-1/2 -translate-y-1/2 transition-colors hover:text-slate-600"
+                className="absolute right-3.5 top-1/2 -translate-y-1/2"
                 style={{ color: "#94a3b8" }}>
                 {showPass ? <EyeOff size={15} /> : <Eye size={15} />}
               </button>
