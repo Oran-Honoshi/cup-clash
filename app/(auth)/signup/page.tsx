@@ -48,10 +48,17 @@ export default function SignUpPage() {
     const sb = getClient();
     const { data, error: signUpError } = await sb.auth.signUp({
       email, password,
-      options: { data: { name } },
+      options: {
+        data: { name },
+        emailRedirectTo: `${window.location.origin}/auth/callback?next=/dashboard`,
+      },
     });
 
     if (signUpError) { setError(signUpError.message); setLoading(false); return; }
+
+    // If email confirmation is OFF in Supabase, user is immediately logged in
+    // If email confirmation is ON, session will be null until they confirm
+    const isLoggedIn = !!data.session;
 
     if (data.user && country) {
       await sb.from("profiles").upsert({
@@ -64,6 +71,14 @@ export default function SignUpPage() {
     }
 
     setLoading(false);
+
+    // If already logged in (email confirm OFF) — go straight to dashboard
+    if (isLoggedIn) {
+      window.location.replace("/dashboard");
+      return;
+    }
+
+    // Otherwise show "check your email" step
     setStep(3);
   };
 
@@ -196,23 +211,24 @@ export default function SignUpPage() {
           </div>
         )}
 
-        {/* Step 3 — Done */}
+        {/* Step 3 — Check email */}
         {step === 3 && (
           <div className="text-center space-y-4 py-4">
             <div className="h-16 w-16 rounded-full mx-auto flex items-center justify-center"
-              style={{ background: "rgba(0,255,136,0.12)", border: "1px solid rgba(0,255,136,0.3)" }}>
-              <Check size={28} style={{ color: "#00c46a" }} />
+              style={{ background: "rgba(0,212,255,0.12)", border: "1px solid rgba(0,212,255,0.3)" }}>
+              <Mail size={28} style={{ color: "#0891B2" }} />
             </div>
             <h2 className="font-display text-3xl uppercase" style={{ color: "#0F172A" }}>
-              You&apos;re in, {name}!
+              Check your email!
             </h2>
             <p className="text-sm" style={{ color: "#64748b" }}>
-              Check your email to verify your account, then start predicting.
+              We sent a confirmation link to <strong style={{ color: "#0F172A" }}>{email}</strong>.
+              Click it to verify your account and you&apos;ll be taken straight to your dashboard.
             </p>
-            <Button onClick={() => { window.location.href = "/dashboard"; }} size="lg" className="w-full"
-              rightIcon={<ArrowRight size={18} />}>
-              Go to dashboard
-            </Button>
+            <p className="text-xs" style={{ color: "#94a3b8" }}>
+              Already confirmed?{" "}
+              <a href="/signin" style={{ color: "#0891B2", fontWeight: "bold" }}>Sign in here</a>
+            </p>
           </div>
         )}
       </div>
