@@ -16,13 +16,14 @@ export function Logo({ size = "md", className, showWordmark = true }: LogoProps)
 
   return (
     <div className={cn("flex items-center gap-2.5", className)}>
-      <div className="relative rounded-xl overflow-hidden shrink-0"
+      <div className="shrink-0 rounded-xl overflow-hidden"
         style={{ width: dims.px, height: dims.px }}>
         <Image
           src="/favicon-32x32.png"
           alt="Cup Clash"
-          fill
-          className="object-cover"
+          width={dims.px}
+          height={dims.px}
+          className="object-cover w-full h-full"
           unoptimized
         />
       </div>
