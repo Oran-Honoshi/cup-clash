@@ -25,7 +25,7 @@ interface KnockoutMatchCardProps {
 
 type SaveState = "idle" | "saving" | "saved" | "error" | "locked";
 
-export function KnockoutMatchCard({ match, groupId = "grp_titans" }: KnockoutMatchCardProps) {
+export function KnockoutMatchCard({ match, groupId }: KnockoutMatchCardProps) {
   const [homeScore,       setHomeScore]       = useState("");
   const [awayScore,       setAwayScore]       = useState("");
   const [advancementPick, setAdvancementPick] = useState<string | null>(null);

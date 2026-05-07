@@ -19,9 +19,10 @@ const TABS: Array<{ id: Tab; label: string; icon: typeof Trophy }> = [
 
 interface LeaderboardTabsProps {
   members: Member[];
+  currentUserId?: string;
 }
 
-export function LeaderboardTabs({ members }: LeaderboardTabsProps) {
+export function LeaderboardTabs({ members, currentUserId = "1" }: LeaderboardTabsProps) {
   const [active, setActive] = useState<Tab>("predictions");
 
   return (
@@ -52,11 +53,11 @@ export function LeaderboardTabs({ members }: LeaderboardTabsProps) {
 
       {/* Tab content */}
       {active === "predictions" && (
-        <Leaderboard members={members} currentUserId="1" />
+        <Leaderboard members={members} currentUserId={currentUserId} />
       )}
       {active === "scorers"     && <TopScorersLeaderboard />}
       {active === "assisters"   && <TopAssistersLeaderboard />}
-      {active === "trivia"      && <TriviaLeaderboard currentUserId="1" />}
+      {active === "trivia"      && <TriviaLeaderboard currentUserId={currentUserId} />}
     </div>
   );
 }

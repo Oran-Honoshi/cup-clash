@@ -1,139 +1,97 @@
-// lib/services/multi-group.ts
-// Fetches all groups a user belongs to, with their current rank and pot info.
+import { createClient } from "@supabase/supabase-js";
+import { getAllUserGroups } from "@/lib/services/user-group";
 
-function getSupabaseClient() {
-  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY)
-    return null;
-  // eslint-disable-next-line @typescript-eslint/no-require-imports
-  const { createClient } = require("@supabase/supabase-js");
-  return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
+function sb() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
 }
 
 export interface UserGroupSummary {
-  groupId: string;
-  groupName: string;
-  groupType: "tournament" | "single_match";
-  memberCount: number;
-  maxMembers: number;
-  buyInAmount: number;
-  adminFeePercent: number;
-  userRank: number;
-  userPoints: number;
-  totalPot: number;
-  paidPot: number;         // only paid members' buy-ins
-  payoutFirst: number;
-  payoutSecond: number;
-  payoutThird: number;
-  currentEarnings: number; // estimated payout if user keeps current rank
-  inviteCode: string;
-  isAdmin: boolean;
-  nickname: string | null;
+  groupId:           string;
+  groupName:         string;
+  groupType:         string;
+  memberCount:       number;
+  rank:              number;
+  totalMembers:      number;
+  points:            number;
+  currentEarnings:   number;
+  potTotal:          number;
+  inviteCode:        string;
+  isAdmin:           boolean;
+  isPaid:            boolean;
+  nickname:          string | null;
 }
 
 export async function getUserGroups(userId: string): Promise<UserGroupSummary[]> {
-  const sb = getSupabaseClient();
-  if (!sb) return getMockGroups();
+  const memberships = await getAllUserGroups(userId);
+  if (!memberships.length) return [];
 
-  try {
-    // Get all group memberships
-    const { data: memberships } = await sb
+  const results: UserGroupSummary[] = [];
+
+  for (const m of memberships) {
+    if (!m.groups) continue;
+
+    const g = m.groups;
+
+    // Get member count
+    const { count: memberCount } = await sb()
       .from("group_members")
-      .select("group_id, nickname")
+      .select("*", { count: "exact", head: true })
+      .eq("group_id", g.id)
+      .eq("payment_status", "paid");
+
+    // Get user's points in this group
+    const { data: pts } = await sb()
+      .from("group_predictions")
+      .select("points_earned")
+      .eq("group_id", g.id)
       .eq("user_id", userId);
 
-    if (!memberships || memberships.length === 0) return [];
+    const userPoints = (pts ?? []).reduce(
+      (s: number, p: { points_earned: number }) => s + (p.points_earned ?? 0), 0
+    );
 
-    const groupIds = (memberships as Array<{ group_id: string; nickname: string | null }>)
-      .map(m => m.group_id);
+    // Get all members' points to calculate rank
+    const { data: allPts } = await sb()
+      .from("group_predictions")
+      .select("user_id, points_earned")
+      .eq("group_id", g.id);
 
-    // Get group details
-    const { data: groups } = await sb
-      .from("groups")
-      .select("id, name, admin_id, buy_in_amount, payout_first, payout_second, payout_third, max_members, invite_code, admin_fee_percent, group_type")
-      .in("id", groupIds);
+    const totals: Record<string, number> = {};
+    (allPts ?? []).forEach((p: { user_id: string; points_earned: number }) => {
+      totals[p.user_id] = (totals[p.user_id] ?? 0) + (p.points_earned ?? 0);
+    });
+    const sorted = Object.values(totals).sort((a, b) => b - a);
+    const rank   = sorted.findIndex(p => p <= userPoints) + 1;
 
-    if (!groups) return [];
+    // Calculate earnings (60% first / 30% second / 10% third)
+    const paid = memberCount ?? 0;
+    const pot  = paid * (g.enrollment_fee_cents / 100);
+    const payoutPcts = [0.6, 0.3, 0.1];
+    const earnings   = rank <= 3 ? Math.round(pot * payoutPcts[rank - 1]) : 0;
 
-    const results: UserGroupSummary[] = [];
-
-    for (const group of groups as Array<{
-      id: string; name: string; admin_id: string;
-      buy_in_amount: number; payout_first: number; payout_second: number; payout_third: number;
-      max_members: number; invite_code: string; admin_fee_percent: number; group_type: string;
-    }>) {
-      const membership = (memberships as Array<{ group_id: string; nickname: string | null }>)
-        .find(m => m.group_id === group.id);
-
-      // Get leaderboard for this group
-      const { data: leaderboard } = await sb
-        .from("leaderboard")
-        .select("user_id, total_points, rank, paid")
-        .eq("group_id", group.id)
-        .order("total_points", { ascending: false });
-
-      const lb = leaderboard as Array<{ user_id: string; total_points: number; rank: number; paid: boolean }> ?? [];
-      const userEntry = lb.find(r => r.user_id === userId);
-      const paidCount = lb.filter(r => r.paid).length;
-      const paidPot = paidCount * group.buy_in_amount;
-      const totalPot = lb.length * group.buy_in_amount;
-      const adminFee = (group.admin_fee_percent || 0) / 100;
-      const netPot = paidPot * (1 - adminFee);
-
-      const rank = userEntry ? lb.findIndex(r => r.user_id === userId) + 1 : 0;
-      let currentEarnings = 0;
-      if (rank === 1) currentEarnings = Math.round(netPot * group.payout_first / 100);
-      else if (rank === 2) currentEarnings = Math.round(netPot * group.payout_second / 100);
-      else if (rank === 3) currentEarnings = Math.round(netPot * group.payout_third / 100);
-
-      results.push({
-        groupId:         group.id,
-        groupName:       group.name,
-        groupType:       (group.group_type ?? "tournament") as "tournament" | "single_match",
-        memberCount:     lb.length,
-        maxMembers:      group.max_members,
-        buyInAmount:     group.buy_in_amount,
-        adminFeePercent: group.admin_fee_percent || 0,
-        userRank:        rank,
-        userPoints:      userEntry ? Number(userEntry.total_points) : 0,
-        totalPot,
-        paidPot,
-        payoutFirst:     group.payout_first,
-        payoutSecond:    group.payout_second,
-        payoutThird:     group.payout_third,
-        currentEarnings,
-        inviteCode:      group.invite_code,
-        isAdmin:         group.admin_id === userId,
-        nickname:        membership?.nickname ?? null,
-      });
-    }
-
-    return results.sort((a, b) => a.groupName.localeCompare(b.groupName));
-  } catch (e) {
-    console.warn("getUserGroups error:", e);
-    return getMockGroups();
+    results.push({
+      groupId:         g.id,
+      groupName:       g.name,
+      groupType:       "tournament",
+      memberCount:     paid,
+      rank:            rank || (paid + 1),
+      totalMembers:    paid,
+      points:          userPoints,
+      currentEarnings: earnings,
+      potTotal:        pot,
+      inviteCode:      g.passkey,
+      isAdmin:         g.admin_id === userId,
+      isPaid:          m.payment_status === "paid",
+      nickname:        null,
+    });
   }
+
+  return results;
 }
 
-function getMockGroups(): UserGroupSummary[] {
-  return [
-    {
-      groupId: "grp_titans", groupName: "Tech Titans World Cup", groupType: "tournament",
-      memberCount: 3, maxMembers: 10, buyInAmount: 50, adminFeePercent: 0,
-      userRank: 1, userPoints: 145, totalPot: 150, paidPot: 100,
-      payoutFirst: 60, payoutSecond: 30, payoutThird: 10,
-      currentEarnings: 60, inviteCode: "grp_titans", isAdmin: true, nickname: null,
-    },
-  ];
-}
-
-export function calculateTotalEarnings(groups: UserGroupSummary[]): {
-  totalCurrentEarnings: number;
-  totalPot: number;
-  groupCount: number;
-} {
-  return {
-    totalCurrentEarnings: groups.reduce((sum, g) => sum + g.currentEarnings, 0),
-    totalPot: groups.reduce((sum, g) => sum + g.paidPot, 0),
-    groupCount: groups.length,
-  };
+export function calculateTotalEarnings(groups: UserGroupSummary[]): number {
+  return groups.reduce((sum, g) => sum + g.currentEarnings, 0);
 }

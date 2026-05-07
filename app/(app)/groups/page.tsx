@@ -9,7 +9,8 @@ export default async function GroupsPage() {
   const userId = userProfile?.id ?? "1";
 
   const groups = await getUserGroups(userId);
-  const { totalCurrentEarnings, totalPot } = calculateTotalEarnings(groups);
+  const totalEarnings = calculateTotalEarnings(groups);
+  const totalPot = groups.reduce((s, g) => s + g.potTotal, 0);
 
   return (
     <div className="space-y-6">
@@ -22,7 +23,7 @@ export default async function GroupsPage() {
 
       <MultiGroupDashboard
         groups={groups}
-        totalEarnings={totalCurrentEarnings}
+        totalEarnings={totalEarnings}
         totalPot={totalPot}
       />
     </div>

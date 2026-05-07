@@ -160,7 +160,7 @@ function StageColumn({ title, matches, color, highlight = false }: {
   );
 }
 
-export function KnockoutBracket() {
+export function KnockoutBracket({ groupId: _groupId }: { groupId?: string }) {
   return (
     <div className="space-y-8">
       {/* Legend */}

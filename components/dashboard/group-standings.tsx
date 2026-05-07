@@ -107,11 +107,11 @@ function GroupTable({ groupLetter, standings }: { groupLetter: string; standings
   );
 }
 
-export function GroupStandings() {
+export function GroupStandings({ groupId }: { groupId: string }) {
   const [activeGroup, setActiveGroup] = useState<string | null>(null);
 
   const initialStandings = Object.fromEntries(GROUPS.map(g => [g, blankStandings(g)]));
-  const { standings, lastUpdate, isLive } = useRealtimeStandings("grp_titans", initialStandings);
+  const { standings, lastUpdate, isLive } = useRealtimeStandings(groupId, initialStandings);
 
   return (
     <div className="space-y-5">
