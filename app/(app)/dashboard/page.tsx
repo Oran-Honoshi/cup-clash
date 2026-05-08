@@ -43,7 +43,7 @@ export default async function DashboardPage() {
               Create a Group
             </button>
           </a>
-          <a href="/join">
+          <a href="/join/enter">
             <button className="px-6 py-3 rounded-xl font-bold text-sm uppercase tracking-wider"
               style={{ border: "1px solid rgba(0,212,255,0.25)", color: "#0891B2", background: "rgba(0,212,255,0.05)" }}>
               Join with Passkey
