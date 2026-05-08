@@ -2,7 +2,8 @@ export const dynamic = "force-dynamic";
 
 import { redirect } from "next/navigation";
 import { KnockoutBracket } from "@/components/dashboard/knockout-bracket";
-import { getCurrentUserGroup } from "@/lib/services/user-group";
+import { getCurrentUserGroup, getCurrentUserProfile } from "@/lib/services/user-group";
+import { NoGroupScreen } from "@/components/app/no-group-screen";
 
 export default async function BracketPage() {
   const { groupId, userId } = await getCurrentUserGroup();

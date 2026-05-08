@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { LeaderboardTabs } from "@/components/dashboard/leaderboard-tabs";
 import { getMembers, getGroup } from "@/lib/services/groups";
 import { getCurrentUserGroup, getCurrentUserProfile } from "@/lib/services/user-group";
+import { NoGroupScreen } from "@/components/app/no-group-screen";
 
 export default async function LeaderboardPage() {
   const [userGroup, userProfile] = await Promise.all([
@@ -12,7 +13,7 @@ export default async function LeaderboardPage() {
   ]);
 
   if (!userProfile) redirect("/signin");
-  if (!userGroup.groupId) redirect("/create-group");
+  if (!userGroup.groupId) return <NoGroupScreen name={userProfile?.name ?? ""} />;
 
   const groupId = userGroup.groupId;
   const [members, group] = await Promise.all([

@@ -20,7 +20,7 @@ export default async function DashboardPage() {
   // Not logged in — redirect to sign in
   if (!userProfile) redirect("/signin");
 
-  // No group yet — show welcome screen instead of redirect
+  // No group yet — show welcome screen
   if (!userGroup.groupId) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-center space-y-6 px-4">

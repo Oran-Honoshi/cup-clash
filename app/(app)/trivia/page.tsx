@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { TriviaPageClient } from "@/components/trivia/trivia-page-client";
 import { getGroup } from "@/lib/services/groups";
 import { getCurrentUserGroup, getCurrentUserProfile } from "@/lib/services/user-group";
+import { NoGroupScreen } from "@/components/app/no-group-screen";
 
 export default async function TriviaPage() {
   const [userGroup, userProfile] = await Promise.all([
@@ -12,7 +13,7 @@ export default async function TriviaPage() {
   ]);
 
   if (!userProfile) redirect("/signin");
-  if (!userGroup.groupId) redirect("/create-group");
+  if (!userGroup.groupId) return <NoGroupScreen name={userProfile?.name ?? ""} />;
 
   const groupId = userGroup.groupId;
   const group   = await getGroup(groupId);
