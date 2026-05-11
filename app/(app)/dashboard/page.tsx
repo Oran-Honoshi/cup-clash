@@ -106,6 +106,7 @@ export default async function DashboardPage() {
           <Leaderboard
             members={top8}
             currentUserId={userProfile.id}
+            groupId={groupId}
             showGhost
           />
           <WallOfShame members={members} totalMatches={48} />

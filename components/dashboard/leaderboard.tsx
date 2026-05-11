@@ -8,9 +8,10 @@ import { cn } from "@/lib/utils";
 import type { Member } from "@/lib/types";
 
 interface LeaderboardProps {
-  members: Member[];
+  members:        Member[];
   currentUserId?: string;
-  showGhost?: boolean;
+  groupId?:       string;
+  showGhost?:     boolean;
 }
 
 const RANK_LABELS = ["1st", "2nd", "3rd"];
@@ -37,7 +38,7 @@ function DeltaBadge({ delta }: { delta: number }) {
   );
 }
 
-export function Leaderboard({ members, currentUserId, showGhost = true }: LeaderboardProps) {
+export function Leaderboard({ members, currentUserId, groupId, showGhost = true }: LeaderboardProps) {
   const [selected, setSelected] = useState<Member | null>(null);
 
   const sorted = [...members].sort((a, b) => b.points - a.points);
@@ -53,7 +54,6 @@ export function Leaderboard({ members, currentUserId, showGhost = true }: Leader
 
   return (
     <>
-      {/* Full-width white table */}
       <div className="glass rounded-2xl overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-slate-100">
@@ -158,7 +158,7 @@ export function Leaderboard({ members, currentUserId, showGhost = true }: Leader
                   {!isGhost && <DeltaBadge delta={member.rankDelta ?? 0} />}
                 </div>
 
-                {/* Points — monospace, cyan */}
+                {/* Points */}
                 <div className="w-16 text-right shrink-0">
                   <span className="font-mono font-black text-2xl leading-none"
                     style={{ color: isCurrentUser ? "#0891B2" : isGhost ? "#94a3b8" : "#0F172A" }}>
@@ -186,7 +186,19 @@ export function Leaderboard({ members, currentUserId, showGhost = true }: Leader
         )}
       </div>
 
-      {selected && <PlayerDrawer member={selected} onClose={() => setSelected(null)} />}
+      {/* Player drawer — uses individual props */}
+      {selected && !selected.isGhost && (
+        <PlayerDrawer
+          userId={selected.id}
+          groupId={groupId ?? ""}
+          name={selected.name}
+          country={selected.country ?? ""}
+          points={selected.points}
+          rank={sorted.findIndex(m => m.id === selected.id) + 1}
+          open={true}
+          onClose={() => setSelected(null)}
+        />
+      )}
     </>
   );
 }

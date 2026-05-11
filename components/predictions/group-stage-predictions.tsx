@@ -6,6 +6,7 @@ import {
   ChevronRight, Check, Lock, ArrowUpDown, Star,
   Trophy, Medal, Users, AlertCircle, CheckCircle2,
 } from "lucide-react";
+import { CopyPredictions } from "@/components/predictions/copy-predictions";
 import Image from "next/image";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -531,6 +532,14 @@ export function GroupStagePredictions({ groupId, locked = false, userId }: Group
                 </div>
               </div>
             </Card>
+            
+            {userId && (
+  <CopyPredictions
+    currentGroupId={groupId}
+    userId={userId}
+    onCopied={(preds) => setPredictions(prev => ({ ...prev, ...preds }))}
+  />
+)}
 
             {/* Navigation hint */}
             <div className="flex gap-2">
