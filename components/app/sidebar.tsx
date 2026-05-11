@@ -7,7 +7,7 @@ import {
   FlaskConical, GitBranch, BarChart2, UserCircle, Brain,
   Users, Bell,
 } from "lucide-react";
-import { createClient as createSupabaseClient } from "@supabase/supabase-js";
+import { createClient as createSupabaseClient } from "@/lib/supabase/client";
 import { Logo } from "@/components/logo";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
@@ -48,14 +48,9 @@ export function AppSidebar() {
   }, []);
 
   const handleSignOut = async () => {
-    if (!process.env.NEXT_PUBLIC_SUPABASE_URL) { router.push("/signin"); return; }
-    const sb = createSupabaseClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    );
+    const sb = createSupabaseClient();
     await sb.auth.signOut();
-    router.push("/signin");
-    router.refresh();
+    window.location.replace("/signin");
   };
 
   const displayName = profile?.name ?? "You";

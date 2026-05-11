@@ -3,7 +3,7 @@
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import { LayoutDashboard, Trophy, Target, BarChart2, UserCircle, LogOut } from "lucide-react";
-import { createClient as createSupabaseClient } from "@supabase/supabase-js";
+import { createClient as createSupabaseClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
@@ -19,14 +19,9 @@ export function MobileNav() {
   const router   = useRouter();
 
   const handleSignOut = async () => {
-    if (!process.env.NEXT_PUBLIC_SUPABASE_URL) { router.push("/signin"); return; }
-    const sb = createSupabaseClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    );
+    const sb = createSupabaseClient();
     await sb.auth.signOut();
-    router.push("/signin");
-    router.refresh();
+    window.location.replace("/signin");
   };
 
   return (
