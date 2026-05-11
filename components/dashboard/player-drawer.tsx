@@ -1,144 +1,207 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Target, Check, Trophy, Star } from "lucide-react";
-import type { Member } from "@/lib/types";
-import { MemberAvatar } from "@/components/ui/member-avatar";
+import { X, Target, Trophy, Zap, TrendingUp } from "lucide-react";
+import Image from "next/image";
+import { createClient } from "@/lib/supabase/client";
+import { flagUrl } from "@/lib/countries";
 
-// Mock point history — will come from Supabase later
-const MOCK_HISTORY = [
-  { id: "1", match: "Israel vs France",     date: "Jun 12", type: "exact",   points: 25, detail: "Predicted 2–1 ✓" },
-  { id: "2", match: "Argentina vs Brazil",  date: "Jun 13", type: "outcome", points: 10, detail: "Predicted Argentina win ✓" },
-  { id: "3", match: "England vs Spain",     date: "Jun 14", type: "miss",    points: 0,  detail: "Predicted England win ✗" },
-  { id: "4", match: "Tournament Winner",    date: "Pre-tourney", type: "tournament", points: 100, detail: "Picked Argentina" },
-  { id: "5", match: "Top Scorer",           date: "Pre-tourney", type: "scorer", points: 0, detail: "Picked Mbappé (pending)" },
-];
-
-const TYPE_CONFIG = {
-  exact:      { icon: Target,  color: "#3CAC3B", label: "Exact score",   bg: "rgba(60,172,59,0.12)"    },
-  outcome:    { icon: Check,   color: "#6EE7B7", label: "Correct outcome", bg: "rgba(110,231,183,0.1)" },
-  miss:       { icon: X,       color: "#64748B", label: "Missed",         bg: "rgba(100,116,139,0.1)"  },
-  tournament: { icon: Trophy,  color: "#D4AF37", label: "Tournament pick", bg: "rgba(212,175,55,0.12)" },
-  scorer:     { icon: Star,    color: "#F59E0B", label: "Top scorer pick", bg: "rgba(245,158,11,0.1)"  },
-};
-
-interface PlayerDrawerProps {
-  member: Member | null;
-  onClose: () => void;
+interface PointHistoryItem {
+  matchId:    string;
+  home:       string;
+  away:       string;
+  homeFlagCode: string;
+  awayFlagCode: string;
+  predicted:  string;
+  actual:     string;
+  pts:        number;
+  type:       "exact" | "outcome" | "none";
 }
 
-export function PlayerDrawer({ member, onClose }: PlayerDrawerProps) {
+interface PlayerDrawerProps {
+  userId:    string;
+  groupId:   string;
+  name:      string;
+  country:   string;
+  points:    number;
+  rank:      number;
+  open:      boolean;
+  onClose:   () => void;
+}
+
+const FLAG_CODES: Record<string, string> = {
+  "Mexico": "mx", "South Africa": "za", "Brazil": "br", "Morocco": "ma",
+  "USA": "us", "Paraguay": "py", "Germany": "de", "France": "fr",
+  "Argentina": "ar", "England": "gb-eng", "Spain": "es", "Portugal": "pt",
+  "Netherlands": "nl", "Belgium": "be", "Japan": "jp", "Australia": "au",
+};
+
+function getFlagCode(teamName: string): string {
+  return FLAG_CODES[teamName] ?? "un";
+}
+
+export function PlayerDrawer({ userId, groupId, name, country, points, rank, open, onClose }: PlayerDrawerProps) {
+  const [history,  setHistory]  = useState<PointHistoryItem[]>([]);
+  const [loading,  setLoading]  = useState(false);
+  const [exactCount,   setExactCount]   = useState(0);
+  const [outcomeCount, setOutcomeCount] = useState(0);
+
+  useEffect(() => {
+    if (!open || !userId || !groupId) return;
+    setLoading(true);
+
+    const sb = createClient();
+    sb.from("group_predictions")
+      .select(`
+        match_id, home_score, away_score, points_earned, is_exact,
+        matches ( home, away, home_flag, away_flag )
+      `)
+      .eq("user_id",  userId)
+      .eq("group_id", groupId)
+      .order("created_at", { ascending: false })
+      .limit(30)
+      .then(({ data }) => {
+        if (!data?.length) { setLoading(false); return; }
+
+        const items: PointHistoryItem[] = (data as unknown as Array<{
+          match_id: string;
+          home_score: number;
+          away_score: number;
+          points_earned: number;
+          is_exact: boolean;
+          matches: { home: string; away: string; home_flag: string | null; away_flag: string | null } | null;
+        }>)
+          .filter(p => p.matches && p.points_earned > 0)
+          .map(p => ({
+            matchId:      p.match_id,
+            home:         p.matches!.home,
+            away:         p.matches!.away,
+            homeFlagCode: p.matches!.home_flag ?? getFlagCode(p.matches!.home),
+            awayFlagCode: p.matches!.away_flag ?? getFlagCode(p.matches!.away),
+            predicted:    `${p.home_score}–${p.away_score}`,
+            actual:       `${p.home_score}–${p.away_score}`,
+            pts:          p.points_earned,
+            type:         p.is_exact ? "exact" : "outcome",
+          }));
+
+        setHistory(items);
+        setExactCount(items.filter(i => i.type === "exact").length);
+        setOutcomeCount(items.filter(i => i.type === "outcome").length);
+        setLoading(false);
+      });
+  }, [open, userId, groupId]);
+
   return (
     <AnimatePresence>
-      {member && (
+      {open && (
         <>
-          {/* Backdrop */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
-            onClick={onClose}
-          />
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50"
+            style={{ background: "rgba(15,23,42,0.4)", backdropFilter: "blur(4px)" }}
+            onClick={onClose} />
 
-          {/* Drawer */}
           <motion.div
-            initial={{ x: "100%" }}
-            animate={{ x: 0 }}
-            exit={{ x: "100%" }}
-            transition={{ type: "spring", damping: 28, stiffness: 300 }}
-            className="fixed right-0 top-0 bottom-0 w-full max-w-sm z-50 glass-strong border-l border-white/[0.08] overflow-y-auto"
-          >
+            initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }}
+            transition={{ type: "spring", damping: 28, stiffness: 280 }}
+            className="fixed right-0 top-0 bottom-0 z-50 w-full sm:w-96 overflow-y-auto"
+            style={{ background: "rgba(255,255,255,0.97)", backdropFilter: "blur(24px)", borderLeft: "1px solid rgba(0,212,255,0.15)", boxShadow: "-8px 0 40px rgba(0,0,0,0.1)" }}>
+
             {/* Header */}
-            <div className="sticky top-0 glass-strong border-b border-white/[0.08] px-5 py-4 flex items-center justify-between">
+            <div className="sticky top-0 px-5 py-4 border-b flex items-center justify-between"
+              style={{ borderColor: "rgba(0,212,255,0.12)", background: "rgba(255,255,255,0.95)", backdropFilter: "blur(12px)" }}>
               <div className="flex items-center gap-3">
-                <MemberAvatar name={member.name} avatarUrl={member.avatarUrl} size="lg" />
+                <div className="relative h-10 w-10 rounded-full overflow-hidden"
+                  style={{ border: "2px solid rgba(0,212,255,0.2)" }}>
+                  <Image src={flagUrl(country, 40)} alt={country} fill className="object-cover" unoptimized />
+                </div>
                 <div>
-                  <div className="font-display text-xl uppercase text-white">
-                    {member.name}
+                  <div className="font-display text-xl uppercase font-black" style={{ color: "#0F172A" }}>{name}</div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold" style={{ color: "#0891B2" }}>Rank #{rank}</span>
+                    <span className="text-xs" style={{ color: "#94a3b8" }}>·</span>
+                    <span className="text-xs font-black" style={{ color: "#0F172A" }}>{points} pts</span>
                   </div>
-                  <div className="text-xs text-pitch-400">{member.country}</div>
                 </div>
               </div>
-              <button
-                onClick={onClose}
-                className="h-8 w-8 rounded-xl flex items-center justify-center text-pitch-400 hover:text-white hover:bg-white/[0.06] transition-colors"
-              >
-                <X size={16} />
+              <button onClick={onClose} className="p-2 rounded-xl hover:bg-slate-100">
+                <X size={18} style={{ color: "#64748b" }} />
               </button>
             </div>
 
-            {/* Points summary */}
-            <div className="px-5 py-4 border-b border-white/[0.06]">
-              <div className="flex items-baseline gap-2">
-                <span
-                  className="font-display text-5xl"
-                  style={{ color: "rgb(var(--accent-glow))" }}
-                >
-                  {member.points}
-                </span>
-                <span className="text-pitch-400 text-sm uppercase tracking-widest">
-                  total points
-                </span>
-              </div>
-              <div className="mt-3 grid grid-cols-3 gap-2 text-center">
-                <div className="rounded-xl bg-white/[0.04] py-2">
-                  <div className="font-display text-2xl text-success">3</div>
-                  <div className="text-[10px] text-pitch-500 uppercase tracking-wider">Exact</div>
+            {/* Stats */}
+            <div className="grid grid-cols-3 gap-3 px-5 py-4">
+              {[
+                { icon: Trophy,    label: "Total pts",  value: points,       color: "#0891B2" },
+                { icon: Target,    label: "Exact",      value: exactCount,   color: "#00c46a" },
+                { icon: TrendingUp,label: "Outcome",    value: outcomeCount, color: "#d97706" },
+              ].map(({ icon: Icon, label, value, color }) => (
+                <div key={label} className="rounded-xl p-3 text-center"
+                  style={{ background: "rgba(0,212,255,0.04)", border: "1px solid rgba(0,212,255,0.1)" }}>
+                  <Icon size={16} className="mx-auto mb-1" style={{ color }} />
+                  <div className="font-black text-xl" style={{ color: "#0F172A" }}>{value}</div>
+                  <div className="text-[10px] uppercase tracking-widest" style={{ color: "#94a3b8" }}>{label}</div>
                 </div>
-                <div className="rounded-xl bg-white/[0.04] py-2">
-                  <div className="font-display text-2xl text-white">9</div>
-                  <div className="text-[10px] text-pitch-500 uppercase tracking-wider">Correct</div>
-                </div>
-                <div className="rounded-xl bg-white/[0.04] py-2">
-                  <div className="font-display text-2xl text-pitch-500">4</div>
-                  <div className="text-[10px] text-pitch-500 uppercase tracking-wider">Missed</div>
-                </div>
-              </div>
+              ))}
             </div>
 
             {/* Point history */}
-            <div className="px-5 py-4">
-              <div className="label-caps mb-3">Point history</div>
-              <div className="space-y-2">
-                {MOCK_HISTORY.map((h) => {
-                  const cfg = TYPE_CONFIG[h.type as keyof typeof TYPE_CONFIG];
-                  return (
-                    <div
-                      key={h.id}
-                      className="flex items-center gap-3 rounded-xl p-3 border border-white/[0.06]"
-                      style={{ backgroundColor: cfg.bg }}
-                    >
-                      {/* Icon */}
-                      <div
-                        className="h-8 w-8 rounded-lg flex items-center justify-center shrink-0"
-                        style={{ backgroundColor: `${cfg.color}20` }}
-                      >
-                        <cfg.icon size={15} style={{ color: cfg.color }} />
-                      </div>
+            <div className="px-5 pb-8">
+              <div className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: "#64748b" }}>
+                Point History
+              </div>
 
-                      {/* Details */}
-                      <div className="flex-1 min-w-0">
-                        <div className="text-sm font-bold text-white truncate">
-                          {h.match}
+              {loading ? (
+                <div className="py-8 text-center text-sm" style={{ color: "#94a3b8" }}>Loading...</div>
+              ) : history.length === 0 ? (
+                <div className="py-8 text-center space-y-2">
+                  <Zap size={28} className="mx-auto" style={{ color: "#e2e8f0" }} />
+                  <p className="text-sm" style={{ color: "#94a3b8" }}>
+                    No points scored yet — check back after matches are played.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {history.map(item => (
+                    <div key={item.matchId}
+                      className="flex items-center gap-3 rounded-xl px-3 py-2.5"
+                      style={{
+                        background: item.type === "exact" ? "rgba(0,255,136,0.05)" : "rgba(0,212,255,0.04)",
+                        border: `1px solid ${item.type === "exact" ? "rgba(0,255,136,0.15)" : "rgba(0,212,255,0.1)"}`,
+                      }}>
+                      {/* Flags */}
+                      <div className="flex items-center gap-1 shrink-0">
+                        <div className="relative h-4 w-5 rounded-sm overflow-hidden">
+                          <Image src={flagUrl(item.homeFlagCode, 20)} alt={item.home} fill className="object-cover" unoptimized />
                         </div>
-                        <div className="text-[11px] text-pitch-400">{h.detail}</div>
+                        <span className="text-[10px]" style={{ color: "#94a3b8" }}>vs</span>
+                        <div className="relative h-4 w-5 rounded-sm overflow-hidden">
+                          <Image src={flagUrl(item.awayFlagCode, 20)} alt={item.away} fill className="object-cover" unoptimized />
+                        </div>
                       </div>
-
+                      {/* Match */}
+                      <div className="flex-1 min-w-0">
+                        <div className="text-xs font-bold truncate" style={{ color: "#0F172A" }}>
+                          {item.home} vs {item.away}
+                        </div>
+                        <div className="text-[10px]" style={{ color: "#94a3b8" }}>
+                          Guessed: {item.predicted}
+                        </div>
+                      </div>
                       {/* Points */}
                       <div className="shrink-0 text-right">
-                        <div
-                          className="font-display text-xl"
-                          style={{ color: h.points > 0 ? cfg.color : "#475569" }}
-                        >
-                          {h.points > 0 ? `+${h.points}` : "0"}
+                        <div className="font-black text-lg" style={{ color: item.type === "exact" ? "#00c46a" : "#0891B2" }}>
+                          +{item.pts}
                         </div>
-                        <div className="text-[10px] text-pitch-600">{h.date}</div>
+                        <div className="text-[9px] font-bold uppercase"
+                          style={{ color: item.type === "exact" ? "#00c46a" : "#0891B2" }}>
+                          {item.type}
+                        </div>
                       </div>
                     </div>
-                  );
-                })}
-              </div>
+                  ))}
+                </div>
+              )}
             </div>
           </motion.div>
         </>

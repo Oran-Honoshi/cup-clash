@@ -1,28 +1,25 @@
 export const dynamic = "force-dynamic";
 
+import { redirect } from "next/navigation";
 import { NotificationsClient } from "@/components/notifications/notifications-client";
-import { NotificationSettings } from "@/components/notifications/notification-settings";
+import { getCurrentUserProfile } from "@/lib/services/user-group";
 
-export default function NotificationsPage() {
+export default async function NotificationsPage() {
+  const userProfile = await getCurrentUserProfile();
+  if (!userProfile) redirect("/signin");
+
   return (
-    <div className="space-y-6 max-w-2xl">
+    <div className="space-y-6">
       <div>
-        <div className="label-caps mb-1">Inbox</div>
-        <h1 className="font-display text-4xl sm:text-5xl uppercase text-white tracking-tight">
+        <div className="label-caps mb-1">Preferences</div>
+        <h1 className="font-display text-4xl sm:text-5xl uppercase tracking-tight" style={{ color: "#0F172A" }}>
           Notifications
         </h1>
+        <p className="text-sm mt-1" style={{ color: "#64748b" }}>
+          Choose when and how Cup Clash notifies you.
+        </p>
       </div>
-
-      <div className="grid gap-6 lg:grid-cols-2 lg:items-start">
-        <div>
-          <div className="label-caps mb-3">Recent</div>
-          <NotificationsClient />
-        </div>
-        <div>
-          <div className="label-caps mb-3">Settings</div>
-          <NotificationSettings />
-        </div>
-      </div>
+      <NotificationsClient userId={userProfile.id} />
     </div>
   );
 }
