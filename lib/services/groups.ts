@@ -85,8 +85,7 @@ export async function getMembers(groupId: string): Promise<Member[]> {
     .from("group_members")
     .select(`
       user_id, payment_status, can_predict, joined_at,
-      profiles ( id, name, country, avatar_url ),
-      payments ( status, stake_paid )
+      profiles ( id, name, country, avatar_url )
     `)
     .eq("group_id", groupId);
 
@@ -109,19 +108,18 @@ export async function getMembers(groupId: string): Promise<Member[]> {
     can_predict: boolean;
     joined_at: string;
     profiles: { id: string; name: string; country: string | null; avatar_url: string | null } | null;
-    payments: Array<{ status: string; stake_paid: boolean }> | null;
   }>)
     .filter(row => row.profiles !== null)
     .map(row => ({
-      id:           row.user_id,
-      name:         row.profiles!.name,
-      country:      row.profiles!.country ?? "",
-      avatarUrl:    row.profiles!.avatar_url ?? null,
-      points:       pointsMap[row.user_id] ?? 0,
-      paid:         row.payment_status === "paid",
-      canPredict:   row.can_predict,
-      stakePaid:    row.payments?.[0]?.stake_paid ?? false,
-      joinedAt:     row.joined_at,
+      id:         row.user_id,
+      name:       row.profiles!.name,
+      country:    row.profiles!.country ?? "",
+      avatarUrl:  row.profiles!.avatar_url ?? null,
+      points:     pointsMap[row.user_id] ?? 0,
+      paid:       row.payment_status === "paid",
+      canPredict: row.can_predict,
+      stakePaid:  false,
+      joinedAt:   row.joined_at,
     }))
     .sort((a, b) => b.points - a.points);
 }
@@ -152,11 +150,7 @@ export async function getMemberPaymentStatus(
 export async function getGroupPayments(groupId: string) {
   const { data, error } = await sbAdmin()
     .from("payments")
-    .select(`
-      id, email, status, stake_paid,
-      payment_timestamp, refund_expiry, amount_cents,
-      profiles ( name, country, avatar_url )
-    `)
+    .select("id, email, status, stake_paid, payment_timestamp, refund_expiry, amount_cents, user_id")
     .eq("group_id", groupId)
     .order("payment_timestamp", { ascending: false });
 
