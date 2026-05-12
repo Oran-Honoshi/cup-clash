@@ -1,21 +1,23 @@
 import { createClient } from "@supabase/supabase-js";
 
-// ── Server-side Supabase client (reads auth cookies) ─────────────────────────
+function sbAdmin() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+}
 
 async function getServerClient() {
   try {
     const { createClient: createServerClient } = await import("@/lib/supabase/server");
     return createServerClient();
   } catch {
-    // Fallback to anon client if server client unavailable
     return createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
     );
   }
 }
-
-// ── Types ─────────────────────────────────────────────────────────────────────
 
 export interface UserGroupResult {
   groupId:  string | null;
@@ -33,10 +35,6 @@ export interface UserProfile {
   email:     string | null;
 }
 
-// ── getCurrentUserGroup ───────────────────────────────────────────────────────
-// Returns the group the current user most recently joined.
-// Returns null groupId if the user has no group yet.
-
 export async function getCurrentUserGroup(): Promise<UserGroupResult> {
   const EMPTY: UserGroupResult = { groupId: null, isMock: false, userId: null, isAdmin: false, isPaid: false };
 
@@ -45,48 +43,34 @@ export async function getCurrentUserGroup(): Promise<UserGroupResult> {
     const { data: { user } } = await serverSb.auth.getUser();
     if (!user) return EMPTY;
 
-    const anon = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    );
-
-    // Get most recently joined group
-    const { data: membership } = await anon
+    // Use admin client to bypass RLS
+    const { data: membership } = await sbAdmin()
       .from("group_members")
       .select("group_id, payment_status")
       .eq("user_id", user.id)
       .order("joined_at", { ascending: false })
       .limit(1)
-      .single();
+      .maybeSingle();
 
     if (!membership) return { ...EMPTY, userId: user.id };
 
     const m = membership as { group_id: string; payment_status: string };
 
-    // Check if admin
-    const { data: group } = await anon
+    const { data: group } = await sbAdmin()
       .from("groups")
       .select("admin_id")
       .eq("id", m.group_id)
-      .single();
+      .maybeSingle();
 
     const isAdmin = (group as { admin_id: string } | null)?.admin_id === user.id;
     const isPaid  = m.payment_status === "paid";
 
-    return {
-      groupId:  m.group_id,
-      isMock:   false,
-      userId:   user.id,
-      isAdmin,
-      isPaid,
-    };
+    return { groupId: m.group_id, isMock: false, userId: user.id, isAdmin, isPaid };
   } catch (e) {
     console.warn("getCurrentUserGroup error:", e);
     return { groupId: null, isMock: false, userId: null, isAdmin: false, isPaid: false };
   }
 }
-
-// ── getCurrentUserProfile ─────────────────────────────────────────────────────
 
 export async function getCurrentUserProfile(): Promise<UserProfile | null> {
   try {
@@ -94,19 +78,13 @@ export async function getCurrentUserProfile(): Promise<UserProfile | null> {
     const { data: { user } } = await serverSb.auth.getUser();
     if (!user) return null;
 
-    const anon = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    );
-
-    const { data } = await anon
+    const { data } = await sbAdmin()
       .from("profiles")
       .select("id, name, country, avatar_url")
       .eq("id", user.id)
-      .single();
+      .maybeSingle();
 
     if (!data) {
-      // Profile doesn't exist yet — return basic info from auth
       return {
         id:        user.id,
         name:      user.user_metadata?.name ?? user.email?.split("@")[0] ?? "Player",
@@ -130,16 +108,8 @@ export async function getCurrentUserProfile(): Promise<UserProfile | null> {
   }
 }
 
-// ── getAllUserGroups ───────────────────────────────────────────────────────────
-// For the "My Groups" multi-group dashboard
-
 export async function getAllUserGroups(userId: string) {
-  const anon = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
-
-  const { data } = await anon
+  const { data } = await sbAdmin()
     .from("group_members")
     .select(`
       group_id, payment_status, can_predict, joined_at,
@@ -160,21 +130,13 @@ export async function getAllUserGroups(userId: string) {
   }>;
 }
 
-// ── ensureProfile ─────────────────────────────────────────────────────────────
-// Called after sign-up to make sure a profile row exists
-
 export async function ensureProfile(params: {
   userId:  string;
   name:    string;
   email:   string;
   country: string;
 }): Promise<void> {
-  const anon = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
-
-  await anon.from("profiles").upsert({
+  await sbAdmin().from("profiles").upsert({
     id:      params.userId,
     name:    params.name,
     country: params.country,
