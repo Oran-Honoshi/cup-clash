@@ -1,13 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-import { createClient as createServerClient } from "@/lib/supabase/server";
-
-// TESTING ONLY — bypasses Paddle payment
-// Remove or disable this route before going live with real payments
-// Protected by NEXT_PUBLIC_DEMO_MODE env var
+import { cookies } from "next/headers";
+import { createServerClient } from "@supabase/ssr";
 
 export async function POST(request: NextRequest) {
-  // Only allow in demo/testing mode
   if (process.env.NEXT_PUBLIC_DEMO_MODE !== "true") {
     return NextResponse.json({ error: "Not available" }, { status: 403 });
   }
@@ -17,10 +13,22 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "groupId required" }, { status: 400 });
   }
 
-  // Get current user
-  const sb = createServerClient();
-  const { data: { user } } = await sb.auth.getUser();
-  if (!user) {
+  // Get current user via SSR cookies
+  const cookieStore = cookies();
+  const sbServer = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string)                          { return cookieStore.get(name)?.value; },
+        set(name: string, value: string, opts: Record<string, unknown>) { try { cookieStore.set({ name, value, ...opts }); } catch {} },
+        remove(name: string, opts: Record<string, unknown>)             { try { cookieStore.set({ name, value: "", ...opts }); } catch {} },
+      },
+    }
+  );
+
+  const { data: { user }, error: authError } = await sbServer.auth.getUser();
+  if (authError || !user) {
     return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
   }
 
@@ -30,7 +38,7 @@ export async function POST(request: NextRequest) {
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
 
-  // Add/update member as paid
+  // Upsert member as paid
   const { error: memberError } = await admin
     .from("group_members")
     .upsert({
@@ -42,16 +50,17 @@ export async function POST(request: NextRequest) {
     }, { onConflict: "user_id,group_id" });
 
   if (memberError) {
+    console.error("Member upsert error:", memberError);
     return NextResponse.json({ error: memberError.message }, { status: 500 });
   }
 
-  // Create a mock payment record
+  // Mock payment record
   await admin.from("payments").upsert({
     user_id:           user.id,
     group_id:          groupId,
     email:             user.email ?? "",
     status:            "paid",
-    amount_cents:      200,
+    amount_cents:      0,
     stake_paid:        false,
     payment_timestamp: new Date().toISOString(),
   } as Record<string, unknown>, { onConflict: "user_id,group_id" });
