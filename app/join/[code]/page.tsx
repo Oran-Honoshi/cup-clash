@@ -1,198 +1,190 @@
-"use client";
+export const dynamic = "force-dynamic";
 
-import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
-import { Users, CheckCircle, XCircle, Loader2, ArrowRight } from "lucide-react";
-import { createClient as createSupabaseClient } from "@supabase/supabase-js";
+import { createClient } from "@/lib/supabase/server";
+import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { Logo } from "@/components/logo";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
-
-function getClient() {
-  return createSupabaseClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
-}
+import { XCircle, ArrowRight, Users } from "lucide-react";
+import Link from "next/link";
 
 interface GroupRow {
-  id: string;
-  name: string;
-  max_members: number;
-  buy_in_amount: number;
+  id:                   string;
+  name:                 string;
+  passkey:              string;
+  admin_id:             string;
+  max_members:          number;
+  enrollment_fee_cents: number;
+  enrollment_deadline:  string | null;
 }
 
-type JoinState = "loading" | "found" | "joining" | "joined" | "full" | "already" | "notfound" | "error";
+async function findGroup(passkey: string): Promise<GroupRow | null> {
+  // Use service role to bypass RLS
+  const admin = createAdminClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
 
-interface GroupInfo {
-  id: string;
-  name: string;
-  memberCount: number;
-  maxMembers: number;
-  buyInAmount: number;
+  const { data } = await admin
+    .from("groups")
+    .select("id, name, passkey, admin_id, max_members, enrollment_fee_cents, enrollment_deadline")
+    .ilike("passkey", passkey.trim())
+    .limit(1);
+
+  return (data?.[0] as GroupRow) ?? null;
 }
 
-export default function JoinPage() {
-  const { code } = useParams<{ code: string }>();
-  const router = useRouter();
-  const [state, setState] = useState<JoinState>("loading");
-  const [group, setGroup] = useState<GroupInfo | null>(null);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+async function getMemberCount(groupId: string): Promise<number> {
+  const admin = createAdminClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+  const { count } = await admin
+    .from("group_members")
+    .select("*", { count: "exact", head: true })
+    .eq("group_id", groupId);
+  return count ?? 0;
+}
 
-  useEffect(() => {
-    async function loadGroup() {
-      if (!process.env.NEXT_PUBLIC_SUPABASE_URL) { setState("notfound"); return; }
-      const sb = getClient();
+export default async function JoinCodePage({
+  params,
+}: {
+  params: { code: string };
+}) {
+  const code  = params.code.toUpperCase().trim();
+  const group = await findGroup(code);
 
-      // Try by id first, then invite_code
-      let groupData: GroupRow | null = null;
-      const { data: byId } = await sb.from("groups")
-        .select("id, name, max_members, buy_in_amount")
-        .eq("id", code).maybeSingle();
-      if (byId) { groupData = byId as GroupRow; }
-      else {
-        const { data: byCode } = await sb.from("groups")
-          .select("id, name, max_members, buy_in_amount")
-          .eq("invite_code", code).maybeSingle();
-        if (byCode) groupData = byCode as GroupRow;
-      }
+  if (!group) {
+    return (
+      <div className="min-h-screen flex items-center justify-center px-4"
+        style={{ background: "#F8FAFC" }}>
+        <div className="w-full max-w-sm text-center space-y-5">
+          <Logo size="lg" className="justify-center" />
+          <div className="rounded-2xl p-8 space-y-4"
+            style={{ background: "rgba(255,255,255,0.9)", border: "1px solid rgba(220,38,38,0.2)" }}>
+            <XCircle size={40} className="mx-auto" style={{ color: "#dc2626" }} />
+            <h2 className="font-display text-2xl uppercase font-black" style={{ color: "#0F172A" }}>
+              Invalid Link
+            </h2>
+            <p className="text-sm" style={{ color: "#64748b" }}>
+              This invite link doesn&apos;t match any group. Ask your admin for a new one.
+            </p>
+            <p className="text-xs font-mono px-3 py-1.5 rounded-lg inline-block"
+              style={{ background: "#f8fafc", color: "#94a3b8" }}>
+              Code tried: {code}
+            </p>
+            <div className="space-y-2 pt-2">
+              <Link href="/join/enter">
+                <button className="w-full py-3 rounded-xl font-bold text-sm uppercase tracking-wider"
+                  style={{ background: "rgba(0,212,255,0.08)", color: "#0891B2", border: "1px solid rgba(0,212,255,0.2)" }}>
+                  Try a different passkey
+                </button>
+              </Link>
+              <Link href="/">
+                <button className="w-full py-3 rounded-xl font-bold text-sm uppercase tracking-wider"
+                  style={{ border: "1px solid #e2e8f0", color: "#64748b", background: "white" }}>
+                  Go Home
+                </button>
+              </Link>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
-      if (!groupData) { setState("notfound"); return; }
+  const memberCount      = await getMemberCount(group.id);
+  const enrollmentFee    = (group.enrollment_fee_cents ?? 200) / 100;
+  const isDeadlinePassed = group.enrollment_deadline
+    ? new Date(group.enrollment_deadline) < new Date()
+    : false;
 
-      const { count } = await sb.from("group_members")
-        .select("id", { count: "exact", head: true })
-        .eq("group_id", groupData.id);
-
-      const { data: { user } } = await sb.auth.getUser();
-      if (user) {
-        const { data: existing } = await sb.from("group_members")
-          .select("id").eq("group_id", groupData.id).eq("user_id", user.id).maybeSingle();
-        if (existing) {
-          setGroup({ id: groupData.id, name: groupData.name, memberCount: count ?? 0, maxMembers: groupData.max_members, buyInAmount: groupData.buy_in_amount });
-          setState("already"); return;
-        }
-      }
-
-      setGroup({ id: groupData.id, name: groupData.name, memberCount: count ?? 0, maxMembers: groupData.max_members, buyInAmount: groupData.buy_in_amount });
-      setState((count ?? 0) >= groupData.max_members ? "full" : "found");
-    }
-    loadGroup();
-  }, [code]);
-
-  const handleJoin = async () => {
-    if (!group) return;
-    setState("joining");
-
-    const sb = getClient();
-    const { data: { user } } = await sb.auth.getUser();
-    if (!user) { router.push(`/signin?next=/join/${code}`); return; }
-
-    const { count } = await sb.from("group_members")
-      .select("id", { count: "exact", head: true }).eq("group_id", group.id);
-    if ((count ?? 0) >= group.maxMembers) { setState("full"); return; }
-
-    const { error } = await sb.from("group_members")
-      .insert({ group_id: group.id, user_id: user.id, paid: false } as Record<string, unknown>);
-
-    if (error) {
-      if (error.code === "23505") setState("already");
-      else { setErrorMsg(error.message); setState("error"); }
-      return;
-    }
-    setState("joined");
-  };
+  const sb = createClient();
+  const { data: { user } } = await sb.auth.getUser();
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-4 py-12">
-      <div className="w-full max-w-sm">
-        <div className="flex justify-center mb-8"><Logo size="lg" /></div>
-        <Card variant="glass-strong" className="p-6 sm:p-8">
+    <div className="min-h-screen flex items-center justify-center px-4"
+      style={{ background: "#F8FAFC" }}>
+      <div className="w-full max-w-sm space-y-5">
+        <Logo size="lg" className="justify-center" />
 
-          {state === "loading" && (
-            <div className="flex flex-col items-center gap-4 py-8">
-              <Loader2 size={32} className="animate-spin text-pitch-500" />
-              <p className="text-pitch-400 text-sm">Looking up group...</p>
-            </div>
-          )}
+        <div className="rounded-2xl overflow-hidden"
+          style={{ background: "rgba(255,255,255,0.92)", border: "1px solid rgba(0,212,255,0.2)", boxShadow: "0 8px 32px rgba(0,212,255,0.08)" }}>
 
-          {state === "notfound" && (
-            <div className="flex flex-col items-center gap-4 py-6 text-center">
-              <XCircle size={40} className="text-danger" />
-              <h2 className="font-display text-2xl uppercase text-white">Invalid link</h2>
-              <p className="text-pitch-400 text-sm">This invite link doesn&apos;t match any group. Ask your admin for a new one.</p>
-              <Button onClick={() => router.push("/")} variant="outline" size="sm">Go home</Button>
-            </div>
-          )}
+          <div className="h-1" style={{ background: "linear-gradient(90deg, #00D4FF, #00FF88)" }} />
 
-          {state === "full" && group && (
-            <div className="flex flex-col items-center gap-4 py-6 text-center">
-              <Users size={40} className="text-warning" />
-              <h2 className="font-display text-2xl uppercase text-white">Group is full</h2>
-              <p className="text-pitch-400 text-sm"><strong className="text-white">{group.name}</strong> has reached its maximum of {group.maxMembers} members.</p>
-              <Button onClick={() => router.push("/")} variant="outline" size="sm">Go home</Button>
-            </div>
-          )}
-
-          {state === "already" && group && (
-            <div className="flex flex-col items-center gap-4 py-6 text-center">
-              <CheckCircle size={40} className="text-success" />
-              <h2 className="font-display text-2xl uppercase text-white">Already joined</h2>
-              <p className="text-pitch-400 text-sm">You&apos;re already a member of <strong className="text-white">{group.name}</strong>.</p>
-              <Button onClick={() => router.push("/dashboard")} size="md" rightIcon={<ArrowRight size={15} />}>Go to dashboard</Button>
-            </div>
-          )}
-
-          {(state === "found" || state === "joining") && group && (
-            <div className="space-y-5">
-              <div className="text-center">
-                <div className="label-caps mb-2">You&apos;re invited</div>
-                <h2 className="font-display text-3xl uppercase text-white leading-tight">{group.name}</h2>
+          <div className="p-6 space-y-5">
+            <div className="text-center">
+              <div className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: "#0891B2" }}>
+                You&apos;re invited to
               </div>
-              <div className="glass rounded-xl p-4 space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="text-pitch-400">Members</span>
-                  <span className="font-bold text-white">{group.memberCount} / {group.maxMembers}</span>
-                </div>
-                {group.buyInAmount > 0 && (
-                  <div className="flex justify-between text-sm">
-                    <span className="text-pitch-400">Buy-in</span>
-                    <span className="font-bold text-white">${group.buyInAmount}</span>
-                  </div>
-                )}
-                <div className="flex justify-between text-sm">
-                  <span className="text-pitch-400">Spots left</span>
-                  <span className="font-bold" style={{ color: "rgb(var(--accent-glow))" }}>{group.maxMembers - group.memberCount}</span>
-                </div>
+              <h1 className="font-display text-3xl uppercase font-black" style={{ color: "#0F172A" }}>
+                {group.name}
+              </h1>
+              <div className="flex items-center justify-center gap-3 mt-2 text-sm" style={{ color: "#64748b" }}>
+                <span className="flex items-center gap-1">
+                  <Users size={13} /> {memberCount} members
+                </span>
+                <span>·</span>
+                <span>World Cup 2026</span>
               </div>
-              <Button onClick={handleJoin} loading={state === "joining"} size="lg" className="w-full" rightIcon={<ArrowRight size={18} />}>
-                Join {group.name}
-              </Button>
-              <p className="text-center text-[11px] text-pitch-500">By joining you agree to the group&apos;s buy-in amount.</p>
             </div>
-          )}
 
-          {state === "joined" && group && (
-            <div className="flex flex-col items-center gap-4 py-6 text-center">
-              <div className="h-16 w-16 rounded-full flex items-center justify-center"
-                style={{ backgroundImage: "linear-gradient(135deg, rgb(var(--brand)), rgb(var(--brand-2)))", boxShadow: "0 0 40px rgb(var(--brand)/0.4)" }}>
-                <CheckCircle size={28} className="text-white" />
+            <div className="rounded-xl p-3 text-center"
+              style={{ background: "rgba(0,212,255,0.05)", border: "1px solid rgba(0,212,255,0.15)" }}>
+              <div className="text-[10px] font-bold uppercase tracking-widest mb-0.5" style={{ color: "#0891B2" }}>
+                Passkey
               </div>
-              <h2 className="font-display text-3xl uppercase text-white">You&apos;re in!</h2>
-              <p className="text-pitch-400 text-sm">Welcome to <strong className="text-white">{group.name}</strong>. Start entering your predictions!</p>
-              <Button onClick={() => router.push("/dashboard")} size="lg" className="w-full" rightIcon={<ArrowRight size={18} />}>Go to dashboard</Button>
+              <div className="font-mono font-black text-2xl tracking-widest" style={{ color: "#0F172A" }}>
+                {group.passkey}
+              </div>
             </div>
-          )}
 
-          {state === "error" && (
-            <div className="flex flex-col items-center gap-4 py-6 text-center">
-              <XCircle size={40} className="text-danger" />
-              <h2 className="font-display text-2xl uppercase text-white">Something went wrong</h2>
-              <p className="text-pitch-400 text-sm">{errorMsg}</p>
-              <Button onClick={() => setState("found")} variant="outline" size="sm">Try again</Button>
+            <div className="rounded-xl p-4 text-center"
+              style={{ background: "rgba(0,255,136,0.06)", border: "1px solid rgba(0,255,136,0.2)" }}>
+              <div className="font-display text-4xl font-black" style={{ color: "#0F172A" }}>
+                ${enrollmentFee}
+              </div>
+              <div className="text-sm mt-1" style={{ color: "#64748b" }}>
+                One-time · Full tournament · All 104 matches
+              </div>
             </div>
-          )}
 
-        </Card>
+            {isDeadlinePassed ? (
+              <div className="text-center py-3 text-sm font-bold" style={{ color: "#dc2626" }}>
+                Enrollment has closed for this group.
+              </div>
+            ) : user ? (
+              <form action="/api/paddle" method="POST">
+                <input type="hidden" name="groupId"   value={group.id} />
+                <input type="hidden" name="passkey"   value={group.passkey} />
+                <input type="hidden" name="groupName" value={group.name} />
+                <button type="submit"
+                  className="w-full py-3.5 rounded-xl font-bold text-sm uppercase tracking-wider flex items-center justify-center gap-2"
+                  style={{ background: "linear-gradient(135deg, #00FF88, #00D4FF)", color: "#0B141B", boxShadow: "0 4px 16px rgba(0,255,136,0.25)" }}>
+                  Join for ${enrollmentFee} <ArrowRight size={16} />
+                </button>
+              </form>
+            ) : (
+              <div className="space-y-2">
+                <Link href={`/signup?next=/join/${code}`}>
+                  <button className="w-full py-3.5 rounded-xl font-bold text-sm uppercase tracking-wider flex items-center justify-center gap-2"
+                    style={{ background: "linear-gradient(135deg, #00FF88, #00D4FF)", color: "#0B141B" }}>
+                    Create account &amp; Join <ArrowRight size={16} />
+                  </button>
+                </Link>
+                <Link href={`/signin?next=/join/${code}`}>
+                  <button className="w-full py-3 rounded-xl font-bold text-sm uppercase tracking-wider"
+                    style={{ border: "1px solid rgba(0,212,255,0.2)", color: "#0891B2", background: "rgba(0,212,255,0.05)" }}>
+                    Already have an account? Sign in
+                  </button>
+                </Link>
+              </div>
+            )}
+
+            <p className="text-center text-xs" style={{ color: "#94a3b8" }}>
+              7-day refund guarantee · Predictions lock 5 min before kickoff
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -1,6 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import type { Group, Member } from "@/lib/types";
 
+// Standard anon client for authenticated requests
 function sb() {
   return createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -8,41 +9,30 @@ function sb() {
   );
 }
 
-// ── Group ────────────────────────────────────────────────────────────────────
+// Service role client — bypasses RLS for server-side lookups
+function sbAdmin() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+}
 
-export async function getGroup(groupId: string): Promise<Group> {
-  const { data, error } = await sb()
-    .from("groups")
-    .select(`
-      id, name, admin_id,
-      buy_in_amount, payout_first, payout_second, payout_third,
-      enrollment_fee_cents, passkey, max_members,
-      enrollment_deadline, enrollment_deadline_type
-    `)
-    .eq("id", groupId)
-    .single();
-
-  if (error || !data) throw error ?? new Error("Group not found");
-
-  const d = data as {
-    id: string; name: string; admin_id: string;
-    buy_in_amount: number;
-    payout_first: number; payout_second: number; payout_third: number;
-    enrollment_fee_cents: number;
-    passkey: string | null; max_members: number;
-    enrollment_deadline: string | null;
-    enrollment_deadline_type: string | null;
-  };
-
+function mapGroup(d: {
+  id: string; name: string; admin_id: string;
+  buy_in_amount: number;
+  payout_first: number; payout_second: number; payout_third: number;
+  enrollment_fee_cents: number; passkey: string;
+  max_members: number; enrollment_deadline: string | null;
+}): Group {
   return {
-    id:          d.id,
-    name:        d.name,
-    admin:       d.admin_id,
-    buyInAmount: Number(d.buy_in_amount ?? 0),
-    passkey:     d.passkey ?? "",
-    maxMembers:  d.max_members ?? 100,
-    enrollmentFeeCents: d.enrollment_fee_cents ?? 200,
-    enrollmentDeadline: d.enrollment_deadline ?? null,
+    id:                  d.id,
+    name:                d.name,
+    admin:               d.admin_id,
+    buyInAmount:         Number(d.buy_in_amount ?? 0),
+    passkey:             d.passkey ?? "",
+    maxMembers:          d.max_members ?? 100,
+    enrollmentFeeCents:  d.enrollment_fee_cents ?? 200,
+    enrollmentDeadline:  d.enrollment_deadline ?? null,
     payouts: {
       first:  `${d.payout_first  ?? 60}%`,
       second: `${d.payout_second ?? 30}%`,
@@ -51,11 +41,47 @@ export async function getGroup(groupId: string): Promise<Group> {
   };
 }
 
+const GROUP_SELECT = `
+  id, name, admin_id,
+  buy_in_amount, payout_first, payout_second, payout_third,
+  enrollment_fee_cents, passkey, max_members, enrollment_deadline
+`;
+
+// ── Get group by ID ──────────────────────────────────────────────────────────
+
+export async function getGroup(groupId: string): Promise<Group> {
+  const { data, error } = await sb()
+    .from("groups")
+    .select(GROUP_SELECT)
+    .eq("id", groupId)
+    .single();
+
+  if (error || !data) throw error ?? new Error("Group not found");
+  return mapGroup(data as Parameters<typeof mapGroup>[0]);
+}
+
+// ── Get group by passkey (uses admin client to bypass RLS) ───────────────────
+
+export async function getGroupByPasskey(passkey: string): Promise<Group | null> {
+  const { data } = await sbAdmin()
+    .from("groups")
+    .select(GROUP_SELECT)
+    .ilike("passkey", passkey.trim())
+    .maybeSingle();
+
+  if (!data) return null;
+  return mapGroup(data as Parameters<typeof mapGroup>[0]);
+}
+
+// Legacy alias
+export async function getGroupByInviteCode(code: string): Promise<Group | null> {
+  return getGroupByPasskey(code);
+}
+
 // ── Members / Leaderboard ────────────────────────────────────────────────────
 
 export async function getMembers(groupId: string): Promise<Member[]> {
-  // Join group_members → profiles → payments for payment status
-  const { data, error } = await sb()
+  const { data, error } = await sbAdmin()
     .from("group_members")
     .select(`
       user_id, payment_status, can_predict, joined_at,
@@ -67,14 +93,13 @@ export async function getMembers(groupId: string): Promise<Member[]> {
   if (error) throw error;
   if (!data?.length) return [];
 
-  // Get points from group_predictions scoring
-  const { data: points } = await sb()
+  const { data: pts } = await sb()
     .from("group_predictions")
     .select("user_id, points_earned")
     .eq("group_id", groupId);
 
   const pointsMap: Record<string, number> = {};
-  (points ?? []).forEach((p: { user_id: string; points_earned: number }) => {
+  (pts ?? []).forEach((p: { user_id: string; points_earned: number }) => {
     pointsMap[p.user_id] = (pointsMap[p.user_id] ?? 0) + p.points_earned;
   });
 
@@ -106,52 +131,7 @@ export async function getLeaderboard(groupId: string, limit = 8): Promise<Member
   return members.slice(0, limit);
 }
 
-// ── Group lookup by passkey ──────────────────────────────────────────────────
-
-export async function getGroupByPasskey(passkey: string): Promise<Group | null> {
-  const { data } = await sb()
-    .from("groups")
-    .select(`
-      id, name, admin_id,
-      buy_in_amount, payout_first, payout_second, payout_third,
-      enrollment_fee_cents, passkey, max_members, enrollment_deadline
-    `)
-    .eq("passkey", passkey.toUpperCase())
-    .single();
-
-  if (!data) return null;
-
-  const d = data as {
-    id: string; name: string; admin_id: string;
-    buy_in_amount: number;
-    payout_first: number; payout_second: number; payout_third: number;
-    enrollment_fee_cents: number; passkey: string;
-    max_members: number; enrollment_deadline: string | null;
-  };
-
-  return {
-    id:          d.id,
-    name:        d.name,
-    admin:       d.admin_id,
-    buyInAmount: Number(d.buy_in_amount ?? 0),
-    passkey:     d.passkey,
-    maxMembers:  d.max_members ?? 100,
-    enrollmentFeeCents: d.enrollment_fee_cents ?? 200,
-    enrollmentDeadline: d.enrollment_deadline ?? null,
-    payouts: {
-      first:  `${d.payout_first  ?? 60}%`,
-      second: `${d.payout_second ?? 30}%`,
-      third:  `${d.payout_third  ?? 10}%`,
-    },
-  };
-}
-
-// Legacy — kept for any code still using invite_code
-export async function getGroupByInviteCode(code: string): Promise<Group | null> {
-  return getGroupByPasskey(code);
-}
-
-// ── Payment status check ─────────────────────────────────────────────────────
+// ── Payment status ───────────────────────────────────────────────────────────
 
 export async function getMemberPaymentStatus(
   userId: string,
@@ -162,15 +142,15 @@ export async function getMemberPaymentStatus(
     .select("status")
     .eq("user_id", userId)
     .eq("group_id", groupId)
-    .single();
+    .maybeSingle();
 
   return (data as { status: string } | null)?.status as "unpaid" | "paid" | "refunded" ?? "unpaid";
 }
 
-// ── Admin: all payment details ───────────────────────────────────────────────
+// ── Admin: all payments ──────────────────────────────────────────────────────
 
 export async function getGroupPayments(groupId: string) {
-  const { data, error } = await sb()
+  const { data, error } = await sbAdmin()
     .from("payments")
     .select(`
       id, email, status, stake_paid,
@@ -187,12 +167,12 @@ export async function getGroupPayments(groupId: string) {
 // ── Create group ─────────────────────────────────────────────────────────────
 
 export async function createGroup(params: {
-  name:        string;
-  adminId:     string;
-  buyInAmount: number;
-  payoutFirst: number;
-  payoutSecond:number;
-  payoutThird: number;
+  name:         string;
+  adminId:      string;
+  buyInAmount:  number;
+  payoutFirst:  number;
+  payoutSecond: number;
+  payoutThird:  number;
 }): Promise<string> {
   const { data, error } = await sb()
     .from("groups")
@@ -226,4 +206,14 @@ export async function joinGroup(userId: string, groupId: string): Promise<void> 
     }, { onConflict: "user_id,group_id" });
 
   if (error) throw error;
+}
+
+// ── Member count ─────────────────────────────────────────────────────────────
+
+export async function getMemberCount(groupId: string): Promise<number> {
+  const { count } = await sbAdmin()
+    .from("group_members")
+    .select("*", { count: "exact", head: true })
+    .eq("group_id", groupId);
+  return count ?? 0;
 }
