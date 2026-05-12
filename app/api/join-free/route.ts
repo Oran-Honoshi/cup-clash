@@ -8,73 +8,76 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Demo mode not enabled" }, { status: 403 });
   }
 
-  // Check env vars exist
-  const supabaseUrl  = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const anonKey      = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  const serviceKey   = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const anonKey     = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const serviceKey  = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
   if (!supabaseUrl || !anonKey) {
-    return NextResponse.json({ error: "Missing Supabase config" }, { status: 500 });
+    return NextResponse.json({ error: "Missing Supabase env vars" }, { status: 500 });
   }
 
-  let body: { groupId?: string };
+  let groupId: string;
   try {
-    body = await request.json();
+    const body = await request.json();
+    groupId = body.groupId;
+    if (!groupId) throw new Error("no groupId");
   } catch {
-    return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
+    return NextResponse.json({ error: "Invalid body — groupId required" }, { status: 400 });
   }
 
-  const { groupId } = body;
-  if (!groupId) {
-    return NextResponse.json({ error: "groupId required" }, { status: 400 });
+  // Get user from session cookie
+  let userId: string;
+  let userEmail: string;
+  try {
+    const cookieStore = cookies();
+    const sbServer = createServerClient(supabaseUrl, anonKey, {
+      cookies: {
+        get(name: string) { return cookieStore.get(name)?.value; },
+        set() {},
+        remove() {},
+      },
+    });
+    const { data: { user }, error } = await sbServer.auth.getUser();
+    if (error || !user) {
+      return NextResponse.json({ error: "Not authenticated — please sign in" }, { status: 401 });
+    }
+    userId    = user.id;
+    userEmail = user.email ?? "";
+  } catch (e) {
+    return NextResponse.json({ error: `Auth error: ${e instanceof Error ? e.message : String(e)}` }, { status: 500 });
   }
 
-  // Get current user
-  const cookieStore = cookies();
-  const sbServer = createServerClient(supabaseUrl, anonKey, {
-    cookies: {
-      get(name: string) { return cookieStore.get(name)?.value; },
-      set() {},
-      remove() {},
-    },
-  });
+  // Admin client — bypasses RLS
+  const admin = createClient(supabaseUrl, serviceKey ?? anonKey);
 
-  const { data: { user } } = await sbServer.auth.getUser();
-  if (!user) {
-    return NextResponse.json({ error: "Not authenticated — please sign in first" }, { status: 401 });
-  }
-
-  // Use service role if available, fallback to anon
-  const adminKey = serviceKey ?? anonKey;
-  const admin = createClient(supabaseUrl, adminKey);
-
-  // Add member as paid
+  // Step 1: Upsert group member
   const { error: memberError } = await admin
     .from("group_members")
     .upsert({
       group_id:       groupId,
-      user_id:        user.id,
+      user_id:        userId,
       payment_status: "paid",
       can_predict:    true,
       joined_at:      new Date().toISOString(),
     }, { onConflict: "user_id,group_id" });
 
   if (memberError) {
-    return NextResponse.json({ error: `DB error: ${memberError.message}` }, { status: 500 });
+    return NextResponse.json({ error: `Member error: ${memberError.message}` }, { status: 500 });
   }
 
-  // Mock payment record — ignore errors (table might not have all columns)
+  // Step 2: Payment record — skip columns that might not exist
   try {
     await admin.from("payments").upsert({
-      user_id:           user.id,
-      group_id:          groupId,
-      email:             user.email ?? "",
-      status:            "paid",
-      amount_cents:      0,
-      stake_paid:        false,
-      payment_timestamp: new Date().toISOString(),
+      user_id:   userId,
+      group_id:  groupId,
+      email:     userEmail,
+      status:    "paid",
+      amount_cents: 0,
     } as Record<string, unknown>, { onConflict: "user_id,group_id" });
-  } catch { /* non-fatal */ }
+  } catch {
+    // Non-fatal — member was already added
+    console.warn("Payment record insert failed — continuing");
+  }
 
-  return NextResponse.json({ success: true, userId: user.id, groupId });
+  return NextResponse.json({ success: true });
 }
