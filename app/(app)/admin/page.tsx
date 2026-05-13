@@ -1,11 +1,12 @@
 export const dynamic = "force-dynamic";
 
 import { redirect } from "next/navigation";
-import { AdminPanel }        from "@/components/admin/admin-panel";
-import { ScoringRulesEditor } from "@/components/admin/scoring-rules-editor";
-import { GroupRulesEditor }   from "@/components/admin/group-rules-editor";
-import { WelcomeEmailSender } from "@/components/admin/welcome-email-sender";
-import { WinnerPoster }       from "@/components/export/winner-poster";
+import { AdminPanel }          from "@/components/admin/admin-panel";
+import { ScoringRulesEditor }  from "@/components/admin/scoring-rules-editor";
+import { PickOverridesPanel }  from "@/components/admin/pick-overrides-panel";
+import { GroupRulesEditor }    from "@/components/admin/group-rules-editor";
+import { WelcomeEmailSender }  from "@/components/admin/welcome-email-sender";
+import { WinnerPoster }        from "@/components/export/winner-poster";
 import { getGroup, getMembers } from "@/lib/services/groups";
 import { getCurrentUserGroup, getCurrentUserProfile } from "@/lib/services/user-group";
 
@@ -37,6 +38,10 @@ export default async function AdminPage() {
       <AdminPanel group={group} initialMembers={members} />
       <GroupRulesEditor groupId={group.id} buyInAmount={group.buyInAmount} memberCount={members.length} />
       <ScoringRulesEditor groupId={group.id} />
+      <div>
+        <div className="label-caps mb-3">Tournament Pick Overrides</div>
+        <PickOverridesPanel groupId={groupId} adminId={userProfile.id} />
+      </div>
       <WelcomeEmailSender group={group} members={members} adminName={userProfile.name} />
       <div>
         <div className="label-caps mb-3">Export & Download</div>
