@@ -176,13 +176,13 @@ export function Pricing() {
           </div>
         </motion.div>
 
-        {/* Math example */}
+        {/* Transparency note */}
         <div className="text-center mb-8 max-w-2xl mx-auto">
           <p className="text-sm font-bold" style={{ color: "#0F172A" }}>
-            10 friends × $2 = $20 pot. Winner takes $12. Runner-up gets $6. Third gets $2 back.
+            Cup Clash takes nothing from the prize pot — no matter the size.
           </p>
           <p className="text-xs mt-1" style={{ color: "#94a3b8" }}>
-            Cup Clash keeps $0 from the prize pot. The $2 is platform access only. Money stays between friends.
+            The $2 is platform access only. Every dollar of your prize money stays between friends.
           </p>
         </div>
 
