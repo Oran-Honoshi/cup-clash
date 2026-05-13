@@ -362,24 +362,29 @@ export function GroupStagePredictions({ groupId, locked = false, userId }: Group
   useEffect(() => {
     if (!userId) return;
     const sb = createClient();
-    sb.from("group_predictions")
-      .select("match_id, home_score, away_score")
-      .eq("group_id", groupId)
-      .eq("user_id",  userId)
-      .then(({ data }) => {
-        if (data?.length) {
-          const loaded: GroupPredictions = {};
-          (data as Array<{ match_id: string; home_score: number; away_score: number }>)
-            .forEach(row => {
-              loaded[row.match_id] = {
-                home: String(row.home_score),
-                away: String(row.away_score),
-              };
-            });
-          setPredictions(loaded);
-        }
-        setLoaded(true);
-      });
+    // Get session user first to ensure RLS passes
+    sb.auth.getUser().then(({ data: { user } }) => {
+      if (!user) { setLoaded(true); return; }
+      sb.from("group_predictions")
+        .select("match_id, home_score, away_score")
+        .eq("group_id", groupId)
+        .eq("user_id", user.id)
+        .then(({ data, error }) => {
+          if (error) console.error("Load predictions error:", error.message);
+          if (data?.length) {
+            const loaded: GroupPredictions = {};
+            (data as Array<{ match_id: string; home_score: number; away_score: number }>)
+              .forEach(row => {
+                loaded[row.match_id] = {
+                  home: String(row.home_score),
+                  away: String(row.away_score),
+                };
+              });
+            setPredictions(loaded);
+          }
+          setLoaded(true);
+        });
+    });
   }, [userId, groupId]);
 
   const setScore = (matchId: string, home: string, away: string) => {
