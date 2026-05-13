@@ -4,10 +4,9 @@ import { useState } from "react";
 import { Users, Trophy, Lock } from "lucide-react";
 import { GroupStagePredictions } from "@/components/predictions/group-stage-predictions";
 import { TournamentPicks } from "@/components/dashboard/tournament-picks";
-import { cn } from "@/lib/utils";
 
 const TABS = [
-  { id: "group"      as const, label: "Group Stage",     icon: Users,  sub: "36 matches · scores & tables" },
+  { id: "group"      as const, label: "Group Stage",      icon: Users,  sub: "36 matches · scores & tables"  },
   { id: "tournament" as const, label: "Tournament Picks", icon: Trophy, sub: "Winner, boot, defence & more"  },
 ];
 
@@ -22,7 +21,6 @@ export function PredictionsClient({ groupId, userId, isPaid }: PredictionsClient
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div>
         <div className="label-caps mb-1">My Bets</div>
         <h1 className="font-display text-4xl sm:text-5xl uppercase tracking-tight" style={{ color: "#0F172A" }}>
@@ -64,13 +62,13 @@ export function PredictionsClient({ groupId, userId, isPaid }: PredictionsClient
         })}
       </div>
 
-      {/* Content */}
-      {tab === "group" && (
+      {/* Keep BOTH mounted but hide inactive — prevents state loss on tab switch */}
+      <div style={{ display: tab === "group" ? "block" : "none" }}>
         <GroupStagePredictions groupId={groupId} userId={userId} locked={!isPaid} />
-      )}
-      {tab === "tournament" && (
-        <TournamentPicks groupId={groupId} locked={false} />
-      )}
+      </div>
+      <div style={{ display: tab === "tournament" ? "block" : "none" }}>
+        <TournamentPicks groupId={groupId} userId={userId} locked={false} />
+      </div>
     </div>
   );
 }
