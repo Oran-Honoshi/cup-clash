@@ -69,9 +69,9 @@ export default async function DashboardPage() {
   return (
     <div className="space-y-6">
       <DashboardPopups
-        memberName={userProfile.name}
-        groupName={group.name}
-      />
+  groupId={groupId}
+  userId={userProfile.id}
+/>
 
       <div>
         <div className="label-caps mb-1">{group.name}</div>
