@@ -36,10 +36,11 @@ export function AdminPanel({ group, initialMembers }: AdminPanelProps) {
   const [inviteUrl,    setInviteUrl]    = useState("");
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      setInviteUrl(`${window.location.origin}/join/${group.id}`);
-    }
-  }, [group.id]);
+  if (typeof window !== "undefined") {
+    setInviteUrl(`${window.location.origin}/join/${group.passkey}`);
+  }
+}, [group.passkey]);
+
 
   const paidCount  = members.filter(m => m.paid).length;
   const totalPot   = members.length * group.buyInAmount;

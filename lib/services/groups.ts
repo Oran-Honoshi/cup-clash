@@ -167,6 +167,7 @@ export async function createGroup(params: {
   payoutFirst:  number;
   payoutSecond: number;
   payoutThird:  number;
+  maxMembers?:  number;
 }): Promise<string> {
   const { data, error } = await sb()
     .from("groups")
@@ -178,7 +179,7 @@ export async function createGroup(params: {
       payout_second:  params.payoutSecond,
       payout_third:   params.payoutThird,
       enrollment_fee_cents: 200,
-      max_members:    100,
+      max_members: params.maxMembers ?? 100,
     })
     .select("id")
     .single();
