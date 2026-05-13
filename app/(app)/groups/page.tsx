@@ -119,10 +119,10 @@ export default async function GroupsPage() {
                 {/* Actions */}
                 <div className="px-4 py-3 border-t flex gap-2"
                   style={{ borderColor: "rgba(0,212,255,0.08)", background: "rgba(248,250,252,0.5)" }}>
-                  <Link href="/dashboard" className="flex-1">
+                  <Link href={`/groups/${m.group_id}`} className="flex-1">
                     <button className="w-full py-2 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-1.5"
                       style={{ background: "linear-gradient(135deg, #00FF88, #00D4FF)", color: "#0B141B" }}>
-                      Open Group <ArrowRight size={13} />
+                      View Group <ArrowRight size={13} />
                     </button>
                   </Link>
                   {/* Share button */}
@@ -133,7 +133,7 @@ export default async function GroupsPage() {
                     compact
                   />
                   {isAdmin && (
-                    <Link href="/admin">
+                    <Link href={`/admin/${m.group_id}`}>
                       <button className="px-3 py-2 rounded-xl text-xs font-bold uppercase tracking-wider"
                         style={{ border: "1px solid rgba(0,212,255,0.2)", color: "#0891B2", background: "rgba(0,212,255,0.05)" }}>
                         Admin
