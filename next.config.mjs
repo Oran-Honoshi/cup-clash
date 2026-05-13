@@ -4,6 +4,7 @@ const nextConfig = {
     remotePatterns: [
       { protocol: "https", hostname: "ljivgwkczgqvcqkdzsxr.supabase.co" },
       { protocol: "https", hostname: "flagcdn.com" },
+      { protocol: "https", hostname: "**.flagcdn.com" },
       { protocol: "https", hostname: "api.dicebear.com" },
       { protocol: "https", hostname: "media.giphy.com" },
       { protocol: "https", hostname: "media0.giphy.com" },
@@ -12,9 +13,11 @@ const nextConfig = {
       { protocol: "https", hostname: "media3.giphy.com" },
       { protocol: "https", hostname: "media4.giphy.com" },
       { protocol: "https", hostname: "avatars.githubusercontent.com" },
+      { protocol: "https", hostname: "upload.wikimedia.org" },
     ],
+    // Allow unoptimized for flag CDN
+    unoptimized: false,
   },
-  experimental: { serverActions: { allowedOrigins: ["cupclash.live", "localhost:3000"] } },
 };
 
 export default nextConfig;

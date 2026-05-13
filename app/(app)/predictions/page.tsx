@@ -5,10 +5,22 @@ import { PredictionsClient } from "@/components/predictions/predictions-client";
 import { getCurrentUserGroup, getCurrentUserProfile } from "@/lib/services/user-group";
 
 export default async function PredictionsPage() {
-  const [{ groupId, userId, isPaid }, profile] = await Promise.all([
+  const [userGroup, userProfile] = await Promise.all([
     getCurrentUserGroup(),
     getCurrentUserProfile(),
   ]);
-  if (!profile || !groupId) redirect("/signin");
-  return <PredictionsClient groupId={groupId} userId={userId ?? ""} isPaid={isPaid} />;
+
+  // Must be signed in
+  if (!userProfile) redirect("/signin");
+
+  // Must be in a group
+  if (!userGroup.groupId) redirect("/dashboard");
+
+  return (
+    <PredictionsClient
+      groupId={userGroup.groupId}
+      userId={userProfile.id}
+      isPaid={userGroup.isPaid}
+    />
+  );
 }
