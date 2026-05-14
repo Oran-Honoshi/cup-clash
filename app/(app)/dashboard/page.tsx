@@ -1,95 +1,91 @@
 export const dynamic = "force-dynamic";
 
-import { redirect }         from "next/navigation";
-import { Leaderboard }      from "@/components/dashboard/leaderboard";
-import { NextMatchCard }    from "@/components/dashboard/next-match-card";
-import { BuyInStatus }      from "@/components/dashboard/buy-in-status";
-import { StatCards }        from "@/components/dashboard/stat-cards";
-import { DashboardPopups }  from "@/components/dashboard/dashboard-popups";
-import { WallOfShame }      from "@/components/dashboard/wall-of-shame";
+import { redirect }        from "next/navigation";
+import { createClient as createAdminClient } from "@supabase/supabase-js";
+import { Leaderboard }     from "@/components/dashboard/leaderboard";
+import { NextMatchCard }   from "@/components/dashboard/next-match-card";
+import { BuyInStatus }     from "@/components/dashboard/buy-in-status";
+import { StatCards }       from "@/components/dashboard/stat-cards";
+import { DashboardPopups } from "@/components/dashboard/dashboard-popups";
+import { WallOfShame }     from "@/components/dashboard/wall-of-shame";
+import { DashboardGroupPicker } from "@/components/dashboard/dashboard-group-picker";
 import { getLeaderboard, getMembers, getGroup } from "@/lib/services/groups";
-import { getNextMatch }     from "@/lib/services/matches";
-import { getCurrentUserGroup, getCurrentUserProfile } from "@/lib/services/user-group";
+import { getNextMatch }    from "@/lib/services/matches";
+import { getCurrentUserProfile } from "@/lib/services/user-group";
 
-export default async function DashboardPage() {
-  const [userGroup, userProfile] = await Promise.all([
-    getCurrentUserGroup(),
-    getCurrentUserProfile(),
-  ]);
+function sbAdmin() {
+  return createAdminClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+}
 
-  // Not logged in — redirect to sign in
+export default async function DashboardPage({
+  searchParams,
+}: {
+  searchParams: { group?: string };
+}) {
+  const userProfile = await getCurrentUserProfile();
   if (!userProfile) redirect("/signin");
 
-  // No group yet — show welcome screen
-  if (!userGroup.groupId) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center space-y-6 px-4">
-        <div className="h-20 w-20 rounded-3xl overflow-hidden mx-auto">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/icon-192.png" alt="Cup Clash" className="w-full h-full object-cover" />
-        </div>
-        <div>
-          <h1 className="font-display text-4xl uppercase font-black mb-2" style={{ color: "#0F172A" }}>
-            Welcome, {userProfile.name}!
-          </h1>
-          <p className="text-lg" style={{ color: "#64748b" }}>
-            You&apos;re not in a group yet. Create one or join with a passkey.
-          </p>
-        </div>
-        <div className="flex gap-3 flex-wrap justify-center">
-          <a href="/create-group">
-            <button className="px-6 py-3 rounded-xl font-bold text-sm uppercase tracking-wider"
-              style={{ background: "linear-gradient(135deg, #00FF88, #00D4FF)", color: "#0B141B" }}>
-              Create a Group
-            </button>
-          </a>
-          <a href="/join/enter">
-            <button className="px-6 py-3 rounded-xl font-bold text-sm uppercase tracking-wider"
-              style={{ border: "1px solid rgba(0,212,255,0.25)", color: "#0891B2", background: "rgba(0,212,255,0.05)" }}>
-              Join with Passkey
-            </button>
-          </a>
-        </div>
-      </div>
-    );
-  }
+  // Get all groups this user belongs to
+  const { data: memberships } = await sbAdmin()
+    .from("group_members")
+    .select("group_id, payment_status, groups(id, name, passkey)")
+    .eq("user_id", userProfile.id)
+    .eq("payment_status", "paid")
+    .order("joined_at", { ascending: false });
 
-  const { groupId, isAdmin, isPaid } = userGroup;
+  const allGroups = (memberships ?? [])
+    .map((m: unknown) => {
+      const row = m as { group_id: string; groups: { id: string; name: string; passkey: string } | null };
+      return row.groups ? { id: row.groups.id, name: row.groups.name, passkey: row.groups.passkey } : null;
+    })
+    .filter(Boolean) as Array<{ id: string; name: string; passkey: string }>;
+
+  if (!allGroups.length) redirect("/create-group");
+
+  // Active group from URL param or first group
+  const activeGroupId = searchParams.group && allGroups.find(g => g.id === searchParams.group)
+    ? searchParams.group
+    : allGroups[0].id;
+
+  const activeGroup = allGroups.find(g => g.id === activeGroupId)!;
 
   const [members, top8, group, nextMatch] = await Promise.all([
-    getMembers(groupId),
-    getLeaderboard(groupId, 8),
-    getGroup(groupId),
+    getMembers(activeGroupId),
+    getLeaderboard(activeGroupId, 8),
+    getGroup(activeGroupId),
     getNextMatch(),
   ]);
 
   const currentMember = members.find(m => m.id === userProfile.id) ?? members[0];
-  const rank = members.findIndex(m => m.id === userProfile.id) + 1;
+  const rank          = members.findIndex(m => m.id === userProfile.id) + 1;
+  const isPaid        = members.find(m => m.id === userProfile.id)?.paid ?? false;
+  const isAdmin       = group.admin === userProfile.id;
 
   return (
     <div className="space-y-6">
-      <DashboardPopups
-  groupId={groupId}
-  userId={userProfile.id}
-/>
+      <DashboardPopups groupId={activeGroupId} userId={userProfile.id} />
 
-      <div>
-        <div className="label-caps mb-1">{group.name}</div>
-        <h1 className="font-display text-4xl sm:text-5xl uppercase tracking-tight" style={{ color: "#0F172A" }}>
-          Dashboard
-        </h1>
-        {!isPaid && (
-          <p className="text-sm mt-1" style={{ color: "#d97706" }}>
-            Pay the $2 entry fee to unlock predictions and appear on the leaderboard.{" "}
-            <a href={`/join/${group.passkey}`} style={{ color: "#0891B2" }} className="underline font-bold">
-              Pay now →
-            </a>
-          </p>
-        )}
-        {isAdmin && (
-          <p className="text-[11px] mt-1" style={{ color: "#94a3b8" }}>
-            You&apos;re the admin · Passkey: <span className="font-mono font-bold">{group.passkey}</span>
-          </p>
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <div>
+          <div className="label-caps mb-1">{group.name}</div>
+          <h1 className="font-display text-4xl sm:text-5xl uppercase tracking-tight" style={{ color: "#0F172A" }}>
+            Dashboard
+          </h1>
+          {isAdmin && (
+            <p className="text-[11px] mt-1" style={{ color: "#94a3b8" }}>
+              Admin · Passkey: <span className="font-mono font-bold">{group.passkey}</span>
+            </p>
+          )}
+        </div>
+        {/* Group picker — only show if in multiple groups */}
+        {allGroups.length > 1 && (
+          <DashboardGroupPicker
+            groups={allGroups}
+            activeGroupId={activeGroupId}
+          />
         )}
       </div>
 
@@ -106,15 +102,13 @@ export default async function DashboardPage() {
           <Leaderboard
             members={top8}
             currentUserId={userProfile.id}
-            groupId={groupId}
+            groupId={activeGroupId}
             showGhost
           />
           <WallOfShame members={members} totalMatches={48} />
         </div>
         <div className="lg:col-span-5 space-y-5">
-          {nextMatch && (
-            <NextMatchCard match={nextMatch} groupId={groupId} />
-          )}
+          {nextMatch && <NextMatchCard match={nextMatch} groupId={activeGroupId} />}
           <BuyInStatus group={group} members={members} />
         </div>
       </div>
