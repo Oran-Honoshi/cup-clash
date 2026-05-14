@@ -74,9 +74,9 @@ export function dicebearUrl(name: string, sizeOrStyle: number | string = "advent
 }
 
 export const SOCCER_PRESETS = [
-  { id: "gk",  label: "Goalkeeper", emoji: "🧤", style: "adventurer"       },
-  { id: "def", label: "Defender",   emoji: "🛡️",  style: "adventurer-neutral" },
-  { id: "mid", label: "Midfielder", emoji: "⚡",  style: "fun-emoji"         },
-  { id: "fwd", label: "Forward",    emoji: "🎯",  style: "lorelei"           },
-  { id: "fan", label: "Super Fan",  emoji: "📣",  style: "notionists"        },
+  { id: "gk",  label: "Goalkeeper", emoji: "🧤", style: "adventurer",        bg: "00D4FF" },
+  { id: "def", label: "Defender",   emoji: "🛡️",  style: "adventurer-neutral", bg: "00FF88" },
+  { id: "mid", label: "Midfielder", emoji: "⚡",  style: "fun-emoji",          bg: "8b5cf6" },
+  { id: "fwd", label: "Forward",    emoji: "🎯",  style: "lorelei",            bg: "f59e0b" },
+  { id: "fan", label: "Super Fan",  emoji: "📣",  style: "notionists",         bg: "ec4899" },
 ];
