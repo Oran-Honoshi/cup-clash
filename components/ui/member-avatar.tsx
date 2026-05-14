@@ -62,3 +62,18 @@ export function MemberAvatar({ name, avatarUrl, size = "md", className }: Member
     </div>
   );
 }
+
+// ── Exports needed by profile page ───────────────────────────────────────────
+
+export function dicebearUrl(name: string, style = "adventurer") {
+  const seed = encodeURIComponent(name.toLowerCase().trim());
+  return `https://api.dicebear.com/7.x/${style}/svg?seed=${seed}&backgroundColor=b6e3f4,c0aede,d1d4f9`;
+}
+
+export const SOCCER_PRESETS = [
+  { id: "gk",  label: "Goalkeeper", emoji: "🧤", style: "adventurer"       },
+  { id: "def", label: "Defender",   emoji: "🛡️",  style: "adventurer-neutral" },
+  { id: "mid", label: "Midfielder", emoji: "⚡",  style: "fun-emoji"         },
+  { id: "fwd", label: "Forward",    emoji: "🎯",  style: "lorelei"           },
+  { id: "fan", label: "Super Fan",  emoji: "📣",  style: "notionists"        },
+];
