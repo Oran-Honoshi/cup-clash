@@ -1,26 +1,55 @@
 export const dynamic = "force-dynamic";
 
-import { redirect } from "next/navigation";
+import { redirect }   from "next/navigation";
+import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { PredictionsClient } from "@/components/predictions/predictions-client";
-import { getCurrentUserGroup, getCurrentUserProfile } from "@/lib/services/user-group";
+import { getCurrentUserProfile } from "@/lib/services/user-group";
 
-export default async function PredictionsPage() {
-  const [userGroup, userProfile] = await Promise.all([
-    getCurrentUserGroup(),
-    getCurrentUserProfile(),
-  ]);
+function sbAdmin() {
+  return createAdminClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+}
 
-  // Must be signed in
+export default async function PredictionsPage({
+  searchParams,
+}: {
+  searchParams: { group?: string };
+}) {
+  const userProfile = await getCurrentUserProfile();
   if (!userProfile) redirect("/signin");
 
-  // Must be in a group
-  if (!userGroup.groupId) redirect("/dashboard");
+  // Get all groups this user belongs to
+  const { data: memberships } = await sbAdmin()
+    .from("group_members")
+    .select("group_id, payment_status, groups(id, name, passkey)")
+    .eq("user_id", userProfile.id)
+    .eq("payment_status", "paid");
+
+  const groups = (memberships ?? [])
+    .map((m: unknown) => {
+      const row = m as { group_id: string; payment_status: string; groups: { id: string; name: string; passkey: string } | null };
+      return row.groups;
+    })
+    .filter(Boolean) as Array<{ id: string; name: string; passkey: string }>;
+
+  if (!groups.length) redirect("/dashboard");
+
+  // Use group from URL param, or first group
+  const activeGroupId = searchParams.group && groups.find(g => g.id === searchParams.group)
+    ? searchParams.group
+    : groups[0].id;
+
+  const activeGroup = groups.find(g => g.id === activeGroupId)!;
 
   return (
     <PredictionsClient
-      groupId={userGroup.groupId}
+      groupId={activeGroupId}
+      groupName={activeGroup.name}
+      allGroups={groups}
       userId={userProfile.id}
-      isPaid={userGroup.isPaid}
+      isPaid={true}
     />
   );
 }
