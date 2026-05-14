@@ -65,9 +65,11 @@ export function MemberAvatar({ name, avatarUrl, size = "md", className }: Member
 
 // ── Exports needed by profile page ───────────────────────────────────────────
 
-export function dicebearUrl(name: string, style = "adventurer") {
-  const seed = encodeURIComponent(name.toLowerCase().trim());
-  return `https://api.dicebear.com/7.x/${style}/svg?seed=${seed}&backgroundColor=b6e3f4,c0aede,d1d4f9`;
+export function dicebearUrl(name: string, sizeOrStyle: number | string = "adventurer") {
+  const seed  = encodeURIComponent(name.toLowerCase().trim());
+  const style = typeof sizeOrStyle === "string" ? sizeOrStyle : "adventurer";
+  const size  = typeof sizeOrStyle === "number" ? sizeOrStyle : 160;
+  return `https://api.dicebear.com/7.x/${style}/svg?seed=${seed}&backgroundColor=b6e3f4,c0aede,d1d4f9&size=${size}`;
 }
 
 export const SOCCER_PRESETS = [
