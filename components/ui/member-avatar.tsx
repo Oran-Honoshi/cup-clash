@@ -1,151 +1,64 @@
-/**
- * MemberAvatar — renders a member's avatar with three tiers:
- *
- * 1. Uploaded photo  → <img> with their real photo URL
- * 2. DiceBear preset → illustrated soccer-role icon via DiceBear HTTP API
- * 3. DiceBear auto   → unique illustrated face generated from their username seed
- *
- * Uses DiceBear's free CDN API (https://api.dicebear.com) — zero npm packages,
- * zero bundle size impact. SVGs are generated server-side and cached by CDN.
- */
+// components/ui/member-avatar.tsx
+// Replace Next.js Image with plain img tags for DiceBear and other avatar URLs
+
+"use client";
 
 import { cn } from "@/lib/utils";
 
-// ─── DiceBear config ─────────────────────────────────────────────────────────
-
-const DICEBEAR_BASE = "https://api.dicebear.com/9.x";
-
-// Soccer role presets — each maps to a DiceBear "icons" seed that produces
-// a clean, recognizable sports/role icon.
-export const SOCCER_PRESETS = [
-  { id: "striker",   label: "Striker",   icon: "⚽", seed: "soccer-ball",    bg: "e74c3c" },
-  { id: "keeper",    label: "Keeper",    icon: "🧤", seed: "hand-wave",      bg: "2980b9" },
-  { id: "captain",   label: "Captain",   icon: "🏆", seed: "crown",          bg: "f39c12" },
-  { id: "coach",     label: "Coach",     icon: "📋", seed: "clipboard",      bg: "27ae60" },
-  { id: "analyst",   label: "Analyst",   icon: "📊", seed: "bar-chart",      bg: "8e44ad" },
-  { id: "wildcard",  label: "Wild Card", icon: "🃏", seed: "playing-card",   bg: "16a085" },
-  { id: "legend",    label: "Legend",    icon: "⭐", seed: "star",           bg: "d35400" },
-  { id: "speedster", label: "Speedster", icon: "⚡", seed: "lightning",      bg: "c0392b" },
-  { id: "pundit",    label: "Pundit",    icon: "🎙️", seed: "microphone",    bg: "2c3e50" },
-  { id: "champion",  label: "Champion",  icon: "🥇", seed: "medal",          bg: "b7950b" },
-  { id: "fan",       label: "Super Fan", icon: "🎉", seed: "confetti",       bg: "e91e8c" },
-  { id: "referee",   label: "Referee",   icon: "🟨", seed: "whistle",        bg: "555555" },
-] as const;
-
-export type PresetId = typeof SOCCER_PRESETS[number]["id"];
-
-/**
- * Build a DiceBear avataaars URL for a given username.
- * Produces a consistent illustrated face — same name always = same face.
- */
-export function dicebearUrl(seed: string, size = 80): string {
-  const params = new URLSearchParams({
-    seed,
-    size: String(size),
-    backgroundColor: "transparent",
-    // avataaars options — realistic illustrated style
-    mouth: "smile,twinkle,tongue",
-    eyes: "default,happy,wink",
-    eyebrows: "default,raised,unibrow",
-    accessories: "prescription01,prescription02,sunglasses",
-    accessoriesColor: "transparent",
-    clothesColor: "3c4f5c,65c9ff,ff488e,ffdeb5,b1e2ff,c6e2ff,e6e6e6,ff5c5c",
-    top: "longHair,shortHair,hat,hijab,turban,winterHat1,winterHat2",
-    skinColor: "light,pale,golden,brown,dark",
-  });
-  return `${DICEBEAR_BASE}/avataaars/svg?${params}`;
+interface MemberAvatarProps {
+  name:      string;
+  avatarUrl?: string | null;
+  size?:     "xs" | "sm" | "md" | "lg" | "xl";
+  className?: string;
 }
 
-/**
- * Build a DiceBear "icons" URL for a preset role.
- * These are clean flat icons, not faces.
- */
-function presetIconUrl(preset: typeof SOCCER_PRESETS[number], size = 80): string {
-  return `${DICEBEAR_BASE}/icons/svg?seed=${preset.seed}&size=${size}&backgroundColor=${preset.bg}&backgroundType=solid&radius=50&icon=${preset.seed}&scale=75`;
-}
-
-// ─── Avatar component ─────────────────────────────────────────────────────────
-
-type AvatarSize = "xs" | "sm" | "md" | "lg" | "xl";
-
-const SIZE_PX: Record<AvatarSize, number>     = { xs: 24, sm: 32, md: 40, lg: 48, xl: 80 };
-const SIZE_CLASS: Record<AvatarSize, string>  = {
-  xs: "h-6 w-6",
-  sm: "h-8 w-8",
-  md: "h-10 w-10",
-  lg: "h-12 w-12",
-  xl: "h-20 w-20",
+const SIZE_MAP = {
+  xs: "h-6 w-6 text-[9px]",
+  sm: "h-8 w-8 text-xs",
+  md: "h-10 w-10 text-sm",
+  lg: "h-12 w-12 text-base",
+  xl: "h-16 w-16 text-xl",
 };
 
-interface MemberAvatarProps {
-  /** Member display name — used as DiceBear seed for auto-avatar */
-  name: string;
-  /** Stored avatar value: a photo URL, "preset:keeperId", or null for auto */
-  avatarUrl?: string | null;
-  size?: AvatarSize;
-  className?: string;
-  dim?: boolean;
-  /** Show a thin ring around the avatar */
-  ring?: boolean;
+function getInitials(name: string) {
+  return name
+    .split(" ")
+    .map(w => w[0])
+    .join("")
+    .toUpperCase()
+    .slice(0, 2);
 }
 
-export function MemberAvatar({
-  name,
-  avatarUrl,
-  size = "md",
-  className,
-  dim = false,
-  ring = false,
-}: MemberAvatarProps) {
-  const px = SIZE_PX[size];
-  const sizeClass = SIZE_CLASS[size];
-  const ringClass = ring ? "ring-2 ring-white/20" : "";
-  const dimClass  = dim  ? "opacity-70"           : "";
+function getDiceBearUrl(name: string) {
+  const seed = encodeURIComponent(name.toLowerCase().trim());
+  return `https://api.dicebear.com/7.x/adventurer/svg?seed=${seed}&backgroundColor=b6e3f4,c0aede,d1d4f9`;
+}
 
-  const base = cn(sizeClass, "rounded-full object-cover shrink-0", ringClass, dimClass, className);
+export function MemberAvatar({ name, avatarUrl, size = "md", className }: MemberAvatarProps) {
+  const sizeClass = SIZE_MAP[size];
+  const src = avatarUrl || getDiceBearUrl(name);
 
-  // ── 1. Real uploaded photo ──────────────────────────────────────────────────
-  if (avatarUrl && !avatarUrl.startsWith("preset:") && !avatarUrl.startsWith("dicebear:")) {
-    return (
-      // eslint-disable-next-line @next/next/no-img-element
-      <img src={avatarUrl} alt={name} width={px} height={px} className={base} />
-    );
-  }
-
-  // ── 2. Soccer role preset ───────────────────────────────────────────────────
-  if (avatarUrl?.startsWith("preset:")) {
-    const presetId = avatarUrl.replace("preset:", "") as PresetId;
-    const preset = SOCCER_PRESETS.find(p => p.id === presetId);
-    if (preset) {
-      // For presets, render emoji in a colored circle — DiceBear icons API
-      // doesn't have exact soccer roles, so we use styled emoji circles
-      // which look great and are consistent.
-      return (
-        <div
-          className={cn(sizeClass, "rounded-full flex items-center justify-center shrink-0 select-none", ringClass, dimClass, className)}
-          style={{ backgroundColor: `#${preset.bg}`, fontSize: px * 0.45 }}
-          title={preset.label}
-          aria-label={preset.label}
-        >
-          {preset.icon}
-        </div>
-      );
-    }
-  }
-
-  // ── 3. DiceBear auto-avatar (default) ──────────────────────────────────────
-  // Generated from the member's name — consistent, unique, illustrated face
-  const url = dicebearUrl(name, px * 2); // 2× for retina
   return (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img
-      src={url}
-      alt={name}
-      width={px}
-      height={px}
-      className={base}
-      style={{ background: "rgba(255,255,255,0.06)" }}
-      loading="lazy"
-    />
+    <div className={cn("rounded-full overflow-hidden shrink-0 flex items-center justify-center", sizeClass, className)}
+      style={{ background: "linear-gradient(135deg, #00D4FF22, #00FF8822)", border: "1px solid rgba(0,212,255,0.2)" }}>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={src}
+        alt={name}
+        className="w-full h-full object-cover"
+        onError={e => {
+          // On error show initials fallback
+          const target = e.target as HTMLImageElement;
+          target.style.display = "none";
+          const parent = target.parentElement;
+          if (parent && !parent.querySelector("span")) {
+            const span = document.createElement("span");
+            span.className = "font-black text-cyan-600";
+            span.textContent = getInitials(name);
+            parent.appendChild(span);
+          }
+        }}
+      />
+    </div>
   );
 }
