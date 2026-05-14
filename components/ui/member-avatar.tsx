@@ -6,10 +6,11 @@
 import { cn } from "@/lib/utils";
 
 interface MemberAvatarProps {
-  name:      string;
+  name:       string;
   avatarUrl?: string | null;
-  size?:     "xs" | "sm" | "md" | "lg" | "xl";
+  size?:      "xs" | "sm" | "md" | "lg" | "xl";
   className?: string;
+  ring?:      boolean;
 }
 
 const SIZE_MAP = {
@@ -34,13 +35,13 @@ function getDiceBearUrl(name: string) {
   return `https://api.dicebear.com/7.x/adventurer/svg?seed=${seed}&backgroundColor=b6e3f4,c0aede,d1d4f9`;
 }
 
-export function MemberAvatar({ name, avatarUrl, size = "md", className }: MemberAvatarProps) {
+export function MemberAvatar({ name, avatarUrl, size = "md", className, ring }: MemberAvatarProps) {
   const sizeClass = SIZE_MAP[size];
   const src = avatarUrl || getDiceBearUrl(name);
 
   return (
     <div className={cn("rounded-full overflow-hidden shrink-0 flex items-center justify-center", sizeClass, className)}
-      style={{ background: "linear-gradient(135deg, #00D4FF22, #00FF8822)", border: "1px solid rgba(0,212,255,0.2)" }}>
+      style={{ background: "linear-gradient(135deg, #00D4FF22, #00FF8822)", border: ring ? "2px solid #00D4FF" : "1px solid rgba(0,212,255,0.2)" }}>
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={src}
