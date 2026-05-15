@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ArrowRight, FlaskConical } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 export function JoinButton({
@@ -14,55 +14,35 @@ export function JoinButton({
   const router = useRouter();
 
   const handleDemoJoin = async () => {
-    setLoading(true);
-    setError(null);
-
+    setLoading(true); setError(null);
     try {
       const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 10000); // 10s timeout
-
+      const timeout = setTimeout(() => controller.abort(), 10000);
       const res = await fetch("/api/join-free", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ groupId }),
         signal: controller.signal,
       });
-
       clearTimeout(timeout);
-
-      if (!res.ok) {
-        const text = await res.text();
-        setError(`Server error ${res.status}: ${text}`);
-        setLoading(false);
-        return;
-      }
-
+      if (!res.ok) { setError(`Error: ${await res.text()}`); setLoading(false); return; }
       const data = await res.json();
-      if (data.success) {
-        window.location.replace("/dashboard");
-      } else {
-        setError(data.error ?? "Failed to join — check console");
-        setLoading(false);
-      }
+      if (data.success) { window.location.replace("/dashboard"); }
+      else { setError(data.error ?? "Failed to join"); setLoading(false); }
     } catch (e) {
-      if (e instanceof Error && e.name === "AbortError") {
-        setError("Request timed out. Check your connection and try again.");
-      } else {
-        setError(`Unexpected error: ${e instanceof Error ? e.message : String(e)}`);
-      }
+      setError(e instanceof Error && e.name === "AbortError" ? "Request timed out" : "Unexpected error");
       setLoading(false);
     }
   };
 
+  // Demo mode — no "Testing" label, just a clean join button
   if (demoMode) {
     return (
       <div className="space-y-2">
         <button onClick={handleDemoJoin} disabled={loading}
           className="w-full py-3.5 rounded-xl font-bold text-sm uppercase tracking-wider flex items-center justify-center gap-2 disabled:opacity-50"
           style={{ background: "linear-gradient(135deg, #00FF88, #00D4FF)", color: "#0B141B" }}>
-          <FlaskConical size={16} />
-          {loading ? "Joining..." : "Join Free (Testing Mode)"}
-          {!loading && <ArrowRight size={16} />}
+          {loading ? "Joining..." : <>Join Free <ArrowRight size={15} /></>}
         </button>
         {error && (
           <p className="text-xs text-center rounded-lg px-3 py-2"
@@ -71,7 +51,7 @@ export function JoinButton({
           </p>
         )}
         <p className="text-center text-xs" style={{ color: "#94a3b8" }}>
-          🧪 Demo mode — no payment required
+          Early access · No payment required during beta
         </p>
       </div>
     );
@@ -82,7 +62,7 @@ export function JoinButton({
       <input type="hidden" name="groupId" value={groupId} />
       <button type="submit"
         className="w-full py-3.5 rounded-xl font-bold text-sm uppercase tracking-wider flex items-center justify-center gap-2"
-        style={{ background: "linear-gradient(135deg, #00FF88, #00D4FF)", color: "#0B141B" }}>
+        style={{ background: "linear-gradient(135deg, #00FF88, #00D4FF)", color: "#0B141B", boxShadow: "0 4px 16px rgba(0,255,136,0.25)" }}>
         Join for ${enrollmentFee} <ArrowRight size={16} />
       </button>
     </form>
