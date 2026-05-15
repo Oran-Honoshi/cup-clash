@@ -69,6 +69,9 @@ export function CtaAndFooter() {
                 { label: "Schedule",    href: "/schedule"     },
                 { label: "Articles",    href: "/articles/48-teams-strategy" },
                 { label: "Sign in",     href: "/signin"       },
+                { label: "Terms",       href: "/terms"        },
+                { label: "Privacy",     href: "/privacy"      },
+                { label: "Refunds",     href: "/refund"       },
               ].map(({ label, href }) => (
                 <Link key={label} href={href}
                   className="text-sm transition-colors hover:opacity-70"
