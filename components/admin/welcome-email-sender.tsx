@@ -1,63 +1,72 @@
 "use client";
 
 import { useState } from "react";
-import { Mail, Send, Check, AlertCircle, Info, UserPlus } from "lucide-react";
+import { Mail, Send, Check, AlertCircle, Info, UserPlus, X } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import type { Member } from "@/lib/types";
-import type { Group } from "@/lib/types";
+import type { Member, Group } from "@/lib/types";
 
 interface WelcomeEmailSenderProps {
-  group: Group;
-  members: Member[];
+  group:     Group;
+  members:   Member[];
   adminName: string;
 }
 
 interface MemberEmail {
   memberId: string;
-  name: string;
-  email: string;
+  name:     string;
+  email:    string;
   selected: boolean;
+  isManual: boolean;
 }
 
 export function WelcomeEmailSender({ group, members, adminName }: WelcomeEmailSenderProps) {
   const [memberEmails, setMemberEmails] = useState<MemberEmail[]>(
-    members.map(m => ({ memberId: m.id, name: m.name, email: "", selected: true }))
+    members.map(m => ({ memberId: m.id, name: m.name, email: "", selected: true, isManual: false }))
   );
-  const [sending,  setSending]  = useState(false);
-  const [sent,     setSent]     = useState(false);
-  const [error,    setError]    = useState<string | null>(null);
-  const [result,   setResult]   = useState<{ sent: number; failed: number; message: string } | null>(null);
-  const [expanded, setExpanded] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [sent,    setSent]    = useState(false);
+  const [error,   setError]   = useState<string | null>(null);
+  const [result,  setResult]  = useState<{ sent: number; failed: number; message: string } | null>(null);
 
-  const updateEmail = (memberId: string, email: string) =>
+  const updateEmail   = (memberId: string, email: string) =>
     setMemberEmails(prev => prev.map(m => m.memberId === memberId ? { ...m, email } : m));
 
-  const toggleSelect = (memberId: string) =>
+  const updateName    = (memberId: string, name: string) =>
+    setMemberEmails(prev => prev.map(m => m.memberId === memberId ? { ...m, name } : m));
+
+  const toggleSelect  = (memberId: string) =>
     setMemberEmails(prev => prev.map(m => m.memberId === memberId ? { ...m, selected: !m.selected } : m));
 
-  const selected   = memberEmails.filter(m => m.selected && m.email.includes("@"));
-  const hasEmails  = selected.length > 0;
+  const removeManual  = (memberId: string) =>
+    setMemberEmails(prev => prev.filter(m => m.memberId !== memberId));
+
+  const addManual = () => {
+    const id = `manual_${Date.now()}`;
+    setMemberEmails(prev => [...prev, { memberId: id, name: "", email: "", selected: true, isManual: true }]);
+  };
+
+  const selected  = memberEmails.filter(m => m.selected && m.email.includes("@"));
+  const hasEmails = selected.length > 0;
 
   const handleSend = async () => {
     if (!hasEmails) return;
     setSending(true); setError(null);
-
     try {
       const res = await fetch("/api/email", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          memberEmails: selected.map(m => m.email),
-          memberNames:  selected.map(m => m.name),
-          groupName:    group.name,
+          memberEmails:  selected.map(m => m.email),
+          memberNames:   selected.map(m => m.name || "Member"),
+          groupName:     group.name,
           adminName,
-          rulesText:    "",
-          buyInAmount:  group.buyInAmount,
-          inviteCode:   group.id,
-          scoringSystem: "3 pts exact · 2 pts winner + exact goals · 1 pt correct outcome",
-          adminFee:     0,
+          rulesText:     "",
+          buyInAmount:   group.buyInAmount,
+          inviteCode:    group.passkey,
+          scoringSystem: "25 pts exact score · 10 pts correct outcome · 20 pts KO advancement",
+          adminFee:      0,
           payouts: {
             first:  Number(group.payouts.first.replace("%",  "")),
             second: Number(group.payouts.second.replace("%", "")),
@@ -68,12 +77,14 @@ export function WelcomeEmailSender({ group, members, adminName }: WelcomeEmailSe
       const data = await res.json() as { sent: number; failed: number; message: string };
       setResult(data);
       setSent(true);
-    } catch (e) {
-      setError("Failed to send emails. Check your Resend configuration.");
+    } catch {
+      setError("Failed to send. Check your network and try again.");
     } finally {
       setSending(false);
     }
   };
+
+  const enteredCount  = memberEmails.filter(m => m.email.includes("@")).length;
 
   return (
     <Card variant="glass" className="p-5">
@@ -83,65 +94,63 @@ export function WelcomeEmailSender({ group, members, adminName }: WelcomeEmailSe
           Welcome Emails
         </span>
       </div>
-
-      <p className="text-xs text-pitch-500 mb-4">
+      <p className="text-xs text-pitch-500 mb-5">
         Send personalized invites to your group members with rules, buy-in info, and a join link.
       </p>
 
-      {/* Deliverability warning */}
-      <div className="flex items-start gap-2.5 rounded-xl bg-warning/10 border border-warning/20 px-4 py-3 text-xs text-warning mb-4">
-        <AlertCircle size={14} className="shrink-0 mt-0.5" />
-        <div>
-          <div className="font-bold mb-0.5">Deliverability notice</div>
-          Emails may land in spam if your domain isn't verified in Resend.
-          Verify at <span className="underline">resend.com/domains</span> for best results.
-          Inform members to check their spam folder if they don't receive the invite.
-        </div>
-      </div>
-
-      {/* Member email inputs */}
-      <div className="space-y-2 mb-4">
-        <div className="flex items-center justify-between mb-1">
+      {/* Member email rows — always expanded */}
+      <div className="mb-2">
+        <div className="flex items-center justify-between mb-3">
           <span className="label-caps">Member emails</span>
-          <button onClick={() => setExpanded(v => !v)}
-            className="text-[10px] text-pitch-500 hover:text-white transition-colors uppercase tracking-widest">
-            {expanded ? "Collapse" : "Edit emails"}
-          </button>
+          <span className="text-[10px] text-pitch-500 uppercase tracking-widest">
+            {enteredCount} of {memberEmails.length} emails entered · {selected.length} selected
+          </span>
         </div>
 
-        {expanded ? (
-          <div className="space-y-2">
-            {memberEmails.map(m => (
-              <div key={m.memberId} className="flex items-center gap-2">
-                <button onClick={() => toggleSelect(m.memberId)}
-                  className={cn("h-4 w-4 rounded border-2 flex items-center justify-center shrink-0 transition-all",
-                    m.selected ? "border-accent bg-accent/20" : "border-white/20")}
-                  style={m.selected ? { borderColor: "rgb(var(--accent))" } : undefined}>
-                  {m.selected && <Check size={9} style={{ color: "rgb(var(--accent-glow))" }} />}
+        <div className="space-y-2">
+          {memberEmails.map(m => (
+            <div key={m.memberId} className="flex items-center gap-2">
+              {/* Checkbox */}
+              <button onClick={() => toggleSelect(m.memberId)}
+                className={cn("h-4 w-4 rounded border-2 flex items-center justify-center shrink-0 transition-all",
+                  m.selected ? "border-accent bg-accent/20" : "border-white/20")}
+                style={m.selected ? { borderColor: "rgb(var(--accent))" } : undefined}>
+                {m.selected && <Check size={9} style={{ color: "rgb(var(--accent-glow))" }} />}
+              </button>
+
+              {/* Name */}
+              {m.isManual ? (
+                <input type="text" placeholder="Name"
+                  value={m.name} onChange={e => updateName(m.memberId, e.target.value)}
+                  className="w-24 shrink-0 px-2 py-1.5 rounded-lg text-xs text-white bg-white/[0.06] border border-white/[0.12] focus:outline-none focus:border-accent" />
+              ) : (
+                <span className="text-xs font-bold text-white w-24 shrink-0 truncate">{m.name}</span>
+              )}
+
+              {/* Email */}
+              <input type="email" placeholder="email@example.com"
+                value={m.email} onChange={e => updateEmail(m.memberId, e.target.value)}
+                className="flex-1 px-3 py-1.5 rounded-lg text-xs text-white bg-white/[0.06] border border-white/[0.12] focus:outline-none focus:border-accent" />
+
+              {/* Remove manual */}
+              {m.isManual && (
+                <button onClick={() => removeManual(m.memberId)}
+                  className="shrink-0 text-pitch-600 hover:text-danger transition-colors">
+                  <X size={13} />
                 </button>
-                <span className="text-xs font-bold text-white w-20 shrink-0 truncate">{m.name}</span>
-                <input type="email" placeholder="email@example.com"
-                  value={m.email} onChange={e => updateEmail(m.memberId, e.target.value)}
-                  className="flex-1 px-3 py-1.5 rounded-lg text-xs text-white bg-white/[0.06] border border-white/[0.12] focus:outline-none focus:border-accent" />
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="text-xs text-pitch-400">
-            {memberEmails.filter(m => m.email).length} of {memberEmails.length} emails entered
-            {" · "}{selected.length} selected to receive invite
-          </div>
-        )}
+              )}
+            </div>
+          ))}
+        </div>
       </div>
 
-      {/* Add new member */}
-      <div className="flex items-center gap-2 mb-5">
-        <button className="flex items-center gap-1.5 text-xs text-pitch-500 hover:text-white transition-colors">
-          <UserPlus size={13} /> Add member manually
-        </button>
-      </div>
+      {/* Add member manually */}
+      <button onClick={addManual}
+        className="flex items-center gap-1.5 text-xs text-pitch-500 hover:text-white transition-colors mt-3 mb-5">
+        <UserPlus size={13} /> Add member manually
+      </button>
 
-      {/* Legal notice */}
+      {/* Legal */}
       <div className="flex items-start gap-2 text-[10px] text-pitch-600 mb-4">
         <Info size={11} className="shrink-0 mt-0.5" />
         <span>
@@ -155,18 +164,18 @@ export function WelcomeEmailSender({ group, members, adminName }: WelcomeEmailSe
           <AlertCircle size={13} />{error}
         </div>
       )}
-
       {sent && result && (
         <div className="flex items-center gap-2 text-xs text-success mb-3">
-          <Check size={13} />
-          {result.message}
+          <Check size={13} />{result.message}
         </div>
       )}
 
       <Button onClick={handleSend} loading={sending}
         disabled={!hasEmails || sending} size="sm" className="w-full"
         leftIcon={sent ? <Check size={14} /> : <Send size={14} />}>
-        {sent ? "Emails sent!" : `Send invite to ${selected.length} member${selected.length !== 1 ? "s" : ""}`}
+        {sent
+          ? "Emails sent!"
+          : `Send invite to ${selected.length} member${selected.length !== 1 ? "s" : ""}`}
       </Button>
     </Card>
   );
