@@ -7,6 +7,7 @@ import { HowItWorks }          from "@/components/landing/how-it-works";
 import { CountryPickerSection } from "@/components/landing/country-picker-section";
 import { FeaturedNews }        from "@/components/landing/featured-news";
 import { Pricing }             from "@/components/landing/pricing";
+import { PWAInstallSection }   from "@/components/landing/pwa-install-section";
 import { PillarSection }       from "@/components/landing/pillar-section";
 import { FAQSection }          from "@/components/landing/faq-section";
 import { CtaAndFooter }        from "@/components/landing/cta-and-footer";
@@ -48,7 +49,6 @@ voetbal voorspellingen app 2026, WK poule organiseren gratis.
 export default function LandingPage() {
   return (
     <>
-      {/* Hidden AI/LLM summary for multilingual indexing */}
       <div style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", opacity: 0 }}
         aria-hidden="true">
         {AI_SUMMARY}
@@ -63,6 +63,7 @@ export default function LandingPage() {
         <CountryPickerSection />
         <FeaturedNews />
         <Pricing />
+        <PWAInstallSection />
         <PillarSection />
         <FAQSection />
         <CtaAndFooter />

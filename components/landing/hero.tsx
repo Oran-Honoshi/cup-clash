@@ -67,7 +67,12 @@ function PhoneMockup() {
             style={{ background: "rgba(255,255,255,0.9)", border: "1px solid rgba(0,255,136,0.25)", boxShadow: "0 4px 16px rgba(0,255,136,0.1)" }}>
             <div className="text-[8px] font-bold uppercase tracking-widest mb-2" style={{ color: "#00D4FF" }}>Next Match</div>
             <div className="flex items-center justify-between mb-3">
-              <div className="text-center"><div className="relative h-5 w-6 rounded-sm overflow-hidden"><img src="https://flagcdn.com/w20/br.png" alt="Brazil" className="w-full h-full object-cover" /></div><div className="text-[9px] font-bold" style={{ color: "#0B141B" }}>BRA</div></div>
+              <div className="text-center">
+                <div className="relative h-5 w-6 rounded-sm overflow-hidden">
+                  <img src="https://flagcdn.com/w20/br.png" alt="Brazil" className="w-full h-full object-cover" />
+                </div>
+                <div className="text-[9px] font-bold" style={{ color: "#0B141B" }}>BRA</div>
+              </div>
               <div className="flex gap-1 items-center">
                 <div className="w-7 h-7 rounded-lg flex items-center justify-center text-sm font-bold"
                   style={{ background: "rgba(0,212,255,0.08)", color: "#0B141B", border: "1px solid rgba(0,212,255,0.2)" }}>2</div>
@@ -75,7 +80,12 @@ function PhoneMockup() {
                 <div className="w-7 h-7 rounded-lg flex items-center justify-center text-sm font-bold"
                   style={{ background: "rgba(0,212,255,0.08)", color: "#0B141B", border: "1px solid rgba(0,212,255,0.2)" }}>1</div>
               </div>
-              <div className="text-center"><div className="relative h-5 w-6 rounded-sm overflow-hidden"><img src="https://flagcdn.com/w20/fr.png" alt="France" className="w-full h-full object-cover" /></div><div className="text-[9px] font-bold" style={{ color: "#0B141B" }}>FRA</div></div>
+              <div className="text-center">
+                <div className="relative h-5 w-6 rounded-sm overflow-hidden">
+                  <img src="https://flagcdn.com/w20/fr.png" alt="France" className="w-full h-full object-cover" />
+                </div>
+                <div className="text-[9px] font-bold" style={{ color: "#0B141B" }}>FRA</div>
+              </div>
             </div>
             <button className="w-full rounded-xl py-2 text-[9px] font-bold uppercase tracking-widest"
               style={{ background: "linear-gradient(135deg, #00FF88, #00D4FF)", color: "#0B141B", boxShadow: "0 4px 12px rgba(0,255,136,0.35)" }}>
@@ -83,7 +93,7 @@ function PhoneMockup() {
             </button>
           </div>
           <div className="flex justify-center gap-1.5 pt-1">
-            {[true,false,false,false,false].map((a,i)=>(
+            {[true,false,false,false,false].map((a,i) => (
               <div key={i} className="rounded-full" style={{ width: a?16:6, height:6, background: a?"#00FF88":"rgba(0,212,255,0.2)" }} />
             ))}
           </div>
@@ -96,14 +106,14 @@ function PhoneMockup() {
 const SOCIAL_PHOTOS = [PHOTOS.argentinaFans, PHOTOS.brazilFan, PHOTOS.fanStadium, PHOTOS.kidFanStadium, PHOTOS.happyFans];
 
 const TICKER_ITEMS = [
-  "Amit just predicted Brazil 2–1 France",
-  "Sarah leads the Tech Titans with 145 points",
-  "3 exact scores in the last match — +25 pts each",
-  "Lior scored 18/20 in the Trivia Challenge",
-  "$600 pot in play — Office World Cup Group",
-  "John nailed the Germany vs Spain exact score",
-  "Predictions lock in 4 minutes — get in now",
-  "Ahmed just claimed the Trivia Champion badge",
+  "Mexico vs South Africa — Opening match June 11",
+  "48 teams · 104 matches · 16 host cities across 3 nations",
+  "World Cup Final at MetLife Stadium, New Jersey · July 19",
+  "Group stage runs June 11–29 · Predict all 36 group matches",
+  "Round of 32 begins July 1 · Who will make it through?",
+  "Argentina defending champions · Can Messi win it again?",
+  "USA hosting for the first time since 1994 · Home advantage?",
+  "Predictions lock 5 minutes before kickoff · Don't miss out",
 ];
 
 export function Hero() {
@@ -150,7 +160,6 @@ export function Hero() {
               with live leaderboards, brackets, and zero spreadsheet fatigue.
             </motion.p>
 
-            {/* Admin free callout */}
             <motion.div initial={{ opacity:0, y:8 }} animate={{ opacity:1, y:0 }} transition={{ duration:0.5, delay:0.25 }}
               className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full mb-8"
               style={{ background:"rgba(0,255,136,0.08)", border:"1px solid rgba(0,255,136,0.25)" }}>
@@ -167,14 +176,16 @@ export function Hero() {
                   Start My Group — Free <ArrowRight size={18} />
                 </button>
               </Link>
+              {/* Changed from "Preview the App" to actual schedule link */}
               <Link href="/schedule">
                 <button className="flex items-center gap-2 px-7 py-4 rounded-full font-bold text-base uppercase tracking-wider transition-all hover:-translate-y-0.5"
                   style={{ border:"1px solid rgba(0,212,255,0.25)", background:"rgba(255,255,255,0.7)", color:"#475569", backdropFilter:"blur(8px)" }}>
-                  Preview the App
+                  2026 Schedule
                 </button>
               </Link>
             </motion.div>
 
+            {/* Social proof — fan photos only, no fake group count */}
             <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }} transition={{ delay:0.5 }}
               className="flex items-center gap-4 flex-wrap">
               <div className="flex -space-x-2">
@@ -187,10 +198,16 @@ export function Hero() {
                 ))}
               </div>
               <div>
-                <div className="text-sm font-bold" style={{ color:"#0B141B" }}>1,200+ groups active</div>
-                <div className="text-xs" style={{ color:"#94a3b8" }}>across 40+ countries</div>
+                <div className="text-sm font-bold" style={{ color:"#0B141B" }}>Be among the first</div>
+                <div className="text-xs" style={{ color:"#94a3b8" }}>Launch special — free for admins forever</div>
               </div>
-              <div className="flex gap-0.5">{[1,2,3,4,5].map(s=><svg key={s} width="14" height="14" viewBox="0 0 24 24" fill="#d97706" stroke="none"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>)}</div>
+              <div className="flex gap-0.5">
+                {[1,2,3,4,5].map(s => (
+                  <svg key={s} width="14" height="14" viewBox="0 0 24 24" fill="#d97706" stroke="none">
+                    <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/>
+                  </svg>
+                ))}
+              </div>
             </motion.div>
 
             <motion.div initial={{ opacity:0, y:8 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.6 }} className="mt-10">
@@ -261,7 +278,7 @@ export function Hero() {
       <div className="overflow-hidden py-2.5"
         style={{ background:"rgba(0,255,136,0.05)", borderBottom:"1px solid rgba(0,255,136,0.12)" }}>
         <div className="flex animate-ticker whitespace-nowrap">
-          {[...TICKER_ITEMS, ...TICKER_ITEMS].map((item,i) => (
+          {[...TICKER_ITEMS, ...TICKER_ITEMS].map((item, i) => (
             <span key={i} className="text-xs font-bold uppercase tracking-widest mx-8" style={{ color:"#00c46a" }}>
               {item}
             </span>

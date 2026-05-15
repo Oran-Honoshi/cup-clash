@@ -3,12 +3,13 @@ import { Urbanist, Inter, JetBrains_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { ThemeProvider } from "@/components/theme-provider";
 import { PWAInit } from "@/components/pwa-init";
+import { PWAInstallBanner } from "@/components/ui/pwa-install-banner";
 import { SoftwareAppSchema, FAQSchema, HowToSchema } from "@/components/seo/schemas";
 import "./globals.css";
 
-const urbanist = Urbanist({ subsets: ["latin"], variable: "--font-display", display: "swap" });
-const inter    = Inter({     subsets: ["latin"], variable: "--font-sans",    display: "swap" });
-const jetbrains= JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono", display: "swap" });
+const urbanist  = Urbanist({      subsets: ["latin"], variable: "--font-display", display: "swap" });
+const inter     = Inter({          subsets: ["latin"], variable: "--font-sans",    display: "swap" });
+const jetbrains = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono",   display: "swap" });
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://cupclash.live"),
@@ -48,13 +49,13 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: "/favicon.ico",       sizes: "any" },
+      { url: "/favicon.ico",       sizes: "any"     },
       { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
       { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
       { url: "/icon-192.png",      sizes: "192x192", type: "image/png" },
       { url: "/icon-512.png",      sizes: "512x512", type: "image/png" },
     ],
-    apple:   { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+    apple:    { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
     shortcut: "/favicon.ico",
   },
   manifest: "/manifest.webmanifest",
@@ -78,6 +79,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body>
         <ThemeProvider>{children}</ThemeProvider>
         <PWAInit />
+        <PWAInstallBanner />
         <Analytics />
       </body>
     </html>
