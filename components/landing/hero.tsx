@@ -185,29 +185,21 @@ export function Hero() {
               </Link>
             </motion.div>
 
-            {/* Social proof — fan photos only, no fake group count */}
+            {/* Clean — no fake social proof until real groups exist */}
             <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }} transition={{ delay:0.5 }}
-              className="flex items-center gap-4 flex-wrap">
-              <div className="flex -space-x-2">
-                {SOCIAL_PHOTOS.map((src, i) => (
-                  <div key={i} className="h-9 w-9 rounded-full border-2 overflow-hidden shrink-0"
-                    style={{ borderColor:"#F8FAFC", boxShadow:"0 2px 8px rgba(0,0,0,0.12)" }}>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={src} alt="Fan" className="w-full h-full object-cover" />
-                  </div>
-                ))}
-              </div>
-              <div>
-                <div className="text-sm font-bold" style={{ color:"#0B141B" }}>Be among the first</div>
-                <div className="text-xs" style={{ color:"#94a3b8" }}>Launch special — free for admins forever</div>
-              </div>
-              <div className="flex gap-0.5">
-                {[1,2,3,4,5].map(s => (
-                  <svg key={s} width="14" height="14" viewBox="0 0 24 24" fill="#d97706" stroke="none">
-                    <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/>
-                  </svg>
-                ))}
-              </div>
+              className="flex items-center gap-3 flex-wrap">
+              <span className="text-xs font-bold px-3 py-1.5 rounded-full"
+                style={{ background:"rgba(0,255,136,0.08)", color:"#059669", border:"1px solid rgba(0,255,136,0.2)" }}>
+                ✓ Free for admins forever
+              </span>
+              <span className="text-xs font-bold px-3 py-1.5 rounded-full"
+                style={{ background:"rgba(0,212,255,0.06)", color:"#0891B2", border:"1px solid rgba(0,212,255,0.2)" }}>
+                ✓ $2 per member · Whole tournament
+              </span>
+              <span className="text-xs font-bold px-3 py-1.5 rounded-full"
+                style={{ background:"rgba(0,212,255,0.06)", color:"#0891B2", border:"1px solid rgba(0,212,255,0.2)" }}>
+                ✓ No ads · No subscription
+              </span>
             </motion.div>
 
             <motion.div initial={{ opacity:0, y:8 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.6 }} className="mt-10">

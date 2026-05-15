@@ -14,10 +14,10 @@ const jetbrains = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono", 
 export const metadata: Metadata = {
   metadataBase: new URL("https://cupclash.live"),
   title: {
-    default:  "Cup Clash | World Cup 2026 Prediction League for Friends & Offices",
+    default:  "CupClash 2026: The Social Prediction Arena",
     template: "%s | Cup Clash",
   },
-  description: "The ultimate World Cup 2026 prediction league for private groups. Set up in 60 seconds, $2 per player for the whole tournament. Live leaderboards, brackets, and group chat.",
+  description: "104 matches, 3 countries, and your football IQ against friends. Join the ultimate 2026 World Cup prediction group. For the love of the game.",
   keywords: [
     "World Cup 2026 prediction league",
     "World Cup 2026 office pool",
@@ -31,27 +31,36 @@ export const metadata: Metadata = {
     "תחזיות כדורגל 2026",
   ],
   openGraph: {
-    title:       "Cup Clash — World Cup 2026 Prediction League",
-    description: "The excitement of the tournament for the price of a coffee. $2 for 104 matches.",
+    title:       "CupClash 2026: The Social Prediction Arena",
+    description: "104 matches, 3 countries, and your football IQ against friends. Join the ultimate 2026 World Cup prediction group. For the love of the game.",
     url:         "https://cupclash.live",
     siteName:    "Cup Clash",
     type:        "website",
-    locale:      "en_US",
+    images: [
+      {
+        url:    "https://cupclash.live/opengraph-image",
+        width:  1200,
+        height: 630,
+        alt:    "Cup Clash — World Cup 2026 Prediction League",
+      },
+    ],
+    locale: "en_US",
   },
   twitter: {
     card:        "summary_large_image",
-    title:       "Cup Clash — World Cup 2026 Prediction League",
-    description: "$2 for the whole World Cup 2026. Set up your group in 60 seconds.",
+    title:       "CupClash 2026: The Social Prediction Arena",
+    description: "104 matches, 3 countries, and your football IQ against friends. Join the ultimate 2026 World Cup prediction group.",
+    images:      ["https://cupclash.live/opengraph-image"],
   },
   alternates: {
     canonical: "https://cupclash.live",
-    languages: { "he": "https://cupclash.live" },
+    languages: { "he": "https://cupclash.live", "en": "https://cupclash.live" },
   },
   icons: {
     icon: [
       { url: "/favicon.ico",       sizes: "any"     },
-      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
-      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+      { url: "/favicon-16x16.png", sizes: "16x16",  type: "image/png" },
+      { url: "/favicon-32x32.png", sizes: "32x32",  type: "image/png" },
       { url: "/icon-192.png",      sizes: "192x192", type: "image/png" },
       { url: "/icon-512.png",      sizes: "512x512", type: "image/png" },
     ],
@@ -72,6 +81,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="apple-touch-icon" sizes="180x180"    href="/apple-touch-icon.png" />
         <link rel="alternate" hrefLang="he" href="https://cupclash.live" />
         <link rel="alternate" hrefLang="en" href="https://cupclash.live" />
+
+        {/* Extra OG tags not covered by Next.js metadata */}
+        <meta property="og:locale" content="en_US" />
+        <meta property="og:locale:alternate" content="he_IL" />
+        <meta property="og:image:width"  content="1200" />
+        <meta property="og:image:height" content="630"  />
+
+        {/* WhatsApp / LinkedIn specific */}
+        <meta property="og:site_name" content="Cup Clash" />
+        <meta name="theme-color" content="#00D4FF" />
+
         <SoftwareAppSchema />
         <FAQSchema />
         <HowToSchema />
