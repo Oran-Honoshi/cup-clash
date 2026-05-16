@@ -47,7 +47,7 @@ export default function SignUpPage() {
       email, password,
       options: {
         data: { name },
-        emailRedirectTo: `${window.location.origin}/auth/callback?next=/dashboard`,
+        emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(new URLSearchParams(window.location.search).get("next") ?? "/dashboard")}`,
       },
     });
 

@@ -151,7 +151,7 @@ export default async function JoinCodePage({ params }: { params: { code: string 
             )}
 
             <p className="text-center text-xs" style={{ color: "#94a3b8" }}>
-              {demoMode ? "🧪 Testing mode active" : "7-day refund guarantee · Predictions lock 5 min before kickoff"}
+              {"7-day refund guarantee · Predictions lock 5 min before kickoff"}
             </p>
           </div>
         </div>

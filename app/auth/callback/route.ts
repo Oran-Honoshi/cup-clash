@@ -3,9 +3,9 @@ import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 
 export async function GET(request: NextRequest) {
-  const { searchParams, origin } = new URL(request.url);
-  const code  = searchParams.get("code");
-  const next  = searchParams.get("next") ?? "/dashboard";
+  const requestUrl = new URL(request.url);
+  const code = requestUrl.searchParams.get("code");
+  const next = requestUrl.searchParams.get("next") ?? "/dashboard";
 
   if (code) {
     const cookieStore = cookies();
@@ -15,20 +15,14 @@ export async function GET(request: NextRequest) {
       {
         cookies: {
           get(name: string) { return cookieStore.get(name)?.value; },
-          set(name: string, value: string, options: Record<string, unknown>) {
-            cookieStore.set({ name, value, ...options });
-          },
-          remove(name: string, options: Record<string, unknown>) {
-            cookieStore.set({ name, value: "", ...options });
-          },
+          set(name: string, value: string, options: object) { cookieStore.set({ name, value, ...options }); },
+          remove(name: string, options: object) { cookieStore.set({ name, value: "", ...options }); },
         },
       }
     );
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
-    if (!error) {
-      return NextResponse.redirect(`${origin}${next}`);
-    }
+    await supabase.auth.exchangeCodeForSession(code);
   }
 
-  return NextResponse.redirect(`${origin}/signin?error=auth_callback_failed`);
+  // Redirect to `next` — preserves the join URL after signup
+  return NextResponse.redirect(new URL(next, requestUrl.origin));
 }

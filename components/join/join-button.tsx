@@ -66,7 +66,7 @@ export function JoinButton({ groupId, groupName, enrollmentFee, demoMode }: Join
         <PayPalCheckout
           groupId={groupId}
           groupName={groupName}
-          amount={enrollmentFee / 100}
+          amount={enrollmentFee}
         />
       </div>
     );
@@ -78,7 +78,7 @@ export function JoinButton({ groupId, groupName, enrollmentFee, demoMode }: Join
       <button onClick={() => setShowPayPal(true)}
         className="w-full py-3.5 rounded-xl font-bold text-sm uppercase tracking-wider flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5"
         style={{ background: "linear-gradient(135deg, #00FF88, #00D4FF)", color: "#0B141B", boxShadow: "0 4px 16px rgba(0,255,136,0.25)" }}>
-        Join for ${(enrollmentFee / 100).toFixed(0)} <ArrowRight size={15} />
+        Join for ${enrollmentFee.toFixed(0)} <ArrowRight size={15} />
       </button>
       <p className="text-center text-xs" style={{ color: "#94a3b8" }}>
         One-time payment · Secured by PayPal
