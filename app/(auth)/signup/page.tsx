@@ -71,9 +71,10 @@ export default function SignUpPage() {
 
     // If already logged in (email confirm OFF) — go straight to dashboard
     if (isLoggedIn) {
-      window.location.replace("/dashboard");
-      return;
-    }
+  const next = new URLSearchParams(window.location.search).get("next") ?? "/dashboard";
+  window.location.replace(next);
+  return;
+}
 
     // Otherwise show "check your email" step
     setStep(3);
