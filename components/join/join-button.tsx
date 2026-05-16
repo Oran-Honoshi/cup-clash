@@ -3,68 +3,86 @@
 import { useState } from "react";
 import { ArrowRight } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { PayPalCheckout } from "@/components/payments/paypal-checkout";
 
-export function JoinButton({
-  groupId, enrollmentFee, demoMode,
-}: {
-  groupId: string; enrollmentFee: number; demoMode: boolean;
-}) {
-  const [loading, setLoading] = useState(false);
-  const [error,   setError]   = useState<string | null>(null);
+interface JoinButtonProps {
+  groupId:       string;
+  groupName:     string;
+  enrollmentFee: number;
+  demoMode:      boolean;
+}
+
+export function JoinButton({ groupId, groupName, enrollmentFee, demoMode }: JoinButtonProps) {
+  const [loading,  setLoading]  = useState(false);
+  const [error,    setError]    = useState<string | null>(null);
+  const [showPayPal, setShowPayPal] = useState(false);
   const router = useRouter();
 
   const handleDemoJoin = async () => {
     setLoading(true); setError(null);
     try {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 10000);
       const res = await fetch("/api/join-free", {
-        method: "POST",
+        method:  "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ groupId }),
-        signal: controller.signal,
+        body:    JSON.stringify({ groupId }),
       });
-      clearTimeout(timeout);
       if (!res.ok) { setError(`Error: ${await res.text()}`); setLoading(false); return; }
-      const data = await res.json();
+      const data = await res.json() as { success: boolean; error?: string };
       if (data.success) { window.location.replace("/dashboard"); }
       else { setError(data.error ?? "Failed to join"); setLoading(false); }
-    } catch (e) {
-      setError(e instanceof Error && e.name === "AbortError" ? "Request timed out" : "Unexpected error");
+    } catch {
+      setError("Unexpected error — please try again");
       setLoading(false);
     }
   };
 
-  // Demo mode — no "Testing" label, just a clean join button
+  // Demo / free beta mode
   if (demoMode) {
     return (
       <div className="space-y-2">
         <button onClick={handleDemoJoin} disabled={loading}
-          className="w-full py-3.5 rounded-xl font-bold text-sm uppercase tracking-wider flex items-center justify-center gap-2 disabled:opacity-50"
-          style={{ background: "linear-gradient(135deg, #00FF88, #00D4FF)", color: "#0B141B" }}>
+          className="w-full py-3.5 rounded-xl font-bold text-sm uppercase tracking-wider flex items-center justify-center gap-2 disabled:opacity-50 transition-all hover:-translate-y-0.5"
+          style={{ background: "linear-gradient(135deg, #00FF88, #00D4FF)", color: "#0B141B", boxShadow: "0 4px 16px rgba(0,255,136,0.25)" }}>
           {loading ? "Joining..." : <>Join Free <ArrowRight size={15} /></>}
         </button>
         {error && (
           <p className="text-xs text-center rounded-lg px-3 py-2"
-            style={{ color: "#dc2626", background: "rgba(220,38,38,0.06)", border: "1px solid rgba(220,38,38,0.2)" }}>
+            style={{ color: "#dc2626", background: "rgba(220,38,38,0.06)" }}>
             {error}
           </p>
         )}
         <p className="text-center text-xs" style={{ color: "#94a3b8" }}>
-          Early access · No payment required during beta
+          Free beta · No payment required
         </p>
       </div>
     );
   }
 
+  // PayPal payment mode
+  if (showPayPal) {
+    return (
+      <div className="rounded-2xl p-4"
+        style={{ background: "white", border: "1px solid rgba(0,212,255,0.15)" }}>
+        <PayPalCheckout
+          groupId={groupId}
+          groupName={groupName}
+          amount={enrollmentFee / 100}
+        />
+      </div>
+    );
+  }
+
+  // Show pay button first, then PayPal on click
   return (
-    <form action="/api/paddle" method="POST">
-      <input type="hidden" name="groupId" value={groupId} />
-      <button type="submit"
-        className="w-full py-3.5 rounded-xl font-bold text-sm uppercase tracking-wider flex items-center justify-center gap-2"
+    <div className="space-y-2">
+      <button onClick={() => setShowPayPal(true)}
+        className="w-full py-3.5 rounded-xl font-bold text-sm uppercase tracking-wider flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5"
         style={{ background: "linear-gradient(135deg, #00FF88, #00D4FF)", color: "#0B141B", boxShadow: "0 4px 16px rgba(0,255,136,0.25)" }}>
-        Join for ${enrollmentFee} <ArrowRight size={16} />
+        Join for ${(enrollmentFee / 100).toFixed(0)} <ArrowRight size={15} />
       </button>
-    </form>
+      <p className="text-center text-xs" style={{ color: "#94a3b8" }}>
+        One-time payment · Secured by PayPal
+      </p>
+    </div>
   );
 }
