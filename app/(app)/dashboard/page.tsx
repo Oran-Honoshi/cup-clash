@@ -9,6 +9,7 @@ import { StatCards }       from "@/components/dashboard/stat-cards";
 import { DashboardPopups } from "@/components/dashboard/dashboard-popups";
 import { WallOfShame }     from "@/components/dashboard/wall-of-shame";
 import { DashboardGroupPicker } from "@/components/dashboard/dashboard-group-picker";
+import { WelcomeModal }    from "@/components/ui/welcome-modal";
 import { getLeaderboard, getMembers, getGroup } from "@/lib/services/groups";
 import { getNextMatch }    from "@/lib/services/matches";
 import { getCurrentUserProfile } from "@/lib/services/user-group";
@@ -66,6 +67,7 @@ export default async function DashboardPage({
 
   return (
     <div className="space-y-6">
+      <WelcomeModal />
       <DashboardPopups groupId={activeGroupId} userId={userProfile.id} />
 
       <div className="flex items-start justify-between gap-4 flex-wrap">
@@ -80,7 +82,6 @@ export default async function DashboardPage({
             </p>
           )}
         </div>
-        {/* Group picker — only show if in multiple groups */}
         {allGroups.length > 1 && (
           <DashboardGroupPicker
             groups={allGroups}
