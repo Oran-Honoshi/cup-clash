@@ -15,14 +15,18 @@ export async function GET(request: NextRequest) {
       {
         cookies: {
           get(name: string) { return cookieStore.get(name)?.value; },
-          set(name: string, value: string, options: object) { cookieStore.set({ name, value, ...options }); },
-          remove(name: string, options: object) { cookieStore.set({ name, value: "", ...options }); },
+          set(name: string, value: string, options: object) {
+            cookieStore.set({ name, value, ...options });
+          },
+          remove(name: string, options: object) {
+            cookieStore.set({ name, value: "", ...options });
+          },
         },
       }
     );
     await supabase.auth.exchangeCodeForSession(code);
   }
 
-  // Redirect to `next` — preserves the join URL after signup
+  // Always redirect to `next` — preserves join URL after email confirmation
   return NextResponse.redirect(new URL(next, requestUrl.origin));
 }
