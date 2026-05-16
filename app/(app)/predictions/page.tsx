@@ -42,7 +42,7 @@ export default async function PredictionsPage({
         groupName="My Predictions"
         allGroups={[]}
         userId={userProfile.id}
-        isPaid={false}
+        isPaid={true}
       />
     );
   }
