@@ -64,7 +64,7 @@ export function PayPalCheckout({ groupId, groupName, amount }: PayPalCheckoutPro
           const result = await res.json() as { success: boolean; error?: string };
           if (result.success) {
             setSuccess(true);
-            setTimeout(() => router.push("/dashboard"), 1500);
+            setTimeout(() => router.push("/groups"), 1500);
           } else {
             setError(result.error ?? "Payment failed");
             setLoading(false);
