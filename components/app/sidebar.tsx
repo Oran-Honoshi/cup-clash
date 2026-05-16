@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, Users, Trophy, Target, BarChart2,
-  GitBranch, Brain, Bell, Shield, LogOut, Settings,
+  GitBranch, Brain, Bell, Shield, LogOut, Settings, MessageCircle,
 } from "lucide-react";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
@@ -30,6 +30,9 @@ const NAV = [
   { href: "/notifications",label: "Notifications",  icon: Bell            },
   { href: "/admin",        label: "Admin",          icon: Shield          },
 ];
+
+// Chat goes to My Groups page where user can pick a group and open Chat tab
+const CHAT_HREF = "/groups";
 
 export function AppSidebar() {
   const pathname  = usePathname();
@@ -108,6 +111,14 @@ export function AppSidebar() {
             </Link>
           );
         })}
+
+        {/* Chat — shortcut to My Groups → Chat tab */}
+        <Link href={CHAT_HREF}
+          className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold transition-all hover:bg-slate-50"
+          style={{ color: "#64748b" }}>
+          <MessageCircle size={17} strokeWidth={1.75} />
+          Group Chat
+        </Link>
 
         {/* Testing — admin only */}
         {isAdmin && (

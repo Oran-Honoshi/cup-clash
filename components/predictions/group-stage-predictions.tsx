@@ -4,15 +4,23 @@ import { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ChevronRight, Check, Lock, ArrowUpDown, Star,
-  Trophy, Medal, Users, AlertCircle, CheckCircle2, Save,
+  Trophy, Medal, Users, AlertCircle, CheckCircle2,
 } from "lucide-react";
 import { CopyPredictions } from "@/components/predictions/copy-predictions";
 import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { FlaggedTeam } from "@/components/predictions/flagged-team";
 import { WC2026_MATCHES } from "@/lib/schedule";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase/client";
+
+// ─── Time-based locking ───────────────────────────────────────────────────────
+
+const TOURNAMENT_LOCK_UTC = "2026-06-11T19:55:00Z"; // 5 min before first kickoff
+
+function isMatchLocked(utcTime: string): boolean {
+  const lockTime = new Date(new Date(utcTime).getTime() - 5 * 60 * 1000);
+  return new Date() >= lockTime;
+}
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -23,8 +31,6 @@ interface TeamStanding {
   played: number; won: number; drawn: number; lost: number;
   gf: number; ga: number; gd: number; pts: number;
 }
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const GROUPS = ["A","B","C","D","E","F","G","H","I","J","K","L"];
 
@@ -77,16 +83,11 @@ function isGroupComplete(group: string, predictions: GroupPredictions): boolean 
 }
 
 // ─── Auto-save hook ───────────────────────────────────────────────────────────
-// Debounced save to Supabase — fires 800ms after last change
 
-function useAutoSave(
-  predictions: GroupPredictions,
-  userId: string | undefined,
-  groupId: string
-) {
+function useAutoSave(predictions: GroupPredictions, userId: string | undefined, groupId: string) {
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
-  const timerRef   = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const latestRef  = useRef(predictions);
+  const timerRef  = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const latestRef = useRef(predictions);
   latestRef.current = predictions;
 
   const saveToDB = useCallback(async (preds: GroupPredictions) => {
@@ -102,11 +103,11 @@ function useAutoSave(
           match_id:   matchId,
           home_score: parseInt(p.home, 10),
           away_score: parseInt(p.away, 10),
+          pred_type:  "match",
           updated_at: new Date().toISOString(),
         }));
       if (rows.length === 0) { setSaveStatus("idle"); return; }
-      const { error } = await sb
-        .from("group_predictions")
+      const { error } = await sb.from("group_predictions")
         .upsert(rows, { onConflict: "user_id,group_id,match_id" });
       if (error) throw error;
       setSaveStatus("saved");
@@ -117,13 +118,10 @@ function useAutoSave(
     }
   }, [userId, groupId]);
 
-  // Trigger debounced save whenever predictions change
   useEffect(() => {
     if (!userId) return;
     if (timerRef.current) clearTimeout(timerRef.current);
-    timerRef.current = setTimeout(() => {
-      saveToDB(latestRef.current);
-    }, 800);
+    timerRef.current = setTimeout(() => saveToDB(latestRef.current), 800);
     return () => { if (timerRef.current) clearTimeout(timerRef.current); };
   }, [predictions, userId, saveToDB]);
 
@@ -148,17 +146,20 @@ function ScoreBox({ value, onChange, locked }: { value: string; onChange: (v: st
 
 // ─── Match Row ────────────────────────────────────────────────────────────────
 
-function MatchRow({ match, prediction, onChange, locked }: {
+function MatchRow({ match, prediction, onChange, globalLocked }: {
   match: typeof WC2026_MATCHES[0];
   prediction: ScorePrediction;
   onChange: (home: string, away: string) => void;
-  locked: boolean;
+  globalLocked: boolean;
 }) {
-  const filled = prediction.home !== "" && prediction.away !== "";
+  const filled      = prediction.home !== "" && prediction.away !== "";
+  // Each match locks 5 minutes before its own kickoff
+  const matchLocked = globalLocked || isMatchLocked(match.utcTime);
+
   return (
     <div className="flex items-center gap-3 py-3 border-b border-slate-50 last:border-0">
       <div className="w-5 shrink-0 flex justify-center">
-        {locked ? <Lock size={12} style={{ color: "#94a3b8" }} /> :
+        {matchLocked ? <Lock size={12} style={{ color: "#94a3b8" }} /> :
           filled ? <CheckCircle2 size={14} style={{ color: "#059669" }} /> :
           <div className="h-2 w-2 rounded-full bg-slate-200" />}
       </div>
@@ -166,9 +167,9 @@ function MatchRow({ match, prediction, onChange, locked }: {
         <FlaggedTeam name={match.home} flagCode={match.homeFlagCode} size="sm" />
       </div>
       <div className="flex items-center gap-1.5 shrink-0">
-        <ScoreBox value={prediction.home} onChange={v => onChange(v, prediction.away)} locked={locked} />
+        <ScoreBox value={prediction.home} onChange={v => onChange(v, prediction.away)} locked={matchLocked} />
         <span className="font-bold text-slate-300 text-lg">–</span>
-        <ScoreBox value={prediction.away} onChange={v => onChange(prediction.home, v)} locked={locked} />
+        <ScoreBox value={prediction.away} onChange={v => onChange(prediction.home, v)} locked={matchLocked} />
       </div>
       <div className="flex-1">
         <FlaggedTeam name={match.away} flagCode={match.awayFlagCode} size="sm" />
@@ -247,10 +248,10 @@ function QualifiersSummary({ predictions, allComplete }: { predictions: GroupPre
     return q;
   }, [predictions]);
 
-  const top1 = qualifiers.filter(q => q.pos === 1);
-  const top2 = qualifiers.filter(q => q.pos === 2);
-  const top3 = qualifiers.filter(q => q.pos === 3).sort((a, b) => b.team.pts - a.team.pts || b.team.gd - a.team.gd);
-  const best8 = top3.slice(0, 8);
+  const top1   = qualifiers.filter(q => q.pos === 1);
+  const top2   = qualifiers.filter(q => q.pos === 2);
+  const top3   = qualifiers.filter(q => q.pos === 3).sort((a, b) => b.team.pts - a.team.pts || b.team.gd - a.team.gd);
+  const best8  = top3.slice(0, 8);
 
   if (!qualifiers.length) return null;
 
@@ -316,11 +317,6 @@ function QualifiersSummary({ predictions, allComplete }: { predictions: GroupPre
               </div>
             ))}
           </div>
-          {top3.length < 12 && (
-            <p className="text-[11px] mt-2" style={{ color: "#94a3b8" }}>
-              Complete all groups to see all 12 third-place teams.
-            </p>
-          )}
         </div>
       )}
     </Card>
@@ -351,24 +347,22 @@ interface GroupStagePredictionsProps {
 }
 
 export function GroupStagePredictions({ groupId, locked = false, userId }: GroupStagePredictionsProps) {
-  const [activeGroup,  setActiveGroup]  = useState("A");
-  const [predictions,  setPredictions]  = useState<GroupPredictions>({});
-  const [loaded,       setLoaded]       = useState(false);
+  const [activeGroup, setActiveGroup] = useState("A");
+  const [predictions, setPredictions] = useState<GroupPredictions>({});
+  const [loaded,      setLoaded]      = useState(false);
 
-  // Auto-save to Supabase on every change (debounced 800ms)
   const saveStatus = useAutoSave(loaded ? predictions : {}, userId, groupId);
 
-  // Load ALL predictions from Supabase on mount — once
   useEffect(() => {
     if (!userId) return;
     const sb = createClient();
-    // Get session user first to ensure RLS passes
     sb.auth.getUser().then(({ data: { user } }) => {
       if (!user) { setLoaded(true); return; }
       sb.from("group_predictions")
         .select("match_id, home_score, away_score")
         .eq("group_id", groupId)
         .eq("user_id", user.id)
+        .eq("pred_type", "match")
         .then(({ data, error }) => {
           if (error) console.error("Load predictions error:", error.message);
           if (data?.length) {
@@ -391,16 +385,15 @@ export function GroupStagePredictions({ groupId, locked = false, userId }: Group
     setPredictions(prev => ({ ...prev, [matchId]: { home, away } }));
   };
 
-  const groupMatches   = getGroupMatches(activeGroup);
-  const groupTeams     = getGroupTeams(activeGroup);
-  const standings      = calcStandings(activeGroup, predictions);
-  const groupComplete  = isGroupComplete(activeGroup, predictions);
-  const allComplete    = GROUPS.every(g => isGroupComplete(g, predictions));
+  const groupMatches  = getGroupMatches(activeGroup);
+  const groupTeams    = getGroupTeams(activeGroup);
+  const standings     = calcStandings(activeGroup, predictions);
+  const groupComplete = isGroupComplete(activeGroup, predictions);
+  const allComplete   = GROUPS.every(g => isGroupComplete(g, predictions));
   const completedCount = GROUPS.filter(g => isGroupComplete(g, predictions)).length;
 
   return (
     <div className="space-y-5">
-      {/* Progress bar */}
       <Card variant="glass" className="px-5 py-3">
         <div className="flex items-center justify-between mb-2">
           <span className="text-sm font-bold" style={{ color: "#0F172A" }}>Group Stage Progress</span>
@@ -416,11 +409,10 @@ export function GroupStagePredictions({ groupId, locked = false, userId }: Group
             style={{ width: `${(completedCount / 12) * 100}%`, background: "linear-gradient(90deg, #00D4FF, #00FF88)" }} />
         </div>
         <p className="text-[11px] mt-1.5" style={{ color: "#94a3b8" }}>
-          Predictions save automatically as you type. Predict all 3 matches per group to see your predicted table.
+          Predictions save automatically as you type · Each match locks 5 min before kickoff
         </p>
       </Card>
 
-      {/* Group tabs */}
       <div className="flex flex-wrap gap-1.5">
         {GROUPS.map(g => {
           const complete = isGroupComplete(g, predictions);
@@ -441,7 +433,6 @@ export function GroupStagePredictions({ groupId, locked = false, userId }: Group
                 {teams.slice(0, 2).map(t => t.flagCode && (
                   <span key={t.name} className="relative h-3 w-4 rounded-sm overflow-hidden inline-block border"
                     style={{ borderColor: "rgba(0,0,0,0.1)" }}>
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img src={`https://flagcdn.com/w20/${t.flagCode}.png`} alt={t.name}
                       className="w-full h-full object-cover" />
                   </span>
@@ -453,14 +444,12 @@ export function GroupStagePredictions({ groupId, locked = false, userId }: Group
         })}
       </div>
 
-      {/* Active group panel */}
       <AnimatePresence mode="wait">
         <motion.div key={activeGroup}
           initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.18 }}
           className="grid lg:grid-cols-[1fr_340px] gap-5">
 
-          {/* Left: matches */}
           <Card variant="glass" className="overflow-hidden">
             <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
               <div>
@@ -486,11 +475,10 @@ export function GroupStagePredictions({ groupId, locked = false, userId }: Group
                 <MatchRow key={match.id} match={match}
                   prediction={predictions[match.id] ?? { home: "", away: "" }}
                   onChange={(h, a) => setScore(match.id, h, a)}
-                  locked={locked}
+                  globalLocked={locked}
                 />
               ))}
             </div>
-            {/* No manual save button needed — auto-save handles it */}
             {!loaded && (
               <div className="px-5 py-3 text-xs text-center" style={{ color: "#94a3b8" }}>
                 Loading your predictions...
@@ -498,7 +486,6 @@ export function GroupStagePredictions({ groupId, locked = false, userId }: Group
             )}
           </Card>
 
-          {/* Right: standings + copy */}
           <div className="space-y-4">
             <Card variant="glass" className="p-4">
               <div className="flex items-center gap-2 mb-3">

@@ -7,9 +7,14 @@ import { ChevronDown, Users } from "lucide-react";
 interface DashboardGroupPickerProps {
   groups:        Array<{ id: string; name: string; passkey: string }>;
   activeGroupId: string;
+  basePath?:     string; // e.g. "/dashboard" or "/leaderboard" or "/predictions"
 }
 
-export function DashboardGroupPicker({ groups, activeGroupId }: DashboardGroupPickerProps) {
+export function DashboardGroupPicker({
+  groups,
+  activeGroupId,
+  basePath = "/dashboard",
+}: DashboardGroupPickerProps) {
   const [open, setOpen] = useState(false);
   const router = useRouter();
   const active = groups.find(g => g.id === activeGroupId);
@@ -40,9 +45,7 @@ export function DashboardGroupPicker({ groups, activeGroupId }: DashboardGroupPi
 
       {open && (
         <>
-          {/* Backdrop */}
           <div className="fixed inset-0 z-10" onClick={() => setOpen(false)} />
-          {/* Dropdown */}
           <div className="absolute right-0 top-full mt-1 w-64 rounded-2xl overflow-hidden z-20"
             style={{ background: "white", border: "1px solid rgba(0,212,255,0.2)", boxShadow: "0 8px 32px rgba(0,0,0,0.12)" }}>
             <div className="px-4 py-2.5 border-b text-[10px] font-bold uppercase tracking-widest"
@@ -54,7 +57,7 @@ export function DashboardGroupPicker({ groups, activeGroupId }: DashboardGroupPi
                 key={g.id}
                 onClick={() => {
                   setOpen(false);
-                  router.push(`/dashboard?group=${g.id}`);
+                  router.push(`${basePath}?group=${g.id}`);
                 }}
                 className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-slate-50 transition-all border-b last:border-0"
                 style={{

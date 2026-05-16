@@ -1,64 +1,46 @@
 "use client";
 
-import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
-import { LayoutDashboard, Trophy, Target, BarChart2, UserCircle, LogOut } from "lucide-react";
-import { createClient as createSupabaseClient } from "@/lib/supabase/client";
+import { usePathname } from "next/navigation";
+import { LayoutDashboard, Users, Target, Trophy, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-const NAV_ITEMS = [
-  { href: "/dashboard",   icon: LayoutDashboard, label: "Home"    },
-  { href: "/leaderboard", icon: Trophy,          label: "Table"   },
-  { href: "/predictions", icon: Target,          label: "Bets"    },
-  { href: "/standings",   icon: BarChart2,       label: "Groups"  },
-  { href: "/profile",     icon: UserCircle,      label: "Profile" },
+const NAV = [
+  { href: "/dashboard",   label: "Home",    icon: LayoutDashboard },
+  { href: "/groups",      label: "Groups",  icon: Users           },
+  { href: "/predictions", label: "My Bets", icon: Target          },
+  { href: "/leaderboard", label: "Table",   icon: Trophy          },
+  { href: "/profile",     label: "Profile", icon: User            },
 ];
 
 export function MobileNav() {
   const pathname = usePathname();
-  const router   = useRouter();
-
-  const handleSignOut = async () => {
-    const sb = createSupabaseClient();
-    await sb.auth.signOut();
-    window.location.replace("/signin");
-  };
 
   return (
-    <nav className="lg:hidden fixed bottom-0 inset-x-0 z-50 border-t"
+    <nav className="fixed bottom-0 left-0 right-0 z-40 lg:hidden border-t"
       style={{
-        background: "rgba(255,255,255,0.92)",
-        backdropFilter: "blur(24px)",
-        WebkitBackdropFilter: "blur(24px)",
-        borderColor: "rgba(0,212,255,0.15)",
-        boxShadow: "0 -4px 24px rgba(0,212,255,0.08)",
+        background: "rgba(255,255,255,0.95)",
+        backdropFilter: "blur(20px)",
+        borderColor: "rgba(0,212,255,0.12)",
       }}>
-      <div className="flex items-stretch h-16">
-        {NAV_ITEMS.map((item) => {
-          const active = pathname === item.href || pathname.startsWith(item.href + "/");
+      <div className="flex items-center justify-around px-2 py-2 safe-bottom">
+        {NAV.map(({ href, label, icon: Icon }) => {
+          const active = pathname === href || (href !== "/dashboard" && pathname.startsWith(href));
           return (
-            <Link key={item.href} href={item.href}
-              className="flex-1 flex flex-col items-center justify-center gap-1 relative transition-colors"
-              style={{ color: active ? "#00D4FF" : "#94a3b8" }}
-            >
-              {active && (
-                <span className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-0.5 rounded-full"
-                  style={{ background: "linear-gradient(90deg, #00FF88, #00D4FF)" }} />
-              )}
-              <item.icon size={20} />
-              <span className="text-[9px] font-bold uppercase tracking-widest">{item.label}</span>
+            <Link key={href} href={href}
+              className="flex flex-col items-center gap-1 px-3 py-1.5 rounded-xl transition-all min-w-0"
+              style={active ? {
+                background: "rgba(0,212,255,0.08)",
+              } : undefined}>
+              <Icon size={20} strokeWidth={active ? 2.5 : 1.75}
+                style={{ color: active ? "#0891B2" : "#94a3b8" }} />
+              <span className="text-[10px] font-bold uppercase tracking-wider"
+                style={{ color: active ? "#0891B2" : "#94a3b8" }}>
+                {label}
+              </span>
             </Link>
           );
         })}
-        <button onClick={handleSignOut}
-          className="flex-1 flex flex-col items-center justify-center gap-1 transition-colors"
-          style={{ color: "#cbd5e1" }}
-          onMouseEnter={e => (e.currentTarget.style.color = "#dc2626")}
-          onMouseLeave={e => (e.currentTarget.style.color = "#cbd5e1")}
-        >
-          <LogOut size={20} />
-          <span className="text-[9px] font-bold uppercase tracking-widest">Out</span>
-        </button>
       </div>
     </nav>
   );

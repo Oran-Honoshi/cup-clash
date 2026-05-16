@@ -2,8 +2,8 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Send, Smile, Image as ImageIcon, X, MessageCircle } from "lucide-react";
-import { createClient } from "@supabase/supabase-js";
+import { Send, Image as ImageIcon, X, MessageCircle } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 import { flagUrl } from "@/lib/countries";
 import NextImage from "next/image";
@@ -15,31 +15,17 @@ interface ChatMessage {
   type: "text" | "gif";
   gif_url?: string;
   created_at: string;
-  profiles?: {
-    name: string;
-    country: string;
-    avatar_url: string | null;
-  };
+  profiles?: { name: string; country: string; avatar_url: string | null };
 }
 
 interface GifResult {
-  id: string;
-  url: string;
-  preview: string;
-  title: string;
+  id: string; url: string; preview: string; title: string;
 }
 
 const COUNTRY_FLAGS: Record<string, string> = {
   "Argentina": "ar", "Brazil": "br", "France": "fr", "England": "gb-eng",
   "Germany": "de",   "Spain": "es",  "Israel": "il",  "USA": "us",
 };
-
-function getSupabase() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
-}
 
 function Avatar({ name, country, avatarUrl }: { name: string; country: string; avatarUrl: string | null }) {
   const flag = COUNTRY_FLAGS[country];
@@ -63,60 +49,58 @@ function Avatar({ name, country, avatarUrl }: { name: string; country: string; a
 }
 
 interface GroupChatProps {
-  groupId: string;
-  currentUserId: string;
+  groupId:         string;
+  currentUserId:   string;
   currentUserName: string;
-  isPaid: boolean;
+  isPaid:          boolean;
 }
 
 export function GroupChat({ groupId, currentUserId, currentUserName, isPaid }: GroupChatProps) {
-  const [messages,     setMessages]     = useState<ChatMessage[]>([]);
-  const [input,        setInput]        = useState("");
-  const [sending,      setSending]      = useState(false);
-  const [showGif,      setShowGif]      = useState(false);
-  const [gifQuery,     setGifQuery]     = useState("");
-  const [gifs,         setGifs]         = useState<GifResult[]>([]);
-  const [gifLoading,   setGifLoading]   = useState(false);
-  const [isOpen,       setIsOpen]       = useState(false);
-  const [unread,       setUnread]       = useState(0);
-  const bottomRef   = useRef<HTMLDivElement>(null);
-  const inputRef    = useRef<HTMLInputElement>(null);
+  const [messages,   setMessages]   = useState<ChatMessage[]>([]);
+  const [input,      setInput]      = useState("");
+  const [sending,    setSending]    = useState(false);
+  const [showGif,    setShowGif]    = useState(false);
+  const [gifQuery,   setGifQuery]   = useState("");
+  const [gifs,       setGifs]       = useState<GifResult[]>([]);
+  const [gifLoading, setGifLoading] = useState(false);
+  const [isOpen,     setIsOpen]     = useState(false);
+  const [unread,     setUnread]     = useState(0);
+  const [sendError,  setSendError]  = useState<string | null>(null);
+  const bottomRef = useRef<HTMLDivElement>(null);
+  const inputRef  = useRef<HTMLInputElement>(null);
 
   const scrollToBottom = useCallback(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, []);
 
-  // Load messages + subscribe to realtime
   useEffect(() => {
-    const sb = getSupabase();
+    // Use SSR-aware client that has the session cookie
+    const sb = createClient();
 
-    // Initial load
     sb.from("chat_messages")
       .select("*, profiles(name, country, avatar_url)")
       .eq("group_id", groupId)
       .order("created_at", { ascending: true })
       .limit(100)
-      .then(({ data }) => {
+      .then(({ data, error }) => {
+        if (error) console.error("Chat load error:", error.message);
         if (data) setMessages(data as ChatMessage[]);
         setTimeout(scrollToBottom, 100);
       });
 
-    // Realtime subscription
     const channel = sb
       .channel(`chat:${groupId}`)
       .on("postgres_changes", {
-        event: "INSERT",
+        event:  "INSERT",
         schema: "public",
-        table: "chat_messages",
+        table:  "chat_messages",
         filter: `group_id=eq.${groupId}`,
       }, async (payload) => {
-        // Fetch the message with profile
         const { data } = await sb
           .from("chat_messages")
           .select("*, profiles(name, country, avatar_url)")
           .eq("id", payload.new.id)
           .single();
-
         if (data) {
           setMessages(prev => [...prev, data as ChatMessage]);
           if (!isOpen) setUnread(u => u + 1);
@@ -140,16 +124,33 @@ export function GroupChat({ groupId, currentUserId, currentUserName, isPaid }: G
     if (!content.trim() && !gifUrl) return;
     if (!isPaid) return;
     setSending(true);
-    const sb = getSupabase();
-    await sb.from("chat_messages").insert({
+    setSendError(null);
+
+    const sb = createClient();
+
+    // Verify session first
+    const { data: { user } } = await sb.auth.getUser();
+    if (!user) {
+      setSendError("Not signed in — please refresh");
+      setSending(false);
+      return;
+    }
+
+    const { error } = await sb.from("chat_messages").insert({
       group_id: groupId,
-      user_id:  currentUserId,
+      user_id:  user.id, // use verified user.id, not prop
       content:  content.trim() || "GIF",
       type,
       gif_url:  gifUrl,
     });
-    setInput("");
-    setShowGif(false);
+
+    if (error) {
+      console.error("Chat send error:", error.message);
+      setSendError("Failed to send. Try again.");
+    } else {
+      setInput("");
+      setShowGif(false);
+    }
     setSending(false);
   };
 
@@ -157,16 +158,16 @@ export function GroupChat({ groupId, currentUserId, currentUserName, isPaid }: G
     if (!query.trim()) return;
     setGifLoading(true);
     try {
-      const key = "dc6zaTOxFJmzC"; // Giphy public beta key - safe to be in client code // public beta key
+      const key = "dc6zaTOxFJmzC";
       const res = await fetch(
         `https://api.giphy.com/v1/gifs/search?api_key=${key}&q=${encodeURIComponent(query)}&limit=12&rating=g`
       );
-      const data = await res.json() as { data: Array<{ id: string; title: string; images: { fixed_height: { url: string }; fixed_height_small: { url: string } } }> };
+      const data = await res.json() as {
+        data: Array<{ id: string; title: string; images: { fixed_height: { url: string }; fixed_height_small: { url: string } } }>
+      };
       setGifs(data.data.map(g => ({
-        id:      g.id,
-        url:     g.images.fixed_height.url,
-        preview: g.images.fixed_height_small.url,
-        title:   g.title,
+        id: g.id, url: g.images.fixed_height.url,
+        preview: g.images.fixed_height_small.url, title: g.title,
       })));
     } catch { /* ignore */ }
     setGifLoading(false);
@@ -203,8 +204,8 @@ export function GroupChat({ groupId, currentUserId, currentUserName, isPaid }: G
               backdropFilter: "blur(24px)",
               border: "1px solid rgba(0,212,255,0.2)",
               boxShadow: "0 20px 60px rgba(0,212,255,0.15), 0 4px 16px rgba(0,0,0,0.08)",
-            }}
-          >
+            }}>
+
             {/* Header */}
             <div className="px-4 py-3 border-b flex items-center justify-between shrink-0"
               style={{ borderColor: "rgba(0,212,255,0.12)", background: "rgba(248,250,252,0.8)" }}>
@@ -227,16 +228,14 @@ export function GroupChat({ groupId, currentUserId, currentUserName, isPaid }: G
                 <div className="h-full flex items-center justify-center text-center">
                   <div>
                     <MessageCircle size={32} className="mx-auto mb-2" style={{ color: "#cbd5e1" }} />
-                    <p className="text-sm" style={{ color: "#94a3b8" }}>No messages yet. Say hi!</p>
+                    <p className="text-sm" style={{ color: "#94a3b8" }}>No messages yet. Say hi! 👋</p>
                   </div>
                 </div>
               )}
-
               {messages.map((msg, i) => {
-                const isOwn = msg.user_id === currentUserId;
-                const profile = msg.profiles;
+                const isOwn     = msg.user_id === currentUserId;
+                const profile   = msg.profiles;
                 const showAvatar = !isOwn && (i === 0 || messages[i-1].user_id !== msg.user_id);
-
                 return (
                   <div key={msg.id} className={cn("flex gap-2", isOwn && "flex-row-reverse")}>
                     {!isOwn && (
@@ -252,19 +251,14 @@ export function GroupChat({ groupId, currentUserId, currentUserName, isPaid }: G
                       )}
                       {msg.type === "gif" && msg.gif_url ? (
                         // eslint-disable-next-line @next/next/no-img-element
-                        <img src={msg.gif_url} alt="GIF"
-                          className="rounded-2xl max-w-full"
-                          style={{ maxHeight: 160 }} />
+                        <img src={msg.gif_url} alt="GIF" className="rounded-2xl max-w-full" style={{ maxHeight: 160 }} />
                       ) : (
                         <div className="px-3 py-2 rounded-2xl text-sm"
                           style={isOwn ? {
                             background: "linear-gradient(135deg, #00D4FF, #00FF88)",
-                            color: "#0B141B",
-                            borderBottomRightRadius: 4,
+                            color: "#0B141B", borderBottomRightRadius: 4,
                           } : {
-                            background: "#f1f5f9",
-                            color: "#0F172A",
-                            borderBottomLeftRadius: 4,
+                            background: "#f1f5f9", color: "#0F172A", borderBottomLeftRadius: 4,
                           }}>
                           {msg.content}
                         </div>
@@ -285,7 +279,8 @@ export function GroupChat({ groupId, currentUserId, currentUserName, isPaid }: G
                 <div className="flex gap-2 mb-2">
                   <input value={gifQuery} onChange={e => setGifQuery(e.target.value)}
                     onKeyDown={e => e.key === "Enter" && searchGifs(gifQuery)}
-                    placeholder="Search GIFs..." className="flex-1 text-xs px-3 py-1.5 rounded-lg"
+                    placeholder="Search GIFs..."
+                    className="flex-1 text-xs px-3 py-1.5 rounded-lg"
                     style={{ border: "1px solid #e2e8f0", color: "#0F172A", background: "white" }} />
                   <button onClick={() => searchGifs(gifQuery)}
                     className="px-3 py-1.5 rounded-lg text-xs font-bold"
@@ -297,8 +292,7 @@ export function GroupChat({ groupId, currentUserId, currentUserName, isPaid }: G
                   {gifs.map(gif => (
                     <button key={gif.id} onClick={() => sendMessage("", "gif", gif.url)}>
                       {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img src={gif.preview} alt={gif.title}
-                        className="w-full h-16 object-cover rounded-lg" />
+                      <img src={gif.preview} alt={gif.title} className="w-full h-16 object-cover rounded-lg" />
                     </button>
                   ))}
                 </div>
@@ -310,31 +304,39 @@ export function GroupChat({ groupId, currentUserId, currentUserName, isPaid }: G
               style={{ borderColor: "rgba(0,212,255,0.12)", background: "rgba(248,250,252,0.8)" }}>
               {!isPaid ? (
                 <div className="text-center text-sm py-2" style={{ color: "#94a3b8" }}>
-                  Pay the $2 entry fee to join the chat
+                  Join the group to chat
                 </div>
               ) : (
-                <div className="flex gap-2 items-center">
-                  <button onClick={() => setShowGif(g => !g)}
-                    className="h-9 w-9 rounded-xl flex items-center justify-center shrink-0 transition-colors hover:bg-slate-100"
-                    style={{ color: showGif ? "#00D4FF" : "#94a3b8" }}>
-                    <ImageIcon size={18} />
-                  </button>
-                  <input ref={inputRef} value={input}
-                    onChange={e => setInput(e.target.value)}
-                    onKeyDown={e => e.key === "Enter" && !e.shiftKey && sendMessage(input)}
-                    placeholder="Message..."
-                    className="flex-1 px-3 py-2 rounded-xl text-sm"
-                    style={{ border: "1px solid #e2e8f0", background: "white", color: "#0F172A", outline: "none" }}
-                    onFocus={e => (e.target.style.border = "1px solid #00D4FF")}
-                    onBlur={e => (e.target.style.border = "1px solid #e2e8f0")} />
-                  <button
-                    onClick={() => sendMessage(input)}
-                    disabled={!input.trim() || sending}
-                    className="h-9 w-9 rounded-xl flex items-center justify-center shrink-0 transition-all disabled:opacity-40"
-                    style={{ background: "linear-gradient(135deg, #00D4FF, #00FF88)", color: "#0B141B" }}>
-                    <Send size={16} />
-                  </button>
-                </div>
+                <>
+                  {sendError && (
+                    <div className="text-xs text-center mb-2 rounded-lg px-3 py-1"
+                      style={{ background: "rgba(220,38,38,0.06)", color: "#dc2626" }}>
+                      {sendError}
+                    </div>
+                  )}
+                  <div className="flex gap-2 items-center">
+                    <button onClick={() => setShowGif(g => !g)}
+                      className="h-9 w-9 rounded-xl flex items-center justify-center shrink-0 transition-colors hover:bg-slate-100"
+                      style={{ color: showGif ? "#00D4FF" : "#94a3b8" }}>
+                      <ImageIcon size={18} />
+                    </button>
+                    <input ref={inputRef} value={input}
+                      onChange={e => setInput(e.target.value)}
+                      onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(input); } }}
+                      placeholder="Message..."
+                      className="flex-1 px-3 py-2 rounded-xl text-sm"
+                      style={{ border: "1px solid #e2e8f0", background: "white", color: "#0F172A", outline: "none" }}
+                      onFocus={e => (e.target.style.border = "1px solid #00D4FF")}
+                      onBlur={e => (e.target.style.border = "1px solid #e2e8f0")} />
+                    <button
+                      onClick={() => sendMessage(input)}
+                      disabled={!input.trim() || sending}
+                      className="h-9 w-9 rounded-xl flex items-center justify-center shrink-0 transition-all disabled:opacity-40"
+                      style={{ background: "linear-gradient(135deg, #00D4FF, #00FF88)", color: "#0B141B" }}>
+                      <Send size={16} />
+                    </button>
+                  </div>
+                </>
               )}
             </div>
           </motion.div>

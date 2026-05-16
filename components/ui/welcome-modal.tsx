@@ -6,7 +6,7 @@ import { ArrowRight, Users, Plus, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 interface WelcomeModalProps {
-  forceOpen?: boolean; // show regardless of localStorage
+  forceOpen?: boolean;
 }
 
 export function WelcomeModal({ forceOpen = false }: WelcomeModalProps) {
@@ -15,21 +15,32 @@ export function WelcomeModal({ forceOpen = false }: WelcomeModalProps) {
 
   useEffect(() => {
     if (forceOpen) {
-      // Always show for new users with no groups
       setShow(true);
       return;
     }
-    // Show only on first visit
-    const seen = localStorage.getItem("cupclash_welcome_seen");
-    if (!seen) {
-      setTimeout(() => setShow(true), 600);
+    // Only show once — check localStorage
+    try {
+      const seen = localStorage.getItem("cupclash_welcome_seen");
+      if (!seen) setTimeout(() => setShow(true), 600);
+    } catch {
+      // localStorage not available
     }
   }, [forceOpen]);
 
   const dismiss = (path?: string) => {
-    localStorage.setItem("cupclash_welcome_seen", "true");
+    try {
+      localStorage.setItem("cupclash_welcome_seen", "true");
+    } catch {}
     setShow(false);
-    if (path) setTimeout(() => router.push(path), 200);
+    if (path) setTimeout(() => router.push(path), 150);
+  };
+
+  // Solo dismiss — no redirect, just close
+  const dismissSolo = () => {
+    try {
+      localStorage.setItem("cupclash_welcome_seen", "true");
+    } catch {}
+    setShow(false);
   };
 
   return (
@@ -50,14 +61,13 @@ export function WelcomeModal({ forceOpen = false }: WelcomeModalProps) {
 
             <div className="h-1.5" style={{ background: "linear-gradient(90deg, #00D4FF, #00FF88)" }} />
 
-            {/* Only show X if not forced (user has groups, just first visit) */}
-            {!forceOpen && (
-              <button onClick={() => dismiss()}
-                className="absolute top-4 right-4 h-8 w-8 rounded-full flex items-center justify-center z-10"
-                style={{ background: "#f1f5f9", color: "#64748b" }}>
-                <X size={15} />
-              </button>
-            )}
+            {/* X button — always visible */}
+            <button
+              onClick={dismissSolo}
+              className="absolute top-4 right-4 h-8 w-8 rounded-full flex items-center justify-center z-10"
+              style={{ background: "#f1f5f9", color: "#64748b" }}>
+              <X size={15} />
+            </button>
 
             <div className="p-8 text-center">
               <motion.div
@@ -67,33 +77,24 @@ export function WelcomeModal({ forceOpen = false }: WelcomeModalProps) {
                 🎉
               </motion.div>
 
-              <h2 className="font-display text-3xl uppercase font-black mb-2"
-                style={{ color: "#0F172A" }}>
+              <h2 className="font-display text-3xl uppercase font-black mb-2" style={{ color: "#0F172A" }}>
                 Welcome to Cup Clash!
               </h2>
               <p className="text-sm mb-8" style={{ color: "#64748b" }}>
-                You're all set for the FIFA World Cup 2026.
-                What would you like to do first?
+                You're all set for the FIFA World Cup 2026. What would you like to do first?
               </p>
 
               <div className="space-y-3">
                 <button onClick={() => dismiss("/join/enter")}
                   className="w-full flex items-center gap-4 p-4 rounded-2xl text-left transition-all hover:-translate-y-0.5"
-                  style={{
-                    background: "linear-gradient(135deg, rgba(0,255,136,0.08), rgba(0,212,255,0.05))",
-                    border: "1px solid rgba(0,212,255,0.2)",
-                  }}>
+                  style={{ background: "linear-gradient(135deg, rgba(0,255,136,0.08), rgba(0,212,255,0.05))", border: "1px solid rgba(0,212,255,0.2)" }}>
                   <div className="h-12 w-12 rounded-2xl flex items-center justify-center shrink-0"
                     style={{ background: "linear-gradient(135deg, #00FF88, #00D4FF)" }}>
                     <Users size={22} style={{ color: "#0B141B" }} />
                   </div>
                   <div className="flex-1">
-                    <div className="font-bold text-base" style={{ color: "#0F172A" }}>
-                      Join a group
-                    </div>
-                    <div className="text-xs mt-0.5" style={{ color: "#64748b" }}>
-                      Enter a passkey from your admin
-                    </div>
+                    <div className="font-bold text-base" style={{ color: "#0F172A" }}>Join a group</div>
+                    <div className="text-xs mt-0.5" style={{ color: "#64748b" }}>Enter a passkey from your admin</div>
                   </div>
                   <ArrowRight size={18} style={{ color: "#0891B2" }} />
                 </button>
@@ -106,17 +107,15 @@ export function WelcomeModal({ forceOpen = false }: WelcomeModalProps) {
                     <Plus size={22} style={{ color: "#0891B2" }} />
                   </div>
                   <div className="flex-1">
-                    <div className="font-bold text-base" style={{ color: "#0F172A" }}>
-                      Create a group
-                    </div>
-                    <div className="text-xs mt-0.5" style={{ color: "#64748b" }}>
-                      Be the admin · Invite your friends
-                    </div>
+                    <div className="font-bold text-base" style={{ color: "#0F172A" }}>Create a group</div>
+                    <div className="text-xs mt-0.5" style={{ color: "#64748b" }}>Be the admin · Invite your friends</div>
                   </div>
                   <ArrowRight size={18} style={{ color: "#94a3b8" }} />
                 </button>
 
-                <button onClick={() => dismiss("/predictions")}
+                {/* Solo — just closes modal, stays on dashboard */}
+                <button
+                  onClick={dismissSolo}
                   className="w-full text-sm py-2 transition-colors"
                   style={{ color: "#94a3b8" }}>
                   I'll just predict on my own for now →
@@ -126,7 +125,7 @@ export function WelcomeModal({ forceOpen = false }: WelcomeModalProps) {
 
             <div className="px-8 pb-6 text-center">
               <p className="text-xs" style={{ color: "#94a3b8" }}>
-                📱 Tip: Add Cup Clash to your home screen for the full app experience
+                📱 Add Cup Clash to your home screen for the full app experience
               </p>
             </div>
           </motion.div>
