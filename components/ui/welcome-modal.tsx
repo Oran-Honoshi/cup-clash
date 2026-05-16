@@ -5,18 +5,26 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ArrowRight, Users, Plus, X } from "lucide-react";
 import { useRouter } from "next/navigation";
 
-export function WelcomeModal() {
+interface WelcomeModalProps {
+  forceOpen?: boolean; // show regardless of localStorage
+}
+
+export function WelcomeModal({ forceOpen = false }: WelcomeModalProps) {
   const [show, setShow] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
-    // Show only on first visit — check localStorage
+    if (forceOpen) {
+      // Always show for new users with no groups
+      setShow(true);
+      return;
+    }
+    // Show only on first visit
     const seen = localStorage.getItem("cupclash_welcome_seen");
     if (!seen) {
-      // Small delay so the dashboard loads first
-      setTimeout(() => setShow(true), 800);
+      setTimeout(() => setShow(true), 600);
     }
-  }, []);
+  }, [forceOpen]);
 
   const dismiss = (path?: string) => {
     localStorage.setItem("cupclash_welcome_seen", "true");
@@ -37,21 +45,21 @@ export function WelcomeModal() {
             animate={{ scale: 1,    opacity: 1, y: 0  }}
             exit={{   scale: 0.85, opacity: 0, y: 30  }}
             transition={{ type: "spring", damping: 20, stiffness: 280 }}
-            className="w-full max-w-md rounded-3xl overflow-hidden"
+            className="w-full max-w-md rounded-3xl overflow-hidden relative"
             style={{ background: "white", boxShadow: "0 32px 80px rgba(0,0,0,0.25)" }}>
 
-            {/* Top gradient bar */}
             <div className="h-1.5" style={{ background: "linear-gradient(90deg, #00D4FF, #00FF88)" }} />
 
-            {/* Dismiss */}
-            <button onClick={() => dismiss()}
-              className="absolute top-4 right-4 h-8 w-8 rounded-full flex items-center justify-center z-10"
-              style={{ background: "#f1f5f9", color: "#64748b" }}>
-              <X size={15} />
-            </button>
+            {/* Only show X if not forced (user has groups, just first visit) */}
+            {!forceOpen && (
+              <button onClick={() => dismiss()}
+                className="absolute top-4 right-4 h-8 w-8 rounded-full flex items-center justify-center z-10"
+                style={{ background: "#f1f5f9", color: "#64748b" }}>
+                <X size={15} />
+              </button>
+            )}
 
             <div className="p-8 text-center">
-              {/* Celebration */}
               <motion.div
                 initial={{ scale: 0 }} animate={{ scale: 1 }}
                 transition={{ type: "spring", delay: 0.2, damping: 12 }}
@@ -68,10 +76,7 @@ export function WelcomeModal() {
                 What would you like to do first?
               </p>
 
-              {/* Two options */}
               <div className="space-y-3">
-
-                {/* Join a group */}
                 <button onClick={() => dismiss("/join/enter")}
                   className="w-full flex items-center gap-4 p-4 rounded-2xl text-left transition-all hover:-translate-y-0.5"
                   style={{
@@ -93,13 +98,9 @@ export function WelcomeModal() {
                   <ArrowRight size={18} style={{ color: "#0891B2" }} />
                 </button>
 
-                {/* Create a group */}
                 <button onClick={() => dismiss("/create-group")}
                   className="w-full flex items-center gap-4 p-4 rounded-2xl text-left transition-all hover:-translate-y-0.5"
-                  style={{
-                    background: "white",
-                    border: "1px solid #e2e8f0",
-                  }}>
+                  style={{ background: "white", border: "1px solid #e2e8f0" }}>
                   <div className="h-12 w-12 rounded-2xl flex items-center justify-center shrink-0"
                     style={{ background: "rgba(0,212,255,0.08)", border: "1px solid rgba(0,212,255,0.2)" }}>
                     <Plus size={22} style={{ color: "#0891B2" }} />
@@ -115,7 +116,6 @@ export function WelcomeModal() {
                   <ArrowRight size={18} style={{ color: "#94a3b8" }} />
                 </button>
 
-                {/* Just predict alone */}
                 <button onClick={() => dismiss("/predictions")}
                   className="w-full text-sm py-2 transition-colors"
                   style={{ color: "#94a3b8" }}>
@@ -124,7 +124,6 @@ export function WelcomeModal() {
               </div>
             </div>
 
-            {/* PWA install hint */}
             <div className="px-8 pb-6 text-center">
               <p className="text-xs" style={{ color: "#94a3b8" }}>
                 📱 Tip: Add Cup Clash to your home screen for the full app experience

@@ -44,7 +44,23 @@ export default async function DashboardPage({
     })
     .filter(Boolean) as Array<{ id: string; name: string; passkey: string }>;
 
-  if (!allGroups.length) redirect("/create-group");
+  // No groups — show welcome modal on an empty dashboard instead of redirecting
+  if (!allGroups.length) {
+    return (
+      <div className="space-y-6">
+        <WelcomeModal forceOpen />
+        <div>
+          <div className="label-caps mb-1">Welcome</div>
+          <h1 className="font-display text-4xl sm:text-5xl uppercase tracking-tight" style={{ color: "#0F172A" }}>
+            Dashboard
+          </h1>
+          <p className="text-sm mt-2" style={{ color: "#94a3b8" }}>
+            Join or create a group to get started.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   // Active group from URL param or first group
   const activeGroupId = searchParams.group && allGroups.find(g => g.id === searchParams.group)
