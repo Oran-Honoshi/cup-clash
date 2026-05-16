@@ -132,7 +132,7 @@ export default async function JoinCodePage({ params }: { params: { code: string 
                 Enrollment has closed for this group.
               </div>
             ) : user ? (
-              <JoinButton groupId={group.id} enrollmentFee={enrollmentFee} demoMode={demoMode} />
+              <JoinButton groupId={group.id} groupName={group.name} enrollmentFee={enrollmentFee} demoMode={demoMode} />
             ) : (
               <div className="space-y-2">
                 <Link href={`/signup?next=/join/${code}`}>
