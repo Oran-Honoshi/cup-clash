@@ -5,12 +5,13 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, Users, Trophy, Target, BarChart2,
-  GitBranch, Brain, Bell, Shield, FlaskConical, LogOut, Settings,
+  GitBranch, Brain, Bell, Shield, LogOut, Settings,
 } from "lucide-react";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 import { flagUrl } from "@/lib/countries";
 import { cn } from "@/lib/utils";
+import { ReviewTrigger } from "@/components/ui/review-modal";
 
 interface UserProfile {
   name:       string;
@@ -28,17 +29,20 @@ const NAV = [
   { href: "/trivia",       label: "Trivia",         icon: Brain           },
   { href: "/notifications",label: "Notifications",  icon: Bell            },
   { href: "/admin",        label: "Admin",          icon: Shield          },
-  { href: "/testing",      label: "Testing",        icon: FlaskConical    },
 ];
 
 export function AppSidebar() {
   const pathname  = usePathname();
   const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  const ADMIN_EMAILS = ["lipinksy19@gmail.com", "oransch@gmail.com", "oran@honoshi.co.il"];
 
   const loadProfile = useCallback(async () => {
     const sb = createClient();
     const { data: { user } } = await sb.auth.getUser();
     if (!user) return;
+    if (ADMIN_EMAILS.includes(user.email ?? "")) setIsAdmin(true);
     const { data } = await sb
       .from("profiles")
       .select("name, country, avatar_url")
@@ -104,10 +108,33 @@ export function AppSidebar() {
             </Link>
           );
         })}
+
+        {/* Testing — admin only */}
+        {isAdmin && (
+          <Link href="/testing"
+            className={cn(
+              "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold transition-all",
+              pathname === "/testing" ? "" : "hover:bg-slate-50"
+            )}
+            style={pathname === "/testing" ? {
+              background: "linear-gradient(135deg, rgba(0,255,136,0.12), rgba(0,212,255,0.08))",
+              color: "#0891B2",
+              border: "1px solid rgba(0,212,255,0.2)",
+            } : { color: "#94a3b8" }}>
+            <span style={{ fontSize: 15 }}>🧪</span>
+            Testing
+          </Link>
+        )}
       </nav>
 
       {/* User footer */}
       <div className="px-3 py-4 border-t space-y-1" style={{ borderColor: "rgba(0,212,255,0.1)" }}>
+
+        {/* Review trigger */}
+        <div className="px-3 py-2">
+          <ReviewTrigger context="general" label="Rate Cup Clash ⭐" />
+        </div>
+
         <Link href="/profile"
           className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-50 transition-colors">
           <div className="h-8 w-8 rounded-full overflow-hidden shrink-0"
