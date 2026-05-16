@@ -38,7 +38,7 @@ export default async function PredictionsPage({
   if (!groups.length) {
     return (
       <PredictionsClient
-        groupId="solo"
+        groupId="00000000-0000-0000-0000-000000000001"
         groupName="My Predictions"
         allGroups={[]}
         userId={userProfile.id}
