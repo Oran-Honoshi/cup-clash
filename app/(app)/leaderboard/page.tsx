@@ -37,7 +37,33 @@ export default async function LeaderboardPage({
     })
     .filter(Boolean) as Array<{ id: string; name: string; passkey: string }>;
 
-  if (!allGroups.length) redirect("/dashboard");
+  // Solo user — show empty leaderboard state
+  if (!allGroups.length) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <div className="label-caps mb-1">Leaderboard</div>
+          <h1 className="font-display text-4xl sm:text-5xl uppercase tracking-tight" style={{ color: "#0F172A" }}>
+            Leaderboard
+          </h1>
+        </div>
+        <div className="rounded-2xl p-10 text-center"
+          style={{ background: "rgba(255,255,255,0.9)", border: "1px solid rgba(0,212,255,0.15)" }}>
+          <div className="text-4xl mb-3">🏆</div>
+          <div className="font-display text-xl uppercase font-black mb-2" style={{ color: "#0F172A" }}>
+            No group yet
+          </div>
+          <p className="text-sm mb-4" style={{ color: "#64748b" }}>
+            Join or create a group to see the leaderboard.
+          </p>
+          <a href="/groups" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm uppercase tracking-wider"
+            style={{ background: "linear-gradient(135deg, #00FF88, #00D4FF)", color: "#0B141B" }}>
+            Find a group
+          </a>
+        </div>
+      </div>
+    );
+  }
 
   const activeGroupId = searchParams.group && allGroups.find(g => g.id === searchParams.group)
     ? searchParams.group

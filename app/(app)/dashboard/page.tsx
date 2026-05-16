@@ -44,19 +44,33 @@ export default async function DashboardPage({
     })
     .filter(Boolean) as Array<{ id: string; name: string; passkey: string }>;
 
-  // No groups — show welcome modal on an empty dashboard instead of redirecting
+  // No groups — show welcome modal ONCE, then let user navigate freely
   if (!allGroups.length) {
     return (
       <div className="space-y-6">
-        <WelcomeModal forceOpen />
+        <WelcomeModal forceOpen={false} />
         <div>
           <div className="label-caps mb-1">Welcome</div>
           <h1 className="font-display text-4xl sm:text-5xl uppercase tracking-tight" style={{ color: "#0F172A" }}>
             Dashboard
           </h1>
           <p className="text-sm mt-2" style={{ color: "#94a3b8" }}>
-            Join or create a group to get started.
+            Join or create a group to get started — or predict on your own.
           </p>
+          <div className="flex gap-3 mt-4">
+            <a href="/join/enter" className="px-4 py-2.5 rounded-xl font-bold text-sm uppercase tracking-wider"
+              style={{ background: "linear-gradient(135deg, #00FF88, #00D4FF)", color: "#0B141B" }}>
+              Join a group
+            </a>
+            <a href="/create-group" className="px-4 py-2.5 rounded-xl font-bold text-sm uppercase tracking-wider"
+              style={{ border: "1px solid rgba(0,212,255,0.2)", color: "#0891B2" }}>
+              Create a group
+            </a>
+            <a href="/predictions" className="px-4 py-2.5 rounded-xl font-bold text-sm uppercase tracking-wider"
+              style={{ border: "1px solid #e2e8f0", color: "#64748b" }}>
+              Just predict
+            </a>
+          </div>
         </div>
       </div>
     );

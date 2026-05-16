@@ -34,7 +34,18 @@ export default async function PredictionsPage({
     })
     .filter(Boolean) as Array<{ id: string; name: string; passkey: string }>;
 
-  if (!groups.length) redirect("/dashboard");
+  // Solo user — no paid groups, still allow predictions
+  if (!groups.length) {
+    return (
+      <PredictionsClient
+        groupId="solo"
+        groupName="My Predictions"
+        allGroups={[]}
+        userId={userProfile.id}
+        isPaid={false}
+      />
+    );
+  }
 
   // Use group from URL param, or first group
   const activeGroupId = searchParams.group && groups.find(g => g.id === searchParams.group)
