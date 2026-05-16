@@ -14,7 +14,7 @@ const jetbrains = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono", 
 export const metadata: Metadata = {
   metadataBase: new URL("https://cupclash.live"),
   title: {
-    default:  "CupClash 2026: The Social Prediction Arena",
+    default: "CupClash 2026 — The Ultimate World Cup Prediction Arena",
     template: "%s | Cup Clash",
   },
   description: "104 matches, 3 countries, and your football IQ against friends. Join the ultimate 2026 World Cup prediction group. For the love of the game.",
