@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 
+import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { Logo } from "@/components/logo";
@@ -17,12 +18,15 @@ interface GroupRow {
   enrollment_deadline:  string | null;
 }
 
-async function findGroup(passkey: string): Promise<GroupRow | null> {
-  const admin = createAdminClient(
+function getAdmin() {
+  return createAdminClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   );
-  const { data } = await admin
+}
+
+async function findGroup(passkey: string): Promise<GroupRow | null> {
+  const { data } = await getAdmin()
     .from("groups")
     .select("id, name, passkey, admin_id, max_members, enrollment_fee_cents, enrollment_deadline")
     .ilike("passkey", passkey.trim())
@@ -31,21 +35,28 @@ async function findGroup(passkey: string): Promise<GroupRow | null> {
 }
 
 async function getMemberCount(groupId: string): Promise<number> {
-  const admin = createAdminClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
-  const { count } = await admin
+  const { count } = await getAdmin()
     .from("group_members")
     .select("*", { count: "exact", head: true })
-    .eq("group_id", groupId);
+    .eq("group_id", groupId)
+    .eq("payment_status", "paid");
   return count ?? 0;
 }
 
+async function isAlreadyMember(groupId: string, userId: string): Promise<boolean> {
+  const { data } = await getAdmin()
+    .from("group_members")
+    .select("payment_status, can_predict")
+    .eq("group_id", groupId)
+    .eq("user_id", userId)
+    .maybeSingle();
+  return data?.payment_status === "paid" || data?.can_predict === true;
+}
+
 export default async function JoinCodePage({ params }: { params: { code: string } }) {
-  const code      = params.code.toUpperCase().trim();
-  const group     = await findGroup(code);
-  const demoMode  = process.env.NEXT_PUBLIC_DEMO_MODE === "true";
+  const code     = params.code.toUpperCase().trim();
+  const group    = await findGroup(code);
+  const demoMode = process.env.NEXT_PUBLIC_DEMO_MODE === "true";
 
   if (!group) {
     return (
@@ -81,14 +92,22 @@ export default async function JoinCodePage({ params }: { params: { code: string 
     );
   }
 
+  const sb = createClient();
+  const { data: { user } } = await sb.auth.getUser();
+
+  // Already a paid member of THIS group → go straight to group page
+  if (user) {
+    const alreadyMember = await isAlreadyMember(group.id, user.id);
+    if (alreadyMember) {
+      redirect(`/groups/${group.id}`);
+    }
+  }
+
   const memberCount      = await getMemberCount(group.id);
   const enrollmentFee    = (group.enrollment_fee_cents ?? 200) / 100;
   const isDeadlinePassed = group.enrollment_deadline
     ? new Date(group.enrollment_deadline) < new Date()
     : false;
-
-  const sb = createClient();
-  const { data: { user } } = await sb.auth.getUser();
 
   return (
     <div className="min-h-screen flex items-center justify-center px-4" style={{ background: "#F8FAFC" }}>
@@ -132,7 +151,12 @@ export default async function JoinCodePage({ params }: { params: { code: string 
                 Enrollment has closed for this group.
               </div>
             ) : user ? (
-              <JoinButton groupId={group.id} groupName={group.name} enrollmentFee={enrollmentFee} demoMode={demoMode} />
+              <JoinButton
+                groupId={group.id}
+                groupName={group.name}
+                enrollmentFee={enrollmentFee}
+                demoMode={demoMode}
+              />
             ) : (
               <div className="space-y-2">
                 <Link href={`/signup?next=/join/${code}`}>
@@ -151,7 +175,7 @@ export default async function JoinCodePage({ params }: { params: { code: string 
             )}
 
             <p className="text-center text-xs" style={{ color: "#94a3b8" }}>
-              {"7-day refund guarantee · Predictions lock 5 min before kickoff"}
+              7-day refund guarantee · Predictions lock 5 min before kickoff
             </p>
           </div>
         </div>
