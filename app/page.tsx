@@ -1,17 +1,17 @@
 export const dynamic = "force-dynamic";
 
-import { Hero }                from "@/components/landing/hero";
-import { ProblemSolution }     from "@/components/landing/problem-solution";
-import { Features }            from "@/components/landing/features";
-import { HowItWorks }          from "@/components/landing/how-it-works";
+import { Hero }                 from "@/components/landing/hero";
+import { ProblemSolution }      from "@/components/landing/problem-solution";
 import { CountryPickerSection } from "@/components/landing/country-picker-section";
-import { FeaturedNews }        from "@/components/landing/featured-news";
-import { Pricing }             from "@/components/landing/pricing";
-import { PWAInstallSection }   from "@/components/landing/pwa-install-section";
-import { PillarSection }       from "@/components/landing/pillar-section";
-import { FAQSection }          from "@/components/landing/faq-section";
-import { CtaAndFooter }        from "@/components/landing/cta-and-footer";
-import { Navbar }              from "@/components/landing/navbar";
+import { Features }             from "@/components/landing/features";
+import { HowItWorks }           from "@/components/landing/how-it-works";
+import { FeaturedNews }         from "@/components/landing/featured-news";
+import { Pricing }              from "@/components/landing/pricing";
+import { PWAInstallSection }    from "@/components/landing/pwa-install-section";
+import { PillarSection }        from "@/components/landing/pillar-section";
+import { FAQSection }           from "@/components/landing/faq-section";
+import { CtaAndFooter }         from "@/components/landing/cta-and-footer";
+import { Navbar }               from "@/components/landing/navbar";
 
 const AI_SUMMARY = `
 Cup Clash is a World Cup 2026 private prediction league and office pool platform.
@@ -58,9 +58,10 @@ export default function LandingPage() {
       <main>
         <Hero />
         <ProblemSolution />
+        {/* CountryPickerSection moved above Features/Stadium section */}
+        <CountryPickerSection />
         <Features />
         <HowItWorks />
-        <CountryPickerSection />
         <FeaturedNews />
         <Pricing />
         <PWAInstallSection />

@@ -164,7 +164,7 @@ export function Hero() {
               className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full mb-8"
               style={{ background:"rgba(0,255,136,0.08)", border:"1px solid rgba(0,255,136,0.25)" }}>
               <span className="text-xs font-black uppercase tracking-widest" style={{ color:"#059669" }}>
-                ✓ Admins always free · Members pay $2 once
+                🎉 Free Beta — No credit card needed · World Cup 2026
               </span>
             </motion.div>
 
@@ -173,7 +173,7 @@ export function Hero() {
               <Link href="/signup">
                 <button className="flex items-center gap-2 px-7 py-4 rounded-full font-bold text-base uppercase tracking-wider transition-all hover:-translate-y-1"
                   style={{ background:"linear-gradient(135deg, #00FF88, #00D4FF)", color:"#0B141B", boxShadow:"0 20px 50px rgba(0,255,136,0.30), 0 4px 16px rgba(0,255,136,0.2)" }}>
-                  Start My Group — Free <ArrowRight size={18} />
+                  Start Free — No Card Needed <ArrowRight size={18} />
                 </button>
               </Link>
               {/* Changed from "Preview the App" to actual schedule link */}
@@ -253,8 +253,15 @@ export function Hero() {
               { flag:"ca", name:"Canada",        matches:"13 matches" },
             ].map(({ flag, name, matches }) => (
               <div key={name} className="flex items-center gap-2">
-                <span className="relative h-6 w-8 rounded-sm overflow-hidden inline-block">
-                  <img src={`https://flagcdn.com/w20/${flag}.png`} alt={name} className="w-full h-full object-cover" />
+                <span className="relative rounded-sm overflow-hidden inline-block" style={{ width: 32, height: 24 }}>
+                  <img
+                    src={`https://flagcdn.com/w80/${flag}.png`}
+                    alt={name}
+                    width={32}
+                    height={24}
+                    className="object-cover"
+                    style={{ width: 32, height: 24 }}
+                  />
                 </span>
                 <div>
                   <div className="text-xs font-bold" style={{ color:"#0B141B" }}>{name}</div>
