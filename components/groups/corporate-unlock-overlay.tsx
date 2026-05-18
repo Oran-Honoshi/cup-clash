@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Lock, Sparkles, Users, Building2, CheckCircle, Copy, Check } from "lucide-react";
+import { Lock, Sparkles, Users, Building2, CheckCircle, Copy, Check, MessageCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 declare global {
@@ -209,6 +209,18 @@ export function CorporateUnlockOverlay({ groupId, groupName, passkey }: Corporat
                 <span style={{ color: "#475569" }}>
                   Employees click your invite link and join for <strong>$0</strong>. The entire team fee is covered by your one payment.
                 </span>
+              </div>
+
+              {/* Enterprise CTA */}
+              <div className="flex items-center justify-between pt-1">
+                <p className="text-xs" style={{ color: "#94a3b8" }}>
+                  Need more than 100 members?
+                </p>
+                <a href="/contact"
+                  className="flex items-center gap-1.5 text-xs font-bold transition-colors hover:opacity-70"
+                  style={{ color: "#0891B2" }}>
+                  <MessageCircle size={11} /> Contact us for Enterprise
+                </a>
               </div>
             </motion.div>
           )}

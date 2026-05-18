@@ -5,6 +5,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import { PWAInit } from "@/components/pwa-init";
 import { PWAInstallBanner } from "@/components/ui/pwa-install-banner";
 import { SoftwareAppSchema, FAQSchema, HowToSchema } from "@/components/seo/schemas";
+import { PayPalScriptLoader } from "@/components/payments/paypal-script-loader";
 import "./globals.css";
 
 const urbanist  = Urbanist({      subsets: ["latin"], variable: "--font-display", display: "swap" });
@@ -26,6 +27,8 @@ export const metadata: Metadata = {
     "World Cup 2026 printable bracket alternative",
     "best World Cup app for friends",
     "private football prediction league",
+    "corporate team building World Cup 2026",
+    "office World Cup pool app",
     "מונדיאל 2026 ניחושים",
     "ליגת חברים למונדיאל 2026",
     "תחזיות כדורגל 2026",
@@ -58,9 +61,9 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: "/favicon.ico",       sizes: "any"     },
-      { url: "/favicon-16x16.png", sizes: "16x16",  type: "image/png" },
-      { url: "/favicon-32x32.png", sizes: "32x32",  type: "image/png" },
+      { url: "/favicon.ico",       sizes: "any"      },
+      { url: "/favicon-16x16.png", sizes: "16x16",   type: "image/png" },
+      { url: "/favicon-32x32.png", sizes: "32x32",   type: "image/png" },
       { url: "/icon-192.png",      sizes: "192x192", type: "image/png" },
       { url: "/icon-512.png",      sizes: "512x512", type: "image/png" },
     ],
@@ -83,21 +86,25 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="alternate" hrefLang="en" href="https://cupclash.live" />
 
         {/* Extra OG tags not covered by Next.js metadata */}
-        <meta property="og:locale" content="en_US" />
+        <meta property="og:locale"           content="en_US" />
         <meta property="og:locale:alternate" content="he_IL" />
-        <meta property="og:image:width"  content="1200" />
-        <meta property="og:image:height" content="630"  />
+        <meta property="og:image:width"      content="1200" />
+        <meta property="og:image:height"     content="630"  />
 
         {/* WhatsApp / LinkedIn specific */}
         <meta property="og:site_name" content="Cup Clash" />
-        <meta name="theme-color" content="#00D4FF" />
+        <meta name="theme-color"      content="#00D4FF" />
 
         <SoftwareAppSchema />
         <FAQSchema />
         <HowToSchema />
       </head>
       <body>
-        <ThemeProvider>{children}</ThemeProvider>
+        <ThemeProvider>
+          {/* PayPal SDK preloaded globally so checkout components mount instantly */}
+          <PayPalScriptLoader />
+          {children}
+        </ThemeProvider>
         <PWAInit />
         <PWAInstallBanner />
         <Analytics />

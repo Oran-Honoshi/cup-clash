@@ -127,12 +127,6 @@ export function Pricing() {
                   <span className="text-sm ml-1" style={{ color: "#94a3b8" }}>/ member</span>
                 </div>
                 <div className="text-xs mb-5" style={{ color: "#64748b" }}>One-time · Admin free</div>
-                <Link href="/signup" className="block mb-6">
-                  <button className="w-full py-3 rounded-xl font-bold text-sm uppercase tracking-wider flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5"
-                    style={{ background: "linear-gradient(135deg, #00FF88, #00D4FF)", color: "#0B141B" }}>
-                    Create Group <ArrowRight size={14} />
-                  </button>
-                </Link>
                 <div className="space-y-2 flex-1">
                   {FRIENDS_FEATURES.map(f => (
                     <div key={f} className="flex items-start gap-2">
@@ -143,6 +137,14 @@ export function Pricing() {
                       <span className="text-xs leading-relaxed" style={{ color: "#475569" }}>{f}</span>
                     </div>
                   ))}
+                </div>
+                <div className="mt-6">
+                  <Link href="/signup">
+                    <button className="w-full py-3 rounded-xl font-bold text-sm uppercase tracking-wider flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5"
+                      style={{ background: "linear-gradient(135deg, #00FF88, #00D4FF)", color: "#0B141B" }}>
+                      Create Group <ArrowRight size={14} />
+                    </button>
+                  </Link>
                 </div>
               </div>
             </motion.div>
@@ -173,12 +175,6 @@ export function Pricing() {
                   <span className="text-sm ml-1" style={{ color: "rgba(255,255,255,0.4)" }}>one-time</span>
                 </div>
                 <div className="text-xs mb-5" style={{ color: "rgba(255,255,255,0.4)" }}>Whole team joins free</div>
-                <Link href="/create-group" className="block mb-6">
-                  <button className="w-full py-3 rounded-xl font-bold text-sm uppercase tracking-wider flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5"
-                    style={{ background: "linear-gradient(135deg, #00FF88, #00D4FF)", color: "#0B141B", boxShadow: "0 4px 16px rgba(0,255,136,0.25)" }}>
-                    Get Team Starter <ArrowRight size={14} />
-                  </button>
-                </Link>
                 <div className="space-y-2 flex-1">
                   {STARTER_FEATURES.map(f => (
                     <div key={f} className="flex items-start gap-2">
@@ -189,6 +185,14 @@ export function Pricing() {
                       <span className="text-xs leading-relaxed" style={{ color: "rgba(255,255,255,0.7)" }}>{f}</span>
                     </div>
                   ))}
+                </div>
+                <div className="mt-6">
+                  <Link href="/create-group">
+                    <button className="w-full py-3 rounded-xl font-bold text-sm uppercase tracking-wider flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5"
+                      style={{ background: "linear-gradient(135deg, #00FF88, #00D4FF)", color: "#0B141B", boxShadow: "0 4px 16px rgba(0,255,136,0.25)" }}>
+                      Get Team Starter <ArrowRight size={14} />
+                    </button>
+                  </Link>
                 </div>
               </div>
             </motion.div>
@@ -215,12 +219,6 @@ export function Pricing() {
                   <span className="text-sm ml-1" style={{ color: "#94a3b8" }}>one-time</span>
                 </div>
                 <div className="text-xs mb-5" style={{ color: "#64748b" }}>Whole team joins free</div>
-                <Link href="/create-group" className="block mb-6">
-                  <button className="w-full py-3 rounded-xl font-bold text-sm uppercase tracking-wider flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5"
-                    style={{ background: "linear-gradient(135deg, #d97706, #f59e0b)", color: "white" }}>
-                    Get Corporate Pack <ArrowRight size={14} />
-                  </button>
-                </Link>
                 <div className="space-y-2 flex-1">
                   {[...STARTER_FEATURES, ...CORPORATE_FEATURES].map(f => (
                     <div key={f} className="flex items-start gap-2">
@@ -231,6 +229,14 @@ export function Pricing() {
                       <span className="text-xs leading-relaxed" style={{ color: "#475569" }}>{f}</span>
                     </div>
                   ))}
+                </div>
+                <div className="mt-6">
+                  <Link href="/create-group">
+                    <button className="w-full py-3 rounded-xl font-bold text-sm uppercase tracking-wider flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5"
+                      style={{ background: "linear-gradient(135deg, #d97706, #f59e0b)", color: "white" }}>
+                      Get Corporate Pack <ArrowRight size={14} />
+                    </button>
+                  </Link>
                 </div>
                 {/* Enterprise CTA */}
                 <div className="mt-6 pt-4 border-t text-center" style={{ borderColor: "#f1f5f9" }}>
