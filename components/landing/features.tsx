@@ -12,7 +12,7 @@ const FEATURES = [
   { icon: Users,     title: "Multiple Groups",     body: "Dominate the office, the family, and the bar squad simultaneously from one unified dashboard.",                       accentColor: "#00FF88", bg: "rgba(0,255,136,0.07)",  border: "rgba(0,255,136,0.2)"  },
   { icon: Zap,       title: "Single Match Bets",   body: "Want to go all-in on USA vs. England? Create micro-groups for the tournament's biggest individual clashes.",         accentColor: "#d97706", bg: "rgba(217,119,6,0.07)",  border: "rgba(217,119,6,0.2)"  },
   { icon: Download,  title: "Winner Poster",       body: "Generate a branded, high-res victory card to show off your friends on social media once you've claimed the crown.",  accentColor: "#00D4FF", bg: "rgba(0,212,255,0.07)",  border: "rgba(0,212,255,0.2)"  },
-  { icon: Ban,       title: "Ad-Free",             body: "No banners, no pop-ups, no trackers — just the beautiful game and your beautiful lead.",                            accentColor: "#475569", bg: "rgba(71,85,105,0.05)",  border: "rgba(71,85,105,0.15)" },
+
 ];
 
 export function Features() {

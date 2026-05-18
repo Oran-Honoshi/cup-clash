@@ -164,7 +164,7 @@ export function Hero() {
               className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full mb-8"
               style={{ background:"rgba(0,255,136,0.08)", border:"1px solid rgba(0,255,136,0.25)" }}>
               <span className="text-xs font-black uppercase tracking-widest" style={{ color:"#059669" }}>
-                🎉 Free Beta — No credit card needed · World Cup 2026
+                ⚽ Free for World Cup 2026 · No credit card needed
               </span>
             </motion.div>
 
@@ -200,6 +200,12 @@ export function Hero() {
                 style={{ background:"rgba(0,212,255,0.06)", color:"#0891B2", border:"1px solid rgba(0,212,255,0.2)" }}>
                 ✓ No ads · No subscription
               </span>
+            </motion.div>
+            <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }} transition={{ delay:0.55 }} className="mt-3">
+              <a href="#corporate" className="text-xs font-bold transition-colors hover:opacity-80"
+                style={{ color:"rgba(0,212,255,0.7)" }}>
+                Setting up for your team or office? See corporate plans →
+              </a>
             </motion.div>
 
             <motion.div initial={{ opacity:0, y:8 }} animate={{ opacity:1, y:0 }} transition={{ delay:0.6 }} className="mt-10">

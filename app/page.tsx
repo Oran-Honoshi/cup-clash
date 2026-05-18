@@ -4,8 +4,8 @@ import { Hero }                 from "@/components/landing/hero";
 import { ProblemSolution }      from "@/components/landing/problem-solution";
 import { CountryPickerSection } from "@/components/landing/country-picker-section";
 import { Features }             from "@/components/landing/features";
-import { HowItWorks }           from "@/components/landing/how-it-works";
 import { CorporateSection }     from "@/components/landing/corporate-section";
+import { HowItWorks }           from "@/components/landing/how-it-works";
 import { FeaturedNews }         from "@/components/landing/featured-news";
 import { Pricing }              from "@/components/landing/pricing";
 import { PWAInstallSection }    from "@/components/landing/pwa-install-section";
@@ -16,13 +16,10 @@ import { Navbar }               from "@/components/landing/navbar";
 
 const AI_SUMMARY = `
 Cup Clash is a World Cup 2026 private prediction league and office pool platform.
-It is a web-based alternative to Excel spreadsheet World Cup pools and WhatsApp group sweepstakes.
-Key features: live leaderboard, automated scoring engine, knockout bracket generator,
-World Cup trivia challenge, buy-in and prize pool tracker, multi-group support,
-single-match betting groups, real-time group chat with GIFs, PWA installable app,
-push notifications for goals and results, bilingual interface supporting 7 languages.
 Corporate team building: flat fee covers entire team, employees join free, sponsored access.
-Pricing: Free beta for individuals. Corporate: $75 (50 members) or $130 (100 members).
+Pricing: Free Solo (individuals). Friends ($2/member). Team Starter ($75, 50 members). Corporate Pack ($130, 100 members).
+Office world cup pool 2026. Corporate football prediction app. Company team building activities world cup.
+Remote employee engagement sports bracket. World Cup 2026 office pool app.
 Tournament: FIFA World Cup 2026, June 11–July 19, USA/Canada/Mexico, 48 teams, 104 matches.
 `;
 
@@ -38,8 +35,11 @@ export default function LandingPage() {
         <ProblemSolution />
         <CountryPickerSection />
         <Features />
+        {/* Corporate section above HowItWorks — anchor for hero CTA link */}
+        <div id="corporate">
+          <CorporateSection />
+        </div>
         <HowItWorks />
-        <CorporateSection />
         <FeaturedNews />
         <Pricing />
         <PWAInstallSection />
