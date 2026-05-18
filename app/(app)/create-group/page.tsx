@@ -1,11 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Users, DollarSign, Trophy, AlertCircle, Copy, Check,
   ArrowRight, Zap, ChevronDown, Settings, Building2, UserCheck,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { useSearchParams } from "next/navigation";
 
 const inputCls = [
   "w-full px-4 py-2.5 rounded-xl text-sm transition-all",
@@ -59,7 +60,8 @@ function RuleRow({ label, desc, pts, setPts, enabled, onToggle }: {
 type PaymentModel = "pay_per_member" | "corporate_sponsored";
 
 export default function CreateGroupPage() {
-  const [step,        setStep]        = useState<0|1|2|3>(0); // 0 = model selection
+  const [step,        setStep]        = useState<0|1|2|3>(0);
+  const [paymentModel, setPaymentModel] = useState<PaymentModel>("pay_per_member");
   const [loading,     setLoading]     = useState(false);
   const [error,       setError]       = useState<string | null>(null);
   const [passkey,     setPasskey]     = useState<string | null>(null);
@@ -67,8 +69,28 @@ export default function CreateGroupPage() {
   const [copied,      setCopied]      = useState(false);
   const [groupId,     setGroupId]     = useState<string | null>(null);
 
-  // Payment model
-  const [paymentModel, setPaymentModel] = useState<PaymentModel>("pay_per_member");
+  // Payment model — can be pre-set via URL param
+  const searchParams = useSearchParams();
+  const modelParam   = searchParams.get("model") as PaymentModel | null;
+
+  // Prize track for corporate
+  const [prizeTrack,     setPrizeTrack]     = useState<"cash" | "company">("company");
+  const [rewardPlaces,   setRewardPlaces]   = useState(1);
+  const [companyRewards, setCompanyRewards] = useState({ reward1: "", reward2: "", reward3: "" });
+
+  // Apply URL param after mount to avoid declaration order issues
+  // (useSearchParams must be called before useState that depends on it)
+  // We handle this via useEffect instead
+  useEffect(() => {
+    if (modelParam === "corporate_sponsored") {
+      setPaymentModel("corporate_sponsored");
+      setStep(1);
+    } else if (modelParam === "pay_per_member") {
+      setPaymentModel("pay_per_member");
+      setStep(1);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Step 1
   const [groupName,     setGroupName]     = useState("");
@@ -489,46 +511,87 @@ export default function CreateGroupPage() {
             style={{ background: "rgba(255,255,255,0.9)", border: "1px solid rgba(0,212,255,0.15)" }}>
 
             {isCorporate ? (
-              /* Corporate — simplified prize split, no buy-in */
+              /* Corporate — dual-track prize selector */
               <div className="space-y-4">
-                <div className="rounded-xl p-4"
-                  style={{ background: "rgba(0,212,255,0.05)", border: "1px solid rgba(0,212,255,0.15)" }}>
-                  <div className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#0891B2" }}>
-                    No buy-in required
-                  </div>
-                  <p className="text-sm" style={{ color: "#64748b" }}>
-                    Corporate groups don&apos;t use cash buy-ins. Set a company prize in the previous step, or simply play for bragging rights.
-                  </p>
-                </div>
                 <div>
-                  <div className="flex items-center justify-between mb-3">
-                    <label className="text-xs font-bold uppercase tracking-widest" style={{ color: "#64748b" }}>
-                      Leaderboard payout split
-                    </label>
-                    <span className="text-xs font-bold" style={{ color: totalPct === 100 ? "#059669" : "#dc2626" }}>
-                      {totalPct}% / 100%
-                    </span>
+                  <label className="block text-xs font-bold uppercase tracking-widest mb-3" style={{ color: "#64748b" }}>Prize Structure</label>
+                  <div className="grid grid-cols-2 gap-3">
+                    <button type="button" onClick={() => setPrizeTrack("cash")}
+                      className="rounded-xl p-4 text-left border-2 transition-all"
+                      style={{ borderColor: prizeTrack === "cash" ? "rgba(0,212,255,0.4)" : "#e2e8f0", background: prizeTrack === "cash" ? "rgba(0,212,255,0.05)" : "white" }}>
+                      <div className="text-sm font-bold mb-1" style={{ color: "#0F172A" }}>💰 Cash Split</div>
+                      <div className="text-xs" style={{ color: "#64748b" }}>Track a buy-in pot with % payouts</div>
+                    </button>
+                    <button type="button" onClick={() => setPrizeTrack("company")}
+                      className="rounded-xl p-4 text-left border-2 transition-all"
+                      style={{ borderColor: prizeTrack === "company" ? "rgba(0,255,136,0.4)" : "#e2e8f0", background: prizeTrack === "company" ? "rgba(0,255,136,0.05)" : "white" }}>
+                      <div className="text-sm font-bold mb-1" style={{ color: "#0F172A" }}>🏆 Company Rewards</div>
+                      <div className="text-xs" style={{ color: "#64748b" }}>Custom prizes, no cash tracking</div>
+                    </button>
                   </div>
-                  <div className="space-y-2">
+                </div>
+                {prizeTrack === "cash" ? (
+                  <div className="space-y-3">
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#64748b" }}>Buy-in ($)</label>
+                        <input type="number" min={0} value={buyIn} onChange={e => setBuyIn(Number(e.target.value))} className={inputCls} />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#64748b" }}>Expected members</label>
+                        <input type="number" min={2} value={memberCount} onChange={e => setMemberCount(Number(e.target.value))} className={inputCls} />
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold uppercase tracking-widest" style={{ color: "#64748b" }}>Payout split</span>
+                      <span className="text-xs font-bold" style={{ color: totalPct === 100 ? "#059669" : "#dc2626" }}>{totalPct}%</span>
+                    </div>
                     {[
-                      { label: "🥇 1st place", val: payoutFirst,  set: setPayoutFirst,  color: "#d97706" },
-                      { label: "🥈 2nd place", val: payoutSecond, set: setPayoutSecond, color: "#64748b" },
-                      { label: "🥉 3rd place", val: payoutThird,  set: setPayoutThird,  color: "#b45309" },
-                    ].map(({ label, val, set, color }) => (
+                      { label: "🥇 1st", val: payoutFirst,  set: setPayoutFirst  },
+                      { label: "🥈 2nd", val: payoutSecond, set: setPayoutSecond },
+                      { label: "🥉 3rd", val: payoutThird,  set: setPayoutThird  },
+                    ].map(({ label, val, set }) => (
                       <div key={label} className="flex items-center gap-3">
-                        <span className="text-sm w-24 shrink-0" style={{ color: "#475569" }}>{label}</span>
-                        <input type="number" min={0} max={100} value={val}
-                          onChange={e => set(Number(e.target.value))}
+                        <span className="text-sm w-16 shrink-0" style={{ color: "#475569" }}>{label}</span>
+                        <input type="number" min={0} max={100} value={val} onChange={e => set(Number(e.target.value))}
                           className="w-16 rounded-lg px-2 py-1.5 text-sm text-center border focus:outline-none"
                           style={{ borderColor: "#e2e8f0", color: "#0F172A", background: "white" }} />
                         <span className="text-sm" style={{ color: "#94a3b8" }}>%</span>
-                        <div className="flex-1 h-1.5 rounded-full overflow-hidden ml-2" style={{ background: "#f1f5f9" }}>
-                          <div className="h-full rounded-full" style={{ width: `${val}%`, background: color }} />
-                        </div>
                       </div>
                     ))}
                   </div>
-                </div>
+                ) : (
+                  <div className="space-y-3">
+                    <p className="text-xs rounded-xl px-4 py-3"
+                      style={{ background: "rgba(0,255,136,0.05)", border: "1px solid rgba(0,255,136,0.15)", color: "#475569" }}>
+                      Set custom reward text for each place. No cash tracking needed.
+                    </p>
+                    <div>
+                      <label className="block text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#64748b" }}>How many places to reward?</label>
+                      <div className="flex gap-2">
+                        {[1, 2, 3].map(n => (
+                          <button key={n} type="button" onClick={() => setRewardPlaces(n)}
+                            className="flex-1 py-2 rounded-xl text-sm font-bold border-2 transition-all"
+                            style={{ borderColor: rewardPlaces >= n ? "rgba(0,255,136,0.4)" : "#e2e8f0", background: rewardPlaces >= n ? "rgba(0,255,136,0.06)" : "white", color: rewardPlaces >= n ? "#059669" : "#64748b" }}>
+                            {n === 1 ? "1st only" : n === 2 ? "Top 2" : "Top 3"}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    {([
+                      { place: 1, label: "🥇 1st Place Reward", key: "reward1" as const, ph: "e.g. Extra vacation day + Amazon gift card" },
+                      { place: 2, label: "🥈 2nd Place Reward", key: "reward2" as const, ph: "e.g. Team lunch"                          },
+                      { place: 3, label: "🥉 3rd Place Reward", key: "reward3" as const, ph: "e.g. Bragging rights"                     },
+                    ] as const).filter(r => r.place <= rewardPlaces).map(({ label, key, ph }) => (
+                      <div key={key}>
+                        <label className="block text-xs font-bold uppercase tracking-widest mb-1.5" style={{ color: "#64748b" }}>{label}</label>
+                        <input type="text" placeholder={ph} value={companyRewards[key]}
+                          onChange={e => setCompanyRewards(p => ({ ...p, [key]: e.target.value }))}
+                          className={inputCls} />
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             ) : (
               /* Friend group — standard buy-in */
