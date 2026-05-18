@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import {
   Users, DollarSign, Trophy, AlertCircle, Copy, Check,
   ArrowRight, Zap, ChevronDown, Settings, Building2, UserCheck,
@@ -59,7 +59,7 @@ function RuleRow({ label, desc, pts, setPts, enabled, onToggle }: {
 
 type PaymentModel = "pay_per_member" | "corporate_sponsored";
 
-export default function CreateGroupPage() {
+function CreateGroupInner() {
   const [step,        setStep]        = useState<0|1|2|3>(0);
   const [paymentModel, setPaymentModel] = useState<PaymentModel>("pay_per_member");
   const [loading,     setLoading]     = useState(false);
@@ -732,5 +732,19 @@ export default function CreateGroupPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function CreateGroupPage() {
+  return (
+    <Suspense fallback={
+      <div className="max-w-lg mx-auto px-4 py-6 space-y-4">
+        <div className="h-8 w-48 rounded-xl animate-pulse" style={{ background: "#f1f5f9" }} />
+        <div className="h-32 rounded-2xl animate-pulse" style={{ background: "#f1f5f9" }} />
+        <div className="h-32 rounded-2xl animate-pulse" style={{ background: "#f1f5f9" }} />
+      </div>
+    }>
+      <CreateGroupInner />
+    </Suspense>
   );
 }
