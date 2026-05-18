@@ -8,7 +8,8 @@ interface PayPalCheckoutProps {
   groupId:    string;
   groupName:  string;
   amount:     number;
-  containerId?: string; // allows multiple instances on same page
+  capacity?:  number; // for corporate: 50 or 100
+  containerId?: string;
   onSuccess?: () => void;
 }
 
@@ -22,6 +23,7 @@ declare global {
 
 export function PayPalCheckout({
   groupId, groupName, amount,
+  capacity,
   containerId = "paypal-btn-container",
   onSuccess,
 }: PayPalCheckoutProps) {
@@ -64,7 +66,7 @@ export function PayPalCheckout({
           const res = await fetch(endpoint, {
             method:  "POST",
             headers: { "Content-Type": "application/json" },
-            body:    JSON.stringify({ orderID: data.orderID, groupId }),
+            body:    JSON.stringify({ orderID: data.orderID, groupId, capacity }),
           });
           const result = await res.json() as { success: boolean; error?: string };
           if (result.success) {

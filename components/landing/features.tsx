@@ -35,7 +35,7 @@ export function Features() {
         </motion.div>
 
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {FEATURES.map((f, i) => (
+          {FEATURES.slice(0, -1).map((f, i) => (
             <motion.div key={f.title}
               initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.06 }}
               className="group relative rounded-2xl p-5 transition-all hover:-translate-y-1"
@@ -54,6 +54,31 @@ export function Features() {
               <p className="text-sm leading-relaxed" style={{ color: "#64748b" }}>{f.body}</p>
             </motion.div>
           ))}
+          {/* Ad-Free — spans full row */}
+          {(() => { const f = FEATURES[FEATURES.length - 1]; return (
+            <motion.div key={f.title}
+              initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.48 }}
+              className="sm:col-span-2 lg:col-span-3 group relative rounded-2xl p-5 transition-all hover:-translate-y-1 flex items-center gap-6"
+              style={{
+                background: "rgba(255,255,255,0.80)",
+                backdropFilter: "blur(16px)",
+                WebkitBackdropFilter: "blur(16px)",
+                border: `1px solid ${f.border}`,
+                boxShadow: `0 4px 20px ${f.bg}`,
+              }}>
+              <div className="h-12 w-12 rounded-xl flex items-center justify-center shrink-0"
+                style={{ background: f.bg, border: `1px solid ${f.border}` }}>
+                <f.icon size={22} style={{ color: f.accentColor }} />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-display text-lg uppercase mb-1" style={{ color: "#0B141B" }}>{f.title}</h3>
+                <p className="text-sm leading-relaxed" style={{ color: "#64748b" }}>{f.body}</p>
+              </div>
+              <div className="text-sm font-bold shrink-0 hidden sm:block" style={{ color: "#475569" }}>
+                Always. Forever. ✓
+              </div>
+            </motion.div>
+          );})()}
         </div>
 
         <motion.div initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
