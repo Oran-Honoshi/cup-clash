@@ -4,7 +4,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Star, X, Copy, Check, ExternalLink } from "lucide-react";
 
-const TRUSTPILOT_URL = "https://www.trustpilot.com/review/cupclash.live";
+const TRUSTPILOT_URL = "https://www.trustpilot.com/evaluate/cupclash.live";
 
 interface ReviewModalProps {
   isOpen:    boolean;
