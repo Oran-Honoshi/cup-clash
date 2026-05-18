@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Trophy, Users, DollarSign, Target, Lock, Shield, ArrowRight, MessageCircle, Info } from "lucide-react";
 import Link from "next/link";
 import { GroupChat } from "@/components/chat/group-chat";
+import { CorporateUnlockOverlay } from "@/components/groups/corporate-unlock-overlay";
 import { MemberAvatar } from "@/components/ui/member-avatar";
 
 interface GroupDetailClientProps {
@@ -11,6 +12,7 @@ interface GroupDetailClientProps {
     id: string; name: string; passkey: string; admin_id: string;
     buy_in_amount: number; payout_first: number; payout_second: number;
     payout_third: number; max_members: number;
+    is_corporate_paid?: boolean;
   };
   rules:    Record<string, number | boolean> | null;
   members:  Array<{
@@ -133,13 +135,21 @@ export function GroupDetailClient({ group, rules, members, currentUserId, isAdmi
             ))}
           </div>
 
-          {/* Passkey */}
-          <div className="rounded-2xl p-5 text-center"
-            style={{ background: "rgba(255,255,255,0.9)", border: "1px solid rgba(0,212,255,0.15)" }}>
-            <div className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: "#0891B2" }}>Entry Passkey</div>
-            <div className="font-mono font-black text-4xl tracking-[0.2em] mb-1" style={{ color: "#0F172A" }}>{group.passkey}</div>
-            <div className="text-xs" style={{ color: "#94a3b8" }}>cupclash.live/join/{group.passkey}</div>
-          </div>
+          {/* Passkey — show unlock overlay for admin if corporate not yet paid */}
+          {isAdmin && !group.is_corporate_paid ? (
+            <CorporateUnlockOverlay
+              groupId={group.id}
+              groupName={group.name}
+              passkey={group.passkey}
+            />
+          ) : (
+            <div className="rounded-2xl p-5 text-center"
+              style={{ background: "rgba(255,255,255,0.9)", border: "1px solid rgba(0,212,255,0.15)" }}>
+              <div className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: "#0891B2" }}>Entry Passkey</div>
+              <div className="font-mono font-black text-4xl tracking-[0.2em] mb-1" style={{ color: "#0F172A" }}>{group.passkey}</div>
+              <div className="text-xs" style={{ color: "#94a3b8" }}>cupclash.live/join/{group.passkey}</div>
+            </div>
+          )}
 
           {/* Prize split */}
           <div className="rounded-2xl p-5"
@@ -251,8 +261,8 @@ export function GroupDetailClient({ group, rules, members, currentUserId, isAdmi
           <GroupChat
   groupId={group.id}
   currentUserId={currentUserId}
-  currentUserName={members.find(m => m.user_id === currentUserId)?.profiles?.name ?? "Member"}
-  isPaid={members.find(m => m.user_id === currentUserId)?.payment_status === "paid"}
+  currentUserName=""
+  isPaid={isMember}
 />
         </div>
       )}

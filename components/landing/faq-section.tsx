@@ -18,6 +18,9 @@ const LANG_META: Record<Lang, { label: string; flag: string; dir: "ltr" | "rtl" 
 
 const FAQS: Record<Lang, Array<{ q: string; a: string }>> = {
   en: [
+    { q: "Can I use Cup Clash for my office or company without cash buy-ins?", a: "Absolutely. The Corporate Sponsor tier lets an HR manager or team lead pay a single flat fee ($75 for up to 50 members, $130 for up to 100 members). Every employee joins completely free — zero checkout friction. You can replace the cash pool with any company prize: gift cards, an extra day off, team lunch, or simply bragging rights." },
+    { q: "How do remote or global teams participate?", a: "Cup Clash is 100% web-based and works on any device worldwide. Share your corporate invite link in Slack, Microsoft Teams, or WhatsApp. Team members in any timezone sign up in seconds — no app store download required." },
+    { q: "What happens if our team is larger than 100 people?", a: "We offer custom enterprise tiers for larger organizations. Click 'Contact Us for Enterprise' on the pricing page, submit your details, and we'll configure a dedicated group for your exact size." },
     { q: "When does the 2026 World Cup start?", a: "The 2026 FIFA World Cup kicks off June 11, 2026 with Mexico vs South Africa at Estadio Azteca. The Final is July 19, 2026 at MetLife Stadium, New Jersey. 48 teams, 104 matches across USA, Canada and Mexico." },
     { q: "How do I create a World Cup 2026 prediction group?", a: "Sign up free on Cup Clash, name your group, set your prize split — takes 60 seconds. Share the 6-letter passkey with friends. Each member pays $2 to unlock all 104 match predictions for the whole tournament." },
     { q: "How does the scoring system work?", a: "Exact score = 25 points. Correct result = 10 points. Knockout advancement pick = 20 points. Tournament winner bonus = 100 points. Top scorer and assister = 50 points each. Admins can customize all values." },
@@ -27,6 +30,7 @@ const FAQS: Record<Lang, Array<{ q: string; a: string }>> = {
     { q: "How does the prize pot work?", a: "The admin sets a buy-in amount (e.g. $20) and payout split (e.g. 60/30/10%). Cup Clash calculates the prize pot automatically and tracks who has paid. The app never handles the money — that stays between you." },
   ],
   he: [
+    { q: "האם אפשר להשתמש ב-CupClash לפעילות משרדית?", a: "בהחלט. חבילת 'Corporate Sponsor' מאפשרת למנהל HR או ראש צוות לשלם תשלום אחד ($75 עד 50 עובדים, $130 עד 100 עובדים). כל העובדים מצטרפים חינם — ללא תשלום בצד שלהם. במקום קופה כספית אפשר להגדיר כל פרס חברתי: כרטיסי מתנה, יום חופש, ארוחת צהריים, או סתם גאווה קבוצתית." },
     { q: "מתי ואיפה מתקיים מונדיאל 2026?", a: "מונדיאל 2026 יתקיים בין ה-11 ביוני ל-19 ביולי 2026 בשלוש מדינות: ארצות הברית, קנדה ומקסיקו. 48 נבחרות ו-104 משחקים. הגמר באצטדיון MetLife בניו ג'רזי." },
     { q: "כמה עולה להצטרף ב-CupClash?", a: "הצטרפות לקבוצה עולה $2 בלבד לכל הטורניר — כמחיר כוס קפה. המנהל פותח קבוצה בחינם, כל חבר משלם $2 וזוכה בגישה מלאה ל-104 משחקים." },
     { q: "איך עובדת שיטת הניחושים?", a: "ניחוש תוצאה מדויקת = 25 נקודות. ניחוש המנצחת הנכונה = 10 נקודות. ניחוש קידום בנוקאאוט = 20 נקודות. ניחוש אלוף הטורניר = 100 נקודות. מנהל הקבוצה יכול לשנות את הערכים." },

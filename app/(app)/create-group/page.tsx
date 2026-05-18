@@ -3,7 +3,7 @@
 import { useState } from "react";
 import {
   Users, DollarSign, Trophy, AlertCircle, Copy, Check,
-  ArrowRight, Zap, ChevronDown, Settings,
+  ArrowRight, Zap, ChevronDown, Settings, Building2, UserCheck,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 
@@ -32,15 +32,12 @@ function Toggle({ enabled, onToggle }: { enabled: boolean; onToggle: () => void 
   );
 }
 
-function RuleRow({
-  label, desc, pts, setPts, enabled, onToggle,
-}: {
+function RuleRow({ label, desc, pts, setPts, enabled, onToggle }: {
   label: string; desc: string; pts: number;
   setPts: (v: number) => void; enabled: boolean; onToggle: () => void;
 }) {
   return (
-    <div className="flex items-center gap-3 py-2.5 border-b last:border-0"
-      style={{ borderColor: "#f1f5f9" }}>
+    <div className="flex items-center gap-3 py-2.5 border-b last:border-0" style={{ borderColor: "#f1f5f9" }}>
       <Toggle enabled={enabled} onToggle={onToggle} />
       <div className="flex-1 min-w-0">
         <div className="text-sm font-bold" style={{ color: enabled ? "#0F172A" : "#94a3b8" }}>{label}</div>
@@ -59,53 +56,60 @@ function RuleRow({
   );
 }
 
+type PaymentModel = "pay_per_member" | "corporate_sponsored";
+
 export default function CreateGroupPage() {
-  const [step,            setStep]            = useState<1|2|3>(1);
-  const [loading,         setLoading]         = useState(false);
-  const [error,           setError]           = useState<string | null>(null);
-  const [passkey,         setPasskey]         = useState<string | null>(null);
-  const [createdName,     setCreatedName]     = useState("");
-  const [copied,          setCopied]          = useState(false);
+  const [step,        setStep]        = useState<0|1|2|3>(0); // 0 = model selection
+  const [loading,     setLoading]     = useState(false);
+  const [error,       setError]       = useState<string | null>(null);
+  const [passkey,     setPasskey]     = useState<string | null>(null);
+  const [createdName, setCreatedName] = useState("");
+  const [copied,      setCopied]      = useState(false);
+  const [groupId,     setGroupId]     = useState<string | null>(null);
+
+  // Payment model
+  const [paymentModel, setPaymentModel] = useState<PaymentModel>("pay_per_member");
 
   // Step 1
-  const [groupName,       setGroupName]       = useState("");
-  const [groupType,       setGroupType]       = useState<"tournament"|"single_match">("tournament");
-  const [selectedMatch,   setSelectedMatch]   = useState(FEATURED_MATCHES[0].id);
-  const [showPicker,      setShowPicker]      = useState(false);
+  const [groupName,     setGroupName]     = useState("");
+  const [groupType,     setGroupType]     = useState<"tournament"|"single_match">("tournament");
+  const [selectedMatch, setSelectedMatch] = useState(FEATURED_MATCHES[0].id);
+  const [showPicker,    setShowPicker]    = useState(false);
+  const [corporatePrize, setCorporatePrize] = useState("");
 
   // Step 2
-  const [buyIn,           setBuyIn]           = useState(20);
-  const [memberCount,     setMemberCount]     = useState(10);
-  const [payoutFirst,     setPayoutFirst]     = useState(60);
-  const [payoutSecond,    setPayoutSecond]    = useState(30);
-  const [payoutThird,     setPayoutThird]     = useState(10);
+  const [buyIn,        setBuyIn]        = useState(20);
+  const [memberCount,  setMemberCount]  = useState(10);
+  const [payoutFirst,  setPayoutFirst]  = useState(60);
+  const [payoutSecond, setPayoutSecond] = useState(30);
+  const [payoutThird,  setPayoutThird]  = useState(10);
 
-  // Step 3 — scoring rules with toggles
-  const [correctOutcome,   setCorrectOutcome]  = useState(10);
-  const [exactScore,       setExactScore]      = useState(25);
-  const [koAdvancement,    setKoAdvancement]   = useState(20);
-  const [tourneyWinner,    setTourneyWinner]   = useState(100);
-  const [topScorer,        setTopScorer]       = useState(50);
-  const [topAssister,      setTopAssister]     = useState(50);
-  const [bestDefence,      setBestDefence]     = useState(40);
-  const [bestYoung,        setBestYoung]       = useState(30);
-  const [goldenBall,       setGoldenBall]      = useState(40);
-
-  const [enableOutcome,    setEnableOutcome]   = useState(true);
-  const [enableExact,      setEnableExact]     = useState(true);
-  const [enableKO,         setEnableKO]        = useState(true);
-  const [enableWinner,     setEnableWinner]    = useState(true);
-  const [enableScorer,     setEnableScorer]    = useState(true);
-  const [enableAssister,   setEnableAssister]  = useState(true);
-  const [enableDefence,    setEnableDefence]   = useState(false);
-  const [enableYoung,      setEnableYoung]     = useState(false);
-  const [enableGoldenBall, setEnableGoldenBall]= useState(false);
+  // Step 3 — scoring rules
+  const [correctOutcome,   setCorrectOutcome]   = useState(10);
+  const [exactScore,       setExactScore]       = useState(25);
+  const [koAdvancement,    setKoAdvancement]    = useState(20);
+  const [tourneyWinner,    setTourneyWinner]    = useState(100);
+  const [topScorer,        setTopScorer]        = useState(50);
+  const [topAssister,      setTopAssister]      = useState(50);
+  const [bestDefence,      setBestDefence]      = useState(40);
+  const [bestYoung,        setBestYoung]        = useState(30);
+  const [goldenBall,       setGoldenBall]       = useState(40);
+  const [enableOutcome,    setEnableOutcome]    = useState(true);
+  const [enableExact,      setEnableExact]      = useState(true);
+  const [enableKO,         setEnableKO]         = useState(true);
+  const [enableWinner,     setEnableWinner]     = useState(true);
+  const [enableScorer,     setEnableScorer]     = useState(true);
+  const [enableAssister,   setEnableAssister]   = useState(true);
+  const [enableDefence,    setEnableDefence]    = useState(false);
+  const [enableYoung,      setEnableYoung]      = useState(false);
+  const [enableGoldenBall, setEnableGoldenBall] = useState(false);
 
   const totalPct = payoutFirst + payoutSecond + payoutThird;
   const totalPot = buyIn * memberCount;
   const prize1   = Math.round(totalPot * payoutFirst  / 100);
   const prize2   = Math.round(totalPot * payoutSecond / 100);
   const prize3   = Math.round(totalPot * payoutThird  / 100);
+  const isCorporate = paymentModel === "corporate_sponsored";
 
   const handleCreate = async () => {
     setLoading(true); setError(null);
@@ -113,20 +117,22 @@ export default function CreateGroupPage() {
     const { data: { user } } = await sb.auth.getUser();
     if (!user) { setError("You must be signed in"); setLoading(false); return; }
 
-    // 1. Create group
     const { data: groupData, error: groupErr } = await sb
       .from("groups")
       .insert({
-        name:             groupName.trim(),
-        admin_id:         user.id,
-        buy_in_amount:    buyIn,
-        payout_first:     payoutFirst,
-        payout_second:    payoutSecond,
-        payout_third:     payoutThird,
-        max_members:      100,
-        group_type:       groupType,
-        single_match_id:  groupType === "single_match" ? selectedMatch : null,
-        enrollment_fee_cents: 200,
+        name:                 groupName.trim(),
+        admin_id:             user.id,
+        buy_in_amount:        isCorporate ? 0 : buyIn,
+        payout_first:         payoutFirst,
+        payout_second:        payoutSecond,
+        payout_third:         payoutThird,
+        max_members:          100,
+        group_type:           groupType,
+        single_match_id:      groupType === "single_match" ? selectedMatch : null,
+        enrollment_fee_cents: isCorporate ? 0 : 200,
+        payment_model:        paymentModel,
+        is_corporate_paid:    false, // unlocked after PayPal payment
+        corporate_prize:      isCorporate ? corporatePrize.trim() || null : null,
       } as Record<string, unknown>)
       .select("id, passkey")
       .single();
@@ -136,42 +142,41 @@ export default function CreateGroupPage() {
       setLoading(false); return;
     }
 
-    const { id: groupId, passkey: gPasskey } = groupData as { id: string; passkey: string };
+    const { id: gId, passkey: gPasskey } = groupData as { id: string; passkey: string };
 
-    // 2. Add admin as paid member
     await sb.from("group_members").upsert({
-      group_id:       groupId,
+      group_id:       gId,
       user_id:        user.id,
       payment_status: "paid",
       can_predict:    true,
       joined_at:      new Date().toISOString(),
     } as Record<string, unknown>, { onConflict: "user_id,group_id" });
 
-    // 3. Save scoring rules
     await sb.from("scoring_rules").upsert({
-      group_id:          groupId,
-      correct_outcome:   enableOutcome   ? correctOutcome  : 0,
-      exact_score:       enableExact     ? exactScore      : 0,
-      ko_advancement:    enableKO        ? koAdvancement   : 0,
-      tournament_winner: enableWinner    ? tourneyWinner   : 0,
-      top_scorer:        enableScorer    ? topScorer       : 0,
-      top_assister:      enableAssister  ? topAssister     : 0,
-      best_defence:      enableDefence   ? bestDefence     : 0,
-      best_young_player: enableYoung     ? bestYoung       : 0,
-      golden_ball:       enableGoldenBall? goldenBall      : 0,
-      enable_outcome:    enableOutcome,
-      enable_exact:      enableExact,
+      group_id:              gId,
+      correct_outcome:       enableOutcome    ? correctOutcome  : 0,
+      exact_score:           enableExact      ? exactScore      : 0,
+      ko_advancement:        enableKO         ? koAdvancement   : 0,
+      tournament_winner:     enableWinner     ? tourneyWinner   : 0,
+      top_scorer:            enableScorer     ? topScorer       : 0,
+      top_assister:          enableAssister   ? topAssister     : 0,
+      best_defence:          enableDefence    ? bestDefence     : 0,
+      best_young_player:     enableYoung      ? bestYoung       : 0,
+      golden_ball:           enableGoldenBall ? goldenBall      : 0,
+      enable_outcome:        enableOutcome,
+      enable_exact:          enableExact,
       enable_ko_advancement: enableKO,
-      enable_winner:     enableWinner,
-      enable_scorer:     enableScorer,
-      enable_assister:   enableAssister,
-      enable_best_defence:    enableDefence,
-      enable_best_young:      enableYoung,
-      enable_golden_ball:     enableGoldenBall,
+      enable_winner:         enableWinner,
+      enable_scorer:         enableScorer,
+      enable_assister:       enableAssister,
+      enable_best_defence:   enableDefence,
+      enable_best_young:     enableYoung,
+      enable_golden_ball:    enableGoldenBall,
     } as Record<string, unknown>, { onConflict: "group_id" });
 
     setCreatedName(groupName.trim());
     setPasskey(gPasskey);
+    setGroupId(gId);
     setLoading(false);
   };
 
@@ -180,36 +185,53 @@ export default function CreateGroupPage() {
     setCopied(true); setTimeout(() => setCopied(false), 2000);
   };
 
-  // ── Success ──────────────────────────────────────────────────────────────
+  // ── Success ───────────────────────────────────────────────────────────────
   if (passkey) {
     return (
       <div className="max-w-lg mx-auto space-y-4 px-4 py-6">
         <div className="rounded-2xl p-6 text-center space-y-4"
-          style={{ background: "rgba(255,255,255,0.9)", border: "1px solid rgba(0,255,136,0.3)" }}>
+          style={{ background: "rgba(255,255,255,0.9)", border: `1px solid ${isCorporate ? "rgba(0,212,255,0.3)" : "rgba(0,255,136,0.3)"}` }}>
           <div className="h-14 w-14 rounded-full mx-auto flex items-center justify-center"
             style={{ background: "linear-gradient(135deg, #00D4FF, #00FF88)" }}>
             <Check size={24} style={{ color: "#0B141B" }} />
           </div>
           <div>
             <h2 className="font-display text-3xl uppercase font-black" style={{ color: "#0F172A" }}>{createdName}</h2>
-            <p className="text-sm mt-1" style={{ color: "#64748b" }}>Share the passkey — members pay $2 to join.</p>
+            <p className="text-sm mt-1" style={{ color: "#64748b" }}>
+              {isCorporate
+                ? "Your corporate group is ready. Go to the group to unlock team invites."
+                : "Share the passkey — members pay $2 to join."}
+            </p>
           </div>
-          <div className="rounded-2xl p-5"
-            style={{ background: "rgba(0,212,255,0.06)", border: "1px solid rgba(0,212,255,0.2)" }}>
-            <div className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: "#0891B2" }}>Entry Passkey</div>
-            <div className="font-mono font-black text-5xl tracking-[0.2em]" style={{ color: "#0F172A" }}>{passkey}</div>
-            <div className="text-xs mt-2" style={{ color: "#94a3b8" }}>cupclash.live/join/{passkey}</div>
-          </div>
-          <button onClick={copyLink}
-            className="w-full py-3 rounded-xl font-bold text-sm uppercase tracking-wider flex items-center justify-center gap-2"
-            style={{ border: "1px solid rgba(0,212,255,0.25)", color: "#0891B2", background: "rgba(0,212,255,0.05)" }}>
-            {copied ? <><Check size={14} /> Copied!</> : <><Copy size={14} /> Copy invite link</>}
-          </button>
-          <button onClick={() => { window.location.href = "/dashboard"; }}
-            className="w-full py-3 rounded-xl font-bold text-sm uppercase tracking-wider flex items-center justify-center gap-2"
-            style={{ background: "linear-gradient(135deg, #00FF88, #00D4FF)", color: "#0B141B" }}>
-            Go to Dashboard <ArrowRight size={15} />
-          </button>
+
+          {isCorporate ? (
+            // Corporate — direct to group dashboard to unlock
+            <button onClick={() => { window.location.href = `/groups/${groupId}`; }}
+              className="w-full py-3.5 rounded-xl font-bold text-sm uppercase tracking-wider flex items-center justify-center gap-2"
+              style={{ background: "linear-gradient(135deg, #00FF88, #00D4FF)", color: "#0B141B" }}>
+              <Building2 size={16} /> Go to Group — Unlock Invites
+            </button>
+          ) : (
+            // Friend group — show passkey immediately
+            <>
+              <div className="rounded-2xl p-5"
+                style={{ background: "rgba(0,212,255,0.06)", border: "1px solid rgba(0,212,255,0.2)" }}>
+                <div className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: "#0891B2" }}>Entry Passkey</div>
+                <div className="font-mono font-black text-5xl tracking-[0.2em]" style={{ color: "#0F172A" }}>{passkey}</div>
+                <div className="text-xs mt-2" style={{ color: "#94a3b8" }}>cupclash.live/join/{passkey}</div>
+              </div>
+              <button onClick={copyLink}
+                className="w-full py-3 rounded-xl font-bold text-sm uppercase tracking-wider flex items-center justify-center gap-2"
+                style={{ border: "1px solid rgba(0,212,255,0.25)", color: "#0891B2", background: "rgba(0,212,255,0.05)" }}>
+                {copied ? <><Check size={14} /> Copied!</> : <><Copy size={14} /> Copy invite link</>}
+              </button>
+              <button onClick={() => { window.location.href = "/dashboard"; }}
+                className="w-full py-3 rounded-xl font-bold text-sm uppercase tracking-wider flex items-center justify-center gap-2"
+                style={{ background: "linear-gradient(135deg, #00FF88, #00D4FF)", color: "#0B141B" }}>
+                Go to Dashboard <ArrowRight size={15} />
+              </button>
+            </>
+          )}
         </div>
       </div>
     );
@@ -217,7 +239,7 @@ export default function CreateGroupPage() {
 
   const steps = [
     { n: 1 as const, label: "Group Setup"     },
-    { n: 2 as const, label: "Buy-In & Prizes" },
+    { n: 2 as const, label: isCorporate ? "Company Prizes" : "Buy-In & Prizes" },
     { n: 3 as const, label: "Scoring Rules"   },
   ];
 
@@ -226,25 +248,140 @@ export default function CreateGroupPage() {
       <div>
         <div className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: "#0891B2" }}>New Group</div>
         <h1 className="font-display text-4xl uppercase font-black" style={{ color: "#0F172A" }}>Create your league</h1>
-        <p className="text-sm mt-1" style={{ color: "#64748b" }}>Free to create · Members pay $2 each to join</p>
+        <p className="text-sm mt-1" style={{ color: "#64748b" }}>Free to create · Choose how members join</p>
       </div>
 
-      {/* Step tabs */}
-      <div className="flex gap-2">
-        {steps.map(s => (
-          <button key={s.n} type="button"
-            className="flex-1 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all"
-            style={step === s.n ? {
-              background: "rgba(0,212,255,0.1)", border: "1px solid rgba(0,212,255,0.3)", color: "#0891B2",
-            } : step > s.n ? {
-              background: "rgba(0,255,136,0.08)", border: "1px solid rgba(0,255,136,0.2)", color: "#059669",
-            } : {
-              background: "#f8fafc", border: "1px solid #e2e8f0", color: "#94a3b8",
+      {/* ── STEP 0 — Payment model selection ──────────────────────────────── */}
+      {step === 0 && (
+        <div className="space-y-4">
+          <div className="text-xs font-bold uppercase tracking-widest" style={{ color: "#64748b" }}>
+            Who pays for this group?
+          </div>
+
+          {/* Option A — Pay per member */}
+          <button
+            onClick={() => { setPaymentModel("pay_per_member"); setStep(1); }}
+            className="w-full rounded-2xl p-5 text-left transition-all hover:-translate-y-0.5 border-2"
+            style={{
+              background: paymentModel === "pay_per_member" ? "rgba(0,255,136,0.06)" : "rgba(255,255,255,0.9)",
+              borderColor: paymentModel === "pay_per_member" ? "rgba(0,255,136,0.4)" : "#e2e8f0",
             }}>
-            {step > s.n ? "✓ " : ""}{s.label}
+            <div className="flex items-start gap-4">
+              <div className="h-12 w-12 rounded-2xl flex items-center justify-center shrink-0"
+                style={{ background: "rgba(0,255,136,0.1)", border: "1px solid rgba(0,255,136,0.25)" }}>
+                <UserCheck size={22} style={{ color: "#059669" }} />
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="font-display text-lg uppercase font-black" style={{ color: "#0F172A" }}>
+                    Friend Circle
+                  </span>
+                  <span className="text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest"
+                    style={{ background: "rgba(0,255,136,0.1)", color: "#059669" }}>
+                    Free for you
+                  </span>
+                </div>
+                <p className="text-sm" style={{ color: "#64748b" }}>
+                  You create the group for free. Each friend pays a flat <strong style={{ color: "#0F172A" }}>$2 entry fee</strong> individually when they join.
+                </p>
+                <div className="flex flex-wrap gap-2 mt-3">
+                  {["Fantasy leagues", "Friend groups", "Bar buddies", "Family"].map(t => (
+                    <span key={t} className="text-[10px] font-bold px-2 py-0.5 rounded-full"
+                      style={{ background: "#f1f5f9", color: "#64748b" }}>{t}</span>
+                  ))}
+                </div>
+              </div>
+              <ArrowRight size={18} style={{ color: "#059669" }} />
+            </div>
           </button>
-        ))}
-      </div>
+
+          {/* Option B — Corporate */}
+          <button
+            onClick={() => { setPaymentModel("corporate_sponsored"); setStep(1); }}
+            className="w-full rounded-2xl p-5 text-left transition-all hover:-translate-y-0.5 border-2"
+            style={{
+              background: paymentModel === "corporate_sponsored"
+                ? "linear-gradient(135deg, rgba(0,13,27,0.97), rgba(0,20,20,0.97))"
+                : "linear-gradient(135deg, rgba(11,20,27,0.96), rgba(11,31,20,0.96))",
+              borderColor: "rgba(0,212,255,0.4)",
+            }}>
+            <div className="flex items-start gap-4">
+              <div className="h-12 w-12 rounded-2xl flex items-center justify-center shrink-0"
+                style={{ background: "rgba(0,212,255,0.15)", border: "1px solid rgba(0,212,255,0.3)" }}>
+                <Building2 size={22} style={{ color: "#00D4FF" }} />
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="font-display text-lg uppercase font-black" style={{ color: "white" }}>
+                    Corporate Sponsor
+                  </span>
+                  <span className="text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest"
+                    style={{ background: "rgba(0,212,255,0.15)", color: "#00D4FF" }}>
+                    Team pays $0
+                  </span>
+                </div>
+                <p className="text-sm" style={{ color: "rgba(255,255,255,0.6)" }}>
+                  You cover the whole team with a one-time flat fee. Every employee joins for <strong style={{ color: "white" }}>$0 — zero friction</strong>.
+                </p>
+                <div className="flex flex-wrap gap-2 mt-3">
+                  {["HR managers", "Office pools", "Tech companies", "Remote teams"].map(t => (
+                    <span key={t} className="text-[10px] font-bold px-2 py-0.5 rounded-full"
+                      style={{ background: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.5)" }}>{t}</span>
+                  ))}
+                </div>
+                <div className="flex gap-3 mt-3">
+                  <div className="text-xs rounded-lg px-2.5 py-1.5"
+                    style={{ background: "rgba(0,212,255,0.1)", color: "#00D4FF" }}>
+                    $75 · up to 50 members
+                  </div>
+                  <div className="text-xs rounded-lg px-2.5 py-1.5"
+                    style={{ background: "rgba(217,119,6,0.12)", color: "#d97706" }}>
+                    $130 · up to 100 members
+                  </div>
+                </div>
+              </div>
+              <ArrowRight size={18} style={{ color: "#00D4FF" }} />
+            </div>
+          </button>
+        </div>
+      )}
+
+      {/* Step tabs — only show on steps 1-3 */}
+      {step > 0 && (
+        <>
+          <div className="flex items-center gap-2">
+            <button onClick={() => setStep(0)} className="text-xs font-bold" style={{ color: "#0891B2" }}>
+              ← {isCorporate ? "Corporate" : "Friend Circle"}
+            </button>
+            <div className="flex-1 flex gap-2">
+              {steps.map(s => (
+                <button key={s.n} type="button"
+                  className="flex-1 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all"
+                  style={step === s.n ? {
+                    background: "rgba(0,212,255,0.1)", border: "1px solid rgba(0,212,255,0.3)", color: "#0891B2",
+                  } : step > s.n ? {
+                    background: "rgba(0,255,136,0.08)", border: "1px solid rgba(0,255,136,0.2)", color: "#059669",
+                  } : {
+                    background: "#f8fafc", border: "1px solid #e2e8f0", color: "#94a3b8",
+                  }}>
+                  {step > s.n ? "✓ " : ""}{s.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Corporate badge */}
+          {isCorporate && (
+            <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl"
+              style={{ background: "rgba(0,212,255,0.06)", border: "1px solid rgba(0,212,255,0.2)" }}>
+              <Building2 size={14} style={{ color: "#0891B2" }} />
+              <span className="text-xs font-bold" style={{ color: "#0891B2" }}>
+                Corporate mode — employees will join free · unlock invites after payment
+              </span>
+            </div>
+          )}
+        </>
+      )}
 
       {error && (
         <div className="flex items-start gap-2.5 rounded-xl px-4 py-3 text-sm"
@@ -259,14 +396,34 @@ export default function CreateGroupPage() {
           <div className="rounded-2xl p-5 space-y-4"
             style={{ background: "rgba(255,255,255,0.9)", border: "1px solid rgba(0,212,255,0.15)" }}>
             <div>
-              <label className="block text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#64748b" }}>Group Name *</label>
+              <label className="block text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#64748b" }}>
+                {isCorporate ? "Company Group Name *" : "Group Name *"}
+              </label>
               <div className="relative">
-                <Users size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2" style={{ color: "#94a3b8" }} />
-                <input type="text" placeholder="e.g. Office World Cup 2026"
+                {isCorporate ? <Building2 size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2" style={{ color: "#94a3b8" }} />
+                  : <Users size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2" style={{ color: "#94a3b8" }} />}
+                <input type="text"
+                  placeholder={isCorporate ? "e.g. Engineering Dept — World Cup 2026" : "e.g. Sunday Squad World Cup"}
                   value={groupName} onChange={e => setGroupName(e.target.value)}
                   className={inputCls} style={{ paddingLeft: "2.25rem" }} />
               </div>
             </div>
+
+            {/* Corporate prize field */}
+            {isCorporate && (
+              <div>
+                <label className="block text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#64748b" }}>
+                  Company Prize (Optional)
+                </label>
+                <input type="text"
+                  placeholder="e.g. 1st place wins an extra day off + Amazon gift card"
+                  value={corporatePrize} onChange={e => setCorporatePrize(e.target.value)}
+                  className={inputCls} />
+                <p className="text-xs mt-1.5" style={{ color: "#94a3b8" }}>
+                  Shown on the leaderboard. No cash required — set any company prize you like.
+                </p>
+              </div>
+            )}
 
             <div>
               <label className="block text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#64748b" }}>Group Type</label>
@@ -320,7 +477,7 @@ export default function CreateGroupPage() {
             setError(null); setStep(2);
           }} className="w-full py-3 rounded-xl font-bold text-sm uppercase tracking-wider flex items-center justify-center gap-2"
             style={{ background: "linear-gradient(135deg, #00FF88, #00D4FF)", color: "#0B141B" }}>
-            Next: Buy-In & Prizes <ArrowRight size={16} />
+            Next: {isCorporate ? "Company Prizes" : "Buy-In & Prizes"} <ArrowRight size={16} />
           </button>
         </div>
       )}
@@ -331,71 +488,115 @@ export default function CreateGroupPage() {
           <div className="rounded-2xl p-5 space-y-4"
             style={{ background: "rgba(255,255,255,0.9)", border: "1px solid rgba(0,212,255,0.15)" }}>
 
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#64748b" }}>Buy-in per player ($)</label>
-                <div className="relative">
-                  <DollarSign size={14} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: "#94a3b8" }} />
-                  <input type="number" min={0} value={buyIn}
-                    onChange={e => setBuyIn(Number(e.target.value))}
-                    className={inputCls} style={{ paddingLeft: "2rem" }} />
-                </div>
-              </div>
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#64748b" }}>Expected members</label>
-                <div className="relative">
-                  <Users size={14} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: "#94a3b8" }} />
-                  <input type="number" min={2} max={100} value={memberCount}
-                    onChange={e => setMemberCount(Number(e.target.value))}
-                    className={inputCls} style={{ paddingLeft: "2rem" }} />
-                </div>
-              </div>
-            </div>
-
-            <p className="text-xs" style={{ color: "#94a3b8" }}>
-              Buy-in is for tracking only — Cup Clash doesn&apos;t handle money.
-            </p>
-
-            {buyIn > 0 && memberCount > 0 && (
-              <div className="rounded-xl p-3 text-center"
-                style={{ background: "rgba(0,212,255,0.05)", border: "1px solid rgba(0,212,255,0.15)" }}>
-                <div className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: "#0891B2" }}>Estimated prize pot</div>
-                <div className="font-display text-3xl font-black" style={{ color: "#0F172A" }}>${totalPot.toLocaleString()}</div>
-              </div>
-            )}
-
-            <div>
-              <div className="flex items-center justify-between mb-3">
-                <label className="text-xs font-bold uppercase tracking-widest" style={{ color: "#64748b" }}>Payout split</label>
-                <span className="text-xs font-bold" style={{ color: totalPct === 100 ? "#059669" : "#dc2626" }}>
-                  {totalPct}% / 100%
-                </span>
-              </div>
-              <div className="space-y-2">
-                {[
-                  { label: "🥇 1st place", val: payoutFirst,  set: setPayoutFirst,  prize: prize1, color: "#d97706" },
-                  { label: "🥈 2nd place", val: payoutSecond, set: setPayoutSecond, prize: prize2, color: "#64748b" },
-                  { label: "🥉 3rd place", val: payoutThird,  set: setPayoutThird,  prize: prize3, color: "#b45309" },
-                ].map(({ label, val, set, prize, color }) => (
-                  <div key={label} className="flex items-center gap-3">
-                    <span className="text-sm w-24 shrink-0" style={{ color: "#475569" }}>{label}</span>
-                    <input type="number" min={0} max={100} value={val}
-                      onChange={e => set(Number(e.target.value))}
-                      className="w-16 rounded-lg px-2 py-1.5 text-sm text-center border focus:outline-none"
-                      style={{ borderColor: "#e2e8f0", color: "#0F172A", background: "white" }} />
-                    <span className="text-sm" style={{ color: "#94a3b8" }}>%</span>
-                    {buyIn > 0 && memberCount > 0 && (
-                      <span className="text-sm font-bold ml-auto" style={{ color }}>${prize.toLocaleString()}</span>
-                    )}
+            {isCorporate ? (
+              /* Corporate — simplified prize split, no buy-in */
+              <div className="space-y-4">
+                <div className="rounded-xl p-4"
+                  style={{ background: "rgba(0,212,255,0.05)", border: "1px solid rgba(0,212,255,0.15)" }}>
+                  <div className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#0891B2" }}>
+                    No buy-in required
                   </div>
-                ))}
+                  <p className="text-sm" style={{ color: "#64748b" }}>
+                    Corporate groups don&apos;t use cash buy-ins. Set a company prize in the previous step, or simply play for bragging rights.
+                  </p>
+                </div>
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <label className="text-xs font-bold uppercase tracking-widest" style={{ color: "#64748b" }}>
+                      Leaderboard payout split
+                    </label>
+                    <span className="text-xs font-bold" style={{ color: totalPct === 100 ? "#059669" : "#dc2626" }}>
+                      {totalPct}% / 100%
+                    </span>
+                  </div>
+                  <div className="space-y-2">
+                    {[
+                      { label: "🥇 1st place", val: payoutFirst,  set: setPayoutFirst,  color: "#d97706" },
+                      { label: "🥈 2nd place", val: payoutSecond, set: setPayoutSecond, color: "#64748b" },
+                      { label: "🥉 3rd place", val: payoutThird,  set: setPayoutThird,  color: "#b45309" },
+                    ].map(({ label, val, set, color }) => (
+                      <div key={label} className="flex items-center gap-3">
+                        <span className="text-sm w-24 shrink-0" style={{ color: "#475569" }}>{label}</span>
+                        <input type="number" min={0} max={100} value={val}
+                          onChange={e => set(Number(e.target.value))}
+                          className="w-16 rounded-lg px-2 py-1.5 text-sm text-center border focus:outline-none"
+                          style={{ borderColor: "#e2e8f0", color: "#0F172A", background: "white" }} />
+                        <span className="text-sm" style={{ color: "#94a3b8" }}>%</span>
+                        <div className="flex-1 h-1.5 rounded-full overflow-hidden ml-2" style={{ background: "#f1f5f9" }}>
+                          <div className="h-full rounded-full" style={{ width: `${val}%`, background: color }} />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
-              {totalPct !== 100 && (
-                <p className="mt-2 text-xs flex items-center gap-1" style={{ color: "#dc2626" }}>
-                  <AlertCircle size={11} /> Must add up to exactly 100%
+            ) : (
+              /* Friend group — standard buy-in */
+              <>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#64748b" }}>Buy-in per player ($)</label>
+                    <div className="relative">
+                      <DollarSign size={14} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: "#94a3b8" }} />
+                      <input type="number" min={0} value={buyIn}
+                        onChange={e => setBuyIn(Number(e.target.value))}
+                        className={inputCls} style={{ paddingLeft: "2rem" }} />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#64748b" }}>Expected members</label>
+                    <div className="relative">
+                      <Users size={14} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: "#94a3b8" }} />
+                      <input type="number" min={2} max={100} value={memberCount}
+                        onChange={e => setMemberCount(Number(e.target.value))}
+                        className={inputCls} style={{ paddingLeft: "2rem" }} />
+                    </div>
+                  </div>
+                </div>
+                <p className="text-xs" style={{ color: "#94a3b8" }}>
+                  Buy-in is for tracking only — Cup Clash doesn&apos;t handle money.
                 </p>
-              )}
-            </div>
+                {buyIn > 0 && memberCount > 0 && (
+                  <div className="rounded-xl p-3 text-center"
+                    style={{ background: "rgba(0,212,255,0.05)", border: "1px solid rgba(0,212,255,0.15)" }}>
+                    <div className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: "#0891B2" }}>Estimated prize pot</div>
+                    <div className="font-display text-3xl font-black" style={{ color: "#0F172A" }}>${totalPot.toLocaleString()}</div>
+                  </div>
+                )}
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <label className="text-xs font-bold uppercase tracking-widest" style={{ color: "#64748b" }}>Payout split</label>
+                    <span className="text-xs font-bold" style={{ color: totalPct === 100 ? "#059669" : "#dc2626" }}>
+                      {totalPct}% / 100%
+                    </span>
+                  </div>
+                  <div className="space-y-2">
+                    {[
+                      { label: "🥇 1st place", val: payoutFirst,  set: setPayoutFirst,  prize: prize1, color: "#d97706" },
+                      { label: "🥈 2nd place", val: payoutSecond, set: setPayoutSecond, prize: prize2, color: "#64748b" },
+                      { label: "🥉 3rd place", val: payoutThird,  set: setPayoutThird,  prize: prize3, color: "#b45309" },
+                    ].map(({ label, val, set, prize, color }) => (
+                      <div key={label} className="flex items-center gap-3">
+                        <span className="text-sm w-24 shrink-0" style={{ color: "#475569" }}>{label}</span>
+                        <input type="number" min={0} max={100} value={val}
+                          onChange={e => set(Number(e.target.value))}
+                          className="w-16 rounded-lg px-2 py-1.5 text-sm text-center border focus:outline-none"
+                          style={{ borderColor: "#e2e8f0", color: "#0F172A", background: "white" }} />
+                        <span className="text-sm" style={{ color: "#94a3b8" }}>%</span>
+                        {buyIn > 0 && memberCount > 0 && (
+                          <span className="text-sm font-bold ml-auto" style={{ color }}>${prize.toLocaleString()}</span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                  {totalPct !== 100 && (
+                    <p className="mt-2 text-xs flex items-center gap-1" style={{ color: "#dc2626" }}>
+                      <AlertCircle size={11} /> Must add up to exactly 100%
+                    </p>
+                  )}
+                </div>
+              </>
+            )}
           </div>
 
           <div className="flex gap-2">
@@ -424,7 +625,6 @@ export default function CreateGroupPage() {
               <Settings size={16} style={{ color: "#0891B2" }} />
               <span className="text-xs font-bold uppercase tracking-widest" style={{ color: "#64748b" }}>Match Predictions</span>
             </div>
-
             <RuleRow label="Correct outcome" desc="Right result (win/draw/loss), wrong score"
               pts={correctOutcome} setPts={setCorrectOutcome} enabled={enableOutcome} onToggle={() => setEnableOutcome(v => !v)} />
             <RuleRow label="Exact score bonus" desc="Perfect score guess — includes correct outcome"
@@ -437,7 +637,6 @@ export default function CreateGroupPage() {
               <span className="text-xs font-bold uppercase tracking-widest" style={{ color: "#64748b" }}>Tournament Bonus Picks</span>
               <span className="text-[10px] ml-auto" style={{ color: "#94a3b8" }}>Lock before Jun 11</span>
             </div>
-
             <RuleRow label="Tournament winner" desc="Predict the World Cup champion"
               pts={tourneyWinner} setPts={setTourneyWinner} enabled={enableWinner} onToggle={() => setEnableWinner(v => !v)} />
             <RuleRow label="Top scorer (Golden Boot)" desc="Player with most goals in the tournament"
@@ -461,7 +660,10 @@ export default function CreateGroupPage() {
             <button type="button" onClick={handleCreate} disabled={loading}
               className="flex-1 py-3 rounded-xl font-bold text-sm uppercase tracking-wider flex items-center justify-center gap-2 disabled:opacity-50"
               style={{ background: "linear-gradient(135deg, #00FF88, #00D4FF)", color: "#0B141B" }}>
-              {loading ? "Creating..." : <><Trophy size={16} /> Create Group — Free</>}
+              {loading ? "Creating..." : isCorporate
+                ? <><Building2 size={16} /> Create Corporate Group — Free</>
+                : <><Trophy size={16} /> Create Group — Free</>
+              }
             </button>
           </div>
         </div>

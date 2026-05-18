@@ -15,19 +15,24 @@ function sbAdmin() {
 async function getGroupDetail(groupId: string) {
   const { data } = await sbAdmin()
     .from("groups")
-    .select("id, name, passkey, admin_id, buy_in_amount, payout_first, payout_second, payout_third, max_members, enrollment_fee_cents")
+    .select("id, name, passkey, admin_id, buy_in_amount, payout_first, payout_second, payout_third, max_members, enrollment_fee_cents, is_corporate_paid, max_group_capacity, payment_model, corporate_prize")
     .eq("id", groupId)
     .single();
   return data as {
     id: string; name: string; passkey: string; admin_id: string;
     buy_in_amount: number; payout_first: number; payout_second: number;
     payout_third: number; max_members: number; enrollment_fee_cents: number;
+    is_corporate_paid: boolean; max_group_capacity: number;
+    payment_model: string; corporate_prize: string | null;
   } | null;
 }
 
 async function getScoringRules(groupId: string) {
   const { data } = await sbAdmin()
-    .from("scoring_rules").select("*").eq("group_id", groupId).maybeSingle();
+    .from("scoring_rules")
+    .select("*")
+    .eq("group_id", groupId)
+    .maybeSingle();
   return data as Record<string, number | boolean> | null;
 }
 
