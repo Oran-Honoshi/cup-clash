@@ -60,27 +60,22 @@ function RuleRow({ label, desc, pts, setPts, enabled, onToggle }: {
 type PaymentModel = "pay_per_member" | "corporate_sponsored";
 
 function CreateGroupInner() {
-  const [step,        setStep]        = useState<0|1|2|3>(0);
+  const [step,         setStep]        = useState<0|1|2|3>(0);
   const [paymentModel, setPaymentModel] = useState<PaymentModel>("pay_per_member");
-  const [loading,     setLoading]     = useState(false);
-  const [error,       setError]       = useState<string | null>(null);
-  const [passkey,     setPasskey]     = useState<string | null>(null);
-  const [createdName, setCreatedName] = useState("");
-  const [copied,      setCopied]      = useState(false);
-  const [groupId,     setGroupId]     = useState<string | null>(null);
+  const [loading,      setLoading]     = useState(false);
+  const [error,        setError]       = useState<string | null>(null);
+  const [passkey,      setPasskey]     = useState<string | null>(null);
+  const [createdName,  setCreatedName] = useState("");
+  const [copied,       setCopied]      = useState(false);
+  const [groupId,      setGroupId]     = useState<string | null>(null);
 
-  // Payment model — can be pre-set via URL param
   const searchParams = useSearchParams();
   const modelParam   = searchParams.get("model") as PaymentModel | null;
 
-  // Prize track for corporate
   const [prizeTrack,     setPrizeTrack]     = useState<"cash" | "company">("company");
   const [rewardPlaces,   setRewardPlaces]   = useState(1);
   const [companyRewards, setCompanyRewards] = useState({ reward1: "", reward2: "", reward3: "" });
 
-  // Apply URL param after mount to avoid declaration order issues
-  // (useSearchParams must be called before useState that depends on it)
-  // We handle this via useEffect instead
   useEffect(() => {
     if (modelParam === "corporate_sponsored") {
       setPaymentModel("corporate_sponsored");
@@ -89,24 +84,20 @@ function CreateGroupInner() {
       setPaymentModel("pay_per_member");
       setStep(1);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [modelParam]);
 
-  // Step 1
-  const [groupName,     setGroupName]     = useState("");
-  const [groupType,     setGroupType]     = useState<"tournament"|"single_match">("tournament");
-  const [selectedMatch, setSelectedMatch] = useState(FEATURED_MATCHES[0].id);
-  const [showPicker,    setShowPicker]    = useState(false);
+  const [groupName,      setGroupName]      = useState("");
+  const [groupType,      setGroupType]      = useState<"tournament"|"single_match">("tournament");
+  const [selectedMatch,  setSelectedMatch]  = useState(FEATURED_MATCHES[0].id);
+  const [showPicker,     setShowPicker]     = useState(false);
   const [corporatePrize, setCorporatePrize] = useState("");
 
-  // Step 2
   const [buyIn,        setBuyIn]        = useState(20);
   const [memberCount,  setMemberCount]  = useState(10);
   const [payoutFirst,  setPayoutFirst]  = useState(60);
   const [payoutSecond, setPayoutSecond] = useState(30);
   const [payoutThird,  setPayoutThird]  = useState(10);
 
-  // Step 3 — scoring rules
   const [correctOutcome,   setCorrectOutcome]   = useState(10);
   const [exactScore,       setExactScore]       = useState(25);
   const [koAdvancement,    setKoAdvancement]    = useState(20);
@@ -126,11 +117,8 @@ function CreateGroupInner() {
   const [enableYoung,      setEnableYoung]      = useState(false);
   const [enableGoldenBall, setEnableGoldenBall] = useState(false);
 
-  const totalPct = payoutFirst + payoutSecond + payoutThird;
-  const totalPot = buyIn * memberCount;
-  const prize1   = Math.round(totalPot * payoutFirst  / 100);
-  const prize2   = Math.round(totalPot * payoutSecond / 100);
-  const prize3   = Math.round(totalPot * payoutThird  / 100);
+  const totalPct  = payoutFirst + payoutSecond + payoutThird;
+  const totalPot  = buyIn * memberCount;
   const isCorporate = paymentModel === "corporate_sponsored";
 
   const handleCreate = async () => {
@@ -139,22 +127,31 @@ function CreateGroupInner() {
     const { data: { user } } = await sb.auth.getUser();
     if (!user) { setError("You must be signed in"); setLoading(false); return; }
 
+    let finalCorporatePrize = isCorporate ? corporatePrize.trim() : null;
+    if (isCorporate && prizeTrack === "company") {
+      const parts = [];
+      if (companyRewards.reward1) parts.push(`1st: ${companyRewards.reward1}`);
+      if (rewardPlaces >= 2 && companyRewards.reward2) parts.push(`2nd: ${companyRewards.reward2}`);
+      if (rewardPlaces >= 3 && companyRewards.reward3) parts.push(`3rd: ${companyRewards.reward3}`);
+      if (parts.length > 0) finalCorporatePrize = parts.join(" | ");
+    }
+
     const { data: groupData, error: groupErr } = await sb
       .from("groups")
       .insert({
         name:                 groupName.trim(),
         admin_id:             user.id,
-        buy_in_amount:        isCorporate ? 0 : buyIn,
-        payout_first:         payoutFirst,
-        payout_second:        payoutSecond,
-        payout_third:         payoutThird,
+        buy_in_amount:        isCorporate && prizeTrack === "company" ? 0 : buyIn,
+        payout_first:         isCorporate && prizeTrack === "company" ? 0 : payoutFirst,
+        payout_second:        isCorporate && prizeTrack === "company" ? 0 : payoutSecond,
+        payout_third:         isCorporate && prizeTrack === "company" ? 0 : payoutThird,
         max_members:          100,
         group_type:           groupType,
         single_match_id:      groupType === "single_match" ? selectedMatch : null,
         enrollment_fee_cents: isCorporate ? 0 : 200,
         payment_model:        paymentModel,
-        is_corporate_paid:    false, // unlocked after PayPal payment
-        corporate_prize:      isCorporate ? corporatePrize.trim() || null : null,
+        is_corporate_paid:    false,
+        corporate_prize:      finalCorporatePrize || null,
       } as Record<string, unknown>)
       .select("id, passkey")
       .single();
@@ -207,14 +204,13 @@ function CreateGroupInner() {
     setCopied(true); setTimeout(() => setCopied(false), 2000);
   };
 
-  // ── Success ───────────────────────────────────────────────────────────────
+  // ── Success state ──────────────────────────────────────────────────────────
   if (passkey) {
     return (
       <div className="max-w-lg mx-auto space-y-4 px-4 py-6">
-        <div className="rounded-2xl p-6 text-center space-y-4"
-          style={{ background: "rgba(255,255,255,0.9)", border: `1px solid ${isCorporate ? "rgba(0,212,255,0.3)" : "rgba(0,255,136,0.3)"}` }}>
+        <div className="rounded-2xl p-6 text-center space-y-4 bg-white border border-slate-200 shadow-sm">
           <div className="h-14 w-14 rounded-full mx-auto flex items-center justify-center"
-            style={{ background: "linear-gradient(135deg, #00D4FF, #00FF88)" }}>
+            style={{ background: "linear-gradient(135deg, #00FF88, #00D4FF)" }}>
             <Check size={24} style={{ color: "#0B141B" }} />
           </div>
           <div>
@@ -227,17 +223,15 @@ function CreateGroupInner() {
           </div>
 
           {isCorporate ? (
-            // Corporate — direct to group dashboard to unlock
             <button onClick={() => { window.location.href = `/groups/${groupId}`; }}
-              className="w-full py-3.5 rounded-xl font-bold text-sm uppercase tracking-wider flex items-center justify-center gap-2"
+              className="w-full py-3.5 rounded-xl font-bold text-sm uppercase tracking-wider flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5"
               style={{ background: "linear-gradient(135deg, #00FF88, #00D4FF)", color: "#0B141B" }}>
               <Building2 size={16} /> Go to Group — Unlock Invites
             </button>
           ) : (
-            // Friend group — show passkey immediately
             <>
               <div className="rounded-2xl p-5"
-                style={{ background: "rgba(0,212,255,0.06)", border: "1px solid rgba(0,212,255,0.2)" }}>
+                style={{ background: "rgba(0,212,255,0.05)", border: "1px solid rgba(0,212,255,0.2)" }}>
                 <div className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: "#0891B2" }}>Entry Passkey</div>
                 <div className="font-mono font-black text-5xl tracking-[0.2em]" style={{ color: "#0F172A" }}>{passkey}</div>
                 <div className="text-xs mt-2" style={{ color: "#94a3b8" }}>cupclash.live/join/{passkey}</div>
@@ -248,7 +242,7 @@ function CreateGroupInner() {
                 {copied ? <><Check size={14} /> Copied!</> : <><Copy size={14} /> Copy invite link</>}
               </button>
               <button onClick={() => { window.location.href = "/dashboard"; }}
-                className="w-full py-3 rounded-xl font-bold text-sm uppercase tracking-wider flex items-center justify-center gap-2"
+                className="w-full py-3 rounded-xl font-bold text-sm uppercase tracking-wider flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5"
                 style={{ background: "linear-gradient(135deg, #00FF88, #00D4FF)", color: "#0B141B" }}>
                 Go to Dashboard <ArrowRight size={15} />
               </button>
@@ -273,24 +267,20 @@ function CreateGroupInner() {
         <p className="text-sm mt-1" style={{ color: "#64748b" }}>Free to create · Choose how members join</p>
       </div>
 
-      {/* ── STEP 0 — Payment model selection ──────────────────────────────── */}
+      {/* ── STEP 0 — Payment model ─────────────────────────────────────────── */}
       {step === 0 && (
         <div className="space-y-4">
-          <div className="text-xs font-bold uppercase tracking-widest" style={{ color: "#64748b" }}>
+          <div className="text-xs font-bold uppercase tracking-widest" style={{ color: "#94a3b8" }}>
             Who pays for this group?
           </div>
 
-          {/* Option A — Pay per member */}
           <button
             onClick={() => { setPaymentModel("pay_per_member"); setStep(1); }}
-            className="w-full rounded-2xl p-5 text-left transition-all hover:-translate-y-0.5 border-2"
-            style={{
-              background: paymentModel === "pay_per_member" ? "rgba(0,255,136,0.06)" : "rgba(255,255,255,0.9)",
-              borderColor: paymentModel === "pay_per_member" ? "rgba(0,255,136,0.4)" : "#e2e8f0",
-            }}>
+            className="w-full rounded-2xl p-5 text-left transition-all hover:-translate-y-0.5 border-2 bg-white shadow-sm"
+            style={{ borderColor: paymentModel === "pay_per_member" ? "rgba(0,255,136,0.5)" : "#e2e8f0" }}>
             <div className="flex items-start gap-4">
               <div className="h-12 w-12 rounded-2xl flex items-center justify-center shrink-0"
-                style={{ background: "rgba(0,255,136,0.1)", border: "1px solid rgba(0,255,136,0.25)" }}>
+                style={{ background: "rgba(0,255,136,0.08)", border: "1px solid rgba(0,255,136,0.2)" }}>
                 <UserCheck size={22} style={{ color: "#059669" }} />
               </div>
               <div className="flex-1">
@@ -313,76 +303,70 @@ function CreateGroupInner() {
                   ))}
                 </div>
               </div>
-              <ArrowRight size={18} style={{ color: "#059669" }} />
+              <ArrowRight size={18} style={{ color: "#059669" }} className="self-center" />
             </div>
           </button>
 
-          {/* Option B — Corporate */}
           <button
             onClick={() => { setPaymentModel("corporate_sponsored"); setStep(1); }}
-            className="w-full rounded-2xl p-5 text-left transition-all hover:-translate-y-0.5 border-2"
-            style={{
-              background: paymentModel === "corporate_sponsored"
-                ? "linear-gradient(135deg, rgba(0,13,27,0.97), rgba(0,20,20,0.97))"
-                : "linear-gradient(135deg, rgba(11,20,27,0.96), rgba(11,31,20,0.96))",
-              borderColor: "rgba(0,212,255,0.4)",
-            }}>
+            className="w-full rounded-2xl p-5 text-left transition-all hover:-translate-y-0.5 border-2 bg-white shadow-sm"
+            style={{ borderColor: paymentModel === "corporate_sponsored" ? "rgba(0,212,255,0.5)" : "#e2e8f0" }}>
             <div className="flex items-start gap-4">
               <div className="h-12 w-12 rounded-2xl flex items-center justify-center shrink-0"
-                style={{ background: "rgba(0,212,255,0.15)", border: "1px solid rgba(0,212,255,0.3)" }}>
-                <Building2 size={22} style={{ color: "#00D4FF" }} />
+                style={{ background: "rgba(0,212,255,0.08)", border: "1px solid rgba(0,212,255,0.2)" }}>
+                <Building2 size={22} style={{ color: "#0891B2" }} />
               </div>
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="font-display text-lg uppercase font-black" style={{ color: "white" }}>
+                  <span className="font-display text-lg uppercase font-black" style={{ color: "#0F172A" }}>
                     Corporate Sponsor
                   </span>
                   <span className="text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest"
-                    style={{ background: "rgba(0,212,255,0.15)", color: "#00D4FF" }}>
+                    style={{ background: "rgba(0,212,255,0.08)", color: "#0891B2" }}>
                     Team pays $0
                   </span>
                 </div>
-                <p className="text-sm" style={{ color: "rgba(255,255,255,0.6)" }}>
-                  You cover the whole team with a one-time flat fee. Every employee joins for <strong style={{ color: "white" }}>$0 — zero friction</strong>.
+                <p className="text-sm" style={{ color: "#64748b" }}>
+                  You cover the whole team with a one-time flat fee. Every employee joins for <strong style={{ color: "#0F172A" }}>$0 — zero friction</strong>.
                 </p>
                 <div className="flex flex-wrap gap-2 mt-3">
                   {["HR managers", "Office pools", "Tech companies", "Remote teams"].map(t => (
                     <span key={t} className="text-[10px] font-bold px-2 py-0.5 rounded-full"
-                      style={{ background: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.5)" }}>{t}</span>
+                      style={{ background: "#f1f5f9", color: "#64748b" }}>{t}</span>
                   ))}
                 </div>
                 <div className="flex gap-3 mt-3">
-                  <div className="text-xs rounded-lg px-2.5 py-1.5"
-                    style={{ background: "rgba(0,212,255,0.1)", color: "#00D4FF" }}>
+                  <div className="text-xs rounded-lg px-2.5 py-1.5 font-medium"
+                    style={{ background: "rgba(0,212,255,0.06)", color: "#0891B2" }}>
                     $75 · up to 50 members
                   </div>
-                  <div className="text-xs rounded-lg px-2.5 py-1.5"
-                    style={{ background: "rgba(217,119,6,0.12)", color: "#d97706" }}>
+                  <div className="text-xs rounded-lg px-2.5 py-1.5 font-medium"
+                    style={{ background: "rgba(217,119,6,0.06)", color: "#d97706" }}>
                     $130 · up to 100 members
                   </div>
                 </div>
               </div>
-              <ArrowRight size={18} style={{ color: "#00D4FF" }} />
+              <ArrowRight size={18} style={{ color: "#0891B2" }} className="self-center" />
             </div>
           </button>
         </div>
       )}
 
-      {/* Step tabs — only show on steps 1-3 */}
+      {/* Step tabs */}
       {step > 0 && (
         <>
           <div className="flex items-center gap-2">
             <button onClick={() => setStep(0)} className="text-xs font-bold" style={{ color: "#0891B2" }}>
-              ← {isCorporate ? "Corporate" : "Friend Circle"}
+              ← Change Mode
             </button>
             <div className="flex-1 flex gap-2">
               {steps.map(s => (
-                <button key={s.n} type="button"
+                <button key={s.n} type="button" disabled
                   className="flex-1 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all"
                   style={step === s.n ? {
-                    background: "rgba(0,212,255,0.1)", border: "1px solid rgba(0,212,255,0.3)", color: "#0891B2",
+                    background: "rgba(0,212,255,0.08)", border: "1px solid rgba(0,212,255,0.25)", color: "#0891B2",
                   } : step > s.n ? {
-                    background: "rgba(0,255,136,0.08)", border: "1px solid rgba(0,255,136,0.2)", color: "#059669",
+                    background: "rgba(0,255,136,0.06)", border: "1px solid rgba(0,255,136,0.15)", color: "#059669",
                   } : {
                     background: "#f8fafc", border: "1px solid #e2e8f0", color: "#94a3b8",
                   }}>
@@ -392,13 +376,12 @@ function CreateGroupInner() {
             </div>
           </div>
 
-          {/* Corporate badge */}
           {isCorporate && (
             <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl"
-              style={{ background: "rgba(0,212,255,0.06)", border: "1px solid rgba(0,212,255,0.2)" }}>
+              style={{ background: "rgba(0,212,255,0.05)", border: "1px solid rgba(0,212,255,0.15)" }}>
               <Building2 size={14} style={{ color: "#0891B2" }} />
-              <span className="text-xs font-bold" style={{ color: "#0891B2" }}>
-                Corporate mode — employees will join free · unlock invites after payment
+              <span className="text-xs font-medium" style={{ color: "#0891B2" }}>
+                Corporate mode — employees join free · activate dashboard link after setup
               </span>
             </div>
           )}
@@ -415,14 +398,14 @@ function CreateGroupInner() {
       {/* ── STEP 1 ─────────────────────────────────────────────────────────── */}
       {step === 1 && (
         <div className="space-y-4">
-          <div className="rounded-2xl p-5 space-y-4"
-            style={{ background: "rgba(255,255,255,0.9)", border: "1px solid rgba(0,212,255,0.15)" }}>
+          <div className="rounded-2xl p-5 space-y-4 bg-white border border-slate-200 shadow-sm">
             <div>
               <label className="block text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#64748b" }}>
                 {isCorporate ? "Company Group Name *" : "Group Name *"}
               </label>
               <div className="relative">
-                {isCorporate ? <Building2 size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2" style={{ color: "#94a3b8" }} />
+                {isCorporate
+                  ? <Building2 size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2" style={{ color: "#94a3b8" }} />
                   : <Users size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2" style={{ color: "#94a3b8" }} />}
                 <input type="text"
                   placeholder={isCorporate ? "e.g. Engineering Dept — World Cup 2026" : "e.g. Sunday Squad World Cup"}
@@ -430,22 +413,6 @@ function CreateGroupInner() {
                   className={inputCls} style={{ paddingLeft: "2.25rem" }} />
               </div>
             </div>
-
-            {/* Corporate prize field */}
-            {isCorporate && (
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#64748b" }}>
-                  Company Prize (Optional)
-                </label>
-                <input type="text"
-                  placeholder="e.g. 1st place wins an extra day off + Amazon gift card"
-                  value={corporatePrize} onChange={e => setCorporatePrize(e.target.value)}
-                  className={inputCls} />
-                <p className="text-xs mt-1.5" style={{ color: "#94a3b8" }}>
-                  Shown on the leaderboard. No cash required — set any company prize you like.
-                </p>
-              </div>
-            )}
 
             <div>
               <label className="block text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#64748b" }}>Group Type</label>
@@ -457,8 +424,8 @@ function CreateGroupInner() {
                   <button key={type} type="button" onClick={() => setGroupType(type)}
                     className="rounded-xl p-3 text-left border transition-all"
                     style={groupType === type ? {
-                      background: "rgba(0,212,255,0.08)", borderColor: "rgba(0,212,255,0.4)",
-                    } : { background: "rgba(255,255,255,0.5)", borderColor: "#e2e8f0" }}>
+                      background: "rgba(0,212,255,0.05)", borderColor: "rgba(0,212,255,0.35)",
+                    } : { background: "white", borderColor: "#e2e8f0" }}>
                     <Icon size={16} className="mb-1.5" style={{ color: groupType === type ? "#0891B2" : "#94a3b8" }} />
                     <div className="text-xs font-bold" style={{ color: "#0F172A" }}>{label}</div>
                     <div className="text-[10px]" style={{ color: "#94a3b8" }}>{desc}</div>
@@ -471,14 +438,14 @@ function CreateGroupInner() {
               <div className="relative">
                 <label className="block text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#64748b" }}>Select Match</label>
                 <button type="button" onClick={() => setShowPicker(v => !v)}
-                  className="w-full flex items-center justify-between px-4 py-2.5 rounded-xl border text-sm"
-                  style={{ background: "white", borderColor: "#e2e8f0", color: "#0F172A" }}>
+                  className="w-full flex items-center justify-between px-4 py-2.5 rounded-xl border text-sm bg-white"
+                  style={{ borderColor: "#e2e8f0", color: "#0F172A" }}>
                   <span>{FEATURED_MATCHES.find(m => m.id === selectedMatch)?.label}</span>
                   <ChevronDown size={14} style={{ color: "#94a3b8" }} />
                 </button>
                 {showPicker && (
-                  <div className="absolute top-full left-0 right-0 mt-1 rounded-xl border overflow-hidden z-20"
-                    style={{ background: "white", borderColor: "#e2e8f0", boxShadow: "0 4px 16px rgba(0,0,0,0.1)" }}>
+                  <div className="absolute top-full left-0 right-0 mt-1 rounded-xl border overflow-hidden z-20 bg-white shadow-lg"
+                    style={{ borderColor: "#e2e8f0" }}>
                     {FEATURED_MATCHES.map(m => (
                       <button key={m.id} type="button"
                         onClick={() => { setSelectedMatch(m.id); setShowPicker(false); }}
@@ -497,7 +464,7 @@ function CreateGroupInner() {
           <button type="button" onClick={() => {
             if (!groupName.trim()) { setError("Group name is required"); return; }
             setError(null); setStep(2);
-          }} className="w-full py-3 rounded-xl font-bold text-sm uppercase tracking-wider flex items-center justify-center gap-2"
+          }} className="w-full py-3 rounded-xl font-bold text-sm uppercase tracking-wider flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5"
             style={{ background: "linear-gradient(135deg, #00FF88, #00D4FF)", color: "#0B141B" }}>
             Next: {isCorporate ? "Company Prizes" : "Buy-In & Prizes"} <ArrowRight size={16} />
           </button>
@@ -507,29 +474,30 @@ function CreateGroupInner() {
       {/* ── STEP 2 ─────────────────────────────────────────────────────────── */}
       {step === 2 && (
         <div className="space-y-4">
-          <div className="rounded-2xl p-5 space-y-4"
-            style={{ background: "rgba(255,255,255,0.9)", border: "1px solid rgba(0,212,255,0.15)" }}>
+          <div className="rounded-2xl p-5 space-y-4 bg-white border border-slate-200 shadow-sm">
 
             {isCorporate ? (
-              /* Corporate — dual-track prize selector */
               <div className="space-y-4">
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-widest mb-3" style={{ color: "#64748b" }}>Prize Structure</label>
+                  <label className="block text-xs font-bold uppercase tracking-widest mb-3" style={{ color: "#64748b" }}>
+                    Prize Structure
+                  </label>
                   <div className="grid grid-cols-2 gap-3">
                     <button type="button" onClick={() => setPrizeTrack("cash")}
-                      className="rounded-xl p-4 text-left border-2 transition-all"
-                      style={{ borderColor: prizeTrack === "cash" ? "rgba(0,212,255,0.4)" : "#e2e8f0", background: prizeTrack === "cash" ? "rgba(0,212,255,0.05)" : "white" }}>
+                      className="rounded-xl p-4 text-left border-2 transition-all bg-white"
+                      style={{ borderColor: prizeTrack === "cash" ? "rgba(0,212,255,0.4)" : "#e2e8f0", background: prizeTrack === "cash" ? "rgba(0,212,255,0.02)" : "white" }}>
                       <div className="text-sm font-bold mb-1" style={{ color: "#0F172A" }}>💰 Cash Split</div>
                       <div className="text-xs" style={{ color: "#64748b" }}>Track a buy-in pot with % payouts</div>
                     </button>
                     <button type="button" onClick={() => setPrizeTrack("company")}
-                      className="rounded-xl p-4 text-left border-2 transition-all"
-                      style={{ borderColor: prizeTrack === "company" ? "rgba(0,255,136,0.4)" : "#e2e8f0", background: prizeTrack === "company" ? "rgba(0,255,136,0.05)" : "white" }}>
+                      className="rounded-xl p-4 text-left border-2 transition-all bg-white"
+                      style={{ borderColor: prizeTrack === "company" ? "rgba(0,255,136,0.4)" : "#e2e8f0", background: prizeTrack === "company" ? "rgba(0,255,136,0.02)" : "white" }}>
                       <div className="text-sm font-bold mb-1" style={{ color: "#0F172A" }}>🏆 Company Rewards</div>
-                      <div className="text-xs" style={{ color: "#64748b" }}>Custom prizes, no cash tracking</div>
+                      <div className="text-xs" style={{ color: "#64748b" }}>Custom rewards, no financial tracking</div>
                     </button>
                   </div>
                 </div>
+
                 {prizeTrack === "cash" ? (
                   <div className="space-y-3">
                     <div className="grid grid-cols-2 gap-3">
@@ -561,174 +529,127 @@ function CreateGroupInner() {
                     ))}
                   </div>
                 ) : (
-                  <div className="space-y-3">
+                  <div className="space-y-4">
                     <p className="text-xs rounded-xl px-4 py-3"
                       style={{ background: "rgba(0,255,136,0.05)", border: "1px solid rgba(0,255,136,0.15)", color: "#475569" }}>
-                      Set custom reward text for each place. No cash tracking needed.
+                      Specify custom workspace rewards for each leaderboard place below.
                     </p>
                     <div>
-                      <label className="block text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#64748b" }}>How many places to reward?</label>
+                      <label className="block text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#64748b" }}>
+                        How many places to reward?
+                      </label>
                       <div className="flex gap-2">
                         {[1, 2, 3].map(n => (
                           <button key={n} type="button" onClick={() => setRewardPlaces(n)}
                             className="flex-1 py-2 rounded-xl text-sm font-bold border-2 transition-all"
-                            style={{ borderColor: rewardPlaces >= n ? "rgba(0,255,136,0.4)" : "#e2e8f0", background: rewardPlaces >= n ? "rgba(0,255,136,0.06)" : "white", color: rewardPlaces >= n ? "#059669" : "#64748b" }}>
-                            {n === 1 ? "1st only" : n === 2 ? "Top 2" : "Top 3"}
+                            style={{
+                              borderColor: rewardPlaces >= n ? "rgba(0,255,136,0.4)" : "#e2e8f0",
+                              background:  rewardPlaces >= n ? "rgba(0,255,136,0.04)" : "white",
+                              color:       rewardPlaces >= n ? "#059669" : "#64748b",
+                            }}>
+                            {n === 1 ? "1st Only" : n === 2 ? "Top 2" : "Top 3"}
                           </button>
                         ))}
                       </div>
                     </div>
-                    {([
-                      { place: 1, label: "🥇 1st Place Reward", key: "reward1" as const, ph: "e.g. Extra vacation day + Amazon gift card" },
-                      { place: 2, label: "🥈 2nd Place Reward", key: "reward2" as const, ph: "e.g. Team lunch"                          },
-                      { place: 3, label: "🥉 3rd Place Reward", key: "reward3" as const, ph: "e.g. Bragging rights"                     },
-                    ] as const).filter(r => r.place <= rewardPlaces).map(({ label, key, ph }) => (
-                      <div key={key}>
-                        <label className="block text-xs font-bold uppercase tracking-widest mb-1.5" style={{ color: "#64748b" }}>{label}</label>
-                        <input type="text" placeholder={ph} value={companyRewards[key]}
-                          onChange={e => setCompanyRewards(p => ({ ...p, [key]: e.target.value }))}
-                          className={inputCls} />
-                      </div>
-                    ))}
+                    <div className="space-y-3">
+                      {([
+                        { place: 1, label: "🥇 1st Place Reward", key: "reward1" as const, ph: "e.g. Extra day off + $100 Amazon Voucher" },
+                        { place: 2, label: "🥈 2nd Place Reward", key: "reward2" as const, ph: "e.g. Free company swag or free lunch"     },
+                        { place: 3, label: "🥉 3rd Place Reward", key: "reward3" as const, ph: "e.g. Special desk trophy & bragging rights" },
+                      ] as const).filter(r => r.place <= rewardPlaces).map(({ label, key, ph }) => (
+                        <div key={key}>
+                          <label className="block text-[11px] font-bold uppercase tracking-wider mb-1.5" style={{ color: "#94a3b8" }}>{label}</label>
+                          <input type="text" placeholder={ph} value={companyRewards[key]}
+                            onChange={e => setCompanyRewards({ ...companyRewards, [key]: e.target.value })}
+                            className={inputCls} />
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 )}
               </div>
             ) : (
-              /* Friend group — standard buy-in */
-              <>
-                <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#64748b" }}>Buy-in per player ($)</label>
+                    <label className="block text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#64748b" }}>Buy-In Amount ($)</label>
                     <div className="relative">
                       <DollarSign size={14} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: "#94a3b8" }} />
-                      <input type="number" min={0} value={buyIn}
-                        onChange={e => setBuyIn(Number(e.target.value))}
-                        className={inputCls} style={{ paddingLeft: "2rem" }} />
+                      <input type="number" min={0} value={buyIn} onChange={e => setBuyIn(Number(e.target.value))} className={inputCls} style={{ paddingLeft: "2rem" }} />
                     </div>
                   </div>
                   <div>
-                    <label className="block text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#64748b" }}>Expected members</label>
-                    <div className="relative">
-                      <Users size={14} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: "#94a3b8" }} />
-                      <input type="number" min={2} max={100} value={memberCount}
-                        onChange={e => setMemberCount(Number(e.target.value))}
-                        className={inputCls} style={{ paddingLeft: "2rem" }} />
+                    <label className="block text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#64748b" }}>Target Members</label>
+                    <input type="number" min={2} value={memberCount} onChange={e => setMemberCount(Number(e.target.value))} className={inputCls} />
+                  </div>
+                </div>
+
+                <div className="p-3.5 rounded-xl flex justify-between items-center text-sm"
+                  style={{ background: "#f8fafc", border: "1px solid #e2e8f0" }}>
+                  <span style={{ color: "#64748b" }}>Projected Cash Pool:</span>
+                  <span className="font-bold" style={{ color: "#0F172A" }}>${totalPot}</span>
+                </div>
+
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center">
+                    <label className="text-xs font-bold uppercase tracking-widest" style={{ color: "#64748b" }}>Prize Pool Split</label>
+                    <span className="text-xs font-bold" style={{ color: totalPct === 100 ? "#059669" : "#dc2626" }}>{totalPct}% allocated</span>
+                  </div>
+                  {[
+                    { label: "🥇 1st Place", val: payoutFirst,  set: setPayoutFirst,  split: Math.round(totalPot * payoutFirst  / 100) },
+                    { label: "🥈 2nd Place", val: payoutSecond, set: setPayoutSecond, split: Math.round(totalPot * payoutSecond / 100) },
+                    { label: "🥉 3rd Place", val: payoutThird,  set: setPayoutThird,  split: Math.round(totalPot * payoutThird  / 100) },
+                  ].map(({ label, val, set, split }) => (
+                    <div key={label} className="flex items-center gap-3">
+                      <span className="text-sm w-20 font-medium" style={{ color: "#475569" }}>{label}</span>
+                      <input type="number" min={0} max={100} value={val} onChange={e => set(Number(e.target.value))}
+                        className="w-16 rounded-lg px-2 py-1.5 text-sm text-center border focus:outline-none"
+                        style={{ borderColor: "#e2e8f0", color: "#0F172A", background: "white" }} />
+                      <span className="text-sm w-6" style={{ color: "#94a3b8" }}>%</span>
+                      <span className="text-xs ml-auto font-mono" style={{ color: "#94a3b8" }}>${split} prize</span>
                     </div>
-                  </div>
+                  ))}
                 </div>
-                <p className="text-xs" style={{ color: "#94a3b8" }}>
-                  Buy-in is for tracking only — Cup Clash doesn&apos;t handle money.
-                </p>
-                {buyIn > 0 && memberCount > 0 && (
-                  <div className="rounded-xl p-3 text-center"
-                    style={{ background: "rgba(0,212,255,0.05)", border: "1px solid rgba(0,212,255,0.15)" }}>
-                    <div className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: "#0891B2" }}>Estimated prize pot</div>
-                    <div className="font-display text-3xl font-black" style={{ color: "#0F172A" }}>${totalPot.toLocaleString()}</div>
-                  </div>
-                )}
-                <div>
-                  <div className="flex items-center justify-between mb-3">
-                    <label className="text-xs font-bold uppercase tracking-widest" style={{ color: "#64748b" }}>Payout split</label>
-                    <span className="text-xs font-bold" style={{ color: totalPct === 100 ? "#059669" : "#dc2626" }}>
-                      {totalPct}% / 100%
-                    </span>
-                  </div>
-                  <div className="space-y-2">
-                    {[
-                      { label: "🥇 1st place", val: payoutFirst,  set: setPayoutFirst,  prize: prize1, color: "#d97706" },
-                      { label: "🥈 2nd place", val: payoutSecond, set: setPayoutSecond, prize: prize2, color: "#64748b" },
-                      { label: "🥉 3rd place", val: payoutThird,  set: setPayoutThird,  prize: prize3, color: "#b45309" },
-                    ].map(({ label, val, set, prize, color }) => (
-                      <div key={label} className="flex items-center gap-3">
-                        <span className="text-sm w-24 shrink-0" style={{ color: "#475569" }}>{label}</span>
-                        <input type="number" min={0} max={100} value={val}
-                          onChange={e => set(Number(e.target.value))}
-                          className="w-16 rounded-lg px-2 py-1.5 text-sm text-center border focus:outline-none"
-                          style={{ borderColor: "#e2e8f0", color: "#0F172A", background: "white" }} />
-                        <span className="text-sm" style={{ color: "#94a3b8" }}>%</span>
-                        {buyIn > 0 && memberCount > 0 && (
-                          <span className="text-sm font-bold ml-auto" style={{ color }}>${prize.toLocaleString()}</span>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                  {totalPct !== 100 && (
-                    <p className="mt-2 text-xs flex items-center gap-1" style={{ color: "#dc2626" }}>
-                      <AlertCircle size={11} /> Must add up to exactly 100%
-                    </p>
-                  )}
-                </div>
-              </>
+              </div>
             )}
           </div>
 
-          <div className="flex gap-2">
-            <button type="button" onClick={() => setStep(1)}
-              className="px-5 py-3 rounded-xl font-bold text-sm uppercase tracking-wider"
-              style={{ border: "1px solid #e2e8f0", color: "#64748b", background: "white" }}>
-              Back
-            </button>
-            <button type="button" onClick={() => {
-              if (totalPct !== 100) { setError("Payouts must add up to 100%"); return; }
-              setError(null); setStep(3);
-            }} className="flex-1 py-3 rounded-xl font-bold text-sm uppercase tracking-wider flex items-center justify-center gap-2"
-              style={{ background: "linear-gradient(135deg, #00FF88, #00D4FF)", color: "#0B141B" }}>
-              Next: Scoring Rules <ArrowRight size={16} />
-            </button>
-          </div>
+          <button type="button" onClick={() => {
+            if (!isCorporate && totalPct !== 100) { setError("Prize allocation must equal exactly 100%"); return; }
+            if (isCorporate && prizeTrack === "cash" && totalPct !== 100) { setError("Prize allocation must equal exactly 100%"); return; }
+            setError(null); setStep(3);
+          }} className="w-full py-3 rounded-xl font-bold text-sm uppercase tracking-wider flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5"
+            style={{ background: "linear-gradient(135deg, #00FF88, #00D4FF)", color: "#0B141B" }}>
+            Next: Scoring Rules <ArrowRight size={16} />
+          </button>
         </div>
       )}
 
       {/* ── STEP 3 ─────────────────────────────────────────────────────────── */}
       {step === 3 && (
         <div className="space-y-4">
-          <div className="rounded-2xl p-5"
-            style={{ background: "rgba(255,255,255,0.9)", border: "1px solid rgba(0,212,255,0.15)" }}>
+          <div className="rounded-2xl p-5 bg-white border border-slate-200 shadow-sm">
             <div className="flex items-center gap-2 mb-4">
-              <Settings size={16} style={{ color: "#0891B2" }} />
-              <span className="text-xs font-bold uppercase tracking-widest" style={{ color: "#64748b" }}>Match Predictions</span>
+              <Settings size={14} style={{ color: "#0891B2" }} />
+              <span className="text-xs font-bold uppercase tracking-widest" style={{ color: "#64748b" }}>Configure point weights</span>
             </div>
-            <RuleRow label="Correct outcome" desc="Right result (win/draw/loss), wrong score"
-              pts={correctOutcome} setPts={setCorrectOutcome} enabled={enableOutcome} onToggle={() => setEnableOutcome(v => !v)} />
-            <RuleRow label="Exact score bonus" desc="Perfect score guess — includes correct outcome"
-              pts={exactScore} setPts={setExactScore} enabled={enableExact} onToggle={() => setEnableExact(v => !v)} />
-            <RuleRow label="Knockout advancement" desc="Correctly picked the team that advances"
-              pts={koAdvancement} setPts={setKoAdvancement} enabled={enableKO} onToggle={() => setEnableKO(v => !v)} />
-
-            <div className="flex items-center gap-2 mt-5 mb-3">
-              <Trophy size={14} style={{ color: "#d97706" }} />
-              <span className="text-xs font-bold uppercase tracking-widest" style={{ color: "#64748b" }}>Tournament Bonus Picks</span>
-              <span className="text-[10px] ml-auto" style={{ color: "#94a3b8" }}>Lock before Jun 11</span>
-            </div>
-            <RuleRow label="Tournament winner" desc="Predict the World Cup champion"
-              pts={tourneyWinner} setPts={setTourneyWinner} enabled={enableWinner} onToggle={() => setEnableWinner(v => !v)} />
-            <RuleRow label="Top scorer (Golden Boot)" desc="Player with most goals in the tournament"
-              pts={topScorer} setPts={setTopScorer} enabled={enableScorer} onToggle={() => setEnableScorer(v => !v)} />
-            <RuleRow label="Top assister" desc="Player with most assists in the tournament"
-              pts={topAssister} setPts={setTopAssister} enabled={enableAssister} onToggle={() => setEnableAssister(v => !v)} />
-            <RuleRow label="Best defence" desc="Team that concedes fewest goals in group stage"
-              pts={bestDefence} setPts={setBestDefence} enabled={enableDefence} onToggle={() => setEnableDefence(v => !v)} />
-            <RuleRow label="Best young player" desc="Under-21 player of the tournament"
-              pts={bestYoung} setPts={setBestYoung} enabled={enableYoung} onToggle={() => setEnableYoung(v => !v)} />
-            <RuleRow label="Golden Ball (Best player)" desc="Overall best player of the tournament"
-              pts={goldenBall} setPts={setGoldenBall} enabled={enableGoldenBall} onToggle={() => setEnableGoldenBall(v => !v)} />
+            <RuleRow label="Match Outcome"            desc="Correctly predicting W/D/L result"              pts={correctOutcome} setPts={setCorrectOutcome} enabled={enableOutcome}    onToggle={() => setEnableOutcome(!enableOutcome)}       />
+            <RuleRow label="Exact Scoreline"          desc="Bonus for guessing identical score (e.g. 2-1)"  pts={exactScore}     setPts={setExactScore}     enabled={enableExact}      onToggle={() => setEnableExact(!enableExact)}           />
+            <RuleRow label="Knockout Advancement"     desc="Correctly choosing which team advances"         pts={koAdvancement}  setPts={setKoAdvancement}  enabled={enableKO}         onToggle={() => setEnableKO(!enableKO)}                 />
+            <RuleRow label="Tournament Champion"      desc="Picking the winner of the trophy"               pts={tourneyWinner}  setPts={setTourneyWinner}  enabled={enableWinner}     onToggle={() => setEnableWinner(!enableWinner)}         />
+            <RuleRow label="Golden Boot Winner"       desc="Predicting top goals scorer"                    pts={topScorer}      setPts={setTopScorer}      enabled={enableScorer}     onToggle={() => setEnableScorer(!enableScorer)}         />
+            <RuleRow label="Top Assist Playmaker"     desc="Predicting tournament assists champion"         pts={topAssister}    setPts={setTopAssister}    enabled={enableAssister}   onToggle={() => setEnableAssister(!enableAssister)}     />
+            <RuleRow label="Best Defence"             desc="Team with lowest goals conceded"                pts={bestDefence}    setPts={setBestDefence}    enabled={enableDefence}    onToggle={() => setEnableDefence(!enableDefence)}       />
+            <RuleRow label="Best Young Player"        desc="Official FIFA Best Young Player award"          pts={bestYoung}      setPts={setBestYoung}      enabled={enableYoung}      onToggle={() => setEnableYoung(!enableYoung)}           />
+            <RuleRow label="Golden Ball (MVP)"        desc="Tournament best player award winner"            pts={goldenBall}     setPts={setGoldenBall}     enabled={enableGoldenBall} onToggle={() => setEnableGoldenBall(!enableGoldenBall)} />
           </div>
 
-          <div className="flex gap-2">
-            <button type="button" onClick={() => setStep(2)}
-              className="px-5 py-3 rounded-xl font-bold text-sm uppercase tracking-wider"
-              style={{ border: "1px solid #e2e8f0", color: "#64748b", background: "white" }}>
-              Back
-            </button>
-            <button type="button" onClick={handleCreate} disabled={loading}
-              className="flex-1 py-3 rounded-xl font-bold text-sm uppercase tracking-wider flex items-center justify-center gap-2 disabled:opacity-50"
-              style={{ background: "linear-gradient(135deg, #00FF88, #00D4FF)", color: "#0B141B" }}>
-              {loading ? "Creating..." : isCorporate
-                ? <><Building2 size={16} /> Create Corporate Group — Free</>
-                : <><Trophy size={16} /> Create Group — Free</>
-              }
-            </button>
-          </div>
+          <button type="button" onClick={handleCreate} disabled={loading}
+            className="w-full py-4 rounded-xl font-bold text-sm uppercase tracking-wider flex items-center justify-center gap-2 transition-all disabled:opacity-50"
+            style={{ background: "linear-gradient(135deg, #00FF88, #00D4FF)", color: "#0B141B" }}>
+            {loading ? "Creating your league..." : <><Trophy size={16} /> Complete & Launch Group</>}
+          </button>
         </div>
       )}
     </div>
@@ -738,10 +659,8 @@ function CreateGroupInner() {
 export default function CreateGroupPage() {
   return (
     <Suspense fallback={
-      <div className="max-w-lg mx-auto px-4 py-6 space-y-4">
-        <div className="h-8 w-48 rounded-xl animate-pulse" style={{ background: "#f1f5f9" }} />
-        <div className="h-32 rounded-2xl animate-pulse" style={{ background: "#f1f5f9" }} />
-        <div className="h-32 rounded-2xl animate-pulse" style={{ background: "#f1f5f9" }} />
+      <div className="max-w-lg mx-auto px-4 py-12 text-center text-sm" style={{ color: "#94a3b8" }}>
+        Loading...
       </div>
     }>
       <CreateGroupInner />
