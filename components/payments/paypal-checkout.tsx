@@ -5,12 +5,12 @@ import { useRouter } from "next/navigation";
 import { Loader2, CheckCircle, RefreshCw } from "lucide-react";
 
 interface PayPalCheckoutProps {
-  groupId:    string;
-  groupName:  string;
-  amount:     number;
-  capacity?:  number; // for corporate: 50 or 100
+  groupId:      string;
+  groupName:    string;
+  amount:       number;
+  capacity?:    number;
   containerId?: string;
-  onSuccess?: () => void;
+  onSuccess?:   () => void;
 }
 
 declare global {
@@ -27,22 +27,32 @@ export function PayPalCheckout({
   containerId = "paypal-btn-container",
   onSuccess,
 }: PayPalCheckoutProps) {
-  const [status,  setStatus]  = useState<"loading" | "ready" | "success" | "error">("loading");
-  const [error,   setError]   = useState<string | null>(null);
-  const [attempt, setAttempt] = useState(0);
-  const mounted   = useRef(false);
-  const router    = useRouter();
-  const MAX       = 4;
+  const [scriptLoaded, setScriptLoaded] = useState(false);
+  const [status,       setStatus]       = useState<"loading" | "ready" | "success" | "error">("loading");
+  const [error,        setError]        = useState<string | null>(null);
+  const buttonsRendered = useRef(false);
+  const router = useRouter();
 
-  const mountButtons = useCallback(() => {
-    if (!window.paypal) return false;
+  // Step 1 — wait for PayPal SDK via event or existing global
+  useEffect(() => {
+    if (window.paypal) {
+      setScriptLoaded(true);
+      return;
+    }
+    const handleReady = () => setScriptLoaded(true);
+    window.addEventListener("PayPalScriptReady", handleReady);
+    return () => window.removeEventListener("PayPalScriptReady", handleReady);
+  }, []);
+
+  // Step 2 — render buttons once SDK is ready
+  const renderButtons = useCallback(() => {
+    if (!window.paypal || buttonsRendered.current) return;
 
     const container = document.getElementById(containerId);
-    if (!container) return false;
-    container.innerHTML = ""; // clear before re-render
-
+    if (!container) return;
+    container.innerHTML = "";
+    buttonsRendered.current = true;
     setStatus("ready");
-    setError(null);
 
     window.paypal.Buttons({
       style: { layout: "vertical", color: "gold", shape: "rect", label: "pay", height: 48 },
@@ -61,8 +71,11 @@ export function PayPalCheckout({
 
       onApprove: async (data: { orderID: string }) => {
         setStatus("loading");
+        buttonsRendered.current = false; // allow re-render if needed
         try {
-          const endpoint = onSuccess ? "/api/paypal/capture-corporate" : "/api/paypal/capture-order";
+          const endpoint = onSuccess
+            ? "/api/paypal/capture-corporate"
+            : "/api/paypal/capture-order";
           const res = await fetch(endpoint, {
             method:  "POST",
             headers: { "Content-Type": "application/json" },
@@ -74,56 +87,44 @@ export function PayPalCheckout({
             if (onSuccess) setTimeout(onSuccess, 1500);
             else setTimeout(() => router.push("/groups"), 1800);
           } else {
-            setError(result.error ?? "Payment capture failed. Please contact support.");
+            setError(result.error ?? "Payment failed. Please contact support.");
             setStatus("error");
           }
         } catch {
-          setError("Network error during capture. Check your email before retrying.");
+          setError("Network error. Check your email before retrying.");
           setStatus("error");
         }
       },
 
-      onError:  () => { setError("Payment failed. Please try again."); setStatus("ready"); },
-      onCancel: () => { setError(null); setStatus("ready"); },
+      onError:  () => { setError("Payment failed. Please try again."); setStatus("ready"); buttonsRendered.current = false; },
+      onCancel: () => { setError(null); },
 
     }).render(`#${containerId}`).catch((err: unknown) => {
       console.error("PayPal render error:", err);
+      buttonsRendered.current = false;
     });
-
-    return true;
-  }, [groupId, amount, containerId, router, onSuccess]);
-
-  const tryMount = useCallback((n: number) => {
-    if (window.paypal) {
-      mountButtons();
-      return;
-    }
-
-    // SDK not ready yet — poll every 400ms, up to MAX attempts
-    if (n >= MAX) {
-      setError("PayPal could not load. Please check your connection and try again.");
-      setStatus("error");
-      return;
-    }
-
-    setTimeout(() => {
-      setAttempt(n + 1);
-      tryMount(n + 1);
-    }, 400 * (n + 1));
-  }, [mountButtons]);
+  }, [groupId, amount, containerId, router, onSuccess, capacity]);
 
   useEffect(() => {
-    if (mounted.current) return;
-    mounted.current = true;
-    tryMount(0);
-  }, [tryMount]);
+    if (scriptLoaded) renderButtons();
+  }, [scriptLoaded, renderButtons]);
 
   const handleRetry = () => {
-    mounted.current = false;
+    buttonsRendered.current = false;
     setStatus("loading");
     setError(null);
-    setAttempt(0);
-    tryMount(0);
+    if (window.paypal) {
+      renderButtons();
+    } else {
+      // Re-trigger script load
+      const existing = document.getElementById("paypal-sdk");
+      if (existing) existing.remove();
+      window.dispatchEvent(new Event("PayPalScriptReady")); // clear listener
+      setScriptLoaded(false);
+      // Re-add listener
+      const handleReady = () => { setScriptLoaded(true); };
+      window.addEventListener("PayPalScriptReady", handleReady, { once: true });
+    }
   };
 
   if (status === "success") {
@@ -145,9 +146,7 @@ export function PayPalCheckout({
       {status === "loading" && (
         <div className="flex items-center justify-center py-6 gap-2" style={{ color: "#94a3b8" }}>
           <Loader2 size={18} className="animate-spin" />
-          <span className="text-sm">
-            {attempt > 0 ? `Connecting to PayPal... (${attempt}/${MAX})` : "Loading payment..."}
-          </span>
+          <span className="text-sm">Loading payment...</span>
         </div>
       )}
 
