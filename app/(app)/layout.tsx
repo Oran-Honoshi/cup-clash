@@ -4,10 +4,19 @@ import { AppHeader } from "@/components/app/app-header";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="min-h-screen flex">
+    <div className="relative min-h-screen flex">
+
+      {/* ── Stadium background ── */}
+      <div
+        className="fixed inset-0 z-0 bg-cover bg-center bg-no-repeat"
+        style={{ backgroundImage: "url('/assets/images/stadium-bg-perspective.png')" }}
+      />
+      {/* Darkening overlay so text stays readable */}
+      <div className="fixed inset-0 z-0 bg-black/55" />
+
+      {/* ── App shell (sits above the background) ── */}
       <AppSidebar />
-      <main className="flex-1 lg:ml-60 pb-20 lg:pb-0 flex flex-col">
-        {/* Mobile top header with notification bell */}
+      <main className="relative z-10 flex-1 lg:ml-60 pb-20 lg:pb-0 flex flex-col">
         <AppHeader />
         <div className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-6">
           {children}
