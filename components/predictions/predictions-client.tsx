@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Users, Trophy, Lock, ChevronDown } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { GroupStagePredictions } from "@/components/predictions/group-stage-predictions";
 import { TournamentPicks } from "@/components/dashboard/tournament-picks";
+import { GuestStore } from "@/components/ui/guest-signup-modal";
 
 const TABS = [
   { id: "group"      as const, label: "Group Stage",      icon: Users,  sub: "36 matches · scores & tables"  },
@@ -12,17 +13,60 @@ const TABS = [
 ];
 
 interface PredictionsClientProps {
-  groupId:    string;
-  groupName:  string;
-  allGroups:  Array<{ id: string; name: string; passkey: string }>;
-  userId:     string;
-  isPaid:     boolean;
+  groupId:           string;
+  groupName:         string;
+  allGroups:         Array<{ id: string; name: string; passkey: string }>;
+  userId:            string;
+  isPaid:            boolean;
+  /** When true, migrate any localStorage guest predictions to the DB on mount */
+  migrateGuestPicks?: boolean;
 }
 
-export function PredictionsClient({ groupId, groupName, allGroups, userId, isPaid }: PredictionsClientProps) {
-  const [tab,          setTab]          = useState<"group" | "tournament">("group");
+export function PredictionsClient({
+  groupId,
+  groupName,
+  allGroups,
+  userId,
+  isPaid,
+  migrateGuestPicks = false,
+}: PredictionsClientProps) {
+  const [tab, setTab]                       = useState<"group" | "tournament">("group");
   const [groupPickerOpen, setGroupPickerOpen] = useState(false);
-  const router = useRouter();
+  const [migrated, setMigrated]             = useState(false);
+  const router                              = useRouter();
+
+  // ── Migrate guest localStorage picks → DB on first render after signup ────
+  useEffect(() => {
+    if (!migrateGuestPicks || migrated) return;
+
+    const guestPicks = GuestStore.get();
+    if (!guestPicks.length) return;
+
+    setMigrated(true);
+
+    // Fire-and-forget: POST to migration endpoint
+    fetch("/api/predictions/migrate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        groupId,
+        userId,
+        predictions: guestPicks,
+      }),
+    })
+      .then((res) => {
+        if (res.ok) {
+          GuestStore.clear();
+          // Remove migrate param from URL without full reload
+          const url = new URL(window.location.href);
+          url.searchParams.delete("migrate");
+          window.history.replaceState({}, "", url.toString());
+        }
+      })
+      .catch((err) => {
+        console.error("[migrate guest picks]", err);
+      });
+  }, [migrateGuestPicks, migrated, groupId, userId]);
 
   const switchGroup = (newGroupId: string) => {
     setGroupPickerOpen(false);
@@ -43,7 +87,7 @@ export function PredictionsClient({ groupId, groupName, allGroups, userId, isPai
         </p>
       </div>
 
-      {/* Group switcher */}
+      {/* Group switcher — multiple groups */}
       {allGroups.length > 1 && (
         <div className="relative">
           <button
@@ -53,7 +97,8 @@ export function PredictionsClient({ groupId, groupName, allGroups, userId, isPai
               background: "rgba(255,255,255,0.9)",
               border: "1px solid rgba(0,212,255,0.3)",
               boxShadow: "0 4px 16px rgba(0,212,255,0.08)",
-            }}>
+            }}
+          >
             <div className="h-8 w-8 rounded-xl flex items-center justify-center shrink-0"
               style={{ background: "rgba(0,212,255,0.1)", border: "1px solid rgba(0,212,255,0.2)" }}>
               <Users size={15} style={{ color: "#0891B2" }} />
@@ -66,7 +111,11 @@ export function PredictionsClient({ groupId, groupName, allGroups, userId, isPai
                 {groupName}
               </div>
             </div>
-            <ChevronDown size={16} style={{ color: "#94a3b8", transform: groupPickerOpen ? "rotate(180deg)" : "none", transition: "transform 0.2s" }} />
+            <ChevronDown size={16} style={{
+              color: "#94a3b8",
+              transform: groupPickerOpen ? "rotate(180deg)" : "none",
+              transition: "transform 0.2s",
+            }} />
           </button>
 
           {groupPickerOpen && (
@@ -80,7 +129,8 @@ export function PredictionsClient({ groupId, groupName, allGroups, userId, isPai
                   style={{
                     borderColor: "#f1f5f9",
                     background: g.id === groupId ? "rgba(0,212,255,0.05)" : undefined,
-                  }}>
+                  }}
+                >
                   <div className="flex-1 min-w-0">
                     <div className="font-bold text-sm truncate" style={{ color: "#0F172A" }}>{g.name}</div>
                     <div className="text-xs font-mono" style={{ color: "#94a3b8" }}>{g.passkey}</div>
@@ -121,7 +171,8 @@ export function PredictionsClient({ groupId, groupName, allGroups, userId, isPai
               } : {
                 background: "rgba(255,255,255,0.5)",
                 border: "1px solid #e2e8f0",
-              }}>
+              }}
+            >
               <div className="h-9 w-9 rounded-xl flex items-center justify-center shrink-0"
                 style={active
                   ? { background: "rgba(0,212,255,0.1)", border: "1px solid rgba(0,212,255,0.25)" }

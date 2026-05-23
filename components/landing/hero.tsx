@@ -27,27 +27,15 @@ function PhoneMockup() {
           50%      { transform: rotate(15deg) translateY(-10px); }
         }
       `}</style>
-      <div
-        className="relative rounded-[2.5rem] overflow-hidden"
-        style={{
-          background: "#ffffff",
-          border: "2px solid rgba(0,212,255,0.35)",
-          boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.9)",
-        }}
-      >
+      <div className="relative rounded-[2.5rem] overflow-hidden"
+        style={{ background: "#ffffff", border: "2px solid rgba(0,212,255,0.35)", boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.9)" }}>
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-6 rounded-b-2xl z-10" style={{ background: "#F8FAFC" }} />
         <div className="relative">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={PHOTOS.stadiumNightAbove}
-            alt="Stadium"
-            className="w-full object-cover"
-            style={{ height: 120, objectPosition: "center 30%", opacity: 0.15 }}
-          />
-          <div
-            className="absolute inset-0"
-            style={{ background: "linear-gradient(to bottom, #F8FAFC 0%, rgba(248,250,252,0.6) 60%, #F8FAFC 100%)" }}
-          />
+          <img src={PHOTOS.stadiumNightAbove} alt="Stadium" className="w-full object-cover"
+            style={{ height: 120, objectPosition: "center 30%", opacity: 0.15 }} />
+          <div className="absolute inset-0"
+            style={{ background: "linear-gradient(to bottom, #F8FAFC 0%, rgba(248,250,252,0.6) 60%, #F8FAFC 100%)" }} />
         </div>
         <div className="px-4 pb-4 space-y-3 -mt-8 relative z-10">
           <div className="flex items-center justify-between pt-8">
@@ -55,40 +43,29 @@ function PhoneMockup() {
               <div className="text-[9px] font-bold uppercase tracking-widest" style={{ color: "#00D4FF" }}>Cup Clash</div>
               <div className="font-bold text-sm" style={{ color: "#0B141B" }}>Tech Titans</div>
             </div>
-            <div
-              className="h-7 w-7 rounded-full flex items-center justify-center text-xs font-bold"
-              style={{ background: "linear-gradient(135deg, #00D4FF, #00FF88)", color: "#0B141B" }}
-            >A</div>
+            <div className="h-7 w-7 rounded-full flex items-center justify-center text-xs font-bold"
+              style={{ background: "linear-gradient(135deg, #00D4FF, #00FF88)", color: "#0B141B" }}>A</div>
           </div>
-          <div
-            className="rounded-2xl p-3 space-y-2"
-            style={{ background: "rgba(255,255,255,0.85)", border: "1px solid rgba(0,212,255,0.15)", backdropFilter: "blur(8px)" }}
-          >
+          <div className="rounded-2xl p-3 space-y-2"
+            style={{ background: "rgba(255,255,255,0.85)", border: "1px solid rgba(0,212,255,0.15)", backdropFilter: "blur(8px)" }}>
             <div className="text-[9px] font-bold uppercase tracking-widest" style={{ color: "#00D4FF" }}>Leaderboard</div>
             {[
               { rank: 1, name: "Amit",  pts: 145, you: true  },
               { rank: 2, name: "Sarah", pts: 130, you: false },
               { rank: 3, name: "John",  pts: 95,  you: false },
             ].map(p => (
-              <div
-                key={p.name}
-                className="flex items-center gap-2 rounded-lg px-2 py-1"
-                style={p.you ? { background: "rgba(0,255,136,0.08)", border: "1px solid rgba(0,255,136,0.2)" } : {}}
-              >
+              <div key={p.name} className="flex items-center gap-2 rounded-lg px-2 py-1"
+                style={p.you ? { background: "rgba(0,255,136,0.08)", border: "1px solid rgba(0,255,136,0.2)" } : {}}>
                 <span className="text-[10px] font-black w-4" style={{ color: p.you ? "#00FF88" : "#94a3b8" }}>{p.rank}</span>
-                <div
-                  className="h-5 w-5 rounded-full flex items-center justify-center text-[8px] font-bold"
-                  style={{ background: "linear-gradient(135deg, #00D4FF, #00FF88)", color: "#0B141B" }}
-                >{p.name[0]}</div>
+                <div className="h-5 w-5 rounded-full flex items-center justify-center text-[8px] font-bold"
+                  style={{ background: "linear-gradient(135deg, #00D4FF, #00FF88)", color: "#0B141B" }}>{p.name[0]}</div>
                 <span className="text-[10px] font-bold flex-1" style={{ color: "#0B141B" }}>{p.name}</span>
                 <span className="font-bold text-[11px]" style={{ color: p.you ? "#00FF88" : "#334155" }}>{p.pts}</span>
               </div>
             ))}
           </div>
-          <div
-            className="rounded-2xl p-3"
-            style={{ background: "rgba(255,255,255,0.9)", border: "1px solid rgba(0,255,136,0.25)", boxShadow: "0 4px 16px rgba(0,255,136,0.1)" }}
-          >
+          <div className="rounded-2xl p-3"
+            style={{ background: "rgba(255,255,255,0.9)", border: "1px solid rgba(0,255,136,0.25)", boxShadow: "0 4px 16px rgba(0,255,136,0.1)" }}>
             <div className="text-[8px] font-bold uppercase tracking-widest mb-2" style={{ color: "#00D4FF" }}>Next Match</div>
             <div className="flex items-center justify-between mb-3">
               <div className="text-center">
@@ -98,15 +75,11 @@ function PhoneMockup() {
                 <div className="text-[9px] font-bold" style={{ color: "#0B141B" }}>BRA</div>
               </div>
               <div className="flex gap-1 items-center">
-                <div
-                  className="w-7 h-7 rounded-lg flex items-center justify-center text-sm font-bold"
-                  style={{ background: "rgba(0,212,255,0.08)", color: "#0B141B", border: "1px solid rgba(0,212,255,0.2)" }}
-                >2</div>
+                <div className="w-7 h-7 rounded-lg flex items-center justify-center text-sm font-bold"
+                  style={{ background: "rgba(0,212,255,0.08)", color: "#0B141B", border: "1px solid rgba(0,212,255,0.2)" }}>2</div>
                 <span className="font-bold" style={{ color: "#94a3b8" }}>–</span>
-                <div
-                  className="w-7 h-7 rounded-lg flex items-center justify-center text-sm font-bold"
-                  style={{ background: "rgba(0,212,255,0.08)", color: "#0B141B", border: "1px solid rgba(0,212,255,0.2)" }}
-                >1</div>
+                <div className="w-7 h-7 rounded-lg flex items-center justify-center text-sm font-bold"
+                  style={{ background: "rgba(0,212,255,0.08)", color: "#0B141B", border: "1px solid rgba(0,212,255,0.2)" }}>1</div>
               </div>
               <div className="text-center">
                 <div className="relative h-5 w-6 rounded-sm overflow-hidden">
@@ -115,10 +88,8 @@ function PhoneMockup() {
                 <div className="text-[9px] font-bold" style={{ color: "#0B141B" }}>FRA</div>
               </div>
             </div>
-            <button
-              className="w-full rounded-xl py-2 text-[9px] font-bold uppercase tracking-widest"
-              style={{ background: "linear-gradient(135deg, #00FF88, #00D4FF)", color: "#0B141B", boxShadow: "0 4px 12px rgba(0,255,136,0.35)" }}
-            >
+            <button className="w-full rounded-xl py-2 text-[9px] font-bold uppercase tracking-widest"
+              style={{ background: "linear-gradient(135deg, #00FF88, #00D4FF)", color: "#0B141B", boxShadow: "0 4px 12px rgba(0,255,136,0.35)" }}>
               Save Prediction →
             </button>
           </div>
@@ -146,33 +117,21 @@ const TICKER_ITEMS = [
 
 export function Hero() {
   return (
-    <section
-      className="relative overflow-hidden pb-0"
-      // pt accounts for: 64px nav bar + 34px bunting strip = 98px total header height
-      style={{ background: "#F8FAFC", paddingTop: "calc(98px + 3.5rem)" }}
-    >
+    <section className="relative overflow-hidden pb-0"
+      style={{ background: "#F8FAFC", paddingTop: "calc(98px + 3.5rem)" }}>
+
       {/* Background atmosphere */}
       <div className="absolute top-0 right-0 w-[650px] h-[650px] pointer-events-none overflow-hidden">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={PHOTOS.stadiumAbove}
-          alt=""
-          className="w-full h-full object-cover"
-          style={{ opacity: 0.07, mixBlendMode: "multiply" }}
-        />
-        <div
-          className="absolute inset-0"
-          style={{ background: "radial-gradient(ellipse 80% 80% at 80% 20%, transparent 20%, #F8FAFC 75%)" }}
-        />
+        <img src={PHOTOS.stadiumAbove} alt="" className="w-full h-full object-cover"
+          style={{ opacity: 0.07, mixBlendMode: "multiply" }} />
+        <div className="absolute inset-0"
+          style={{ background: "radial-gradient(ellipse 80% 80% at 80% 20%, transparent 20%, #F8FAFC 75%)" }} />
       </div>
-      <div
-        className="absolute top-0 right-0 w-[700px] h-[700px] pointer-events-none"
-        style={{ background: "radial-gradient(circle at top right, rgba(0,212,255,0.09) 0%, rgba(0,255,136,0.04) 30%, transparent 65%)" }}
-      />
-      <div
-        className="absolute top-0 left-0 w-[400px] h-[400px] pointer-events-none"
-        style={{ background: "radial-gradient(circle at top left, rgba(0,255,136,0.05) 0%, transparent 60%)" }}
-      />
+      <div className="absolute top-0 right-0 w-[700px] h-[700px] pointer-events-none"
+        style={{ background: "radial-gradient(circle at top right, rgba(0,212,255,0.09) 0%, rgba(0,255,136,0.04) 30%, transparent 65%)" }} />
+      <div className="absolute top-0 left-0 w-[400px] h-[400px] pointer-events-none"
+        style={{ background: "radial-gradient(circle at top left, rgba(0,255,136,0.05) 0%, transparent 60%)" }} />
 
       <div className="relative mx-auto max-w-7xl px-5 sm:px-8">
         <div className="grid lg:grid-cols-2 gap-12 xl:gap-16 items-center min-h-[82vh] pb-20">
@@ -180,134 +139,98 @@ export function Hero() {
           {/* ── LEFT COLUMN ── */}
           <div className="relative z-10 py-12 lg:py-0">
 
-            {/* Top pill */}
-            <motion.div
-              initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
+            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
               className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border mb-6"
-              style={{ borderColor: "rgba(0,212,255,0.3)", background: "rgba(0,212,255,0.06)", backdropFilter: "blur(8px)" }}
-            >
+              style={{ borderColor: "rgba(0,212,255,0.3)", background: "rgba(0,212,255,0.06)", backdropFilter: "blur(8px)" }}>
               <Zap size={12} style={{ color: "#00D4FF" }} />
               <span className="text-xs font-bold uppercase tracking-widest" style={{ color: "#00D4FF" }}>
                 ⚽ Free Global League Open Now
               </span>
             </motion.div>
 
-            {/* H1 — updated per blueprint */}
-            <motion.h1
-              initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.1 }}
+            <motion.h1 initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.1 }}
               className="font-display leading-[0.9] tracking-tight mb-6"
-              style={{ fontSize: "clamp(2.4rem, 5.5vw, 4.2rem)", fontWeight: 900, color: "#0B141B" }}
-            >
+              style={{ fontSize: "clamp(2.4rem, 5.5vw, 4.2rem)", fontWeight: 900, color: "#0B141B" }}>
               THE ULTIMATE<br />
               WORLD CUP 2026<br />
-              <span style={{
-                background: "linear-gradient(135deg, #00D4FF 0%, #00FF88 100%)",
-                WebkitBackgroundClip: "text",
-                backgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-              }}>
+              <span style={{ background: "linear-gradient(135deg, #00D4FF 0%, #00FF88 100%)", WebkitBackgroundClip: "text", backgroundClip: "text", WebkitTextFillColor: "transparent" }}>
                 PREDICTION
               </span>{" "}
               <span style={{ color: "#0B141B" }}>GAME.</span>
             </motion.h1>
 
-            {/* Sub-headline */}
-            <motion.p
-              initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.2 }}
-              className="text-lg leading-relaxed mb-8 max-w-md"
-              style={{ color: "#475569" }}
-            >
-              Ditch the manual math, broken spreadsheets, and payment chasing.{" "}
+            {/* Sub — experience-first, not signup-first */}
+            <motion.p initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.2 }}
+              className="text-lg leading-relaxed mb-8 max-w-md" style={{ color: "#475569" }}>
+              No sign up required to start predicting.
+              Ditch the manual math and payment chasing.{" "}
               <strong style={{ color: "#0B141B" }}>
-                Run a beautiful, real-time prediction game for your friends or your entire office
-              </strong>{" "}
-              in under 60 seconds.
+                Run a live World Cup pool for your friends or office in 60 seconds.
+              </strong>
             </motion.p>
 
-            {/* ── DUAL CTA BUTTONS ── */}
-            <motion.div
-              initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.3 }}
-              className="flex flex-col sm:flex-row gap-4 mb-10"
-            >
-              {/* Left — Friend Group */}
-              <Link href="/signup">
-                <button
-                  className="group flex flex-col items-center gap-0.5 px-7 py-4 rounded-2xl font-bold uppercase tracking-wider transition-all hover:-translate-y-1 w-full sm:w-auto"
-                  style={{
-                    background: "linear-gradient(135deg, #00FF88, #00D4FF)",
-                    color: "#0B141B",
-                    boxShadow: "0 20px 50px rgba(0,255,136,0.30), 0 4px 16px rgba(0,255,136,0.2)",
-                  }}
-                >
+            {/* ── DUAL CTAs ── */}
+            <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.3 }}
+              className="flex flex-col sm:flex-row gap-4 mb-5">
+
+              {/* Primary — /predictions, no auth wall */}
+              <Link href="/predictions">
+                <button className="group flex flex-col items-center gap-0.5 px-7 py-4 rounded-2xl font-bold uppercase tracking-wider transition-all hover:-translate-y-1 w-full sm:w-auto"
+                  style={{ background: "linear-gradient(135deg, #00FF88, #00D4FF)", color: "#0B141B", boxShadow: "0 20px 50px rgba(0,255,136,0.30), 0 4px 16px rgba(0,255,136,0.2)" }}>
                   <span className="flex items-center gap-2 text-base">
-                    <Users size={17} />
-                    🎮 Start Friend Group
+                    🎮 Try It Now — No Sign Up
                     <ArrowRight size={16} className="transition-transform group-hover:translate-x-0.5" />
                   </span>
-                  <span
-                    className="text-[10px] font-bold uppercase tracking-widest opacity-70 leading-none"
-                    style={{ color: "#0B141B" }}
-                  >
-                    Only $2 per player · Admin plays free
+                  <span className="text-[10px] font-bold uppercase tracking-widest opacity-70 leading-none" style={{ color: "#0B141B" }}>
+                    Start predicting instantly · Free
                   </span>
                 </button>
               </Link>
 
-              {/* Right — Corporate */}
+              {/* Corporate */}
               <Link href="/create-group?model=corporate_sponsored">
-                <button
-                  className="group flex flex-col items-center gap-0.5 px-7 py-4 rounded-2xl font-bold uppercase tracking-wider transition-all hover:-translate-y-1 w-full sm:w-auto"
-                  style={{
-                    background: "linear-gradient(135deg, #4F46E5, #6366F1)",
-                    color: "white",
-                    boxShadow: "0 20px 50px rgba(79,70,229,0.25), 0 4px 16px rgba(99,102,241,0.2)",
-                  }}
-                >
+                <button className="group flex flex-col items-center gap-0.5 px-7 py-4 rounded-2xl font-bold uppercase tracking-wider transition-all hover:-translate-y-1 w-full sm:w-auto"
+                  style={{ background: "linear-gradient(135deg, #4F46E5, #6366F1)", color: "white", boxShadow: "0 20px 50px rgba(79,70,229,0.25), 0 4px 16px rgba(99,102,241,0.2)" }}>
                   <span className="flex items-center gap-2 text-base">
                     <Building2 size={17} />
                     🏢 Launch Corporate Game
                     <ArrowRight size={16} className="transition-transform group-hover:translate-x-0.5" />
                   </span>
-                  <span
-                    className="text-[10px] font-bold uppercase tracking-widest opacity-70 leading-none"
-                    style={{ color: "white" }}
-                  >
+                  <span className="text-[10px] font-bold uppercase tracking-widest opacity-70 leading-none" style={{ color: "white" }}>
                     One-time flat rate · Employees join free
                   </span>
                 </button>
               </Link>
             </motion.div>
 
+            {/* Friend group — tertiary link */}
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.38 }} className="mb-8">
+              <Link href="/create-group?model=pay_per_member"
+                className="inline-flex items-center gap-1.5 text-sm font-bold transition-opacity hover:opacity-70"
+                style={{ color: "rgba(0,212,255,0.8)" }}>
+                <Users size={14} /> Create a friend group instead →
+              </Link>
+            </motion.div>
+
             {/* Trust badges */}
-            <motion.div
-              initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}
-              className="flex items-center gap-3 flex-wrap"
-            >
-              <span
-                className="text-xs font-bold px-3 py-1.5 rounded-full"
-                style={{ background: "rgba(0,255,136,0.08)", color: "#059669", border: "1px solid rgba(0,255,136,0.2)" }}
-              >
-                ✓ Free for admins forever
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.45 }}
+              className="flex items-center gap-3 flex-wrap">
+              <span className="text-xs font-bold px-3 py-1.5 rounded-full"
+                style={{ background: "rgba(0,255,136,0.08)", color: "#059669", border: "1px solid rgba(0,255,136,0.2)" }}>
+                ✓ No account needed to start
               </span>
-              <span
-                className="text-xs font-bold px-3 py-1.5 rounded-full"
-                style={{ background: "rgba(0,212,255,0.06)", color: "#0891B2", border: "1px solid rgba(0,212,255,0.2)" }}
-              >
-                ✓ $2 per member · Whole tournament
+              <span className="text-xs font-bold px-3 py-1.5 rounded-full"
+                style={{ background: "rgba(0,212,255,0.06)", color: "#0891B2", border: "1px solid rgba(0,212,255,0.2)" }}>
+                ✓ $2 per member · Admin free
               </span>
-              <span
-                className="text-xs font-bold px-3 py-1.5 rounded-full"
-                style={{ background: "rgba(0,212,255,0.06)", color: "#0891B2", border: "1px solid rgba(0,212,255,0.2)" }}
-              >
+              <span className="text-xs font-bold px-3 py-1.5 rounded-full"
+                style={{ background: "rgba(0,212,255,0.06)", color: "#0891B2", border: "1px solid rgba(0,212,255,0.2)" }}>
                 ✓ No ads · No subscription
               </span>
             </motion.div>
 
             {/* Countdown */}
-            <motion.div
-              initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }}
-              className="mt-10"
-            >
+            <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.55 }} className="mt-10">
               <div className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: "#94a3b8" }}>
                 First match kicks off in
               </div>
@@ -317,45 +240,31 @@ export function Hero() {
             </motion.div>
           </div>
 
-          {/* ── RIGHT COLUMN — Phone mockup ── */}
-          <motion.div
-            initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }}
+          {/* ── RIGHT COLUMN ── */}
+          <motion.div initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-            className="hidden lg:flex items-center justify-center relative"
-          >
+            className="hidden lg:flex items-center justify-center relative">
             <div className="absolute inset-0 overflow-hidden rounded-3xl pointer-events-none">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={PHOTOS.stadiumNightAbove}
-                alt=""
-                className="w-full h-full object-cover"
-                style={{ opacity: 0.08, filter: "blur(2px)" }}
-              />
-              <div
-                className="absolute inset-0"
-                style={{ background: "radial-gradient(ellipse 70% 70% at 50% 50%, transparent 30%, #F8FAFC 80%)" }}
-              />
+              <img src={PHOTOS.stadiumNightAbove} alt="" className="w-full h-full object-cover"
+                style={{ opacity: 0.08, filter: "blur(2px)" }} />
+              <div className="absolute inset-0"
+                style={{ background: "radial-gradient(ellipse 70% 70% at 50% 50%, transparent 30%, #F8FAFC 80%)" }} />
             </div>
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-              <div
-                className="h-80 w-80 rounded-full blur-3xl"
-                style={{ background: "radial-gradient(circle, rgba(0,212,255,0.10), rgba(0,255,136,0.06), transparent)" }}
-              />
+              <div className="h-80 w-80 rounded-full blur-3xl"
+                style={{ background: "radial-gradient(circle, rgba(0,212,255,0.10), rgba(0,255,136,0.06), transparent)" }} />
             </div>
             <PhoneMockup />
-            <motion.div
-              animate={{ y: [0, -6, 0] }} transition={{ duration: 3, repeat: Infinity, delay: 1 }}
+            <motion.div animate={{ y: [0, -6, 0] }} transition={{ duration: 3, repeat: Infinity, delay: 1 }}
               className="absolute top-16 -left-4 rounded-2xl px-3 py-2 text-xs font-bold"
-              style={{ background: "rgba(255,255,255,0.92)", backdropFilter: "blur(12px)", border: "1px solid rgba(0,255,136,0.3)", boxShadow: "0 8px 24px rgba(0,255,136,0.15)", color: "#00c46a" }}
-            >
+              style={{ background: "rgba(255,255,255,0.92)", backdropFilter: "blur(12px)", border: "1px solid rgba(0,255,136,0.3)", boxShadow: "0 8px 24px rgba(0,255,136,0.15)", color: "#00c46a" }}>
               +25 pts
               <div className="text-[10px]" style={{ color: "#94a3b8" }}>Exact score!</div>
             </motion.div>
-            <motion.div
-              animate={{ y: [0, 8, 0] }} transition={{ duration: 3.5, repeat: Infinity, delay: 0.5 }}
+            <motion.div animate={{ y: [0, 8, 0] }} transition={{ duration: 3.5, repeat: Infinity, delay: 0.5 }}
               className="absolute bottom-24 -right-4 rounded-2xl px-3 py-2 text-xs font-bold"
-              style={{ background: "rgba(255,255,255,0.92)", backdropFilter: "blur(12px)", border: "1px solid rgba(0,212,255,0.3)", boxShadow: "0 8px 24px rgba(0,212,255,0.15)", color: "#00D4FF" }}
-            >
+              style={{ background: "rgba(255,255,255,0.92)", backdropFilter: "blur(12px)", border: "1px solid rgba(0,212,255,0.3)", boxShadow: "0 8px 24px rgba(0,212,255,0.15)", color: "#00D4FF" }}>
               $240 pot
               <div className="text-[10px]" style={{ color: "#94a3b8" }}>12 members</div>
             </motion.div>
@@ -364,10 +273,8 @@ export function Hero() {
       </div>
 
       {/* Host nations bar */}
-      <div
-        className="border-t border-b py-4 px-5"
-        style={{ borderColor: "rgba(0,212,255,0.12)", background: "rgba(255,255,255,0.6)", backdropFilter: "blur(12px)" }}
-      >
+      <div className="border-t border-b py-4 px-5"
+        style={{ borderColor: "rgba(0,212,255,0.12)", background: "rgba(255,255,255,0.6)", backdropFilter: "blur(12px)" }}>
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-6 flex-wrap">
           <div className="text-xs font-bold uppercase tracking-widest" style={{ color: "#94a3b8" }}>Host Nations</div>
           <div className="flex items-center gap-6">
@@ -378,14 +285,8 @@ export function Hero() {
             ].map(({ flag, name, matches }) => (
               <div key={name} className="flex items-center gap-2">
                 <span className="relative rounded-sm overflow-hidden inline-block" style={{ width: 32, height: 24 }}>
-                  <img
-                    src={`https://flagcdn.com/w80/${flag}.png`}
-                    alt={name}
-                    width={32}
-                    height={24}
-                    className="object-cover"
-                    style={{ width: 32, height: 24 }}
-                  />
+                  <img src={`https://flagcdn.com/w80/${flag}.png`} alt={name} width={32} height={24}
+                    className="object-cover" style={{ width: 32, height: 24 }} />
                 </span>
                 <div>
                   <div className="text-xs font-bold" style={{ color: "#0B141B" }}>{name}</div>
@@ -399,10 +300,8 @@ export function Hero() {
       </div>
 
       {/* Ticker */}
-      <div
-        className="overflow-hidden py-2.5"
-        style={{ background: "rgba(0,255,136,0.05)", borderBottom: "1px solid rgba(0,255,136,0.12)" }}
-      >
+      <div className="overflow-hidden py-2.5"
+        style={{ background: "rgba(0,255,136,0.05)", borderBottom: "1px solid rgba(0,255,136,0.12)" }}>
         <div className="flex animate-ticker whitespace-nowrap">
           {[...TICKER_ITEMS, ...TICKER_ITEMS].map((item, i) => (
             <span key={i} className="text-xs font-bold uppercase tracking-widest mx-8" style={{ color: "#00c46a" }}>

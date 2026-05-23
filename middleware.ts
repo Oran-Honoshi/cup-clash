@@ -1,11 +1,26 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
+// ── Guests CAN access these (browse/try without account) ──────────────────────
+// /predictions  — guest mode, localStorage picks, modal on save
+// /schedule     — public match schedule
+// /join/[code]  — can preview group before signing up
+
+// ── Fully protected (must be signed in) ───────────────────────────────────────
 const PROTECTED_PREFIXES = [
-  "/dashboard", "/leaderboard", "/predictions", "/admin",
-  "/create-group", "/bracket", "/testing", "/profile",
-  "/standings", "/trivia", "/groups", "/notifications",
+  "/dashboard",
+  "/leaderboard",
+  "/admin",
+  "/create-group",
+  "/bracket",
+  "/testing",
+  "/profile",
+  "/standings",
+  "/trivia",
+  "/groups",
+  "/notifications",
 ];
+
 const AUTH_ROUTES = ["/signin", "/signup"];
 
 export async function middleware(request: NextRequest) {
@@ -38,6 +53,7 @@ export async function middleware(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser();
 
+  // Block access to protected routes for unauthenticated users
   const isProtected = PROTECTED_PREFIXES.some((p) => pathname.startsWith(p));
   if (isProtected && !user) {
     const url = new URL("/signin", request.url);
@@ -45,6 +61,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
+  // Redirect logged-in users away from auth pages
   const isAuthRoute = AUTH_ROUTES.some((p) => pathname.startsWith(p));
   if (isAuthRoute && user) {
     return NextResponse.redirect(new URL("/dashboard", request.url));
@@ -54,5 +71,7 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)"],
+  matcher: [
+    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
+  ],
 };
