@@ -171,3 +171,123 @@ h1, h2, h3, h4, .font-display {
 /* ── MISC ── */
 .bg-pitch-800 { background-color: #1e293b; }
 .bg-pitch-900 { background-color: #0f172a; }
+
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   app/globals-glass.css
+   
+   ADD these rules to your existing globals.css (or import this file).
+   DO NOT remove any existing CSS — append only.
+   ─────────────────────────────────────────────────────────────────────────── */
+
+/* ── Barlow Condensed display font (add to <head> or next/font) ── */
+/* If using next/font, add to app/layout.tsx:
+   import { Barlow_Condensed } from 'next/font/google'
+   const barlowCondensed = Barlow_Condensed({
+     weight: ['400', '600', '700', '900'],
+     subsets: ['latin'],
+     variable: '--font-display',
+   })
+*/
+
+/* ── Font utility class ── */
+.font-display {
+  font-family: var(--font-display, 'Barlow Condensed', 'Arial Narrow', sans-serif);
+}
+
+/* ── Custom Tailwind utilities (add to tailwind.config.js theme.extend) ── */
+/*
+  theme: {
+    extend: {
+      fontFamily: {
+        display: ['var(--font-display)', 'Barlow Condensed', 'Arial Narrow', 'sans-serif'],
+      },
+      colors: {
+        // Neon green accent
+        neon: {
+          green:  '#00FF88',
+          teal:   '#00D4FF',
+          purple: '#8B5CF6',
+        },
+      },
+      backgroundImage: {
+        // Reusable gradient shorthands
+        'glow-green':  'linear-gradient(135deg, #10b981, #14b8a6)',
+        'glow-purple': 'linear-gradient(135deg, #6d28d9, #7c3aed)',
+      },
+      boxShadow: {
+        'glow-green':  '0 0 20px rgba(16,185,129,0.35)',
+        'glow-green-lg': '0 0 32px rgba(16,185,129,0.5)',
+        'glow-purple': '0 0 20px rgba(124,58,237,0.3)',
+        'glass':       '0 8px 40px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.07)',
+      },
+      backdropBlur: {
+        'glass': '20px',
+      },
+    },
+  },
+*/
+
+/* ── Glass card animation ── */
+@keyframes glassReveal {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.glass-reveal {
+  animation: glassReveal 0.35s ease-out forwards;
+}
+
+/* ── Neon pulse for active elements ── */
+@keyframes neonPulse {
+  0%, 100% { box-shadow: 0 0 8px rgba(16,185,129,0.4); }
+  50%       { box-shadow: 0 0 20px rgba(16,185,129,0.7); }
+}
+
+.neon-pulse {
+  animation: neonPulse 2s ease-in-out infinite;
+}
+
+/* ── Countdown digit flip ── */
+@keyframes digitFlip {
+  0%   { transform: scaleY(1);   opacity: 1; }
+  49%  { transform: scaleY(0);   opacity: 0; }
+  50%  { transform: scaleY(0);   opacity: 0; }
+  100% { transform: scaleY(1);   opacity: 1; }
+}
+
+.digit-flip {
+  animation: digitFlip 0.3s ease-in-out;
+}
+
+/* ── Scrollbar styling for glass panels ── */
+.glass-scroll::-webkit-scrollbar {
+  width: 4px;
+}
+.glass-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+.glass-scroll::-webkit-scrollbar-thumb {
+  background: rgba(255,255,255,0.1);
+  border-radius: 2px;
+}
+.glass-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(255,255,255,0.2);
+}
+
+/* ── Stadium pitch stripe effect (CSS-only fallback) ── */
+.pitch-stripes {
+  background: repeating-linear-gradient(
+    180deg,
+    rgba(255,255,255,0.015) 0px,
+    rgba(255,255,255,0.015) 40px,
+    transparent 40px,
+    transparent 80px
+  );
+}
