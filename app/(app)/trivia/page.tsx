@@ -15,19 +15,18 @@ export default async function TriviaPage() {
   if (!userProfile) redirect("/signin");
   if (!userGroup.groupId) return <NoGroupScreen name={userProfile?.name ?? ""} />;
 
-  const groupId = userGroup.groupId;
-  const group   = await getGroup(groupId);
+  const group = await getGroup(userGroup.groupId);
 
   return (
     <div className="space-y-6">
       <div>
         <div className="label-caps mb-1">{group.name}</div>
-        <h1 className="font-display text-4xl sm:text-5xl uppercase tracking-tight" style={{ color: "#0F172A" }}>
+        <h1 className="font-display text-4xl sm:text-5xl uppercase tracking-tight text-white">
           Trivia
         </h1>
       </div>
       <TriviaPageClient
-        groupId={groupId}
+        groupId={userGroup.groupId}
         groupName={group.name}
         userId={userProfile.id}
         isPointsMode={true}

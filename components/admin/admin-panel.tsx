@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { Users, Trophy, Copy, Check, RefreshCw, CheckCircle, XCircle, Link2 } from "lucide-react";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
-import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { MemberAvatar } from "@/components/ui/member-avatar";
 import { NudgeButton } from "@/components/admin/nudge-button";
@@ -18,13 +17,21 @@ function getClient() {
 }
 
 interface AdminPanelProps {
-  group: Group;
+  group:          Group;
   initialMembers: Member[];
 }
 
+const glass = {
+  background: "rgba(255,255,255,0.07)",
+  backdropFilter: "blur(24px) saturate(120%)",
+  WebkitBackdropFilter: "blur(24px) saturate(120%)",
+  border: "1px solid rgba(255,255,255,0.12)",
+  boxShadow: "0 12px 40px rgba(0,0,0,0.25), inset 0 1px 1px rgba(255,255,255,0.08)",
+} as const;
+
 export function AdminPanel({ group, initialMembers }: AdminPanelProps) {
-  const [members,     setMembers]     = useState<Member[]>(initialMembers);
-  const [payouts,     setPayouts]     = useState({
+  const [members,      setMembers]      = useState<Member[]>(initialMembers);
+  const [payouts,      setPayouts]      = useState({
     first:  Number(group.payouts.first.replace("%",  "")),
     second: Number(group.payouts.second.replace("%", "")),
     third:  Number(group.payouts.third.replace("%",  "")),
@@ -36,19 +43,18 @@ export function AdminPanel({ group, initialMembers }: AdminPanelProps) {
   const [inviteUrl,    setInviteUrl]    = useState("");
 
   useEffect(() => {
-  if (typeof window !== "undefined") {
-    setInviteUrl(`${window.location.origin}/join/${group.passkey}`);
-  }
-}, [group.passkey]);
+    if (typeof window !== "undefined") {
+      setInviteUrl(`${window.location.origin}/join/${group.passkey}`);
+    }
+  }, [group.passkey]);
 
-
-  const paidCount  = members.filter(m => m.paid).length;
-  const totalPot   = members.length * group.buyInAmount;
-  const paidAmount = paidCount * group.buyInAmount;
-  const totalPct   = payouts.first + payouts.second + payouts.third;
+  const paidCount    = members.filter(m => m.paid).length;
+  const totalPot     = members.length * group.buyInAmount;
+  const paidAmount   = paidCount * group.buyInAmount;
+  const totalPct     = payouts.first + payouts.second + payouts.third;
+  const firstAmount  = Math.round(paidAmount * payouts.first  / 100);
   const secondAmount = Math.round(paidAmount * payouts.second / 100);
   const thirdAmount  = Math.round(paidAmount * payouts.third  / 100);
-  const firstAmount  = Math.round(paidAmount * payouts.first  / 100);
 
   const togglePaid = async (memberId: string, currentPaid: boolean) => {
     setMembers(prev => prev.map(m => m.id === memberId ? { ...m, paid: !currentPaid } : m));
@@ -81,26 +87,23 @@ export function AdminPanel({ group, initialMembers }: AdminPanelProps) {
     setCopied(true); setTimeout(() => setCopied(false), 2000);
   };
 
-  const inputCls = "w-full rounded-xl px-3 py-2 text-sm text-right bg-white border border-slate-200 focus:outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100 transition-all";
-
   return (
     <div className="grid gap-5 lg:grid-cols-2">
-      {/* Member Payments */}
-      <Card variant="glass" className="p-5">
+
+      {/* ── Member Payments ── */}
+      <div className="rounded-2xl p-5" style={glass}>
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2.5">
-            <Users size={18} strokeWidth={1.5} style={{ color: "#0891B2" }} />
-            <span className="font-display text-xl uppercase tracking-tight" style={{ color: "#0F172A" }}>
-              Member Payments
-            </span>
+            <Users size={18} strokeWidth={1.5} style={{ color: "#00D4FF" }} />
+            <span className="font-display text-xl uppercase tracking-tight text-white">Member Payments</span>
           </div>
-          <span className="text-xs font-bold uppercase tracking-widest" style={{ color: "#0891B2" }}>
+          <span className="text-xs font-bold uppercase tracking-widest" style={{ color: "#00D4FF" }}>
             {paidCount}/{members.length} Paid
           </span>
         </div>
 
         {/* Progress bar */}
-        <div className="h-2 rounded-full overflow-hidden mb-5" style={{ background: "#e2e8f0" }}>
+        <div className="h-1.5 rounded-full overflow-hidden mb-5" style={{ background: "rgba(255,255,255,0.08)" }}>
           <div className="h-full rounded-full transition-all"
             style={{
               width: `${members.length ? (paidCount / members.length) * 100 : 0}%`,
@@ -110,116 +113,118 @@ export function AdminPanel({ group, initialMembers }: AdminPanelProps) {
 
         {/* Member list */}
         <div className="space-y-1">
-          {members.map((m) => (
-            <div key={m.id} className="flex items-center gap-3 py-2.5 border-b border-slate-50 last:border-0">
+          {members.map(m => (
+            <div key={m.id} className="flex items-center gap-3 py-2.5 border-b last:border-0"
+              style={{ borderColor: "rgba(255,255,255,0.06)" }}>
               <MemberAvatar name={m.name} avatarUrl={m.avatarUrl} size="sm" />
               <div className="flex-1 min-w-0">
-                <div className="text-sm font-bold truncate" style={{ color: "#0F172A" }}>{m.name}</div>
-                <div className="text-[11px]" style={{ color: "#94a3b8" }}>{m.country}</div>
+                <div className="text-sm font-bold truncate text-white">{m.name}</div>
+                <div className="text-[11px]" style={{ color: "rgba(255,255,255,0.3)" }}>{m.country}</div>
               </div>
               <NudgeButton
-                memberName={m.name}
-                matchLabel="Next match"
-                groupName={group.name}
-                minutesToKickoff={90}
-                hasPredicted={false}
-                size="sm"
+                memberName={m.name} matchLabel="Next match"
+                groupName={group.name} minutesToKickoff={90}
+                hasPredicted={false} size="sm"
               />
               {group.buyInAmount > 0 && (
-                <span className="text-sm font-bold shrink-0" style={{ color: "#334155" }}>
+                <span className="text-sm font-bold shrink-0" style={{ color: "rgba(255,255,255,0.6)" }}>
                   ${group.buyInAmount}
                 </span>
               )}
               <button onClick={() => togglePaid(m.id, m.paid)}
-                className={cn(
-                  "flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider px-2.5 py-1.5 rounded-full border transition-all",
-                  m.paid
-                    ? "border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100"
-                    : "border-red-200 bg-red-50 text-red-600 hover:bg-red-100"
-                )}>
-                {m.paid
-                  ? <><CheckCircle size={12} /> Paid</>
-                  : <><XCircle size={12} /> Pending</>}
+                className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider px-2.5 py-1.5 rounded-full transition-all"
+                style={m.paid ? {
+                  background: "rgba(0,255,136,0.12)", border: "1px solid rgba(0,255,136,0.25)", color: "#00FF88",
+                } : {
+                  background: "rgba(248,113,113,0.1)", border: "1px solid rgba(248,113,113,0.2)", color: "#f87171",
+                }}>
+                {m.paid ? <><CheckCircle size={12} /> Paid</> : <><XCircle size={12} /> Pending</>}
               </button>
             </div>
           ))}
         </div>
 
         {/* Total */}
-        <div className="mt-4 pt-4 border-t border-slate-100 flex items-center justify-between">
-          <span className="text-sm" style={{ color: "#64748b" }}>Total pot collected</span>
+        <div className="mt-4 pt-4 border-t flex items-center justify-between"
+          style={{ borderColor: "rgba(255,255,255,0.07)" }}>
+          <span className="text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>Total pot collected</span>
           <div>
-            <span className="font-display text-2xl font-black" style={{ color: "#0891B2" }}>
-              ${paidAmount}
-            </span>
-            <span className="text-sm ml-1" style={{ color: "#94a3b8" }}>/ ${totalPot}</span>
+            <span className="font-display text-2xl font-black" style={{ color: "#00FF88" }}>${paidAmount}</span>
+            <span className="text-sm ml-1" style={{ color: "rgba(255,255,255,0.3)" }}>/ ${totalPot}</span>
           </div>
         </div>
-      </Card>
+      </div>
 
       <div className="space-y-5">
-        {/* Payout Split */}
-        <Card variant="glass" className="p-5">
+
+        {/* ── Payout Split ── */}
+        <div className="rounded-2xl p-5" style={glass}>
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2.5">
-              <Trophy size={18} strokeWidth={1.5} style={{ color: "#d97706" }} />
-              <span className="font-display text-xl uppercase tracking-tight" style={{ color: "#0F172A" }}>
-                Payout Split
-              </span>
+              <Trophy size={18} strokeWidth={1.5} style={{ color: "#fbbf24" }} />
+              <span className="font-display text-xl uppercase tracking-tight text-white">Payout Split</span>
             </div>
-            <span className="text-xs font-bold" style={{ color: totalPct === 100 ? "#059669" : "#dc2626" }}>
+            <span className="text-xs font-bold"
+              style={{ color: totalPct === 100 ? "#00FF88" : "#f87171" }}>
               {totalPct}% / 100%
             </span>
           </div>
 
           <div className="space-y-3 mb-4">
             {([
-              { label: "1st", icon: "1", key: "first"  as const, amount: firstAmount,  color: "#d97706" },
-              { label: "2nd", icon: "2", key: "second" as const, amount: secondAmount, color: "#64748b" },
-              { label: "3rd", icon: "3", key: "third"  as const, amount: thirdAmount,  color: "#b45309" },
-            ]).map(({ label, icon, key, amount, color }) => (
+              { label: "1st", key: "first"  as const, amount: firstAmount,  color: "#fbbf24" },
+              { label: "2nd", key: "second" as const, amount: secondAmount, color: "#94a3b8" },
+              { label: "3rd", key: "third"  as const, amount: thirdAmount,  color: "#f97316" },
+            ]).map(({ label, key, amount, color }) => (
               <div key={key} className="flex items-center gap-3">
                 <div className="h-6 w-6 rounded-full flex items-center justify-center text-[10px] font-black shrink-0"
-                  style={{ background: `${color}15`, color, border: `1px solid ${color}30` }}>
-                  {icon}
+                  style={{ background: `${color}18`, color, border: `1px solid ${color}30` }}>
+                  {label[0]}
                 </div>
-                <span className="text-sm font-bold w-6" style={{ color: "#64748b" }}>{label}</span>
+                <span className="text-sm font-bold w-8" style={{ color: "rgba(255,255,255,0.5)" }}>{label}</span>
                 <div className="flex-1 relative">
-                  <input type="number" min={0} max={100} value={payouts[key]}
+                  <input
+                    type="number" min={0} max={100} value={payouts[key]}
                     onChange={e => { setPayouts(p => ({ ...p, [key]: Number(e.target.value) })); setPayoutSaved(false); }}
-                    className={cn(inputCls, "pr-7")} />
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm" style={{ color: "#94a3b8" }}>%</span>
+                    className="w-full rounded-xl px-3 py-2 text-sm text-right font-bold pr-7 outline-none transition-all"
+                    style={{
+                      background: "rgba(255,255,255,0.06)",
+                      border: "1px solid rgba(255,255,255,0.12)",
+                      color: color,
+                    }}
+                    onFocus={e => { e.target.style.borderColor = color; e.target.style.boxShadow = `0 0 0 2px ${color}20`; }}
+                    onBlur={e => { e.target.style.borderColor = "rgba(255,255,255,0.12)"; e.target.style.boxShadow = "none"; }}
+                  />
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm"
+                    style={{ color: "rgba(255,255,255,0.3)" }}>%</span>
                 </div>
                 {group.buyInAmount > 0 && (
-                  <span className="text-sm font-bold w-12 text-right" style={{ color: "#0891B2" }}>${amount}</span>
+                  <span className="text-sm font-bold w-12 text-right" style={{ color: "#00D4FF" }}>${amount}</span>
                 )}
               </div>
             ))}
           </div>
 
-          {payoutError && (
-            <p className="text-xs mb-3" style={{ color: "#dc2626" }}>{payoutError}</p>
-          )}
-          {totalPct !== 100 && (
-            <p className="text-xs mb-3" style={{ color: "#dc2626" }}>Must add up to exactly 100%</p>
+          {(payoutError || totalPct !== 100) && (
+            <p className="text-xs mb-3" style={{ color: "#f87171" }}>
+              {payoutError ?? "Must add up to exactly 100%"}
+            </p>
           )}
 
           <Button onClick={savePayouts} loading={payoutSaving} disabled={totalPct !== 100} size="sm" className="w-full"
             leftIcon={payoutSaved ? <Check size={14} /> : <Trophy size={14} />}>
             {payoutSaved ? "Saved!" : "Save Payout Split"}
           </Button>
-        </Card>
+        </div>
 
-        {/* Invite Link */}
-        <Card variant="glass" className="p-5">
+        {/* ── Invite Link ── */}
+        <div className="rounded-2xl p-5" style={glass}>
           <div className="flex items-center gap-2.5 mb-4">
-            <Link2 size={18} strokeWidth={1.5} style={{ color: "#0891B2" }} />
-            <span className="font-display text-xl uppercase tracking-tight" style={{ color: "#0F172A" }}>
-              Invite Link
-            </span>
+            <Link2 size={18} strokeWidth={1.5} style={{ color: "#00D4FF" }} />
+            <span className="font-display text-xl uppercase tracking-tight text-white">Invite Link</span>
           </div>
           <div className="rounded-xl p-3 text-xs break-all mb-3 font-mono"
-            style={{ background: "#f8fafc", border: "1px solid #e2e8f0", color: "#475569" }}>
+            style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.55)" }}>
             {inviteUrl}
           </div>
           <div className="flex gap-2">
@@ -227,14 +232,12 @@ export function AdminPanel({ group, initialMembers }: AdminPanelProps) {
               leftIcon={copied ? <Check size={14} /> : <Copy size={14} />}>
               {copied ? "Copied!" : "Copy Link"}
             </Button>
-            <Button variant="outline" size="sm" leftIcon={<RefreshCw size={14} />}>
-              New Code
-            </Button>
+            <Button variant="outline" size="sm" leftIcon={<RefreshCw size={14} />}>New Code</Button>
           </div>
-          <p className="mt-3 text-[11px]" style={{ color: "#94a3b8" }}>
+          <p className="mt-3 text-[11px]" style={{ color: "rgba(255,255,255,0.3)" }}>
             Share this link with your group. Anyone with it can join.
           </p>
-        </Card>
+        </div>
       </div>
     </div>
   );

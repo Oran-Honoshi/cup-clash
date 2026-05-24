@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Bell, BellOff, Goal, Users, Trophy, MessageCircle, Check } from "lucide-react";
+import { Bell, BellOff, Trophy, Users, MessageCircle, Check } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { subscribeToPush } from "@/lib/pwa";
 
@@ -14,21 +14,28 @@ interface NotifSetting {
 }
 
 const SETTINGS: NotifSetting[] = [
-  { key: "goals",     label: "Goal scored",       desc: "Get notified when a goal is scored in a live match", icon: <span className="text-lg">⚽</span>, default: true  },
-  { key: "results",   label: "Match result",       desc: "Final score when a match ends",                      icon: <Trophy size={18} style={{ color: "#d97706" }} />,  default: true  },
-  { key: "leaderboard", label: "Leaderboard change", desc: "When your rank changes after a result",            icon: <span className="text-lg">📊</span>, default: true  },
-  { key: "chat",      label: "New chat message",   desc: "When someone messages in your group chat",           icon: <MessageCircle size={18} style={{ color: "#0891B2" }} />, default: false },
-  { key: "newmember", label: "New member joined",  desc: "When someone joins your group (admin only)",         icon: <Users size={18} style={{ color: "#059669" }} />,   default: false },
+  { key: "goals",       label: "Goal scored",         desc: "Get notified when a goal is scored in a live match", icon: <span className="text-lg">⚽</span>,                                  default: true  },
+  { key: "results",     label: "Match result",         desc: "Final score when a match ends",                      icon: <Trophy size={18} style={{ color: "#fbbf24" }} />,                   default: true  },
+  { key: "leaderboard", label: "Leaderboard change",   desc: "When your rank changes after a result",              icon: <span className="text-lg">📊</span>,                                  default: true  },
+  { key: "chat",        label: "New chat message",     desc: "When someone messages in your group chat",           icon: <MessageCircle size={18} style={{ color: "#00D4FF" }} />,            default: false },
+  { key: "newmember",   label: "New member joined",    desc: "When someone joins your group (admin only)",         icon: <Users size={18} style={{ color: "#00FF88" }} />,                    default: false },
 ];
 
+const glass = {
+  background: "rgba(255,255,255,0.07)",
+  backdropFilter: "blur(24px) saturate(120%)",
+  WebkitBackdropFilter: "blur(24px) saturate(120%)",
+  border: "1px solid rgba(255,255,255,0.12)",
+  boxShadow: "0 12px 40px rgba(0,0,0,0.25), inset 0 1px 1px rgba(255,255,255,0.08)",
+} as const;
+
 export function NotificationsClient({ userId }: { userId: string }) {
-  const [settings,   setSettings]   = useState<Record<string, boolean>>({});
-  const [pushEnabled,setPushEnabled]= useState(false);
-  const [loading,    setLoading]    = useState(false);
-  const [saved,      setSaved]      = useState(false);
+  const [settings,    setSettings]    = useState<Record<string, boolean>>({});
+  const [pushEnabled, setPushEnabled] = useState(false);
+  const [loading,     setLoading]     = useState(false);
+  const [saved,       setSaved]       = useState(false);
 
   useEffect(() => {
-    // Load from localStorage (preference only, not sensitive data)
     const stored = localStorage.getItem("cupclash_notif_settings");
     if (stored) {
       setSettings(JSON.parse(stored));
@@ -37,8 +44,6 @@ export function NotificationsClient({ userId }: { userId: string }) {
       SETTINGS.forEach(s => { defaults[s.key] = s.default; });
       setSettings(defaults);
     }
-
-    // Check if push is already enabled
     if ("Notification" in window) {
       setPushEnabled(Notification.permission === "granted");
     }
@@ -67,28 +72,33 @@ export function NotificationsClient({ userId }: { userId: string }) {
   };
 
   return (
-    <div className="space-y-6 max-w-lg">
+    <div className="space-y-5 max-w-lg">
 
       {/* Push permission card */}
-      <div className="rounded-2xl p-5"
-        style={{ background: "rgba(255,255,255,0.9)", border: "1px solid rgba(0,212,255,0.15)" }}>
+      <div className="rounded-2xl p-5" style={glass}>
         <div className="flex items-start gap-4">
           <div className="h-12 w-12 rounded-2xl flex items-center justify-center shrink-0"
-            style={{ background: pushEnabled ? "rgba(0,255,136,0.12)" : "rgba(0,212,255,0.08)", border: `1px solid ${pushEnabled ? "rgba(0,255,136,0.25)" : "rgba(0,212,255,0.2)"}` }}>
-            {pushEnabled ? <Bell size={22} style={{ color: "#00c46a" }} /> : <BellOff size={22} style={{ color: "#0891B2" }} />}
+            style={pushEnabled ? {
+              background: "rgba(0,255,136,0.1)", border: "1px solid rgba(0,255,136,0.25)",
+            } : {
+              background: "rgba(0,212,255,0.08)", border: "1px solid rgba(0,212,255,0.2)",
+            }}>
+            {pushEnabled
+              ? <Bell size={22} style={{ color: "#00FF88" }} />
+              : <BellOff size={22} style={{ color: "#00D4FF" }} />}
           </div>
           <div className="flex-1 min-w-0">
-            <div className="font-bold text-base" style={{ color: "#0F172A" }}>
+            <div className="font-bold text-base text-white">
               {pushEnabled ? "Push notifications enabled" : "Enable push notifications"}
             </div>
-            <div className="text-sm mt-0.5" style={{ color: "#64748b" }}>
+            <div className="text-sm mt-0.5" style={{ color: "rgba(255,255,255,0.45)" }}>
               {pushEnabled
                 ? "You'll get notified about goals, results and leaderboard changes."
                 : "Get notified about goals, results, and when your rank changes — even when the app is closed."}
             </div>
             {!pushEnabled && (
               <button onClick={enablePush} disabled={loading}
-                className="mt-3 px-4 py-2 rounded-xl text-sm font-bold uppercase tracking-wider disabled:opacity-50"
+                className="mt-3 px-4 py-2 rounded-xl text-sm font-bold uppercase tracking-wider disabled:opacity-50 transition-all hover:-translate-y-0.5"
                 style={{ background: "linear-gradient(135deg, #00D4FF, #00FF88)", color: "#0B141B" }}>
                 {loading ? "Enabling..." : "Enable notifications"}
               </button>
@@ -98,26 +108,26 @@ export function NotificationsClient({ userId }: { userId: string }) {
       </div>
 
       {/* Per-type settings */}
-      <div className="rounded-2xl overflow-hidden"
-        style={{ background: "rgba(255,255,255,0.9)", border: "1px solid rgba(0,212,255,0.15)" }}>
-        <div className="px-5 py-3 border-b" style={{ borderColor: "rgba(0,212,255,0.08)" }}>
-          <div className="text-xs font-bold uppercase tracking-widest" style={{ color: "#64748b" }}>
+      <div className="rounded-2xl overflow-hidden" style={glass}>
+        <div className="px-5 py-3 border-b" style={{ borderColor: "rgba(255,255,255,0.07)" }}>
+          <div className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.35)" }}>
             Notification types
           </div>
         </div>
         {SETTINGS.map((s, i) => (
           <div key={s.key}
             className="flex items-center gap-4 px-5 py-4 border-b last:border-0"
-            style={{ borderColor: "rgba(0,212,255,0.06)" }}>
-            <div className="shrink-0">{s.icon}</div>
+            style={{ borderColor: "rgba(255,255,255,0.06)" }}>
+            <div className="shrink-0 w-7 flex items-center justify-center">{s.icon}</div>
             <div className="flex-1 min-w-0">
-              <div className="text-sm font-bold" style={{ color: "#0F172A" }}>{s.label}</div>
-              <div className="text-xs mt-0.5" style={{ color: "#94a3b8" }}>{s.desc}</div>
+              <div className="text-sm font-bold text-white">{s.label}</div>
+              <div className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.35)" }}>{s.desc}</div>
             </div>
+            {/* Toggle */}
             <button onClick={() => toggleSetting(s.key)}
               className="relative h-6 w-11 rounded-full shrink-0 transition-all"
-              style={{ background: settings[s.key] ? "#00D4FF" : "#e2e8f0" }}>
-              <div className="absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-all"
+              style={{ background: settings[s.key] ? "#00D4FF" : "rgba(255,255,255,0.12)" }}>
+              <div className="absolute top-0.5 h-5 w-5 rounded-full bg-white shadow-md transition-all"
                 style={{ left: settings[s.key] ? "22px" : "2px" }} />
             </button>
           </div>
@@ -126,11 +136,12 @@ export function NotificationsClient({ userId }: { userId: string }) {
 
       {/* Save button */}
       <button onClick={saveSettings}
-        className="w-full py-3 rounded-xl font-bold text-sm uppercase tracking-wider flex items-center justify-center gap-2 transition-all"
+        className="w-full py-3 rounded-xl font-bold text-sm uppercase tracking-wider flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5"
         style={saved ? {
-          background: "rgba(0,255,136,0.12)", border: "1px solid rgba(0,255,136,0.25)", color: "#059669",
+          background: "rgba(0,255,136,0.1)", border: "1px solid rgba(0,255,136,0.25)", color: "#00FF88",
         } : {
           background: "linear-gradient(135deg, #00FF88, #00D4FF)", color: "#0B141B",
+          boxShadow: "0 0 20px rgba(0,255,136,0.25)",
         }}>
         {saved ? <><Check size={16} /> Saved!</> : "Save preferences"}
       </button>
