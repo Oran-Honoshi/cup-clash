@@ -31,7 +31,6 @@ const NAV = [
   { href: "/admin",        label: "Admin",          icon: Shield          },
 ];
 
-// Chat goes to My Groups page where user can pick a group and open Chat tab
 const CHAT_HREF = "/groups";
 
 export function AppSidebar() {
@@ -69,22 +68,22 @@ export function AppSidebar() {
     <aside
       className="hidden lg:flex fixed left-0 top-0 bottom-0 w-60 flex-col z-40 border-r"
       style={{
-        background: "rgba(255,255,255,0.85)",
-        backdropFilter: "blur(20px)",
-        WebkitBackdropFilter: "blur(20px)",
-        borderColor: "rgba(0,212,255,0.12)",
+        background: "rgba(8, 12, 22, 0.85)",
+        backdropFilter: "blur(24px)",
+        WebkitBackdropFilter: "blur(24px)",
+        borderColor: "rgba(255, 255, 255, 0.07)",
       }}
     >
       {/* Logo */}
-      <div className="px-5 py-5 border-b" style={{ borderColor: "rgba(0,212,255,0.1)" }}>
+      <div className="px-5 py-5 border-b" style={{ borderColor: "rgba(255,255,255,0.07)" }}>
         <Link href="/dashboard" className="flex items-center gap-2.5">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/icon-192.png" alt="Cup Clash" className="h-8 w-8 rounded-xl object-cover" />
           <div>
-            <div className="font-display text-lg font-black uppercase leading-none" style={{ color: "#0F172A" }}>
-              Cup<span style={{ background: "linear-gradient(135deg,#00D4FF,#00FF88)", WebkitBackgroundClip: "text", backgroundClip: "text", WebkitTextFillColor: "transparent" }}>Clash</span>
+            <div className="font-display text-lg font-black uppercase leading-none text-white">
+              Cup<span style={{ background: "linear-gradient(135deg,#00FF88,#00D4FF)", WebkitBackgroundClip: "text", backgroundClip: "text", WebkitTextFillColor: "transparent" }}>Clash</span>
             </div>
-            <div className="text-[9px] font-bold uppercase tracking-widest" style={{ color: "#0891B2" }}>
+            <div className="text-[9px] font-bold uppercase tracking-widest" style={{ color: "#00D4FF" }}>
               World Cup 2026
             </div>
           </div>
@@ -99,23 +98,31 @@ export function AppSidebar() {
             <Link key={href} href={href}
               className={cn(
                 "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold transition-all",
-                active ? "" : "hover:bg-slate-50"
               )}
               style={active ? {
-                background: "linear-gradient(135deg, rgba(0,255,136,0.12), rgba(0,212,255,0.08))",
-                color: "#0891B2",
-                border: "1px solid rgba(0,212,255,0.2)",
-              } : { color: "#64748b" }}>
+                background: "rgba(0, 255, 136, 0.12)",
+                color: "#00FF88",
+                border: "1px solid rgba(0, 255, 136, 0.25)",
+                boxShadow: "0 0 12px rgba(0,255,136,0.08)",
+              } : {
+                color: "rgba(255,255,255,0.55)",
+              }}
+              onMouseEnter={e => { if (!active) (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.9)"; (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.06)"; }}
+              onMouseLeave={e => { if (!active) { (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.55)"; (e.currentTarget as HTMLElement).style.background = "transparent"; } }}
+            >
               <Icon size={17} strokeWidth={active ? 2.5 : 1.75} />
               {label}
             </Link>
           );
         })}
 
-        {/* Chat — shortcut to My Groups → Chat tab */}
+        {/* Chat */}
         <Link href={CHAT_HREF}
-          className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold transition-all hover:bg-slate-50"
-          style={{ color: "#64748b" }}>
+          className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold transition-all"
+          style={{ color: "rgba(255,255,255,0.55)" }}
+          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.9)"; (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.06)"; }}
+          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.55)"; (e.currentTarget as HTMLElement).style.background = "transparent"; }}
+        >
           <MessageCircle size={17} strokeWidth={1.75} />
           Group Chat
         </Link>
@@ -123,53 +130,56 @@ export function AppSidebar() {
         {/* Testing — admin only */}
         {isAdmin && (
           <Link href="/testing"
-            className={cn(
-              "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold transition-all",
-              pathname === "/testing" ? "" : "hover:bg-slate-50"
-            )}
+            className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold transition-all"
             style={pathname === "/testing" ? {
-              background: "linear-gradient(135deg, rgba(0,255,136,0.12), rgba(0,212,255,0.08))",
-              color: "#0891B2",
-              border: "1px solid rgba(0,212,255,0.2)",
-            } : { color: "#94a3b8" }}>
-            <span style={{ fontSize: 15 }}>🧪</span>
+              background: "rgba(0,255,136,0.12)",
+              color: "#00FF88",
+              border: "1px solid rgba(0,255,136,0.25)",
+            } : { color: "rgba(255,255,255,0.35)" }}>
+            <Shield size={17} strokeWidth={1.75} />
             Testing
           </Link>
         )}
       </nav>
 
       {/* User footer */}
-      <div className="px-3 py-4 border-t space-y-1" style={{ borderColor: "rgba(0,212,255,0.1)" }}>
+      <div className="px-3 py-4 border-t space-y-1" style={{ borderColor: "rgba(255,255,255,0.07)" }}>
 
-        {/* Review trigger */}
         <div className="px-3 py-2">
           <ReviewTrigger context="general" label="Rate Cup Clash ⭐" />
         </div>
 
         <Link href="/profile"
-          className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-slate-50 transition-colors">
+          className="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all"
+          style={{ color: "rgba(255,255,255,0.75)" }}
+          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.07)"; }}
+          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}
+        >
           <div className="h-8 w-8 rounded-full overflow-hidden shrink-0"
-            style={{ border: "2px solid rgba(0,212,255,0.2)" }}>
+            style={{ border: "2px solid rgba(0,255,136,0.3)" }}>
             {profile?.avatar_url ? (
               <Image src={profile.avatar_url} alt={displayName} width={32} height={32} className="object-cover" />
             ) : flagCode ? (
               <Image src={flagCode} alt={profile?.country ?? ""} width={32} height={32} className="object-cover w-full h-full" unoptimized />
             ) : (
               <div className="h-full w-full flex items-center justify-center text-xs font-black"
-                style={{ background: "linear-gradient(135deg,#00D4FF,#00FF88)", color: "#0B141B" }}>
+                style={{ background: "linear-gradient(135deg,#00FF88,#00D4FF)", color: "#0B141B" }}>
                 {displayName[0]?.toUpperCase()}
               </div>
             )}
           </div>
           <div className="flex-1 min-w-0">
-            <div className="text-sm font-bold truncate" style={{ color: "#0F172A" }}>{displayName}</div>
+            <div className="text-sm font-bold truncate text-white">{displayName}</div>
           </div>
-          <Settings size={14} style={{ color: "#94a3b8" }} />
+          <Settings size={14} style={{ color: "rgba(255,255,255,0.35)" }} />
         </Link>
 
         <button onClick={handleSignOut}
-          className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-bold transition-colors hover:bg-red-50"
-          style={{ color: "#ef4444" }}>
+          className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-bold transition-all"
+          style={{ color: "#f87171" }}
+          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "rgba(239,68,68,0.1)"; }}
+          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}
+        >
           <LogOut size={16} />
           Sign out
         </button>
