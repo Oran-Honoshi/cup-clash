@@ -1,143 +1,126 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Users, Trophy, Lock, ChevronDown } from "lucide-react";
+import { Users, Trophy, Lock, ChevronDown, Target } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { GroupStagePredictions } from "@/components/predictions/group-stage-predictions";
 import { TournamentPicks } from "@/components/dashboard/tournament-picks";
 import { GuestStore } from "@/components/ui/guest-signup-modal";
 
+// ── Shared glass tokens ───────────────────────────────────────────────────────
+const glass = {
+  background: "rgba(255,255,255,0.07)",
+  backdropFilter: "blur(24px) saturate(120%)",
+  WebkitBackdropFilter: "blur(24px) saturate(120%)",
+  border: "1px solid rgba(255,255,255,0.12)",
+  boxShadow: "0 12px 40px rgba(0,0,0,0.25), inset 0 1px 1px rgba(255,255,255,0.1)",
+} as const;
+
+const glassActive = {
+  background: "rgba(0,212,255,0.1)",
+  backdropFilter: "blur(24px) saturate(120%)",
+  WebkitBackdropFilter: "blur(24px) saturate(120%)",
+  border: "1px solid rgba(0,212,255,0.35)",
+  boxShadow: "0 4px 20px rgba(0,212,255,0.15), inset 0 1px 1px rgba(255,255,255,0.08)",
+} as const;
+
 const TABS = [
-  { id: "group"      as const, label: "Group Stage",      icon: Users,  sub: "36 matches · scores & tables"  },
+  { id: "group"      as const, label: "Group Stage",      icon: Target, sub: "36 matches · scores & tables" },
   { id: "tournament" as const, label: "Tournament Picks", icon: Trophy, sub: "Winner, boot, defence & more"  },
 ];
 
 interface PredictionsClientProps {
-  groupId:           string;
-  groupName:         string;
-  allGroups:         Array<{ id: string; name: string; passkey: string }>;
-  userId:            string;
-  isPaid:            boolean;
-  /** When true, migrate any localStorage guest predictions to the DB on mount */
+  groupId:            string;
+  groupName:          string;
+  allGroups:          Array<{ id: string; name: string; passkey: string }>;
+  userId:             string;
+  isPaid:             boolean;
   migrateGuestPicks?: boolean;
 }
 
 export function PredictionsClient({
-  groupId,
-  groupName,
-  allGroups,
-  userId,
-  isPaid,
-  migrateGuestPicks = false,
+  groupId, groupName, allGroups, userId, isPaid, migrateGuestPicks = false,
 }: PredictionsClientProps) {
-  const [tab, setTab]                       = useState<"group" | "tournament">("group");
+  const [tab,             setTab]             = useState<"group" | "tournament">("group");
   const [groupPickerOpen, setGroupPickerOpen] = useState(false);
-  const [migrated, setMigrated]             = useState(false);
-  const router                              = useRouter();
+  const [migrated,        setMigrated]        = useState(false);
+  const router = useRouter();
 
-  // ── Migrate guest localStorage picks → DB on first render after signup ────
   useEffect(() => {
     if (!migrateGuestPicks || migrated) return;
-
     const guestPicks = GuestStore.get();
     if (!guestPicks.length) return;
-
     setMigrated(true);
-
-    // Fire-and-forget: POST to migration endpoint
     fetch("/api/predictions/migrate", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        groupId,
-        userId,
-        predictions: guestPicks,
-      }),
-    })
-      .then((res) => {
-        if (res.ok) {
-          GuestStore.clear();
-          // Remove migrate param from URL without full reload
-          const url = new URL(window.location.href);
-          url.searchParams.delete("migrate");
-          window.history.replaceState({}, "", url.toString());
-        }
-      })
-      .catch((err) => {
-        console.error("[migrate guest picks]", err);
-      });
+      body: JSON.stringify({ groupId, userId, predictions: guestPicks }),
+    }).then(res => {
+      if (res.ok) {
+        GuestStore.clear();
+        const url = new URL(window.location.href);
+        url.searchParams.delete("migrate");
+        window.history.replaceState({}, "", url.toString());
+      }
+    }).catch(err => console.error("[migrate guest picks]", err));
   }, [migrateGuestPicks, migrated, groupId, userId]);
 
-  const switchGroup = (newGroupId: string) => {
-    setGroupPickerOpen(false);
-    router.push(`/predictions?group=${newGroupId}`);
-  };
+  const switchGroup = (id: string) => { setGroupPickerOpen(false); router.push(`/predictions?group=${id}`); };
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <div className="label-caps mb-1">My Bets</div>
-        <h1 className="font-display text-4xl sm:text-5xl uppercase tracking-tight" style={{ color: "#0F172A" }}>
+    <div className="flex flex-col space-y-4 max-w-2xl mx-auto w-full">
+
+      {/* Page header */}
+      <div className="pt-2 pb-1">
+        <div className="text-[10px] font-black uppercase tracking-widest mb-1" style={{ color: "#00D4FF" }}>
+          My Bets
+        </div>
+        <h1 className="font-display text-4xl sm:text-5xl uppercase font-black text-white leading-none tracking-tight">
           Predictions
         </h1>
-        <p className="text-sm mt-1 flex items-center gap-1.5" style={{ color: "#94a3b8" }}>
-          <Lock size={12} />
-          Group matches lock 5 min before kickoff · Tournament picks lock June 11
+        <p className="text-xs mt-2 flex items-center gap-1.5" style={{ color: "rgba(255,255,255,0.35)" }}>
+          <Lock size={11} />
+          Matches lock 5 min before kickoff · Tournament picks lock June 11
         </p>
       </div>
 
-      {/* Group switcher — multiple groups */}
+      {/* Group switcher */}
       {allGroups.length > 1 && (
         <div className="relative">
-          <button
-            onClick={() => setGroupPickerOpen(v => !v)}
+          <button onClick={() => setGroupPickerOpen(v => !v)}
             className="flex items-center gap-3 px-4 py-3 rounded-2xl w-full text-left transition-all"
-            style={{
-              background: "rgba(255,255,255,0.9)",
-              border: "1px solid rgba(0,212,255,0.3)",
-              boxShadow: "0 4px 16px rgba(0,212,255,0.08)",
-            }}
-          >
+            style={glass}>
             <div className="h-8 w-8 rounded-xl flex items-center justify-center shrink-0"
-              style={{ background: "rgba(0,212,255,0.1)", border: "1px solid rgba(0,212,255,0.2)" }}>
-              <Users size={15} style={{ color: "#0891B2" }} />
+              style={{ background: "rgba(0,212,255,0.15)", border: "1px solid rgba(0,212,255,0.3)" }}>
+              <Users size={15} style={{ color: "#00D4FF" }} />
             </div>
             <div className="flex-1 min-w-0">
-              <div className="text-xs font-bold uppercase tracking-widest" style={{ color: "#0891B2" }}>
+              <div className="text-[10px] font-black uppercase tracking-widest mb-0.5" style={{ color: "#00D4FF" }}>
                 Predicting for
               </div>
-              <div className="font-display text-lg uppercase font-black truncate" style={{ color: "#0F172A" }}>
-                {groupName}
-              </div>
+              <div className="font-display text-lg uppercase font-black truncate text-white">{groupName}</div>
             </div>
-            <ChevronDown size={16} style={{
-              color: "#94a3b8",
-              transform: groupPickerOpen ? "rotate(180deg)" : "none",
-              transition: "transform 0.2s",
-            }} />
+            <ChevronDown size={16} style={{ color: "rgba(255,255,255,0.4)", transform: groupPickerOpen ? "rotate(180deg)" : "none", transition: "transform 0.2s" }} />
           </button>
 
           {groupPickerOpen && (
             <div className="absolute top-full left-0 right-0 mt-1 rounded-2xl overflow-hidden z-20"
-              style={{ background: "white", border: "1px solid rgba(0,212,255,0.2)", boxShadow: "0 8px 32px rgba(0,0,0,0.12)" }}>
-              {allGroups.map(g => (
-                <button
-                  key={g.id}
-                  onClick={() => switchGroup(g.id)}
-                  className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-slate-50 transition-all border-b last:border-0"
-                  style={{
-                    borderColor: "#f1f5f9",
-                    background: g.id === groupId ? "rgba(0,212,255,0.05)" : undefined,
-                  }}
-                >
+              style={{ background: "rgba(10,15,30,0.95)", backdropFilter: "blur(24px)", WebkitBackdropFilter: "blur(24px)", border: "1px solid rgba(255,255,255,0.12)", boxShadow: "0 16px 40px rgba(0,0,0,0.5)" }}>
+              {allGroups.map((g, i) => (
+                <button key={g.id} onClick={() => switchGroup(g.id)}
+                  className="w-full flex items-center gap-3 px-4 py-3 text-left transition-all"
+                  style={{ borderBottom: i < allGroups.length - 1 ? "1px solid rgba(255,255,255,0.06)" : undefined, background: g.id === groupId ? "rgba(0,212,255,0.08)" : undefined }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.05)"; }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = g.id === groupId ? "rgba(0,212,255,0.08)" : "transparent"; }}>
                   <div className="flex-1 min-w-0">
-                    <div className="font-bold text-sm truncate" style={{ color: "#0F172A" }}>{g.name}</div>
-                    <div className="text-xs font-mono" style={{ color: "#94a3b8" }}>{g.passkey}</div>
+                    <div className="font-bold text-sm truncate text-white">{g.name}</div>
+                    <div className="text-xs font-mono" style={{ color: "rgba(255,255,255,0.35)" }}>{g.passkey}</div>
                   </div>
                   {g.id === groupId && (
                     <span className="text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0"
-                      style={{ background: "rgba(0,212,255,0.1)", color: "#0891B2" }}>Active</span>
+                      style={{ background: "rgba(0,212,255,0.15)", color: "#00D4FF", border: "1px solid rgba(0,212,255,0.3)" }}>
+                      Active
+                    </span>
                   )}
                 </button>
               ))}
@@ -146,49 +129,42 @@ export function PredictionsClient({
         </div>
       )}
 
-      {/* Single group — just show which one */}
+      {/* Single group label */}
       {allGroups.length === 1 && (
         <div className="flex items-center gap-3 px-4 py-2.5 rounded-xl"
-          style={{ background: "rgba(0,212,255,0.05)", border: "1px solid rgba(0,212,255,0.15)" }}>
-          <Users size={14} style={{ color: "#0891B2" }} />
-          <span className="text-sm font-bold" style={{ color: "#0891B2" }}>
-            Predicting for: <span style={{ color: "#0F172A" }}>{groupName}</span>
+          style={{ background: "rgba(0,212,255,0.08)", border: "1px solid rgba(0,212,255,0.2)" }}>
+          <Users size={14} style={{ color: "#00D4FF" }} />
+          <span className="text-sm font-bold" style={{ color: "rgba(255,255,255,0.7)" }}>
+            Predicting for: <span className="text-white">{groupName}</span>
           </span>
         </div>
       )}
 
       {/* Phase tabs */}
-      <div className="flex gap-2 flex-wrap">
+      <div className="grid grid-cols-2 gap-2">
         {TABS.map(t => {
           const active = tab === t.id;
           return (
             <button key={t.id} onClick={() => setTab(t.id)}
-              className="flex items-center gap-2.5 px-4 py-3 rounded-2xl text-left transition-all"
-              style={active ? {
-                background: "rgba(255,255,255,0.9)",
-                border: "1px solid rgba(0,212,255,0.3)",
-                boxShadow: "0 4px 16px rgba(0,212,255,0.1)",
-              } : {
-                background: "rgba(255,255,255,0.5)",
-                border: "1px solid #e2e8f0",
-              }}
-            >
+              className="flex items-center gap-3 px-4 py-3 rounded-2xl text-left transition-all"
+              style={active ? glassActive : glass}>
               <div className="h-9 w-9 rounded-xl flex items-center justify-center shrink-0"
                 style={active
-                  ? { background: "rgba(0,212,255,0.1)", border: "1px solid rgba(0,212,255,0.25)" }
-                  : { background: "#f1f5f9", border: "1px solid #e2e8f0" }}>
-                <t.icon size={16} strokeWidth={1.5} style={{ color: active ? "#0891B2" : "#94a3b8" }} />
+                  ? { background: "rgba(0,212,255,0.15)", border: "1px solid rgba(0,212,255,0.35)" }
+                  : { background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}>
+                <t.icon size={16} strokeWidth={1.5} style={{ color: active ? "#00D4FF" : "rgba(255,255,255,0.4)" }} />
               </div>
-              <div>
-                <div className="text-sm font-bold" style={{ color: active ? "#0F172A" : "#64748b" }}>{t.label}</div>
-                <div className="text-[10px]" style={{ color: "#94a3b8" }}>{t.sub}</div>
+              <div className="min-w-0">
+                <div className="text-sm font-bold leading-none mb-1"
+                  style={{ color: active ? "#00D4FF" : "rgba(255,255,255,0.7)" }}>{t.label}</div>
+                <div className="text-[10px]" style={{ color: "rgba(255,255,255,0.3)" }}>{t.sub}</div>
               </div>
             </button>
           );
         })}
       </div>
 
-      {/* Keep BOTH mounted — prevents state loss on tab switch */}
+      {/* Tab content */}
       <div style={{ display: tab === "group" ? "block" : "none" }}>
         <GroupStagePredictions groupId={groupId} userId={userId} locked={!isPaid} />
       </div>
