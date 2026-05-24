@@ -3,23 +3,22 @@
 @tailwind utilities;
 
 /* ═══════════════════════════════════════════════════════════════
-   CUP CLASH — NEON ICE ARENA
-   Background : Glacier White  #F8FAFC
-   Primary    : Deep Slate     #0F172A
-   Accent 1   : Electric Cyan  #00D4FF / #0891B2
-   Accent 2   : Neon Mint      #00FF88
-   Cards      : white/80 backdrop-blur-md
+   CUP CLASH — DARK STADIUM GLASS THEME
+   Background : Stadium dark (via layout background image)
+   Surface    : Dark glass panels  rgba(255,255,255,0.07)
+   Accent 1   : Electric Cyan      #00D4FF
+   Accent 2   : Neon Mint          #00FF88
+   Accent 3   : Purple             #8B5CF6
+   Text       : White hierarchy
    ═══════════════════════════════════════════════════════════════ */
 
+/* ── CSS Variables ── */
 :root {
   --brand:        0 212 255;    /* Electric Cyan  #00D4FF */
   --brand-2:      0 255 136;    /* Neon Mint       #00FF88 */
   --accent:       0 255 136;    /* default = Neon Mint    */
   --accent-glow:  0 212 255;    /* Electric Cyan          */
   --navy:         15 23 42;     /* Deep Slate      #0F172A */
-  --surface:      248 250 252;  /* Glacier White   #F8FAFC */
-  --card:         255 255 255;
-
   --font-display: "Urbanist", system-ui, sans-serif;
   --font-inter:   "Inter", system-ui, sans-serif;
   --font-mono:    "JetBrains Mono", ui-monospace, monospace;
@@ -27,80 +26,149 @@
 
 *, *::before, *::after { box-sizing: border-box; }
 
-html { scroll-behavior: smooth; background: #F8FAFC; }
+/* ── Base ── */
+html {
+  scroll-behavior: smooth;
+  background: #080c16;
+}
 
 html, body {
-  margin: 0; padding: 0;
+  margin: 0;
+  padding: 0;
   font-family: var(--font-inter);
-  color: #0F172A;
+  color: #e2e8f0;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
 
-/* ── GLACIER WHITE + BLUEPRINT GRID ── */
 body {
-  background-color: #F8FAFC;
-  /* 1px blueprint grid in cyan at 5% opacity */
-  background-image:
-    linear-gradient(rgba(0,212,255,0.05) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(0,212,255,0.05) 1px, transparent 1px),
-    radial-gradient(ellipse 80% 40% at 70% 0%, rgba(0,212,255,0.08) 0%, transparent 60%),
-    radial-gradient(ellipse 60% 40% at 0% 80%, rgba(0,255,136,0.05) 0%, transparent 50%);
-  background-size: 40px 40px, 40px 40px, 100% 100%, 100% 100%;
+  background-color: #080c16;
 }
 
-/* ── TYPOGRAPHY ── */
-h1, h2, h3, h4, .font-display {
+/* ── Typography ── */
+h1, h2, h3, h4 {
   font-family: var(--font-display);
   font-weight: 900;
-  color: #0F172A;
+  color: #ffffff;
   letter-spacing: -0.02em;
 }
+
+.font-display {
+  font-family: var(--font-barlow, var(--font-display), 'Barlow Condensed', 'Arial Narrow', sans-serif);
+}
+
 .font-mono { font-family: var(--font-mono); }
 
-/* ── GLASSMORPHISM CARDS ── */
-.glass {
-  background: rgba(255,255,255,0.80);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid #e2e8f0;
-  box-shadow: 0 1px 3px rgba(15,23,42,0.06), 0 4px 16px rgba(0,212,255,0.06);
-  border-radius: 1rem;
-}
-.glass-strong {
-  background: rgba(255,255,255,0.92);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(0,212,255,0.2);
-  box-shadow: 0 2px 8px rgba(15,23,42,0.08), 0 8px 32px rgba(0,212,255,0.08);
-  border-radius: 1rem;
-}
-.glass-accent {
-  background: rgba(255,255,255,0.85);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(0,255,136,0.3);
-  box-shadow: 0 4px 20px rgba(0,255,136,0.10);
-  border-radius: 1rem;
-}
-
-/* ── LABEL CAPS ── */
+/* ── Label caps ── */
 .label-caps {
   font-size: 0.65rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.12em;
-  color: #0891B2;
+  color: #00D4FF;
   font-family: var(--font-inter);
 }
 
-/* ── GRADIENT TEXT ── */
+/* ── Glass components ── */
+/* Dark glass — used inside the app on stadium background */
+.glass {
+  background: rgba(255, 255, 255, 0.07);
+  backdrop-filter: blur(24px) saturate(120%);
+  -webkit-backdrop-filter: blur(24px) saturate(120%);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25), inset 0 1px 1px rgba(255, 255, 255, 0.1);
+  border-radius: 1rem;
+}
+
+.glass-strong {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(32px) saturate(140%);
+  -webkit-backdrop-filter: blur(32px) saturate(140%);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.12);
+  border-radius: 1rem;
+}
+
+.glass-accent {
+  background: rgba(0, 255, 136, 0.06);
+  backdrop-filter: blur(24px) saturate(120%);
+  -webkit-backdrop-filter: blur(24px) saturate(120%);
+  border: 1px solid rgba(0, 255, 136, 0.2);
+  box-shadow: 0 8px 32px rgba(0, 255, 136, 0.08), inset 0 1px 1px rgba(255, 255, 255, 0.06);
+  border-radius: 1rem;
+}
+
+.glass-cyan {
+  background: rgba(0, 212, 255, 0.06);
+  backdrop-filter: blur(24px) saturate(120%);
+  -webkit-backdrop-filter: blur(24px) saturate(120%);
+  border: 1px solid rgba(0, 212, 255, 0.2);
+  box-shadow: 0 8px 32px rgba(0, 212, 255, 0.08);
+  border-radius: 1rem;
+}
+
+.glass-purple {
+  background: rgba(139, 92, 246, 0.08);
+  backdrop-filter: blur(24px) saturate(120%);
+  -webkit-backdrop-filter: blur(24px) saturate(120%);
+  border: 1px solid rgba(139, 92, 246, 0.25);
+  box-shadow: 0 8px 32px rgba(139, 92, 246, 0.1);
+  border-radius: 1rem;
+}
+
+/* Sidebar glass */
+.glass-sidebar {
+  background: rgba(8, 12, 22, 0.85);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-right: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+/* ── Text colour utilities ── */
+/* These work correctly on dark backgrounds */
+.text-primary   { color: #ffffff; }
+.text-secondary { color: rgba(255, 255, 255, 0.65); }
+.text-muted     { color: rgba(255, 255, 255, 0.35); }
+.text-hint      { color: rgba(255, 255, 255, 0.2); }
+
+.text-neon-green  { color: #00FF88; }
+.text-neon-teal   { color: #00D4FF; }
+.text-neon-purple { color: #8B5CF6; }
+.text-amber       { color: #fbbf24; }
+.text-danger      { color: #f87171; }
+.text-success     { color: #00FF88; }
+.text-warning     { color: #fbbf24; }
+
+/* Pitch text scale — maps to dark-friendly greys */
+.text-pitch-200 { color: rgba(255, 255, 255, 0.9); }
+.text-pitch-300 { color: rgba(255, 255, 255, 0.75); }
+.text-pitch-400 { color: rgba(255, 255, 255, 0.55); }
+.text-pitch-500 { color: rgba(255, 255, 255, 0.4); }
+.text-pitch-600 { color: rgba(255, 255, 255, 0.28); }
+.text-pitch-700 { color: rgba(255, 255, 255, 0.18); }
+
+/* Slate scale — readable on dark bg */
+.text-slate-200 { color: rgba(255, 255, 255, 0.88) !important; }
+.text-slate-300 { color: rgba(255, 255, 255, 0.72) !important; }
+.text-slate-400 { color: rgba(255, 255, 255, 0.5) !important; }
+.text-slate-500 { color: rgba(255, 255, 255, 0.35) !important; }
+.text-slate-600 { color: rgba(255, 255, 255, 0.25) !important; }
+
+/* ── White is white on dark bg ── */
+.text-white { color: #ffffff !important; }
+
+/* Force overrides */
+.force-white, .force-white * { color: #ffffff !important; }
+.keep-dark { color: #0F172A !important; }
+
+/* ── Gradient text ── */
 .gradient-text {
-  background: linear-gradient(135deg, #0F172A 0%, #0891B2 50%, #0F172A 100%);
+  background: linear-gradient(135deg, #00D4FF, #00FF88);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
 }
+
 .gradient-text-neon {
   background: linear-gradient(135deg, #00D4FF, #00FF88);
   -webkit-background-clip: text;
@@ -108,37 +176,83 @@ h1, h2, h3, h4, .font-display {
   -webkit-text-fill-color: transparent;
 }
 
-/* ── TEXT UTILITY OVERRIDES (light bg) ── */
-.text-white    { color: #0F172A !important; }
-.text-pitch-200 { color: #1e293b; }
-.text-pitch-300 { color: #334155; }
-.text-pitch-400 { color: #475569; }
-.text-pitch-500 { color: #64748b; }
-.text-pitch-600 { color: #94a3b8; }
-.text-pitch-700 { color: #cbd5e1; }
+/* ── Status badges ── */
+.badge-green {
+  background: rgba(0, 255, 136, 0.12);
+  color: #00FF88;
+  border: 1px solid rgba(0, 255, 136, 0.25);
+  border-radius: 9999px;
+  padding: 0.2rem 0.6rem;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
 
-/* Explicit white override for buttons/badges on colored bg */
-.force-white, .force-white * { color: #ffffff !important; }
-.keep-dark { color: #0F172A !important; }
+.badge-cyan {
+  background: rgba(0, 212, 255, 0.12);
+  color: #00D4FF;
+  border: 1px solid rgba(0, 212, 255, 0.25);
+  border-radius: 9999px;
+  padding: 0.2rem 0.6rem;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
 
-/* ── STATUS ── */
-.text-success { color: #059669; }
-.text-warning { color: #d97706; }
-.text-danger  { color: #dc2626; }
-.bg-success   { background-color: #059669; }
+.badge-amber {
+  background: rgba(251, 191, 36, 0.12);
+  color: #fbbf24;
+  border: 1px solid rgba(251, 191, 36, 0.25);
+  border-radius: 9999px;
+  padding: 0.2rem 0.6rem;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
 
-/* ── NEON SHADOWS ── */
-.shadow-neon-mint { box-shadow: 0 15px 30px rgba(0,255,136,0.30), 0 4px 12px rgba(0,255,136,0.15); }
-.shadow-neon-cyan { box-shadow: 0 15px 30px rgba(0,212,255,0.25), 0 4px 12px rgba(0,212,255,0.12); }
-.shadow-card      { box-shadow: 0 1px 3px rgba(15,23,42,0.06), 0 4px 16px rgba(0,212,255,0.05); }
-.shadow-card-hover{ box-shadow: 0 4px 20px rgba(0,212,255,0.12), 0 1px 4px rgba(15,23,42,0.08); }
+.badge-muted {
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 9999px;
+  padding: 0.2rem 0.6rem;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
 
-/* ── SCROLLBAR ── */
+/* ── Neon shadows ── */
+.shadow-neon-green  { box-shadow: 0 0 20px rgba(0, 255, 136, 0.35), 0 4px 12px rgba(0, 255, 136, 0.15); }
+.shadow-neon-cyan   { box-shadow: 0 0 20px rgba(0, 212, 255, 0.3), 0 4px 12px rgba(0, 212, 255, 0.12); }
+.shadow-neon-purple { box-shadow: 0 0 20px rgba(139, 92, 246, 0.3), 0 4px 12px rgba(139, 92, 246, 0.12); }
+.shadow-card        { box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.06); }
+
+/* ── Scrollbars ── */
 ::-webkit-scrollbar        { width: 4px; height: 4px; }
-::-webkit-scrollbar-track  { background: #f1f5f9; }
-::-webkit-scrollbar-thumb  { background: rgba(0,212,255,0.25); border-radius: 2px; }
+::-webkit-scrollbar-track  { background: transparent; }
+::-webkit-scrollbar-thumb  { background: rgba(255, 255, 255, 0.12); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.22); }
 
-/* ── LIVE PULSING DOT ── */
+.glass-scroll::-webkit-scrollbar-thumb  { background: rgba(255, 255, 255, 0.1); }
+.glass-scroll::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.2); }
+
+/* ── Animations ── */
+@keyframes glassReveal {
+  from { opacity: 0; transform: translateY(12px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+.glass-reveal { animation: glassReveal 0.35s ease-out forwards; }
+
+@keyframes neonPulse {
+  0%, 100% { box-shadow: 0 0 8px rgba(0, 255, 136, 0.4); }
+  50%       { box-shadow: 0 0 20px rgba(0, 255, 136, 0.7); }
+}
+.neon-pulse { animation: neonPulse 2s ease-in-out infinite; }
+
 @keyframes live-pulse {
   0%, 100% { opacity: 1; transform: scale(1); }
   50%       { opacity: 0.6; transform: scale(1.3); }
@@ -151,7 +265,6 @@ h1, h2, h3, h4, .font-display {
   animation: live-pulse 1.4s ease-in-out infinite;
 }
 
-/* ── ANIMATIONS ── */
 @keyframes float {
   0%, 100% { transform: rotate(15deg) translateY(0px); }
   50%       { transform: rotate(15deg) translateY(-10px); }
@@ -161,439 +274,47 @@ h1, h2, h3, h4, .font-display {
   100% { transform: translateX(-50%); }
 }
 @keyframes pulse-glow {
-  0%, 100% { box-shadow: 0 0 8px rgba(0,255,136,0.4); }
-  50%       { box-shadow: 0 0 20px rgba(0,255,136,0.7); }
+  0%, 100% { box-shadow: 0 0 8px rgba(0, 255, 136, 0.4); }
+  50%       { box-shadow: 0 0 20px rgba(0, 255, 136, 0.7); }
 }
-.animate-float       { animation: float 4s ease-in-out infinite; }
-.animate-ticker      { animation: ticker 25s linear infinite; }
-.animate-pulse-glow  { animation: pulse-glow 2s ease-in-out infinite; }
-
-/* ── MISC ── */
-.bg-pitch-800 { background-color: #1e293b; }
-.bg-pitch-900 { background-color: #0f172a; }
-
-
-/* ─────────────────────────────────────────────────────────────────────────────
-   app/globals-glass.css
-   
-   ADD these rules to your existing globals.css (or import this file).
-   DO NOT remove any existing CSS — append only.
-   ─────────────────────────────────────────────────────────────────────────── */
-
-/* ── Barlow Condensed display font (add to <head> or next/font) ── */
-/* If using next/font, add to app/layout.tsx:
-   import { Barlow_Condensed } from 'next/font/google'
-   const barlowCondensed = Barlow_Condensed({
-     weight: ['400', '600', '700', '900'],
-     subsets: ['latin'],
-     variable: '--font-display',
-   })
-*/
-
-/* ── Font utility class ── */
-.font-display {
-  font-family: var(--font-display, 'Barlow Condensed', 'Arial Narrow', sans-serif);
-}
-
-/* ── Custom Tailwind utilities (add to tailwind.config.js theme.extend) ── */
-/*
-  theme: {
-    extend: {
-      fontFamily: {
-        display: ['var(--font-display)', 'Barlow Condensed', 'Arial Narrow', 'sans-serif'],
-      },
-      colors: {
-        // Neon green accent
-        neon: {
-          green:  '#00FF88',
-          teal:   '#00D4FF',
-          purple: '#8B5CF6',
-        },
-      },
-      backgroundImage: {
-        // Reusable gradient shorthands
-        'glow-green':  'linear-gradient(135deg, #10b981, #14b8a6)',
-        'glow-purple': 'linear-gradient(135deg, #6d28d9, #7c3aed)',
-      },
-      boxShadow: {
-        'glow-green':  '0 0 20px rgba(16,185,129,0.35)',
-        'glow-green-lg': '0 0 32px rgba(16,185,129,0.5)',
-        'glow-purple': '0 0 20px rgba(124,58,237,0.3)',
-        'glass':       '0 8px 40px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.07)',
-      },
-      backdropBlur: {
-        'glass': '20px',
-      },
-    },
-  },
-*/
-
-/* ── Glass card animation ── */
-@keyframes glassReveal {
-  from {
-    opacity: 0;
-    transform: translateY(12px) scale(0.98);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-  }
-}
-
-.glass-reveal {
-  animation: glassReveal 0.35s ease-out forwards;
-}
-
-/* ── Neon pulse for active elements ── */
-@keyframes neonPulse {
-  0%, 100% { box-shadow: 0 0 8px rgba(16,185,129,0.4); }
-  50%       { box-shadow: 0 0 20px rgba(16,185,129,0.7); }
-}
-
-.neon-pulse {
-  animation: neonPulse 2s ease-in-out infinite;
-}
-
-/* ── Countdown digit flip ── */
 @keyframes digitFlip {
-  0%   { transform: scaleY(1);   opacity: 1; }
-  49%  { transform: scaleY(0);   opacity: 0; }
-  50%  { transform: scaleY(0);   opacity: 0; }
-  100% { transform: scaleY(1);   opacity: 1; }
+  0%   { transform: scaleY(1); opacity: 1; }
+  49%  { transform: scaleY(0); opacity: 0; }
+  50%  { transform: scaleY(0); opacity: 0; }
+  100% { transform: scaleY(1); opacity: 1; }
 }
+@keyframes fadeIn  { from { opacity: 0; } to { opacity: 1; } }
+@keyframes fadeUp  { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
 
-.digit-flip {
-  animation: digitFlip 0.3s ease-in-out;
-}
+.animate-float      { animation: float 4s ease-in-out infinite; }
+.animate-ticker     { animation: ticker 25s linear infinite; }
+.animate-pulse-glow { animation: pulse-glow 2s ease-in-out infinite; }
+.digit-flip         { animation: digitFlip 0.3s ease-in-out; }
 
-/* ── Scrollbar styling for glass panels ── */
-.glass-scroll::-webkit-scrollbar {
-  width: 4px;
-}
-.glass-scroll::-webkit-scrollbar-track {
-  background: transparent;
-}
-.glass-scroll::-webkit-scrollbar-thumb {
-  background: rgba(255,255,255,0.1);
-  border-radius: 2px;
-}
-.glass-scroll::-webkit-scrollbar-thumb:hover {
-  background: rgba(255,255,255,0.2);
-}
+/* ── Background utilities ── */
+.bg-pitch-800 { background-color: rgba(255, 255, 255, 0.04); }
+.bg-pitch-900 { background-color: rgba(255, 255, 255, 0.02); }
 
-/* ── Stadium pitch stripe effect (CSS-only fallback) ── */
+/* ── Pitch stripe ── */
 .pitch-stripes {
   background: repeating-linear-gradient(
     180deg,
-    rgba(255,255,255,0.015) 0px,
-    rgba(255,255,255,0.015) 40px,
+    rgba(255, 255, 255, 0.015) 0px,
+    rgba(255, 255, 255, 0.015) 40px,
     transparent 40px,
     transparent 80px
   );
 }
 
-
-/* =============================================================================
-   CUP CLASH — GLASSMORPHIC DARK THEME OVERRIDES
-   Paste this entire block at the very bottom of app/globals.css
-   These rules override the existing light theme with the dark glass aesthetic.
-   ============================================================================= */
-
-/* ── 1. SIDEBAR ── */
-/* Makes the left sidebar dark glass instead of white */
-aside,
-[class*="sidebar"],
-nav[class*="sidebar"] {
-  background: rgba(8, 12, 22, 0.82) !important;
-  backdrop-filter: blur(20px) !important;
-  -webkit-backdrop-filter: blur(20px) !important;
-  border-right: 1px solid rgba(255, 255, 255, 0.07) !important;
+/* ── Landing page isolation ── */
+/* The landing page has its own light background set inline.
+   These rules ensure app-wide dark styles don't bleed into it. */
+.landing-page h1,
+.landing-page h2,
+.landing-page h3,
+.landing-page h4 {
+  color: #0F172A;
 }
-
-/* Sidebar nav links */
-aside a,
-aside button,
-aside span,
-aside p,
-[class*="sidebar"] a,
-[class*="sidebar"] button,
-[class*="sidebar"] span,
-[class*="sidebar"] p {
-  color: rgba(255, 255, 255, 0.65) !important;
-}
-
-aside a:hover,
-[class*="sidebar"] a:hover {
-  color: #ffffff !important;
-  background: rgba(255, 255, 255, 0.06) !important;
-}
-
-/* Active sidebar item */
-aside a[class*="active"],
-aside button[class*="active"],
-[class*="sidebar"] a[class*="active"],
-[class*="sidebar"] [aria-current="page"] {
-  color: #00ff88 !important;
-  background: rgba(0, 255, 136, 0.08) !important;
-}
-
-/* ── 2. ALL CARDS / PANELS / ROUNDED BOXES ── */
-/* Catches .rounded-*, .card, white bg divs */
-.rounded-xl,
-.rounded-2xl,
-.rounded-3xl,
-[class*="card"],
-[class*="panel"] {
-  background: rgba(10, 15, 28, 0.72) !important;
-  backdrop-filter: blur(18px) !important;
-  -webkit-backdrop-filter: blur(18px) !important;
-  border-color: rgba(255, 255, 255, 0.09) !important;
-  color: #e2e8f0 !important;
-}
-
-/* Kill solid white backgrounds specifically */
-.bg-white,
-[class*="bg-white"] {
-  background: rgba(10, 15, 28, 0.72) !important;
-}
-
-.bg-gray-50,
-.bg-slate-50,
-.bg-gray-100,
-.bg-slate-100,
-[class*="bg-gray-50"],
-[class*="bg-slate-50"],
-[class*="bg-gray-100"],
-[class*="bg-slate-100"] {
-  background: rgba(15, 22, 40, 0.65) !important;
-}
-
-/* ── 3. TEXT COLOURS ── */
-/* Dark text on dark bg becomes white/light */
-.text-gray-900,
-.text-slate-900,
-.text-gray-800,
-.text-slate-800,
-.text-gray-700,
-.text-slate-700,
-[class*="text-gray-9"],
-[class*="text-slate-9"],
-[class*="text-gray-8"],
-[class*="text-slate-8"],
-[class*="text-gray-7"],
-[class*="text-slate-7"] {
-  color: #f1f5f9 !important;
-}
-
-.text-gray-600,
-.text-slate-600,
-.text-gray-500,
-.text-slate-500,
-[class*="text-gray-6"],
-[class*="text-slate-6"],
-[class*="text-gray-5"],
-[class*="text-slate-5"] {
-  color: #94a3b8 !important;
-}
-
-/* Page headings */
-h1, h2, h3, h4 {
-  color: #ffffff !important;
-}
-
-/* Label caps / section labels */
-p, span, label, td, th, li {
-  color: #cbd5e1;
-}
-
-/* ── 4. FORM INPUTS ── */
-input,
-textarea,
-select {
-  background: rgba(5, 10, 20, 0.6) !important;
-  border-color: rgba(255, 255, 255, 0.12) !important;
-  color: #ffffff !important;
-}
-
-input::placeholder,
-textarea::placeholder {
-  color: rgba(255, 255, 255, 0.3) !important;
-}
-
-input:focus,
-textarea:focus,
-select:focus {
-  border-color: rgba(0, 255, 136, 0.5) !important;
-  box-shadow: 0 0 0 2px rgba(0, 255, 136, 0.15) !important;
-  outline: none !important;
-}
-
-/* Score input boxes (the — boxes in predictions) */
-input[type="number"],
-[class*="score"],
-[class*="Score"] {
-  background: rgba(0, 255, 136, 0.05) !important;
-  border: 1px solid rgba(0, 255, 136, 0.35) !important;
-  color: #00ff88 !important;
-  font-weight: 700 !important;
-}
-
-/* ── 5. BUTTONS ── */
-/* Primary green buttons — add glow */
-button[class*="bg-gradient"],
-button[class*="emerald"],
-button[class*="teal"],
-a[class*="bg-gradient"] {
-  box-shadow: 0 0 18px rgba(0, 255, 136, 0.35) !important;
-  transition: box-shadow 0.2s, transform 0.15s !important;
-}
-
-button[class*="bg-gradient"]:hover,
-button[class*="emerald"]:hover {
-  box-shadow: 0 0 28px rgba(0, 255, 136, 0.55) !important;
-  transform: translateY(-1px) !important;
-}
-
-/* Ghost / outline buttons */
-button[class*="border"],
-button[class*="outline"] {
-  background: rgba(255, 255, 255, 0.05) !important;
-  border-color: rgba(255, 255, 255, 0.15) !important;
-  color: #e2e8f0 !important;
-}
-
-button[class*="border"]:hover {
-  background: rgba(255, 255, 255, 0.1) !important;
-}
-
-/* ── 6. TABLES ── */
-table {
-  background: transparent !important;
-}
-
-thead tr,
-th {
-  background: rgba(255, 255, 255, 0.04) !important;
-  color: #64748b !important;
-  border-color: rgba(255, 255, 255, 0.06) !important;
-}
-
-tbody tr {
-  border-color: rgba(255, 255, 255, 0.05) !important;
-}
-
-tbody tr:hover {
-  background: rgba(255, 255, 255, 0.04) !important;
-}
-
-td {
-  color: #e2e8f0 !important;
-  border-color: rgba(255, 255, 255, 0.05) !important;
-}
-
-/* ── 7. TABS / FILTER PILLS ── */
-/* Group filter pills (GROUP A, GROUP B...) */
-button[class*="rounded-full"],
-[class*="pill"],
-[class*="tab"] {
-  background: rgba(255, 255, 255, 0.06) !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-  color: #94a3b8 !important;
-}
-
-button[class*="rounded-full"][class*="active"],
-button[class*="rounded-full"][aria-selected="true"],
-[class*="tab"][aria-selected="true"] {
-  background: rgba(0, 255, 136, 0.15) !important;
-  border-color: rgba(0, 255, 136, 0.4) !important;
-  color: #00ff88 !important;
-}
-
-/* ── 8. BADGES / STATUS CHIPS ── */
-[class*="badge"],
-[class*="chip"],
-[class*="tag"] {
-  background: rgba(255, 255, 255, 0.06) !important;
-  color: #94a3b8 !important;
-}
-
-/* ── 9. DIVIDERS / BORDERS ── */
-hr,
-[class*="divide"] > * + * {
-  border-color: rgba(255, 255, 255, 0.06) !important;
-}
-
-/* ── 10. APP HEADER (top mobile bar) ── */
-header,
-[class*="header"],
-[class*="AppHeader"] {
-  background: rgba(8, 12, 22, 0.75) !important;
-  backdrop-filter: blur(16px) !important;
-  -webkit-backdrop-filter: blur(16px) !important;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
-}
-
-/* ── 11. MODALS / DIALOGS ── */
-[role="dialog"],
-[class*="modal"],
-[class*="Modal"],
-[class*="Dialog"] {
-  background: rgba(10, 15, 28, 0.92) !important;
-  backdrop-filter: blur(24px) !important;
-  border: 1px solid rgba(255, 255, 255, 0.1) !important;
-  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.05) !important;
-}
-
-/* Modal backdrop */
-[class*="overlay"],
-[class*="backdrop"] {
-  background: rgba(0, 0, 0, 0.75) !important;
-}
-
-/* ── 12. TOGGLES / SWITCHES ── */
-/* Keep existing cyan toggles, just make the track darker when off */
-[role="switch"][aria-checked="false"] {
-  background: rgba(255, 255, 255, 0.1) !important;
-}
-
-/* ── 13. SCROLLBARS ── */
-::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
-}
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.12);
-  border-radius: 3px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.22);
-}
-
-/* ── 14. PROGRESS BARS ── */
-progress,
-[role="progressbar"],
-[class*="progress"] {
-  background: rgba(255, 255, 255, 0.08) !important;
-}
-
-/* ── 15. NEON ACCENT BORDERS on key containers ── */
-/* Adds a subtle neon top bar to primary content cards */
-.rounded-2xl:has(h2),
-.rounded-3xl:has(h2),
-.rounded-xl:has(h1) {
-  border-top: 1px solid rgba(0, 255, 136, 0.2) !important;
-}
-
-/* ── 16. LANDING PAGE PROTECTION ── */
-/* Don't apply dark overrides to the public landing page */
-/* The landing page uses #F8FAFC bg which we want to keep */
-body:has(> div[style*="F8FAFC"]) .rounded-xl,
-body:has(> div[style*="F8FAFC"]) .rounded-2xl,
-body:has(> div[style*="F8FAFC"]) .rounded-3xl {
-  background: revert !important;
-  backdrop-filter: revert !important;
-  color: revert !important;
+.landing-page .text-white {
+  color: #0F172A !important;
 }
