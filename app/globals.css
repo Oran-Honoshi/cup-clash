@@ -291,3 +291,309 @@ h1, h2, h3, h4, .font-display {
     transparent 80px
   );
 }
+
+
+/* =============================================================================
+   CUP CLASH — GLASSMORPHIC DARK THEME OVERRIDES
+   Paste this entire block at the very bottom of app/globals.css
+   These rules override the existing light theme with the dark glass aesthetic.
+   ============================================================================= */
+
+/* ── 1. SIDEBAR ── */
+/* Makes the left sidebar dark glass instead of white */
+aside,
+[class*="sidebar"],
+nav[class*="sidebar"] {
+  background: rgba(8, 12, 22, 0.82) !important;
+  backdrop-filter: blur(20px) !important;
+  -webkit-backdrop-filter: blur(20px) !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.07) !important;
+}
+
+/* Sidebar nav links */
+aside a,
+aside button,
+aside span,
+aside p,
+[class*="sidebar"] a,
+[class*="sidebar"] button,
+[class*="sidebar"] span,
+[class*="sidebar"] p {
+  color: rgba(255, 255, 255, 0.65) !important;
+}
+
+aside a:hover,
+[class*="sidebar"] a:hover {
+  color: #ffffff !important;
+  background: rgba(255, 255, 255, 0.06) !important;
+}
+
+/* Active sidebar item */
+aside a[class*="active"],
+aside button[class*="active"],
+[class*="sidebar"] a[class*="active"],
+[class*="sidebar"] [aria-current="page"] {
+  color: #00ff88 !important;
+  background: rgba(0, 255, 136, 0.08) !important;
+}
+
+/* ── 2. ALL CARDS / PANELS / ROUNDED BOXES ── */
+/* Catches .rounded-*, .card, white bg divs */
+.rounded-xl,
+.rounded-2xl,
+.rounded-3xl,
+[class*="card"],
+[class*="panel"] {
+  background: rgba(10, 15, 28, 0.72) !important;
+  backdrop-filter: blur(18px) !important;
+  -webkit-backdrop-filter: blur(18px) !important;
+  border-color: rgba(255, 255, 255, 0.09) !important;
+  color: #e2e8f0 !important;
+}
+
+/* Kill solid white backgrounds specifically */
+.bg-white,
+[class*="bg-white"] {
+  background: rgba(10, 15, 28, 0.72) !important;
+}
+
+.bg-gray-50,
+.bg-slate-50,
+.bg-gray-100,
+.bg-slate-100,
+[class*="bg-gray-50"],
+[class*="bg-slate-50"],
+[class*="bg-gray-100"],
+[class*="bg-slate-100"] {
+  background: rgba(15, 22, 40, 0.65) !important;
+}
+
+/* ── 3. TEXT COLOURS ── */
+/* Dark text on dark bg becomes white/light */
+.text-gray-900,
+.text-slate-900,
+.text-gray-800,
+.text-slate-800,
+.text-gray-700,
+.text-slate-700,
+[class*="text-gray-9"],
+[class*="text-slate-9"],
+[class*="text-gray-8"],
+[class*="text-slate-8"],
+[class*="text-gray-7"],
+[class*="text-slate-7"] {
+  color: #f1f5f9 !important;
+}
+
+.text-gray-600,
+.text-slate-600,
+.text-gray-500,
+.text-slate-500,
+[class*="text-gray-6"],
+[class*="text-slate-6"],
+[class*="text-gray-5"],
+[class*="text-slate-5"] {
+  color: #94a3b8 !important;
+}
+
+/* Page headings */
+h1, h2, h3, h4 {
+  color: #ffffff !important;
+}
+
+/* Label caps / section labels */
+p, span, label, td, th, li {
+  color: #cbd5e1;
+}
+
+/* ── 4. FORM INPUTS ── */
+input,
+textarea,
+select {
+  background: rgba(5, 10, 20, 0.6) !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  color: #ffffff !important;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: rgba(255, 255, 255, 0.3) !important;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  border-color: rgba(0, 255, 136, 0.5) !important;
+  box-shadow: 0 0 0 2px rgba(0, 255, 136, 0.15) !important;
+  outline: none !important;
+}
+
+/* Score input boxes (the — boxes in predictions) */
+input[type="number"],
+[class*="score"],
+[class*="Score"] {
+  background: rgba(0, 255, 136, 0.05) !important;
+  border: 1px solid rgba(0, 255, 136, 0.35) !important;
+  color: #00ff88 !important;
+  font-weight: 700 !important;
+}
+
+/* ── 5. BUTTONS ── */
+/* Primary green buttons — add glow */
+button[class*="bg-gradient"],
+button[class*="emerald"],
+button[class*="teal"],
+a[class*="bg-gradient"] {
+  box-shadow: 0 0 18px rgba(0, 255, 136, 0.35) !important;
+  transition: box-shadow 0.2s, transform 0.15s !important;
+}
+
+button[class*="bg-gradient"]:hover,
+button[class*="emerald"]:hover {
+  box-shadow: 0 0 28px rgba(0, 255, 136, 0.55) !important;
+  transform: translateY(-1px) !important;
+}
+
+/* Ghost / outline buttons */
+button[class*="border"],
+button[class*="outline"] {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border-color: rgba(255, 255, 255, 0.15) !important;
+  color: #e2e8f0 !important;
+}
+
+button[class*="border"]:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* ── 6. TABLES ── */
+table {
+  background: transparent !important;
+}
+
+thead tr,
+th {
+  background: rgba(255, 255, 255, 0.04) !important;
+  color: #64748b !important;
+  border-color: rgba(255, 255, 255, 0.06) !important;
+}
+
+tbody tr {
+  border-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+tbody tr:hover {
+  background: rgba(255, 255, 255, 0.04) !important;
+}
+
+td {
+  color: #e2e8f0 !important;
+  border-color: rgba(255, 255, 255, 0.05) !important;
+}
+
+/* ── 7. TABS / FILTER PILLS ── */
+/* Group filter pills (GROUP A, GROUP B...) */
+button[class*="rounded-full"],
+[class*="pill"],
+[class*="tab"] {
+  background: rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  color: #94a3b8 !important;
+}
+
+button[class*="rounded-full"][class*="active"],
+button[class*="rounded-full"][aria-selected="true"],
+[class*="tab"][aria-selected="true"] {
+  background: rgba(0, 255, 136, 0.15) !important;
+  border-color: rgba(0, 255, 136, 0.4) !important;
+  color: #00ff88 !important;
+}
+
+/* ── 8. BADGES / STATUS CHIPS ── */
+[class*="badge"],
+[class*="chip"],
+[class*="tag"] {
+  background: rgba(255, 255, 255, 0.06) !important;
+  color: #94a3b8 !important;
+}
+
+/* ── 9. DIVIDERS / BORDERS ── */
+hr,
+[class*="divide"] > * + * {
+  border-color: rgba(255, 255, 255, 0.06) !important;
+}
+
+/* ── 10. APP HEADER (top mobile bar) ── */
+header,
+[class*="header"],
+[class*="AppHeader"] {
+  background: rgba(8, 12, 22, 0.75) !important;
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06) !important;
+}
+
+/* ── 11. MODALS / DIALOGS ── */
+[role="dialog"],
+[class*="modal"],
+[class*="Modal"],
+[class*="Dialog"] {
+  background: rgba(10, 15, 28, 0.92) !important;
+  backdrop-filter: blur(24px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.1) !important;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.05) !important;
+}
+
+/* Modal backdrop */
+[class*="overlay"],
+[class*="backdrop"] {
+  background: rgba(0, 0, 0, 0.75) !important;
+}
+
+/* ── 12. TOGGLES / SWITCHES ── */
+/* Keep existing cyan toggles, just make the track darker when off */
+[role="switch"][aria-checked="false"] {
+  background: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* ── 13. SCROLLBARS ── */
+::-webkit-scrollbar {
+  width: 5px;
+  height: 5px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.22);
+}
+
+/* ── 14. PROGRESS BARS ── */
+progress,
+[role="progressbar"],
+[class*="progress"] {
+  background: rgba(255, 255, 255, 0.08) !important;
+}
+
+/* ── 15. NEON ACCENT BORDERS on key containers ── */
+/* Adds a subtle neon top bar to primary content cards */
+.rounded-2xl:has(h2),
+.rounded-3xl:has(h2),
+.rounded-xl:has(h1) {
+  border-top: 1px solid rgba(0, 255, 136, 0.2) !important;
+}
+
+/* ── 16. LANDING PAGE PROTECTION ── */
+/* Don't apply dark overrides to the public landing page */
+/* The landing page uses #F8FAFC bg which we want to keep */
+body:has(> div[style*="F8FAFC"]) .rounded-xl,
+body:has(> div[style*="F8FAFC"]) .rounded-2xl,
+body:has(> div[style*="F8FAFC"]) .rounded-3xl {
+  background: revert !important;
+  backdrop-filter: revert !important;
+  color: revert !important;
+}
