@@ -6,6 +6,7 @@ import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 import Image from "next/image";
 import { flagUrl } from "@/lib/countries";
 import { WC2026_MATCHES } from "@/lib/schedule";
+import { NeonBar } from "@/components/ui/neon-bar";
 
 // All 12 groups with real teams from the official FIFA draw
 const GROUPS: Record<string, string[]> = {
@@ -75,23 +76,32 @@ function GroupTable({ group }: { group: string }) {
   const standings = buildStandings(group, []);
 
   return (
-    <div className="rounded-2xl overflow-hidden"
-      style={{ background: "rgba(255,255,255,0.9)", border: "1px solid rgba(0,212,255,0.15)", boxShadow: "0 2px 12px rgba(0,212,255,0.06)" }}>
+    <div
+      style={{
+        background: "rgba(18,14,38,0.32)",
+        backdropFilter: "blur(40px) saturate(180%)",
+        WebkitBackdropFilter: "blur(40px) saturate(180%)",
+        border: "1px solid rgba(255,255,255,0.14)",
+        borderRadius: 22,
+        overflow: "hidden",
+      }}>
+      <NeonBar />
+
       {/* Group header */}
       <div className="px-4 py-3 border-b flex items-center justify-between"
-        style={{ borderColor: "rgba(0,212,255,0.1)", background: "rgba(0,212,255,0.04)" }}>
-        <span className="font-display text-lg font-black uppercase" style={{ color: "#0F172A" }}>
+        style={{ borderColor: "rgba(255,255,255,0.07)", background: "rgba(255,255,255,0.03)" }}>
+        <span className="font-display text-lg font-black uppercase" style={{ color: "white" }}>
           Group {group}
         </span>
         <span className="text-xs font-bold px-2 py-0.5 rounded-full"
-          style={{ background: "rgba(0,212,255,0.08)", color: "#0891B2" }}>
+          style={{ background: "rgba(0,212,255,0.08)", color: "#00D4FF" }}>
           Starts Jun {group === "A" ? "11" : "12–17"}
         </span>
       </div>
 
       {/* Table header */}
       <div className="grid text-[10px] font-bold uppercase tracking-widest px-4 py-2"
-        style={{ gridTemplateColumns: "1fr 28px 28px 28px 28px 28px 36px", color: "#94a3b8" }}>
+        style={{ gridTemplateColumns: "1fr 28px 28px 28px 28px 28px 36px", background: "rgba(255,255,255,0.03)", color: "rgba(255,255,255,0.3)" }}>
         <span>Team</span>
         <span className="text-center">P</span>
         <span className="text-center">W</span>
@@ -107,39 +117,50 @@ function GroupTable({ group }: { group: string }) {
           className="grid items-center px-4 py-2.5 border-t"
           style={{
             gridTemplateColumns: "1fr 28px 28px 28px 28px 28px 36px",
-            borderColor: "rgba(0,212,255,0.06)",
-            background: i < 2 ? "rgba(0,255,136,0.03)" : "transparent",
+            borderColor: "rgba(255,255,255,0.05)",
+            background: i < 2 ? "rgba(0,255,136,0.04)" : "transparent",
+            borderLeft: i < 2
+              ? "2px solid rgba(0,255,136,0.5)"
+              : i === 2
+              ? "2px solid rgba(251,191,36,0.35)"
+              : "2px solid transparent",
           }}>
           {/* Team */}
           <div className="flex items-center gap-2 min-w-0">
-            <span className="text-xs font-bold w-4 shrink-0" style={{ color: i < 2 ? "#059669" : "#94a3b8" }}>
+            <span className="text-xs font-bold w-4 shrink-0" style={{ color: i < 2 ? "#00FF88" : "rgba(255,255,255,0.3)" }}>
               {i + 1}
             </span>
             <div className="relative h-4 w-6 rounded-sm overflow-hidden shrink-0">
               <Image src={flagUrl(FLAG_CODES[row.team] ?? "un", 20)} alt={row.team}
                 fill className="object-cover" unoptimized />
             </div>
-            <span className="text-sm font-bold truncate" style={{ color: "#0F172A" }}>
+            <span className="text-sm font-bold truncate" style={{ color: "white" }}>
               {row.team}
             </span>
           </div>
-          {/* Stats */}
-          {[row.played, row.won, row.drawn, row.lost].map((v, j) => (
-            <span key={j} className="text-xs text-center" style={{ color: "#64748b" }}>{v}</span>
-          ))}
-          <span className="text-xs text-center" style={{ color: row.gd > 0 ? "#059669" : row.gd < 0 ? "#dc2626" : "#64748b" }}>
+          {/* Stats — played */}
+          <span className="text-xs text-center" style={{ color: "rgba(255,255,255,0.4)" }}>{row.played}</span>
+          {/* Stats — won */}
+          <span className="text-xs text-center" style={{ color: "#00FF88" }}>{row.won}</span>
+          {/* Stats — drawn */}
+          <span className="text-xs text-center" style={{ color: "rgba(255,255,255,0.4)" }}>{row.drawn}</span>
+          {/* Stats — lost */}
+          <span className="text-xs text-center" style={{ color: "#f87171" }}>{row.lost}</span>
+          {/* GD */}
+          <span className="text-xs text-center" style={{ color: row.gd > 0 ? "#00FF88" : row.gd < 0 ? "#f87171" : "rgba(255,255,255,0.4)" }}>
             {row.gd > 0 ? `+${row.gd}` : row.gd}
           </span>
-          <span className="text-sm font-black text-center" style={{ color: "#0F172A" }}>{row.points}</span>
+          {/* Points */}
+          <span className="text-sm font-mono font-black text-center" style={{ color: "#00D4FF" }}>{row.points}</span>
         </div>
       ))}
 
       {/* Qualification note */}
       <div className="px-4 py-2 border-t flex items-center gap-3"
-        style={{ borderColor: "rgba(0,212,255,0.08)", background: "rgba(248,250,252,0.5)" }}>
+        style={{ borderColor: "rgba(255,255,255,0.07)", background: "transparent" }}>
         <div className="flex items-center gap-1.5">
           <div className="h-2.5 w-2.5 rounded-sm" style={{ background: "rgba(0,255,136,0.4)" }} />
-          <span className="text-[10px]" style={{ color: "#64748b" }}>Advance to Round of 32</span>
+          <span className="text-[10px]" style={{ color: "rgba(255,255,255,0.3)" }}>Advance to Round of 32</span>
         </div>
       </div>
     </div>
@@ -154,9 +175,9 @@ export function GroupStandings({ groupId: _groupId }: { groupId?: string }) {
     <div className="space-y-5">
       {/* Pre-tournament notice */}
       <div className="rounded-xl px-4 py-3 flex items-center gap-2.5"
-        style={{ background: "rgba(217,119,6,0.06)", border: "1px solid rgba(217,119,6,0.2)" }}>
-        <span className="text-sm" style={{ color: "#d97706" }}>⏳</span>
-        <p className="text-sm" style={{ color: "#92400e" }}>
+        style={{ background: "rgba(251,191,36,0.08)", border: "1px solid rgba(251,191,36,0.2)" }}>
+        <span className="text-sm">⏳</span>
+        <p className="text-sm" style={{ color: "#fbbf24" }}>
           <strong>Tournament starts June 11.</strong> Standings will update live after each match.
         </p>
       </div>
@@ -165,14 +186,22 @@ export function GroupStandings({ groupId: _groupId }: { groupId?: string }) {
       <div className="flex flex-wrap gap-2">
         {groups.map(g => (
           <button key={g} onClick={() => setActiveGroup(g)}
-            className="h-9 w-9 rounded-xl font-display font-black text-sm transition-all"
+            className="font-display font-black text-sm transition-all"
             style={activeGroup === g ? {
-              background: "linear-gradient(135deg, #00D4FF, #00FF88)",
-              color: "#0B141B",
+              width: 36,
+              height: 36,
+              borderRadius: 10,
+              background: "rgba(0,212,255,0.15)",
+              border: "1px solid rgba(0,212,255,0.4)",
+              color: "#00D4FF",
+              boxShadow: "0 0 12px rgba(0,212,255,0.15)",
             } : {
-              background: "rgba(255,255,255,0.8)",
-              border: "1px solid #e2e8f0",
-              color: "#475569",
+              width: 36,
+              height: 36,
+              borderRadius: 10,
+              background: "rgba(255,255,255,0.05)",
+              border: "1px solid rgba(255,255,255,0.1)",
+              color: "rgba(255,255,255,0.5)",
             }}>
             {g}
           </button>

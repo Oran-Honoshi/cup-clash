@@ -4,7 +4,6 @@ import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { Trophy, Zap, Play, Lock } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { TriviaCard } from "@/components/trivia/trivia-card";
 import { TriviaResults } from "@/components/trivia/trivia-results";
 import {
@@ -29,11 +28,11 @@ interface TriviaPageClientProps {
 }
 
 const glass = {
-  background: "rgba(255,255,255,0.07)",
-  backdropFilter: "blur(24px) saturate(120%)",
-  WebkitBackdropFilter: "blur(24px) saturate(120%)",
-  border: "1px solid rgba(255,255,255,0.12)",
-  boxShadow: "0 12px 40px rgba(0,0,0,0.25), inset 0 1px 1px rgba(255,255,255,0.08)",
+  background: "rgba(18,14,38,0.32)",
+  backdropFilter: "blur(40px) saturate(180%)",
+  WebkitBackdropFilter: "blur(40px) saturate(180%)",
+  border: "1px solid rgba(255,255,255,0.14)",
+  boxShadow: "0 12px 40px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.08)",
 } as const;
 
 export function TriviaPageClient({
@@ -157,15 +156,39 @@ export function TriviaPageClient({
         {/* Action buttons */}
         <div className="space-y-3">
           {isPointsMode && !hasPlayedForPoints && triviaOpen && (
-            <Button onClick={startPointsRound} size="lg" className="w-full" leftIcon={<Zap size={18} />}>
-              Start — Play for Points
-            </Button>
+            <button onClick={startPointsRound}
+              className="w-full flex items-center justify-center gap-2"
+              style={{
+                padding: "14px 24px", borderRadius: 14,
+                background: "linear-gradient(135deg, #00FF88, #00D4FF)",
+                color: "#050810", fontSize: 15, fontWeight: 800,
+                fontFamily: "var(--font-display)", textTransform: "uppercase",
+                letterSpacing: "0.05em", cursor: "pointer", border: "none",
+                boxShadow: "0 0 24px rgba(0,255,136,0.3)",
+              }}>
+              <Zap size={18} />Start — Play for Points
+            </button>
           )}
           {(!isPointsMode || hasPlayedForPoints) && (
-            <Button onClick={startFreePlay} variant={isPointsMode ? "outline" : "primary"}
-              size="lg" className="w-full" leftIcon={<Play size={18} />}>
-              {isPointsMode ? "Play remaining questions (for fun)" : "Start trivia"}
-            </Button>
+            <button onClick={startFreePlay}
+              className="w-full flex items-center justify-center gap-2"
+              style={isPointsMode ? {
+                padding: "14px 24px", borderRadius: 14,
+                background: "rgba(255,255,255,0.05)",
+                border: "1px solid rgba(255,255,255,0.15)",
+                color: "rgba(255,255,255,0.85)", fontSize: 15, fontWeight: 800,
+                fontFamily: "var(--font-display)", textTransform: "uppercase" as const,
+                letterSpacing: "0.05em", cursor: "pointer",
+              } : {
+                padding: "14px 24px", borderRadius: 14,
+                background: "linear-gradient(135deg, #00FF88, #00D4FF)",
+                color: "#050810", fontSize: 15, fontWeight: 800,
+                fontFamily: "var(--font-display)", textTransform: "uppercase" as const,
+                letterSpacing: "0.05em", cursor: "pointer", border: "none",
+                boxShadow: "0 0 24px rgba(0,255,136,0.3)",
+              }}>
+              <Play size={18} />{isPointsMode ? "Play remaining questions (for fun)" : "Start trivia"}
+            </button>
           )}
         </div>
 

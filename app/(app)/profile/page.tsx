@@ -3,12 +3,9 @@
 import { useState, useEffect, useRef } from "react";
 import { Camera, Check, AlertCircle, Upload, RefreshCw, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { CountrySelector } from "@/components/auth/country-selector";
 import { MemberAvatar, SOCCER_PRESETS, dicebearUrl } from "@/components/ui/member-avatar";
 import { useTheme } from "@/components/theme-provider";
-import { cn } from "@/lib/utils";
 import type { CountryCode } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -19,14 +16,36 @@ interface ProfileData {
   avatar_url: string | null;
 }
 
+const glassCard = {
+  background: "rgba(18,14,38,0.32)",
+  backdropFilter: "blur(40px) saturate(180%)",
+  WebkitBackdropFilter: "blur(40px) saturate(180%)",
+  border: "1px solid rgba(255,255,255,0.14)",
+  borderRadius: 22,
+} as const;
+
+const btnOutline = {
+  padding: "8px 16px", borderRadius: 10,
+  background: "rgba(255,255,255,0.05)",
+  border: "1px solid rgba(255,255,255,0.15)",
+  color: "rgba(255,255,255,0.7)",
+  fontSize: 12, fontWeight: 700,
+  fontFamily: "var(--font-ui)",
+  textTransform: "uppercase" as const,
+  letterSpacing: "0.08em",
+  cursor: "pointer",
+  display: "inline-flex", alignItems: "center", gap: 6,
+  transition: "all 0.15s",
+} as const;
+
 export default function ProfilePage() {
-  const [profile, setProfile]   = useState<ProfileData>({ name: "", country: null, avatar_url: null });
-  const [saving, setSaving]     = useState(false);
-  const [saved,  setSaved]      = useState(false);
-  const [error,  setError]      = useState<string | null>(null);
-  const [loading, setLoading]   = useState(true);
+  const [profile, setProfile]     = useState<ProfileData>({ name: "", country: null, avatar_url: null });
+  const [saving, setSaving]       = useState(false);
+  const [saved,  setSaved]        = useState(false);
+  const [error,  setError]        = useState<string | null>(null);
+  const [loading, setLoading]     = useState(true);
   const [uploading, setUploading] = useState(false);
-  const [tab, setTab]           = useState<"auto" | "preset" | "photo">("auto");
+  const [tab, setTab]             = useState<"auto" | "preset" | "photo">("auto");
   const fileRef = useRef<HTMLInputElement>(null);
   const { setCountry } = useTheme();
 
@@ -89,7 +108,12 @@ export default function ProfilePage() {
   };
 
   if (loading) {
-    return <div className="flex items-center justify-center py-20 text-pitch-500">Loading profile...</div>;
+    return (
+      <div className="flex items-center justify-center py-20"
+        style={{ color: "rgba(255,255,255,0.35)" }}>
+        Loading profile...
+      </div>
+    );
   }
 
   const autoAvatarUrl = dicebearUrl(profile.name || "player", 160);
@@ -107,22 +131,26 @@ export default function ProfilePage() {
       </div>
 
       {/* Avatar section */}
-      <Card variant="glass" className="p-6">
+      <div style={{ ...glassCard, padding: 24 }}>
         <div className="flex items-center gap-5 mb-6">
           <div className="relative shrink-0">
-            <MemberAvatar name={profile.name || "Player"} avatarUrl={profile.avatar_url} size="xl" ring />
+            <div style={{ display: "inline-flex", borderRadius: "50%", boxShadow: "0 0 0 3px rgba(0,212,255,0.25)" }}>
+              <MemberAvatar name={profile.name || "Player"} avatarUrl={profile.avatar_url} size="xl" />
+            </div>
             {tab === "auto" && (
-              <button onClick={() => setProfile(p => ({ ...p, name: p.name + " " }))}
+              <button
+                onClick={() => setProfile(p => ({ ...p, name: p.name + " " }))}
                 title="Regenerate"
-                className="absolute -bottom-1 -right-1 h-7 w-7 rounded-full bg-pitch-800 border border-white/20 flex items-center justify-center hover:bg-white/10 transition-colors">
-                <RefreshCw size={12} className="text-pitch-300" />
+                className="absolute -bottom-1 -right-1 h-7 w-7 rounded-full flex items-center justify-center transition-colors hover:opacity-80"
+                style={{ background: "rgba(18,14,38,0.8)", border: "1px solid rgba(255,255,255,0.2)" }}>
+                <RefreshCw size={12} style={{ color: "rgba(255,255,255,0.6)" }} />
               </button>
             )}
           </div>
           <div>
             <div className="font-display text-2xl uppercase text-white">{profile.name || "Your name"}</div>
-            <div className="text-pitch-400 text-sm mt-0.5">{profile.country ?? "No country"}</div>
-            <div className="text-[11px] text-pitch-500 mt-1.5">
+            <div className="text-sm mt-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>{profile.country ?? "No country"}</div>
+            <div className="mt-1.5" style={{ fontSize: 11, color: "rgba(255,255,255,0.3)" }}>
               {tab === "auto"   && "DiceBear auto-generated · unique to your name"}
               {tab === "preset" && "Soccer role avatar"}
               {tab === "photo"  && "Your uploaded photo"}
@@ -131,16 +159,22 @@ export default function ProfilePage() {
         </div>
 
         {/* Tab switcher */}
-        <div className="flex gap-1 p-1 glass rounded-xl mb-5">
+        <div className="flex gap-1 p-1 mb-5" style={{
+          background: "rgba(255,255,255,0.04)",
+          border: "1px solid rgba(255,255,255,0.08)",
+          borderRadius: 14,
+        }}>
           {TABS.map(t => (
             <button key={t.id} onClick={() => setTab(t.id)}
-              className={cn("flex-1 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all",
-                tab === t.id ? "text-white" : "text-pitch-500 hover:text-pitch-300")}
-              style={tab === t.id ? {
-                backgroundColor: "rgb(var(--accent) / 0.15)",
-                color: "rgb(var(--accent-glow))",
-                boxShadow: "inset 0 0 0 1px rgb(var(--accent) / 0.2)",
-              } : undefined}>
+              className="flex-1 py-2 text-xs font-bold uppercase tracking-wider transition-all"
+              style={{
+                borderRadius: 10,
+                background: tab === t.id ? "rgba(0,212,255,0.15)" : "transparent",
+                border: tab === t.id ? "1px solid rgba(0,212,255,0.4)" : "1px solid transparent",
+                color: tab === t.id ? "#00D4FF" : "rgba(255,255,255,0.35)",
+                cursor: "pointer",
+                fontFamily: "var(--font-ui)",
+              }}>
               {t.label}
             </button>
           ))}
@@ -151,42 +185,42 @@ export default function ProfilePage() {
           <div className="text-center space-y-3">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={autoAvatarUrl} alt="Auto avatar preview"
-              className="h-32 w-32 mx-auto rounded-full ring-4 ring-white/10"
-              style={{ background: "rgba(255,255,255,0.06)" }} />
-            <p className="text-sm text-pitch-400">
+              className="h-32 w-32 mx-auto rounded-full"
+              style={{ background: "rgba(255,255,255,0.06)", boxShadow: "0 0 0 4px rgba(0,212,255,0.2)" }} />
+            <p className="text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>
               Your avatar is generated automatically from your name. Every name produces a unique, consistent illustrated face.
             </p>
-            <Button onClick={() => setProfile(p => ({ ...p, avatar_url: null }))} variant="outline" size="sm">
+            <button onClick={() => setProfile(p => ({ ...p, avatar_url: null }))} style={btnOutline}>
               Use this avatar
-            </Button>
+            </button>
           </div>
         )}
 
         {/* Soccer role presets */}
         {tab === "preset" && (
           <div>
-            <p className="text-xs text-pitch-400 mb-3">Pick your role on the pitch:</p>
+            <p className="text-xs mb-3" style={{ color: "rgba(255,255,255,0.4)" }}>Pick your role on the pitch:</p>
             <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
               {SOCCER_PRESETS.map(preset => {
                 const active = profile.avatar_url === `preset:${preset.id}`;
                 return (
                   <button key={preset.id}
                     onClick={() => setProfile(p => ({ ...p, avatar_url: `preset:${preset.id}` }))}
-                    className={cn(
-                      "flex flex-col items-center gap-1.5 p-2.5 rounded-xl border transition-all hover:-translate-y-0.5 relative",
-                      active ? "border-accent/50 bg-accent/10" : "border-white/[0.08] hover:border-white/20 bg-white/[0.02]"
-                    )}
+                    className="flex flex-col items-center gap-1.5 p-2.5 rounded-xl border transition-all hover:-translate-y-0.5 relative"
                     style={active ? {
                       borderColor: `#${preset.bg}60`,
                       backgroundColor: `#${preset.bg}20`,
                       boxShadow: `0 0 12px #${preset.bg}40`,
-                    } : undefined}>
+                    } : {
+                      borderColor: "rgba(255,255,255,0.08)",
+                      backgroundColor: "rgba(255,255,255,0.02)",
+                    }}>
                     <div className="h-10 w-10 rounded-full flex items-center justify-center text-xl"
                       style={{ backgroundColor: `#${preset.bg}` }}>
                       {preset.icon}
                     </div>
                     <span className="text-[9px] font-bold uppercase tracking-wider"
-                      style={{ color: active ? `#${preset.bg}` : "#64748b" }}>
+                      style={{ color: active ? `#${preset.bg}` : "rgba(255,255,255,0.35)" }}>
                       {preset.label}
                     </span>
                     {active && (
@@ -207,46 +241,59 @@ export default function ProfilePage() {
               <>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={profile.avatar_url} alt="Your photo"
-                  className="h-32 w-32 mx-auto rounded-full ring-4 ring-white/10 object-cover" />
-                {/* Remove avatar button */}
-                <Button
+                  className="h-32 w-32 mx-auto rounded-full object-cover"
+                  style={{ boxShadow: "0 0 0 4px rgba(0,212,255,0.2)" }} />
+                <button
                   onClick={() => { setProfile(p => ({ ...p, avatar_url: null })); setTab("auto"); }}
-                  variant="outline" size="sm"
-                  leftIcon={<X size={14} />}>
-                  Remove photo
-                </Button>
+                  style={btnOutline}>
+                  <X size={14} />Remove photo
+                </button>
               </>
             ) : (
-              <div className="h-32 w-32 mx-auto rounded-full bg-white/[0.06] border-2 border-dashed border-white/20 flex items-center justify-center">
-                <Camera size={28} className="text-pitch-500" />
+              <div className="h-32 w-32 mx-auto rounded-full flex items-center justify-center"
+                style={{ background: "rgba(255,255,255,0.06)", border: "2px dashed rgba(255,255,255,0.2)" }}>
+                <Camera size={28} style={{ color: "rgba(255,255,255,0.3)" }} />
               </div>
             )}
-            <p className="text-sm text-pitch-400">Upload a photo. Max 2MB, JPG or PNG.</p>
-            <Button onClick={() => fileRef.current?.click()} loading={uploading}
-              variant="outline" size="sm" leftIcon={<Upload size={14} />}>
-              {uploading ? "Uploading..." : "Choose photo"}
-            </Button>
+            <p className="text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>Upload a photo. Max 2MB, JPG or PNG.</p>
+            <button onClick={() => fileRef.current?.click()} disabled={uploading}
+              style={{ ...btnOutline, opacity: uploading ? 0.6 : 1 }}>
+              <Upload size={14} />{uploading ? "Uploading..." : "Choose photo"}
+            </button>
             <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp"
               className="hidden" onChange={handlePhotoUpload} />
           </div>
         )}
-      </Card>
+      </div>
 
       {/* Name */}
-      <Card variant="glass" className="p-5">
-        <label className="block text-xs font-bold uppercase tracking-widest text-pitch-400 mb-2">Display name</label>
+      <div style={{ ...glassCard, padding: 20 }}>
+        <label className="block mb-2"
+          style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "rgba(255,255,255,0.4)", fontFamily: "var(--font-ui)" }}>
+          Display name
+        </label>
         <input type="text" value={profile.name}
           onChange={e => setProfile(p => ({ ...p, name: e.target.value }))}
           placeholder="How your friends will see you"
-          className="w-full px-4 py-2.5 rounded-xl text-sm bg-white border border-slate-200 placeholder:text-slate-400 focus:outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100 text-slate-900 transition-all" />
-        <p className="text-[11px] text-pitch-500 mt-2">Your auto avatar updates live as you type.</p>
-      </Card>
+          className="w-full"
+          style={{
+            padding: "10px 16px", borderRadius: 12,
+            background: "rgba(255,255,255,0.06)",
+            border: "1px solid rgba(255,255,255,0.12)",
+            color: "#ffffff", fontSize: 14,
+            fontFamily: "var(--font-ui)", outline: "none",
+            transition: "all 0.15s",
+          }} />
+        <p className="mt-2" style={{ fontSize: 11, color: "rgba(255,255,255,0.3)" }}>
+          Your auto avatar updates live as you type.
+        </p>
+      </div>
 
       {/* Country */}
-      <Card variant="glass" className="p-5">
+      <div style={{ ...glassCard, padding: 20 }}>
         <div className="label-caps mb-3">Your team</div>
         <CountrySelector value={profile.country} onChange={code => setProfile(p => ({ ...p, country: code }))} />
-      </Card>
+      </div>
 
       {error && (
         <div className="flex items-center gap-2 text-sm text-danger">
@@ -254,10 +301,25 @@ export default function ProfilePage() {
         </div>
       )}
 
-      <Button onClick={handleSave} loading={saving} size="lg" className="w-full"
-        leftIcon={saved ? <Check size={16} /> : undefined}>
-        {saved ? "Profile saved!" : "Save changes"}
-      </Button>
+      <button
+        onClick={handleSave}
+        disabled={saving}
+        className="w-full flex items-center justify-center gap-2"
+        style={{
+          padding: "14px 24px", borderRadius: 14,
+          background: "linear-gradient(135deg, #00FF88, #00D4FF)",
+          color: "#050810", fontSize: 15, fontWeight: 800,
+          fontFamily: "var(--font-display)",
+          textTransform: "uppercase", letterSpacing: "0.05em",
+          cursor: saving ? "not-allowed" : "pointer",
+          border: "none",
+          boxShadow: "0 0 24px rgba(0,255,136,0.3)",
+          opacity: saving ? 0.7 : 1,
+          transition: "opacity 0.15s",
+        }}>
+        {saved && <Check size={16} />}
+        {saving ? "Saving..." : saved ? "Profile saved!" : "Save changes"}
+      </button>
     </div>
   );
 }

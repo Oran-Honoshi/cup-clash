@@ -48,11 +48,11 @@ export function TriviaLeaderboard({ scores = MOCK_TRIVIA_SCORES, currentUserId }
   return (
     <div className="rounded-2xl overflow-hidden"
       style={{
-        background: "rgba(255,255,255,0.07)",
-        backdropFilter: "blur(24px) saturate(120%)",
-        WebkitBackdropFilter: "blur(24px) saturate(120%)",
-        border: "1px solid rgba(255,255,255,0.12)",
-        boxShadow: "0 12px 40px rgba(0,0,0,0.25)",
+        background: "rgba(18,14,38,0.32)",
+        backdropFilter: "blur(40px) saturate(180%)",
+        WebkitBackdropFilter: "blur(40px) saturate(180%)",
+        border: "1px solid rgba(255,255,255,0.14)",
+        boxShadow: "0 12px 40px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.08)",
       }}>
 
       {/* Header */}
@@ -134,7 +134,7 @@ export function TriviaLeaderboard({ scores = MOCK_TRIVIA_SCORES, currentUserId }
 
               {/* Score + time */}
               <div className="text-right shrink-0">
-                <div className="font-display text-2xl text-white font-black">
+                <div className="font-display text-white font-black" style={{ fontSize: 22 }}>
                   {player.correct}
                   <span className="text-sm" style={{ color: "rgba(255,255,255,0.3)" }}>/{player.total}</span>
                 </div>
