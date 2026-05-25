@@ -1,4 +1,4 @@
-import { Target, Star, TrendingUp, Users } from "lucide-react";
+import { TrendingUp, Star, Target } from "lucide-react";
 
 interface StatCardsProps {
   rank:               number;
@@ -8,72 +8,77 @@ interface StatCardsProps {
   exactScores:        number;
 }
 
-export function StatCards({ rank, points, totalPlayers, correctPredictions, exactScores }: StatCardsProps) {
+export function StatCards({ rank, points, totalPlayers, exactScores }: StatCardsProps) {
   const stats = [
     {
-      icon: TrendingUp, label: "Your rank",
-      value: `#${rank}`, sub: `of ${totalPlayers}`,
-      accent: "#00D4FF",
-      bg: "rgba(0,212,255,0.1)",
-      border: "rgba(0,212,255,0.2)",
-      glow: "rgba(0,212,255,0.12)",
+      Icon: TrendingUp,
+      label: "Your Rank",
+      value: rank ? `#${rank}` : "—",
+      sub: rank ? `of ${totalPlayers}` : "",
+      color: "#00FF88",
     },
     {
-      icon: Star, label: "Points",
-      value: points, sub: "total",
-      accent: "#fbbf24",
-      bg: "rgba(251,191,36,0.1)",
-      border: "rgba(251,191,36,0.2)",
-      glow: "rgba(251,191,36,0.1)",
+      Icon: Star,
+      label: "Points",
+      value: String(points),
+      sub: "total",
+      color: "#00D4FF",
     },
     {
-      icon: Target, label: "Correct",
-      value: correctPredictions, sub: "outcomes",
-      accent: "#00FF88",
-      bg: "rgba(0,255,136,0.1)",
-      border: "rgba(0,255,136,0.2)",
-      glow: "rgba(0,255,136,0.1)",
-    },
-    {
-      icon: Users, label: "Exact scores",
-      value: exactScores, sub: "+25 pts each",
-      accent: "#a78bfa",
-      bg: "rgba(167,139,250,0.1)",
-      border: "rgba(167,139,250,0.2)",
-      glow: "rgba(167,139,250,0.1)",
+      Icon: Target,
+      label: "Exact Scores",
+      value: String(exactScores),
+      sub: "+25 pts each",
+      color: "#fbbf24",
     },
   ];
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 }}>
       {stats.map((stat) => (
-        <div key={stat.label}
-          className="relative rounded-2xl p-4 overflow-hidden"
+        <div
+          key={stat.label}
           style={{
-            background: "rgba(12, 18, 32, 0.75)",
-            border: `1px solid ${stat.border}`,
-            backdropFilter: "blur(16px)",
-            WebkitBackdropFilter: "blur(16px)",
-            boxShadow: `0 4px 20px ${stat.glow}, inset 0 1px 0 rgba(255,255,255,0.05)`,
+            background: "rgba(18,14,38,0.32)",
+            backdropFilter: "blur(40px) saturate(180%)",
+            WebkitBackdropFilter: "blur(40px) saturate(180%)",
+            border: "1px solid rgba(255,255,255,0.14)",
+            borderRadius: 18,
+            padding: 14,
+            textAlign: "center",
           }}
         >
-          {/* Icon */}
-          <div className="h-9 w-9 rounded-xl flex items-center justify-center mb-3"
-            style={{ background: stat.bg, border: `1px solid ${stat.border}` }}>
-            <stat.icon size={18} style={{ color: stat.accent }} />
+          {/* Icon — 20px, above value */}
+          <div style={{ display: "flex", justifyContent: "center", marginBottom: 6 }}>
+            <stat.Icon size={20} style={{ color: stat.color }} strokeWidth={2} />
           </div>
 
           {/* Value */}
-          <div className="font-display text-3xl leading-none font-black" style={{ color: stat.accent }}>
+          <div
+            style={{
+              fontFamily: "var(--font-mono)",
+              fontWeight: 900,
+              fontSize: 22,
+              color: stat.color,
+              lineHeight: 1,
+              marginBottom: 2,
+            }}
+          >
             {stat.value}
           </div>
 
           {/* Label */}
-          <div className="mt-1.5 text-xs font-bold text-white">{stat.label}</div>
-
-          {/* Sub */}
-          <div className="text-[10px] uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.35)" }}>
-            {stat.sub}
+          <div
+            style={{
+              fontSize: 9,
+              textTransform: "uppercase",
+              letterSpacing: "0.12em",
+              color: "rgba(255,255,255,0.45)",
+              fontFamily: "var(--font-ui)",
+              marginTop: 6,
+            }}
+          >
+            {stat.label}
           </div>
         </div>
       ))}

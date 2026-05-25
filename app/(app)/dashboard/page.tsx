@@ -81,8 +81,18 @@ export default async function DashboardPage({
 
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
-          <div className="label-caps mb-1">{group.name}</div>
-          <h1 className="font-display text-4xl sm:text-5xl uppercase tracking-tight" style={{ color: "#0F172A" }}>
+          <div
+            style={{
+              fontSize: 9,
+              letterSpacing: "0.12em",
+              textTransform: "uppercase",
+              color: "rgba(255,255,255,0.35)",
+              fontFamily: "var(--font-ui)",
+            }}
+          >
+            {group.name}
+          </div>
+          <h1 className="font-display text-4xl sm:text-5xl uppercase tracking-tight text-white">
             Dashboard
           </h1>
           {isAdmin && (
