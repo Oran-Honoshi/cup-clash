@@ -2,17 +2,32 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Eye, EyeOff, Lock, Mail, AlertCircle, ArrowRight } from "lucide-react";
+import { Eye, EyeOff, Lock, Mail, AlertCircle, ArrowRight, Loader2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Logo } from "@/components/logo";
+import { NeonBar } from "@/components/ui/neon-bar";
 
-const inputCls = [
-  "w-full pl-10 pr-4 py-3 rounded-xl text-sm transition-all outline-none",
-  "bg-white border text-slate-900 placeholder:text-slate-400",
-  "focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100",
-  "border-slate-200",
-].join(" ");
+const inputStyle = {
+  width: "100%",
+  borderRadius: 12,
+  background: "rgba(255,255,255,0.06)",
+  border: "1px solid rgba(255,255,255,0.12)",
+  color: "#ffffff",
+  fontSize: 14,
+  fontFamily: "var(--font-ui)",
+  outline: "none",
+  transition: "all 0.15s",
+} as const;
+
+const labelStyle = {
+  display: "block",
+  fontSize: 10,
+  textTransform: "uppercase" as const,
+  letterSpacing: "0.12em",
+  color: "rgba(255,255,255,0.5)",
+  fontFamily: "var(--font-ui)",
+  fontWeight: 700,
+  marginBottom: 6,
+};
 
 export default function SignInPage() {
   const [email,    setEmail]    = useState("");
@@ -32,68 +47,125 @@ export default function SignInPage() {
     window.location.replace(next);
   };
 
+  const isDisabled = !email || !password || loading;
+
   return (
-    <div>
-      <div className="flex flex-col items-center mb-8">
-        <Logo size="lg" />
-        <p className="mt-2 text-sm" style={{ color: "#64748b" }}>Sign in to your account</p>
+    <>
+      {/* Logo block */}
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6, textAlign: "center" }}>
+        <img src="/icon-192.png" width={52} height={52} alt="CupClash"
+          style={{ borderRadius: 16, boxShadow: "0 0 24px rgba(0,255,136,0.3)", display: "block" }} />
+        <div style={{ fontFamily: "var(--font-display)", fontSize: 28, fontWeight: 800, color: "white", lineHeight: 1 }}>
+          Cup<span style={{ background: "linear-gradient(135deg, #00FF88, #00D4FF)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>Clash</span>
+        </div>
+        <div style={{ fontSize: 10, color: "#00D4FF", textTransform: "uppercase", letterSpacing: "0.12em", fontFamily: "var(--font-ui)" }}>
+          World Cup 2026
+        </div>
       </div>
 
-      <div className="rounded-2xl p-6 sm:p-8"
-        style={{ background: "rgba(255,255,255,0.9)", backdropFilter: "blur(16px)", border: "1px solid rgba(0,212,255,0.15)", boxShadow: "0 4px 24px rgba(0,212,255,0.06)" }}>
-        <div className="space-y-4">
+      {/* Glass card */}
+      <div style={{
+        background: "rgba(18,14,38,0.72)",
+        backdropFilter: "blur(40px) saturate(180%)",
+        WebkitBackdropFilter: "blur(40px) saturate(180%)",
+        border: "1px solid rgba(255,255,255,0.14)",
+        boxShadow: "0 24px 80px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.18)",
+        borderRadius: 28,
+        overflow: "hidden",
+      }}>
+        <NeonBar />
+        <div className="space-y-4" style={{ padding: "32px 28px" }}>
+
           <div>
-            <h2 className="font-display text-2xl uppercase mb-0.5" style={{ color: "#0F172A" }}>Welcome back</h2>
-            <p className="text-sm" style={{ color: "#64748b" }}>Enter your credentials to continue.</p>
+            <h1 style={{ fontFamily: "var(--font-display)", fontSize: 26, fontWeight: 800, color: "white", textTransform: "uppercase", margin: "0 0 4px" }}>
+              Welcome back
+            </h1>
+            <p style={{ fontSize: 13, color: "rgba(255,255,255,0.4)", fontFamily: "var(--font-ui)", margin: 0 }}>
+              Enter your credentials to continue.
+            </p>
           </div>
 
           {error && (
             <div className="flex items-start gap-2.5 rounded-xl px-4 py-3 text-sm"
-              style={{ background: "rgba(220,38,38,0.06)", border: "1px solid rgba(220,38,38,0.2)", color: "#dc2626" }}>
+              style={{ background: "rgba(248,113,113,0.08)", border: "1px solid rgba(248,113,113,0.25)", color: "#f87171" }}>
               <AlertCircle size={16} className="shrink-0 mt-0.5" />{error}
             </div>
           )}
 
           <div>
-            <label className="block text-xs font-bold uppercase tracking-widest mb-1.5" style={{ color: "#64748b" }}>Email</label>
+            <label style={labelStyle}>Email</label>
             <div className="relative">
-              <Mail size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2" style={{ color: "#94a3b8" }} />
+              <Mail size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none"
+                style={{ color: "rgba(255,255,255,0.35)" }} />
               <input type="email" placeholder="you@example.com" value={email}
                 onChange={e => setEmail(e.target.value)}
                 onKeyDown={e => e.key === "Enter" && handleSignIn()}
-                className={inputCls} />
+                onFocus={(e: { target: HTMLInputElement }) => { e.target.style.borderColor = "rgba(0,255,136,0.5)"; e.target.style.boxShadow = "0 0 0 3px rgba(0,255,136,0.1)"; }}
+                onBlur={(e: { target: HTMLInputElement }) => { e.target.style.borderColor = "rgba(255,255,255,0.12)"; e.target.style.boxShadow = "none"; }}
+                className="placeholder:text-[rgba(255,255,255,0.3)]"
+                style={{ ...inputStyle, padding: "12px 16px 12px 40px" }} />
             </div>
           </div>
 
           <div>
-            <div className="flex items-center justify-between mb-1.5">
-              <label className="block text-xs font-bold uppercase tracking-widest" style={{ color: "#64748b" }}>Password</label>
-              <Link href="/reset-password" className="text-[11px]" style={{ color: "#94a3b8" }}>Forgot password?</Link>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
+              <label style={{ ...labelStyle, marginBottom: 0 }}>Password</label>
+              <Link href="/reset-password" style={{ fontSize: 11, color: "rgba(255,255,255,0.35)" }}>Forgot?</Link>
             </div>
             <div className="relative">
-              <Lock size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2" style={{ color: "#94a3b8" }} />
+              <Lock size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none"
+                style={{ color: "rgba(255,255,255,0.35)" }} />
               <input type={showPass ? "text" : "password"} placeholder="••••••••" value={password}
                 onChange={e => setPassword(e.target.value)}
                 onKeyDown={e => e.key === "Enter" && handleSignIn()}
-                className={inputCls} />
+                onFocus={(e: { target: HTMLInputElement }) => { e.target.style.borderColor = "rgba(0,255,136,0.5)"; e.target.style.boxShadow = "0 0 0 3px rgba(0,255,136,0.1)"; }}
+                onBlur={(e: { target: HTMLInputElement }) => { e.target.style.borderColor = "rgba(255,255,255,0.12)"; e.target.style.boxShadow = "none"; }}
+                className="placeholder:text-[rgba(255,255,255,0.3)]"
+                style={{ ...inputStyle, padding: "12px 44px 12px 40px" }} />
               <button type="button" onClick={() => setShowPass(v => !v)}
-                className="absolute right-3.5 top-1/2 -translate-y-1/2" style={{ color: "#94a3b8" }}>
+                className="absolute right-3.5 top-1/2 -translate-y-1/2"
+                style={{ color: "rgba(255,255,255,0.35)", background: "none", border: "none", cursor: "pointer", padding: 0 }}>
                 {showPass ? <EyeOff size={15} /> : <Eye size={15} />}
               </button>
             </div>
           </div>
 
-          <Button onClick={handleSignIn} loading={loading} disabled={!email || !password}
-            size="md" className="w-full" rightIcon={<ArrowRight size={16} />}>
-            Sign in
-          </Button>
+          <button
+            onClick={handleSignIn}
+            disabled={isDisabled}
+            style={{
+              background: "linear-gradient(135deg, #00FF88, #00D4FF)",
+              color: "#0B141B",
+              fontWeight: 700,
+              fontFamily: "var(--font-ui)",
+              borderRadius: 12,
+              padding: "13px",
+              width: "100%",
+              border: "none",
+              boxShadow: "0 0 20px rgba(0,255,136,0.25)",
+              opacity: isDisabled ? 0.45 : 1,
+              cursor: isDisabled ? "not-allowed" : "pointer",
+              fontSize: 14,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 8,
+              transition: "all 0.15s",
+            }}
+          >
+            {loading
+              ? <><Loader2 size={16} className="animate-spin" /> Signing in...</>
+              : <><span>Sign in</span><ArrowRight size={16} /></>}
+          </button>
+
         </div>
       </div>
 
-      <p className="text-center text-sm mt-5" style={{ color: "#64748b" }}>
+      {/* Footer */}
+      <p style={{ textAlign: "center", fontSize: 13, color: "rgba(255,255,255,0.35)", fontFamily: "var(--font-ui)", margin: 0 }}>
         Don&apos;t have an account?{" "}
-        <Link href="/signup" className="font-bold" style={{ color: "#0891B2" }}>Create one free</Link>
+        <Link href="/signup" style={{ color: "#00FF88", fontWeight: 700 }}>Create one free</Link>
       </p>
-    </div>
+    </>
   );
 }
