@@ -3,16 +3,52 @@
 import { useState, useEffect, Suspense } from "react";
 import {
   Users, DollarSign, Trophy, AlertCircle, Copy, Check,
-  ArrowRight, Zap, ChevronDown, Settings, Building2, UserCheck,
+  ArrowRight, Zap, ChevronDown, Settings, Building2, UserCheck, Loader2,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useSearchParams } from "next/navigation";
+import { NeonBar } from "@/components/ui/neon-bar";
+import { Chip } from "@/components/ui/chip";
 
-const inputCls = [
-  "w-full px-4 py-2.5 rounded-xl text-sm transition-all",
-  "bg-white border border-slate-200 text-slate-900 placeholder:text-slate-400",
-  "focus:outline-none focus:border-cyan-400 focus:ring-1 focus:ring-cyan-100",
-].join(" ");
+const inputStyle = {
+  width: "100%",
+  borderRadius: 12,
+  background: "rgba(255,255,255,0.06)",
+  border: "1px solid rgba(255,255,255,0.12)",
+  color: "#ffffff",
+  fontSize: 14,
+  fontFamily: "var(--font-ui)",
+  outline: "none",
+  transition: "all 0.15s",
+};
+
+const labelStyle = {
+  display: "block",
+  fontSize: 10,
+  textTransform: "uppercase" as const,
+  letterSpacing: "0.12em",
+  color: "rgba(255,255,255,0.5)",
+  fontFamily: "var(--font-ui)",
+  fontWeight: 700,
+  marginBottom: 6,
+};
+
+const glassCard = {
+  background: "rgba(18,14,38,0.32)",
+  backdropFilter: "blur(40px) saturate(180%)",
+  WebkitBackdropFilter: "blur(40px) saturate(180%)",
+  border: "1px solid rgba(255,255,255,0.14)",
+  borderRadius: 22,
+};
+
+const neutralTagStyle = {
+  fontSize: 10, fontWeight: 600,
+  color: "rgba(255,255,255,0.55)",
+  background: "rgba(255,255,255,0.05)",
+  padding: "3px 8px", borderRadius: 100,
+  border: "1px solid rgba(255,255,255,0.08)",
+  fontFamily: "var(--font-ui)",
+};
 
 const FEATURED_MATCHES = [
   { id: "final", label: "Final — MetLife Stadium",           detail: "Jul 19" },
@@ -26,7 +62,7 @@ function Toggle({ enabled, onToggle }: { enabled: boolean; onToggle: () => void 
   return (
     <button onClick={onToggle} type="button"
       className="relative h-6 w-11 rounded-full shrink-0 transition-all"
-      style={{ background: enabled ? "#00D4FF" : "#e2e8f0" }}>
+      style={{ background: enabled ? "#00D4FF" : "rgba(255,255,255,0.12)" }}>
       <div className="absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-all"
         style={{ left: enabled ? "22px" : "2px" }} />
     </button>
@@ -38,19 +74,24 @@ function RuleRow({ label, desc, pts, setPts, enabled, onToggle }: {
   setPts: (v: number) => void; enabled: boolean; onToggle: () => void;
 }) {
   return (
-    <div className="flex items-center gap-3 py-2.5 border-b last:border-0" style={{ borderColor: "#f1f5f9" }}>
+    <div className="flex items-center gap-3 py-2.5 border-b last:border-0"
+      style={{ borderColor: "rgba(255,255,255,0.08)" }}>
       <Toggle enabled={enabled} onToggle={onToggle} />
       <div className="flex-1 min-w-0">
-        <div className="text-sm font-bold" style={{ color: enabled ? "#0F172A" : "#94a3b8" }}>{label}</div>
-        <div className="text-xs" style={{ color: "#94a3b8" }}>{desc}</div>
+        <div className="text-sm font-bold" style={{ color: enabled ? "white" : "rgba(255,255,255,0.3)" }}>{label}</div>
+        <div style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", fontFamily: "var(--font-ui)" }}>{desc}</div>
       </div>
       {enabled && (
         <div className="flex items-center gap-1.5 shrink-0">
           <input type="number" min={0} value={pts}
-            onChange={e => setPts(Number(e.target.value))}
-            className="w-16 rounded-lg px-2 py-1.5 text-sm text-center border focus:outline-none"
-            style={{ borderColor: "#e2e8f0", color: "#0F172A", background: "white" }} />
-          <span className="text-xs w-5" style={{ color: "#94a3b8" }}>pts</span>
+            onChange={(e: { target: HTMLInputElement }) => setPts(Number(e.target.value))}
+            className="text-center"
+            style={{
+              width: 64, borderRadius: 10, padding: "6px 8px",
+              background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)",
+              color: "#00D4FF", fontSize: 13, fontFamily: "var(--font-ui)", outline: "none",
+            }} />
+          <span style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", width: 20 }}>pts</span>
         </div>
       )}
     </div>
@@ -117,8 +158,8 @@ function CreateGroupInner() {
   const [enableYoung,      setEnableYoung]      = useState(false);
   const [enableGoldenBall, setEnableGoldenBall] = useState(false);
 
-  const totalPct  = payoutFirst + payoutSecond + payoutThird;
-  const totalPot  = buyIn * memberCount;
+  const totalPct    = payoutFirst + payoutSecond + payoutThird;
+  const totalPot    = buyIn * memberCount;
   const isCorporate = paymentModel === "corporate_sponsored";
 
   const handleCreate = async () => {
@@ -207,15 +248,26 @@ function CreateGroupInner() {
   // ── Success state ──────────────────────────────────────────────────────────
   if (passkey) {
     return (
-      <div className="max-w-lg mx-auto space-y-4 px-4 py-6">
-        <div className="rounded-2xl p-6 text-center space-y-4 bg-white border border-slate-200 shadow-sm">
-          <div className="h-14 w-14 rounded-full mx-auto flex items-center justify-center"
-            style={{ background: "linear-gradient(135deg, #00FF88, #00D4FF)" }}>
+      <div className="max-w-[480px] mx-auto space-y-4 px-4 py-6">
+        <div style={{
+          ...glassCard,
+          borderRadius: 28,
+          border: "1px solid rgba(0,255,136,0.25)",
+          padding: 28,
+          textAlign: "center",
+        }} className="space-y-4">
+          <div style={{
+            width: 56, height: 56, borderRadius: "50%", margin: "0 auto",
+            background: "linear-gradient(135deg, #00FF88, #00D4FF)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+          }}>
             <Check size={24} style={{ color: "#0B141B" }} />
           </div>
           <div>
-            <h2 className="font-display text-3xl uppercase font-black" style={{ color: "#0F172A" }}>{createdName}</h2>
-            <p className="text-sm mt-1" style={{ color: "#64748b" }}>
+            <h2 className="font-display uppercase font-black" style={{ fontSize: 28, color: "white" }}>
+              {createdName}
+            </h2>
+            <p style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", marginTop: 6, fontFamily: "var(--font-ui)" }}>
               {isCorporate
                 ? "Your corporate group is ready. Go to the group to unlock team invites."
                 : "Share the passkey — members pay $2 to join."}
@@ -224,26 +276,58 @@ function CreateGroupInner() {
 
           {isCorporate ? (
             <button onClick={() => { window.location.href = `/groups/${groupId}`; }}
-              className="w-full py-3.5 rounded-xl font-bold text-sm uppercase tracking-wider flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5"
-              style={{ background: "linear-gradient(135deg, #00FF88, #00D4FF)", color: "#0B141B" }}>
+              className="w-full flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5"
+              style={{
+                padding: "14px", borderRadius: 14, border: "none",
+                background: "linear-gradient(135deg, #00FF88, #00D4FF)",
+                color: "#0B141B", fontFamily: "var(--font-display)", fontWeight: 800,
+                fontSize: 15, textTransform: "uppercase", cursor: "pointer",
+                boxShadow: "0 0 24px rgba(0,255,136,0.3)",
+              }}>
               <Building2 size={16} /> Go to Group — Unlock Invites
             </button>
           ) : (
             <>
-              <div className="rounded-2xl p-5"
-                style={{ background: "rgba(0,212,255,0.05)", border: "1px solid rgba(0,212,255,0.2)" }}>
-                <div className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: "#0891B2" }}>Entry Passkey</div>
-                <div className="font-mono font-black text-5xl tracking-[0.2em]" style={{ color: "#0F172A" }}>{passkey}</div>
-                <div className="text-xs mt-2" style={{ color: "#94a3b8" }}>cupclash.live/join/{passkey}</div>
+              <div style={{
+                background: "rgba(0,255,136,0.06)", border: "1px solid rgba(0,255,136,0.2)",
+                borderRadius: 16, padding: 20,
+              }}>
+                <div style={{
+                  fontSize: 10, fontWeight: 700, color: "#00D4FF",
+                  textTransform: "uppercase", letterSpacing: "0.14em",
+                  fontFamily: "var(--font-ui)", marginBottom: 8,
+                }}>
+                  Entry Passkey
+                </div>
+                <div style={{
+                  fontFamily: "var(--font-mono)", fontWeight: 900, fontSize: 40,
+                  color: "#00FF88", letterSpacing: "0.2em", lineHeight: 1,
+                }}>
+                  {passkey}
+                </div>
+                <div style={{ fontSize: 12, color: "rgba(255,255,255,0.3)", fontFamily: "var(--font-mono)", marginTop: 8 }}>
+                  cupclash.live/join/{passkey}
+                </div>
               </div>
               <button onClick={copyLink}
-                className="w-full py-3 rounded-xl font-bold text-sm uppercase tracking-wider flex items-center justify-center gap-2"
-                style={{ border: "1px solid rgba(0,212,255,0.25)", color: "#0891B2", background: "rgba(0,212,255,0.05)" }}>
+                className="w-full flex items-center justify-center gap-2"
+                style={{
+                  padding: "12px", borderRadius: 12,
+                  background: "rgba(0,212,255,0.1)", border: "1px solid rgba(0,212,255,0.25)",
+                  color: "#00D4FF", fontFamily: "var(--font-ui)", fontWeight: 700,
+                  fontSize: 13, textTransform: "uppercase", letterSpacing: "0.06em", cursor: "pointer",
+                }}>
                 {copied ? <><Check size={14} /> Copied!</> : <><Copy size={14} /> Copy invite link</>}
               </button>
               <button onClick={() => { window.location.href = "/dashboard"; }}
-                className="w-full py-3 rounded-xl font-bold text-sm uppercase tracking-wider flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5"
-                style={{ background: "linear-gradient(135deg, #00FF88, #00D4FF)", color: "#0B141B" }}>
+                className="w-full flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5"
+                style={{
+                  padding: "14px", borderRadius: 14, border: "none",
+                  background: "linear-gradient(135deg, #00FF88, #00D4FF)",
+                  color: "#0B141B", fontFamily: "var(--font-display)", fontWeight: 800,
+                  fontSize: 15, textTransform: "uppercase", cursor: "pointer",
+                  boxShadow: "0 0 24px rgba(0,255,136,0.3)",
+                }}>
                 Go to Dashboard <ArrowRight size={15} />
               </button>
             </>
@@ -260,137 +344,188 @@ function CreateGroupInner() {
   ];
 
   return (
-    <div className="max-w-lg mx-auto space-y-4 px-4 py-6">
+    <div className="max-w-[480px] mx-auto space-y-4 px-4 py-6">
+
+      {/* Page header */}
       <div>
-        <div className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: "#0891B2" }}>New Group</div>
-        <h1 className="font-display text-4xl uppercase font-black" style={{ color: "#0F172A" }}>Create your league</h1>
-        <p className="text-sm mt-1" style={{ color: "#64748b" }}>Free to create · Choose how members join</p>
+        <div style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: "0.12em", color: "#00D4FF", fontFamily: "var(--font-ui)", fontWeight: 700, marginBottom: 4 }}>
+          New Group
+        </div>
+        <h1 className="font-display text-4xl uppercase" style={{ color: "white" }}>Create your league</h1>
+        <p style={{ fontSize: 13, color: "rgba(255,255,255,0.4)", fontFamily: "var(--font-ui)", marginTop: 4 }}>
+          Free to create · Choose how members join
+        </p>
       </div>
 
       {/* ── STEP 0 — Payment model ─────────────────────────────────────────── */}
       {step === 0 && (
-        <div className="space-y-4">
-          <div className="text-xs font-bold uppercase tracking-widest" style={{ color: "#94a3b8" }}>
+        <div className="space-y-3">
+          <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "rgba(255,255,255,0.35)", fontFamily: "var(--font-ui)" }}>
             Who pays for this group?
           </div>
 
+          {/* Friend Circle */}
           <button
             onClick={() => { setPaymentModel("pay_per_member"); setStep(1); }}
-            className="w-full rounded-2xl p-5 text-left transition-all hover:-translate-y-0.5 border-2 bg-white shadow-sm"
-            style={{ borderColor: paymentModel === "pay_per_member" ? "rgba(0,255,136,0.5)" : "#e2e8f0" }}>
-            <div className="flex items-start gap-4">
-              <div className="h-12 w-12 rounded-2xl flex items-center justify-center shrink-0"
-                style={{ background: "rgba(0,255,136,0.08)", border: "1px solid rgba(0,255,136,0.2)" }}>
-                <UserCheck size={22} style={{ color: "#059669" }} />
-              </div>
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="font-display text-lg uppercase font-black" style={{ color: "#0F172A" }}>
-                    Friend Circle
-                  </span>
-                  <span className="text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest"
-                    style={{ background: "rgba(0,255,136,0.1)", color: "#059669" }}>
-                    Free for you
-                  </span>
+            className="w-full text-left transition-all hover:-translate-y-0.5"
+            style={{
+              ...glassCard,
+              padding: 0, overflow: "hidden", cursor: "pointer", display: "block",
+              ...(paymentModel === "pay_per_member" ? {
+                border: "2px solid rgba(0,255,136,0.5)",
+                background: "rgba(0,255,136,0.04)",
+              } : {}),
+            }}>
+            <NeonBar gradient={paymentModel === "pay_per_member" ? "linear-gradient(90deg,#00FF88,#00D4FF)" : undefined} />
+            <div style={{ padding: 20 }}>
+              <div style={{ display: "flex", alignItems: "flex-start", gap: 14 }}>
+                <div style={{
+                  width: 48, height: 48, borderRadius: 14, flexShrink: 0,
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  background: "rgba(0,255,136,0.1)", border: "1px solid rgba(0,255,136,0.2)",
+                }}>
+                  <UserCheck size={22} style={{ color: "#00FF88" }} />
                 </div>
-                <p className="text-sm" style={{ color: "#64748b" }}>
-                  You create the group for free. Each friend pays a flat <strong style={{ color: "#0F172A" }}>$2 entry fee</strong> individually when they join.
-                </p>
-                <div className="flex flex-wrap gap-2 mt-3">
-                  {["Fantasy leagues", "Friend groups", "Bar buddies", "Family"].map(t => (
-                    <span key={t} className="text-[10px] font-bold px-2 py-0.5 rounded-full"
-                      style={{ background: "#f1f5f9", color: "#64748b" }}>{t}</span>
-                  ))}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6, flexWrap: "wrap" }}>
+                    <span style={{ fontFamily: "var(--font-display)", fontWeight: 800, fontSize: 18, color: "white", textTransform: "uppercase" }}>
+                      Friend Circle
+                    </span>
+                    <Chip label="Free for you" color="#00FF88" />
+                  </div>
+                  <p style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", fontFamily: "var(--font-ui)", lineHeight: 1.45, margin: 0 }}>
+                    You create the group for free. Each friend pays a flat <strong style={{ color: "white" }}>$2 entry fee</strong> individually when they join.
+                  </p>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginTop: 10 }}>
+                    {["Fantasy leagues", "Friend groups", "Bar buddies", "Family"].map(t => (
+                      <span key={t} style={neutralTagStyle}>{t}</span>
+                    ))}
+                  </div>
                 </div>
+                <ArrowRight size={18} style={{ color: "#00FF88", flexShrink: 0, alignSelf: "center" }} />
               </div>
-              <ArrowRight size={18} style={{ color: "#059669" }} className="self-center" />
             </div>
           </button>
 
+          {/* Corporate Sponsor */}
           <button
             onClick={() => { setPaymentModel("corporate_sponsored"); setStep(1); }}
-            className="w-full rounded-2xl p-5 text-left transition-all hover:-translate-y-0.5 border-2 bg-white shadow-sm"
-            style={{ borderColor: paymentModel === "corporate_sponsored" ? "rgba(0,212,255,0.5)" : "#e2e8f0" }}>
-            <div className="flex items-start gap-4">
-              <div className="h-12 w-12 rounded-2xl flex items-center justify-center shrink-0"
-                style={{ background: "rgba(0,212,255,0.08)", border: "1px solid rgba(0,212,255,0.2)" }}>
-                <Building2 size={22} style={{ color: "#0891B2" }} />
-              </div>
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="font-display text-lg uppercase font-black" style={{ color: "#0F172A" }}>
-                    Corporate Sponsor
-                  </span>
-                  <span className="text-[10px] font-black px-2 py-0.5 rounded-full uppercase tracking-widest"
-                    style={{ background: "rgba(0,212,255,0.08)", color: "#0891B2" }}>
-                    Team pays $0
-                  </span>
+            className="w-full text-left transition-all hover:-translate-y-0.5"
+            style={{
+              ...glassCard,
+              padding: 0, overflow: "hidden", cursor: "pointer", display: "block",
+              ...(paymentModel === "corporate_sponsored" ? {
+                border: "2px solid rgba(0,212,255,0.5)",
+                background: "rgba(0,212,255,0.04)",
+              } : {}),
+            }}>
+            <NeonBar gradient="linear-gradient(90deg,#00D4FF,#00FF88)" />
+            <div style={{ padding: 20 }}>
+              <div style={{ display: "flex", alignItems: "flex-start", gap: 14 }}>
+                <div style={{
+                  width: 48, height: 48, borderRadius: 14, flexShrink: 0,
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  background: "rgba(0,212,255,0.1)", border: "1px solid rgba(0,212,255,0.2)",
+                }}>
+                  <Building2 size={22} style={{ color: "#00D4FF" }} />
                 </div>
-                <p className="text-sm" style={{ color: "#64748b" }}>
-                  You cover the whole team with a one-time flat fee. Every employee joins for <strong style={{ color: "#0F172A" }}>$0 — zero friction</strong>.
-                </p>
-                <div className="flex flex-wrap gap-2 mt-3">
-                  {["HR managers", "Office pools", "Tech companies", "Remote teams"].map(t => (
-                    <span key={t} className="text-[10px] font-bold px-2 py-0.5 rounded-full"
-                      style={{ background: "#f1f5f9", color: "#64748b" }}>{t}</span>
-                  ))}
-                </div>
-                <div className="flex gap-3 mt-3">
-                  <div className="text-xs rounded-lg px-2.5 py-1.5 font-medium"
-                    style={{ background: "rgba(0,212,255,0.06)", color: "#0891B2" }}>
-                    $75 · up to 50 members
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6, flexWrap: "wrap" }}>
+                    <span style={{ fontFamily: "var(--font-display)", fontWeight: 800, fontSize: 18, color: "white", textTransform: "uppercase" }}>
+                      Corporate Sponsor
+                    </span>
+                    <Chip label="Team pays $0" color="#00D4FF" />
                   </div>
-                  <div className="text-xs rounded-lg px-2.5 py-1.5 font-medium"
-                    style={{ background: "rgba(217,119,6,0.06)", color: "#d97706" }}>
-                    $130 · up to 100 members
+                  <p style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", fontFamily: "var(--font-ui)", lineHeight: 1.45, margin: 0 }}>
+                    You cover the whole team with a one-time flat fee. Every employee joins for <strong style={{ color: "white" }}>$0 — zero friction</strong>.
+                  </p>
+                  <div style={{ display: "flex", gap: 6, marginTop: 10 }}>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: "#00D4FF", background: "rgba(0,212,255,0.1)", padding: "4px 8px", borderRadius: 8, fontFamily: "var(--font-mono)" }}>
+                      $75 · up to 50 members
+                    </span>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: "#fbbf24", background: "rgba(251,191,36,0.1)", padding: "4px 8px", borderRadius: 8, fontFamily: "var(--font-mono)" }}>
+                      $130 · up to 100 members
+                    </span>
+                  </div>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginTop: 8 }}>
+                    {["HR managers", "Office pools", "Tech companies", "Remote teams"].map(t => (
+                      <span key={t} style={neutralTagStyle}>{t}</span>
+                    ))}
                   </div>
                 </div>
+                <ArrowRight size={18} style={{ color: "#00D4FF", flexShrink: 0, alignSelf: "center" }} />
               </div>
-              <ArrowRight size={18} style={{ color: "#0891B2" }} className="self-center" />
             </div>
           </button>
         </div>
       )}
 
-      {/* Step tabs */}
+      {/* Step indicator */}
       {step > 0 && (
-        <>
-          <div className="flex items-center gap-2">
-            <button onClick={() => setStep(0)} className="text-xs font-bold" style={{ color: "#0891B2" }}>
-              ← Change Mode
-            </button>
-            <div className="flex-1 flex gap-2">
-              {steps.map(s => (
-                <button key={s.n} type="button" disabled
-                  className="flex-1 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all"
-                  style={step === s.n ? {
-                    background: "rgba(0,212,255,0.08)", border: "1px solid rgba(0,212,255,0.25)", color: "#0891B2",
-                  } : step > s.n ? {
-                    background: "rgba(0,255,136,0.06)", border: "1px solid rgba(0,255,136,0.15)", color: "#059669",
-                  } : {
-                    background: "#f8fafc", border: "1px solid #e2e8f0", color: "#94a3b8",
+        <div className="space-y-3">
+          <button onClick={() => setStep(0)}
+            style={{ fontSize: 11, fontWeight: 700, color: "#00D4FF", background: "none", border: "none", cursor: "pointer", fontFamily: "var(--font-ui)", padding: 0 }}>
+            ← Change Mode
+          </button>
+
+          <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "center" }}>
+            {steps.map((s, i) => (
+              <div key={s.n} style={{ display: "flex", alignItems: "flex-start" }}>
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
+                  <div style={{
+                    width: 28, height: 28, borderRadius: "50%",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    fontSize: 11, fontWeight: 700, fontFamily: "var(--font-ui)",
+                    transition: "all 0.2s",
+                    ...(step > s.n ? {
+                      background: "linear-gradient(135deg, #00FF88, #00D4FF)",
+                      color: "#0B141B",
+                    } : step === s.n ? {
+                      background: "rgba(0,212,255,0.1)",
+                      border: "2px solid #00D4FF",
+                      color: "#00D4FF",
+                    } : {
+                      background: "transparent",
+                      border: "1px solid rgba(255,255,255,0.15)",
+                      color: "rgba(255,255,255,0.25)",
+                    }),
                   }}>
-                  {step > s.n ? "✓ " : ""}{s.label}
-                </button>
-              ))}
-            </div>
+                    {step > s.n ? <Check size={12} /> : s.n}
+                  </div>
+                  <span style={{
+                    fontSize: 10, fontFamily: "var(--font-ui)", fontWeight: 700,
+                    whiteSpace: "nowrap",
+                    color: step === s.n ? "#00D4FF" : step > s.n ? "#00FF88" : "rgba(255,255,255,0.25)",
+                  }}>
+                    {s.label}
+                  </span>
+                </div>
+                {i < steps.length - 1 && (
+                  <div style={{
+                    width: 32, height: 1, marginTop: 14, flexShrink: 0,
+                    background: step > s.n ? "rgba(0,212,255,0.4)" : "rgba(255,255,255,0.1)",
+                    transition: "all 0.2s",
+                  }} />
+                )}
+              </div>
+            ))}
           </div>
 
           {isCorporate && (
             <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl"
               style={{ background: "rgba(0,212,255,0.05)", border: "1px solid rgba(0,212,255,0.15)" }}>
-              <Building2 size={14} style={{ color: "#0891B2" }} />
-              <span className="text-xs font-medium" style={{ color: "#0891B2" }}>
+              <Building2 size={14} style={{ color: "#00D4FF" }} />
+              <span className="text-xs font-medium" style={{ color: "#00D4FF" }}>
                 Corporate mode — employees join free · activate dashboard link after setup
               </span>
             </div>
           )}
-        </>
+        </div>
       )}
 
       {error && (
         <div className="flex items-start gap-2.5 rounded-xl px-4 py-3 text-sm"
-          style={{ background: "rgba(220,38,38,0.06)", border: "1px solid rgba(220,38,38,0.2)", color: "#dc2626" }}>
+          style={{ background: "rgba(248,113,113,0.08)", border: "1px solid rgba(248,113,113,0.25)", color: "#f87171" }}>
           <AlertCircle size={15} className="shrink-0 mt-0.5" />{error}
         </div>
       )}
@@ -398,37 +533,42 @@ function CreateGroupInner() {
       {/* ── STEP 1 ─────────────────────────────────────────────────────────── */}
       {step === 1 && (
         <div className="space-y-4">
-          <div className="rounded-2xl p-5 space-y-4 bg-white border border-slate-200 shadow-sm">
+          <div style={{ ...glassCard, padding: 20 }} className="space-y-4">
             <div>
-              <label className="block text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#64748b" }}>
-                {isCorporate ? "Company Group Name *" : "Group Name *"}
-              </label>
+              <label style={labelStyle}>{isCorporate ? "Company Group Name *" : "Group Name *"}</label>
               <div className="relative">
                 {isCorporate
-                  ? <Building2 size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2" style={{ color: "#94a3b8" }} />
-                  : <Users size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2" style={{ color: "#94a3b8" }} />}
+                  ? <Building2 size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: "rgba(255,255,255,0.35)" }} />
+                  : <Users size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: "rgba(255,255,255,0.35)" }} />}
                 <input type="text"
                   placeholder={isCorporate ? "e.g. Engineering Dept — World Cup 2026" : "e.g. Sunday Squad World Cup"}
-                  value={groupName} onChange={e => setGroupName(e.target.value)}
-                  className={inputCls} style={{ paddingLeft: "2.25rem" }} />
+                  value={groupName} onChange={(e: { target: HTMLInputElement }) => setGroupName(e.target.value)}
+                  onFocus={(e: { target: HTMLInputElement }) => { e.target.style.borderColor = "rgba(0,255,136,0.5)"; e.target.style.boxShadow = "0 0 0 3px rgba(0,255,136,0.1)"; }}
+                  onBlur={(e: { target: HTMLInputElement }) => { e.target.style.borderColor = "rgba(255,255,255,0.12)"; e.target.style.boxShadow = "none"; }}
+                  className="placeholder:text-[rgba(255,255,255,0.3)]"
+                  style={{ ...inputStyle, padding: "12px 16px 12px 40px" }} />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#64748b" }}>Group Type</label>
+              <label style={labelStyle}>Group Type</label>
               <div className="grid grid-cols-2 gap-2">
                 {[
                   { type: "tournament" as const, icon: Trophy, label: "Full Tournament", desc: "All 104 matches" },
                   { type: "single_match" as const, icon: Zap,  label: "Single Match",   desc: "One specific match" },
                 ].map(({ type, icon: Icon, label, desc }) => (
                   <button key={type} type="button" onClick={() => setGroupType(type)}
-                    className="rounded-xl p-3 text-left border transition-all"
+                    className="p-3 text-left transition-all"
                     style={groupType === type ? {
-                      background: "rgba(0,212,255,0.05)", borderColor: "rgba(0,212,255,0.35)",
-                    } : { background: "white", borderColor: "#e2e8f0" }}>
-                    <Icon size={16} className="mb-1.5" style={{ color: groupType === type ? "#0891B2" : "#94a3b8" }} />
-                    <div className="text-xs font-bold" style={{ color: "#0F172A" }}>{label}</div>
-                    <div className="text-[10px]" style={{ color: "#94a3b8" }}>{desc}</div>
+                      borderRadius: 12, cursor: "pointer",
+                      background: "rgba(0,212,255,0.08)", border: "1.5px solid rgba(0,212,255,0.35)",
+                    } : {
+                      borderRadius: 12, cursor: "pointer",
+                      background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)",
+                    }}>
+                    <Icon size={16} style={{ color: groupType === type ? "#00D4FF" : "rgba(255,255,255,0.3)", marginBottom: 6, display: "block" }} />
+                    <div className="text-xs font-bold" style={{ color: groupType === type ? "#00D4FF" : "rgba(255,255,255,0.6)" }}>{label}</div>
+                    <div className="text-[10px] mt-0.5" style={{ color: "rgba(255,255,255,0.35)" }}>{desc}</div>
                   </button>
                 ))}
               </div>
@@ -436,23 +576,25 @@ function CreateGroupInner() {
 
             {groupType === "single_match" && (
               <div className="relative">
-                <label className="block text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#64748b" }}>Select Match</label>
-                <button type="button" onClick={() => setShowPicker(v => !v)}
-                  className="w-full flex items-center justify-between px-4 py-2.5 rounded-xl border text-sm bg-white"
-                  style={{ borderColor: "#e2e8f0", color: "#0F172A" }}>
-                  <span>{FEATURED_MATCHES.find(m => m.id === selectedMatch)?.label}</span>
-                  <ChevronDown size={14} style={{ color: "#94a3b8" }} />
+                <label style={labelStyle}>Select Match</label>
+                <button type="button" onClick={() => setShowPicker((v: boolean) => !v)}
+                  className="w-full flex items-center justify-between rounded-xl"
+                  style={{ ...inputStyle, padding: "12px 16px", cursor: "pointer", border: "1px solid rgba(255,255,255,0.12)" }}>
+                  <span style={{ color: "rgba(255,255,255,0.8)", fontSize: 14 }}>{FEATURED_MATCHES.find(m => m.id === selectedMatch)?.label}</span>
+                  <ChevronDown size={14} style={{ color: "rgba(255,255,255,0.4)" }} />
                 </button>
                 {showPicker && (
-                  <div className="absolute top-full left-0 right-0 mt-1 rounded-xl border overflow-hidden z-20 bg-white shadow-lg"
-                    style={{ borderColor: "#e2e8f0" }}>
+                  <div className="absolute top-full left-0 right-0 mt-1 rounded-xl overflow-hidden z-20"
+                    style={{ background: "rgba(10,8,24,0.96)", backdropFilter: "blur(40px)", border: "1px solid rgba(255,255,255,0.14)", boxShadow: "0 16px 48px rgba(0,0,0,0.5)" }}>
                     {FEATURED_MATCHES.map(m => (
                       <button key={m.id} type="button"
                         onClick={() => { setSelectedMatch(m.id); setShowPicker(false); }}
-                        className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-slate-50"
-                        style={{ borderBottom: "1px solid #f1f5f9", color: selectedMatch === m.id ? "#0891B2" : "#475569" }}>
+                        className="w-full flex items-center justify-between px-4 py-3 text-left border-b last:border-0 transition-colors"
+                        style={{ borderColor: "rgba(255,255,255,0.07)", color: selectedMatch === m.id ? "#00D4FF" : "rgba(255,255,255,0.6)", background: "transparent" }}
+                        onMouseEnter={(e: { currentTarget: HTMLElement }) => { e.currentTarget.style.background = "rgba(255,255,255,0.04)"; }}
+                        onMouseLeave={(e: { currentTarget: HTMLElement }) => { e.currentTarget.style.background = "transparent"; }}>
                         <span className="text-xs font-bold">{m.label}</span>
-                        <span className="text-xs" style={{ color: "#94a3b8" }}>{m.detail}</span>
+                        <span style={{ fontSize: 11, color: "rgba(255,255,255,0.35)" }}>{m.detail}</span>
                       </button>
                     ))}
                   </div>
@@ -464,8 +606,14 @@ function CreateGroupInner() {
           <button type="button" onClick={() => {
             if (!groupName.trim()) { setError("Group name is required"); return; }
             setError(null); setStep(2);
-          }} className="w-full py-3 rounded-xl font-bold text-sm uppercase tracking-wider flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5"
-            style={{ background: "linear-gradient(135deg, #00FF88, #00D4FF)", color: "#0B141B" }}>
+          }} className="w-full flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5"
+            style={{
+              padding: "13px", borderRadius: 12, border: "none",
+              background: "linear-gradient(135deg, #00FF88, #00D4FF)", color: "#0B141B",
+              fontWeight: 700, fontFamily: "var(--font-ui)", fontSize: 14,
+              textTransform: "uppercase", letterSpacing: "0.06em", cursor: "pointer",
+              boxShadow: "0 0 20px rgba(0,255,136,0.25)",
+            }}>
             Next: {isCorporate ? "Company Prizes" : "Buy-In & Prizes"} <ArrowRight size={16} />
           </button>
         </div>
@@ -474,26 +622,31 @@ function CreateGroupInner() {
       {/* ── STEP 2 ─────────────────────────────────────────────────────────── */}
       {step === 2 && (
         <div className="space-y-4">
-          <div className="rounded-2xl p-5 space-y-4 bg-white border border-slate-200 shadow-sm">
-
+          <div style={{ ...glassCard, padding: 20 }} className="space-y-4">
             {isCorporate ? (
               <div className="space-y-4">
                 <div>
-                  <label className="block text-xs font-bold uppercase tracking-widest mb-3" style={{ color: "#64748b" }}>
-                    Prize Structure
-                  </label>
+                  <label style={labelStyle}>Prize Structure</label>
                   <div className="grid grid-cols-2 gap-3">
                     <button type="button" onClick={() => setPrizeTrack("cash")}
-                      className="rounded-xl p-4 text-left border-2 transition-all bg-white"
-                      style={{ borderColor: prizeTrack === "cash" ? "rgba(0,212,255,0.4)" : "#e2e8f0", background: prizeTrack === "cash" ? "rgba(0,212,255,0.02)" : "white" }}>
-                      <div className="text-sm font-bold mb-1" style={{ color: "#0F172A" }}>💰 Cash Split</div>
-                      <div className="text-xs" style={{ color: "#64748b" }}>Track a buy-in pot with % payouts</div>
+                      className="p-4 text-left transition-all"
+                      style={{
+                        borderRadius: 12, cursor: "pointer",
+                        border: prizeTrack === "cash" ? "1.5px solid rgba(0,212,255,0.4)" : "1px solid rgba(255,255,255,0.1)",
+                        background: prizeTrack === "cash" ? "rgba(0,212,255,0.05)" : "rgba(255,255,255,0.04)",
+                      }}>
+                      <div className="text-sm font-bold mb-1" style={{ color: "white" }}>💰 Cash Split</div>
+                      <div className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>Track a buy-in pot with % payouts</div>
                     </button>
                     <button type="button" onClick={() => setPrizeTrack("company")}
-                      className="rounded-xl p-4 text-left border-2 transition-all bg-white"
-                      style={{ borderColor: prizeTrack === "company" ? "rgba(0,255,136,0.4)" : "#e2e8f0", background: prizeTrack === "company" ? "rgba(0,255,136,0.02)" : "white" }}>
-                      <div className="text-sm font-bold mb-1" style={{ color: "#0F172A" }}>🏆 Company Rewards</div>
-                      <div className="text-xs" style={{ color: "#64748b" }}>Custom rewards, no financial tracking</div>
+                      className="p-4 text-left transition-all"
+                      style={{
+                        borderRadius: 12, cursor: "pointer",
+                        border: prizeTrack === "company" ? "1.5px solid rgba(0,255,136,0.4)" : "1px solid rgba(255,255,255,0.1)",
+                        background: prizeTrack === "company" ? "rgba(0,255,136,0.05)" : "rgba(255,255,255,0.04)",
+                      }}>
+                      <div className="text-sm font-bold mb-1" style={{ color: "white" }}>🏆 Company Rewards</div>
+                      <div className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>Custom rewards, no financial tracking</div>
                     </button>
                   </div>
                 </div>
@@ -502,50 +655,53 @@ function CreateGroupInner() {
                   <div className="space-y-3">
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="block text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#64748b" }}>Buy-in ($)</label>
-                        <input type="number" min={0} value={buyIn} onChange={e => setBuyIn(Number(e.target.value))} className={inputCls} />
+                        <label style={labelStyle}>Buy-in ($)</label>
+                        <input type="number" min={0} value={buyIn} onChange={(e: { target: HTMLInputElement }) => setBuyIn(Number(e.target.value))}
+                          style={{ ...inputStyle, padding: "12px 16px", color: "#00D4FF" }} />
                       </div>
                       <div>
-                        <label className="block text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#64748b" }}>Expected members</label>
-                        <input type="number" min={2} value={memberCount} onChange={e => setMemberCount(Number(e.target.value))} className={inputCls} />
+                        <label style={labelStyle}>Expected members</label>
+                        <input type="number" min={2} value={memberCount} onChange={(e: { target: HTMLInputElement }) => setMemberCount(Number(e.target.value))}
+                          style={{ ...inputStyle, padding: "12px 16px" }} />
                       </div>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold uppercase tracking-widest" style={{ color: "#64748b" }}>Payout split</span>
-                      <span className="text-xs font-bold" style={{ color: totalPct === 100 ? "#059669" : "#dc2626" }}>{totalPct}%</span>
+                      <span style={{ ...labelStyle, marginBottom: 0 }}>Payout split</span>
+                      <span style={{ fontSize: 11, fontWeight: 700, fontFamily: "var(--font-ui)", color: totalPct === 100 ? "#00FF88" : "#f87171" }}>
+                        {totalPct === 100 ? "✓ 100% allocated" : `${totalPct}% · Must equal 100%`}
+                      </span>
                     </div>
-                    {[
+                    {([
                       { label: "🥇 1st", val: payoutFirst,  set: setPayoutFirst  },
                       { label: "🥈 2nd", val: payoutSecond, set: setPayoutSecond },
                       { label: "🥉 3rd", val: payoutThird,  set: setPayoutThird  },
-                    ].map(({ label, val, set }) => (
+                    ] as const).map(({ label, val, set }) => (
                       <div key={label} className="flex items-center gap-3">
-                        <span className="text-sm w-16 shrink-0" style={{ color: "#475569" }}>{label}</span>
-                        <input type="number" min={0} max={100} value={val} onChange={e => set(Number(e.target.value))}
-                          className="w-16 rounded-lg px-2 py-1.5 text-sm text-center border focus:outline-none"
-                          style={{ borderColor: "#e2e8f0", color: "#0F172A", background: "white" }} />
-                        <span className="text-sm" style={{ color: "#94a3b8" }}>%</span>
+                        <span className="text-sm w-16 shrink-0" style={{ color: "rgba(255,255,255,0.5)" }}>{label}</span>
+                        <input type="number" min={0} max={100} value={val} onChange={(e: { target: HTMLInputElement }) => set(Number(e.target.value))}
+                          className="text-center"
+                          style={{ width: 64, borderRadius: 10, padding: "6px 8px", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", color: "#00D4FF", fontSize: 13, fontFamily: "var(--font-ui)", outline: "none" }} />
+                        <span style={{ color: "rgba(255,255,255,0.35)", fontSize: 13 }}>%</span>
                       </div>
                     ))}
                   </div>
                 ) : (
                   <div className="space-y-4">
                     <p className="text-xs rounded-xl px-4 py-3"
-                      style={{ background: "rgba(0,255,136,0.05)", border: "1px solid rgba(0,255,136,0.15)", color: "#475569" }}>
+                      style={{ background: "rgba(0,255,136,0.05)", border: "1px solid rgba(0,255,136,0.15)", color: "rgba(255,255,255,0.5)" }}>
                       Specify custom workspace rewards for each leaderboard place below.
                     </p>
                     <div>
-                      <label className="block text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#64748b" }}>
-                        How many places to reward?
-                      </label>
+                      <label style={labelStyle}>How many places to reward?</label>
                       <div className="flex gap-2">
                         {[1, 2, 3].map(n => (
                           <button key={n} type="button" onClick={() => setRewardPlaces(n)}
-                            className="flex-1 py-2 rounded-xl text-sm font-bold border-2 transition-all"
+                            className="flex-1 py-2 text-sm font-bold transition-all"
                             style={{
-                              borderColor: rewardPlaces >= n ? "rgba(0,255,136,0.4)" : "#e2e8f0",
-                              background:  rewardPlaces >= n ? "rgba(0,255,136,0.04)" : "white",
-                              color:       rewardPlaces >= n ? "#059669" : "#64748b",
+                              borderRadius: 12, cursor: "pointer",
+                              border: rewardPlaces >= n ? "1.5px solid rgba(0,255,136,0.4)" : "1px solid rgba(255,255,255,0.1)",
+                              background: rewardPlaces >= n ? "rgba(0,255,136,0.06)" : "rgba(255,255,255,0.04)",
+                              color: rewardPlaces >= n ? "#00FF88" : "rgba(255,255,255,0.4)",
                             }}>
                             {n === 1 ? "1st Only" : n === 2 ? "Top 2" : "Top 3"}
                           </button>
@@ -559,10 +715,13 @@ function CreateGroupInner() {
                         { place: 3, label: "🥉 3rd Place Reward", key: "reward3" as const, ph: "e.g. Special desk trophy & bragging rights" },
                       ] as const).filter(r => r.place <= rewardPlaces).map(({ label, key, ph }) => (
                         <div key={key}>
-                          <label className="block text-[11px] font-bold uppercase tracking-wider mb-1.5" style={{ color: "#94a3b8" }}>{label}</label>
+                          <label style={labelStyle}>{label}</label>
                           <input type="text" placeholder={ph} value={companyRewards[key]}
-                            onChange={e => setCompanyRewards({ ...companyRewards, [key]: e.target.value })}
-                            className={inputCls} />
+                            onChange={(e: { target: HTMLInputElement }) => setCompanyRewards({ ...companyRewards, [key]: e.target.value })}
+                            onFocus={(e: { target: HTMLInputElement }) => { e.target.style.borderColor = "rgba(0,255,136,0.5)"; e.target.style.boxShadow = "0 0 0 3px rgba(0,255,136,0.1)"; }}
+                            onBlur={(e: { target: HTMLInputElement }) => { e.target.style.borderColor = "rgba(255,255,255,0.12)"; e.target.style.boxShadow = "none"; }}
+                            className="placeholder:text-[rgba(255,255,255,0.3)]"
+                            style={{ ...inputStyle, padding: "12px 16px" }} />
                         </div>
                       ))}
                     </div>
@@ -573,28 +732,32 @@ function CreateGroupInner() {
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#64748b" }}>Buy-In Amount ($)</label>
+                    <label style={labelStyle}>Buy-In Amount ($)</label>
                     <div className="relative">
-                      <DollarSign size={14} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: "#94a3b8" }} />
-                      <input type="number" min={0} value={buyIn} onChange={e => setBuyIn(Number(e.target.value))} className={inputCls} style={{ paddingLeft: "2rem" }} />
+                      <DollarSign size={14} className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: "rgba(255,255,255,0.35)" }} />
+                      <input type="number" min={0} value={buyIn} onChange={(e: { target: HTMLInputElement }) => setBuyIn(Number(e.target.value))}
+                        style={{ ...inputStyle, padding: "12px 16px 12px 36px", color: "#00D4FF" }} />
                     </div>
                   </div>
                   <div>
-                    <label className="block text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#64748b" }}>Target Members</label>
-                    <input type="number" min={2} value={memberCount} onChange={e => setMemberCount(Number(e.target.value))} className={inputCls} />
+                    <label style={labelStyle}>Target Members</label>
+                    <input type="number" min={2} value={memberCount} onChange={(e: { target: HTMLInputElement }) => setMemberCount(Number(e.target.value))}
+                      style={{ ...inputStyle, padding: "12px 16px" }} />
                   </div>
                 </div>
 
-                <div className="p-3.5 rounded-xl flex justify-between items-center text-sm"
-                  style={{ background: "#f8fafc", border: "1px solid #e2e8f0" }}>
-                  <span style={{ color: "#64748b" }}>Projected Cash Pool:</span>
-                  <span className="font-bold" style={{ color: "#0F172A" }}>${totalPot}</span>
+                <div className="px-4 py-3 rounded-xl flex justify-between items-center"
+                  style={{ background: "rgba(0,255,136,0.04)", border: "1px solid rgba(0,255,136,0.12)" }}>
+                  <span style={{ fontSize: 13, color: "rgba(255,255,255,0.4)", fontFamily: "var(--font-ui)" }}>Projected Cash Pool:</span>
+                  <span className="font-bold" style={{ color: "#00FF88" }}>${totalPot}</span>
                 </div>
 
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
-                    <label className="text-xs font-bold uppercase tracking-widest" style={{ color: "#64748b" }}>Prize Pool Split</label>
-                    <span className="text-xs font-bold" style={{ color: totalPct === 100 ? "#059669" : "#dc2626" }}>{totalPct}% allocated</span>
+                    <label style={{ ...labelStyle, marginBottom: 0 }}>Prize Pool Split</label>
+                    <span style={{ fontSize: 11, fontWeight: 700, fontFamily: "var(--font-ui)", color: totalPct === 100 ? "#00FF88" : "#f87171" }}>
+                      {totalPct === 100 ? "✓ 100% allocated" : `${totalPct}% · Must equal 100%`}
+                    </span>
                   </div>
                   {[
                     { label: "🥇 1st Place", val: payoutFirst,  set: setPayoutFirst,  split: Math.round(totalPot * payoutFirst  / 100) },
@@ -602,12 +765,12 @@ function CreateGroupInner() {
                     { label: "🥉 3rd Place", val: payoutThird,  set: setPayoutThird,  split: Math.round(totalPot * payoutThird  / 100) },
                   ].map(({ label, val, set, split }) => (
                     <div key={label} className="flex items-center gap-3">
-                      <span className="text-sm w-20 font-medium" style={{ color: "#475569" }}>{label}</span>
-                      <input type="number" min={0} max={100} value={val} onChange={e => set(Number(e.target.value))}
-                        className="w-16 rounded-lg px-2 py-1.5 text-sm text-center border focus:outline-none"
-                        style={{ borderColor: "#e2e8f0", color: "#0F172A", background: "white" }} />
-                      <span className="text-sm w-6" style={{ color: "#94a3b8" }}>%</span>
-                      <span className="text-xs ml-auto font-mono" style={{ color: "#94a3b8" }}>${split} prize</span>
+                      <span className="text-sm w-20 font-medium shrink-0" style={{ color: "rgba(255,255,255,0.5)" }}>{label}</span>
+                      <input type="number" min={0} max={100} value={val} onChange={(e: { target: HTMLInputElement }) => set(Number(e.target.value))}
+                        className="text-center"
+                        style={{ width: 64, borderRadius: 10, padding: "6px 8px", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", color: "#00D4FF", fontSize: 13, fontFamily: "var(--font-ui)", outline: "none" }} />
+                      <span style={{ color: "rgba(255,255,255,0.35)", fontSize: 13, width: 20 }}>%</span>
+                      <span className="text-xs ml-auto font-mono" style={{ color: "rgba(255,255,255,0.35)" }}>${split} prize</span>
                     </div>
                   ))}
                 </div>
@@ -619,8 +782,14 @@ function CreateGroupInner() {
             if (!isCorporate && totalPct !== 100) { setError("Prize allocation must equal exactly 100%"); return; }
             if (isCorporate && prizeTrack === "cash" && totalPct !== 100) { setError("Prize allocation must equal exactly 100%"); return; }
             setError(null); setStep(3);
-          }} className="w-full py-3 rounded-xl font-bold text-sm uppercase tracking-wider flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5"
-            style={{ background: "linear-gradient(135deg, #00FF88, #00D4FF)", color: "#0B141B" }}>
+          }} className="w-full flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5"
+            style={{
+              padding: "13px", borderRadius: 12, border: "none",
+              background: "linear-gradient(135deg, #00FF88, #00D4FF)", color: "#0B141B",
+              fontWeight: 700, fontFamily: "var(--font-ui)", fontSize: 14,
+              textTransform: "uppercase", letterSpacing: "0.06em", cursor: "pointer",
+              boxShadow: "0 0 20px rgba(0,255,136,0.25)",
+            }}>
             Next: Scoring Rules <ArrowRight size={16} />
           </button>
         </div>
@@ -629,26 +798,37 @@ function CreateGroupInner() {
       {/* ── STEP 3 ─────────────────────────────────────────────────────────── */}
       {step === 3 && (
         <div className="space-y-4">
-          <div className="rounded-2xl p-5 bg-white border border-slate-200 shadow-sm">
+          <div style={{ ...glassCard, padding: 20 }}>
             <div className="flex items-center gap-2 mb-4">
-              <Settings size={14} style={{ color: "#0891B2" }} />
-              <span className="text-xs font-bold uppercase tracking-widest" style={{ color: "#64748b" }}>Configure point weights</span>
+              <Settings size={14} style={{ color: "#00D4FF" }} />
+              <span style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "rgba(255,255,255,0.5)", fontFamily: "var(--font-ui)" }}>
+                Configure point weights
+              </span>
             </div>
-            <RuleRow label="Match Outcome"            desc="Correctly predicting W/D/L result"              pts={correctOutcome} setPts={setCorrectOutcome} enabled={enableOutcome}    onToggle={() => setEnableOutcome(!enableOutcome)}       />
-            <RuleRow label="Exact Scoreline"          desc="Bonus for guessing identical score (e.g. 2-1)"  pts={exactScore}     setPts={setExactScore}     enabled={enableExact}      onToggle={() => setEnableExact(!enableExact)}           />
-            <RuleRow label="Knockout Advancement"     desc="Correctly choosing which team advances"         pts={koAdvancement}  setPts={setKoAdvancement}  enabled={enableKO}         onToggle={() => setEnableKO(!enableKO)}                 />
-            <RuleRow label="Tournament Champion"      desc="Picking the winner of the trophy"               pts={tourneyWinner}  setPts={setTourneyWinner}  enabled={enableWinner}     onToggle={() => setEnableWinner(!enableWinner)}         />
-            <RuleRow label="Golden Boot Winner"       desc="Predicting top goals scorer"                    pts={topScorer}      setPts={setTopScorer}      enabled={enableScorer}     onToggle={() => setEnableScorer(!enableScorer)}         />
-            <RuleRow label="Top Assist Playmaker"     desc="Predicting tournament assists champion"         pts={topAssister}    setPts={setTopAssister}    enabled={enableAssister}   onToggle={() => setEnableAssister(!enableAssister)}     />
-            <RuleRow label="Best Defence"             desc="Team with lowest goals conceded"                pts={bestDefence}    setPts={setBestDefence}    enabled={enableDefence}    onToggle={() => setEnableDefence(!enableDefence)}       />
-            <RuleRow label="Best Young Player"        desc="Official FIFA Best Young Player award"          pts={bestYoung}      setPts={setBestYoung}      enabled={enableYoung}      onToggle={() => setEnableYoung(!enableYoung)}           />
-            <RuleRow label="Golden Ball (MVP)"        desc="Tournament best player award winner"            pts={goldenBall}     setPts={setGoldenBall}     enabled={enableGoldenBall} onToggle={() => setEnableGoldenBall(!enableGoldenBall)} />
+            <RuleRow label="Match Outcome"        desc="Correctly predicting W/D/L result"             pts={correctOutcome} setPts={setCorrectOutcome} enabled={enableOutcome}    onToggle={() => setEnableOutcome(!enableOutcome)}       />
+            <RuleRow label="Exact Scoreline"       desc="Bonus for guessing identical score (e.g. 2-1)" pts={exactScore}     setPts={setExactScore}     enabled={enableExact}      onToggle={() => setEnableExact(!enableExact)}           />
+            <RuleRow label="Knockout Advancement"  desc="Correctly choosing which team advances"        pts={koAdvancement}  setPts={setKoAdvancement}  enabled={enableKO}         onToggle={() => setEnableKO(!enableKO)}                 />
+            <RuleRow label="Tournament Champion"   desc="Picking the winner of the trophy"              pts={tourneyWinner}  setPts={setTourneyWinner}  enabled={enableWinner}     onToggle={() => setEnableWinner(!enableWinner)}         />
+            <RuleRow label="Golden Boot Winner"    desc="Predicting top goals scorer"                   pts={topScorer}      setPts={setTopScorer}      enabled={enableScorer}     onToggle={() => setEnableScorer(!enableScorer)}         />
+            <RuleRow label="Top Assist Playmaker"  desc="Predicting tournament assists champion"        pts={topAssister}    setPts={setTopAssister}    enabled={enableAssister}   onToggle={() => setEnableAssister(!enableAssister)}     />
+            <RuleRow label="Best Defence"          desc="Team with lowest goals conceded"               pts={bestDefence}    setPts={setBestDefence}    enabled={enableDefence}    onToggle={() => setEnableDefence(!enableDefence)}       />
+            <RuleRow label="Best Young Player"     desc="Official FIFA Best Young Player award"         pts={bestYoung}      setPts={setBestYoung}      enabled={enableYoung}      onToggle={() => setEnableYoung(!enableYoung)}           />
+            <RuleRow label="Golden Ball (MVP)"     desc="Tournament best player award winner"           pts={goldenBall}     setPts={setGoldenBall}     enabled={enableGoldenBall} onToggle={() => setEnableGoldenBall(!enableGoldenBall)} />
           </div>
 
           <button type="button" onClick={handleCreate} disabled={loading}
-            className="w-full py-4 rounded-xl font-bold text-sm uppercase tracking-wider flex items-center justify-center gap-2 transition-all disabled:opacity-50"
-            style={{ background: "linear-gradient(135deg, #00FF88, #00D4FF)", color: "#0B141B" }}>
-            {loading ? "Creating your league..." : <><Trophy size={16} /> Complete & Launch Group</>}
+            className="w-full flex items-center justify-center gap-2 transition-all disabled:opacity-50 hover:-translate-y-0.5"
+            style={{
+              padding: "16px", borderRadius: 14, border: "none",
+              background: "linear-gradient(135deg, #00FF88, #00D4FF)", color: "#0B141B",
+              fontFamily: "var(--font-display)", fontWeight: 800, fontSize: 15,
+              textTransform: "uppercase", letterSpacing: "0.02em",
+              cursor: loading ? "not-allowed" : "pointer",
+              boxShadow: "0 0 24px rgba(0,255,136,0.3)",
+            }}>
+            {loading
+              ? <><Loader2 size={16} className="animate-spin" /> Creating your league...</>
+              : <><Trophy size={16} /> Complete &amp; Launch Group</>}
           </button>
         </div>
       )}
@@ -659,7 +839,7 @@ function CreateGroupInner() {
 export default function CreateGroupPage() {
   return (
     <Suspense fallback={
-      <div className="max-w-lg mx-auto px-4 py-12 text-center text-sm" style={{ color: "#94a3b8" }}>
+      <div className="max-w-[480px] mx-auto px-4 py-12 text-center text-sm" style={{ color: "rgba(255,255,255,0.3)" }}>
         Loading...
       </div>
     }>
