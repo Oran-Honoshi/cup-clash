@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ArrowRight, Zap, Users, Building2 } from "lucide-react";
+import { ArrowRight, Zap, Building2 } from "lucide-react";
 import Link from "next/link";
 import { CountdownCard } from "@/components/landing/countdown-card";
 import { PHOTOS } from "@/lib/assets";
@@ -12,90 +12,107 @@ function PhoneMockup() {
   return (
     <motion.div
       initial={{ opacity: 0, y: 30, rotate: 10 }}
-      animate={{ opacity: 1, y: 0, rotate: 15 }}
+      animate={{ opacity: 1, y: 0, rotate: 6 }}
       transition={{ duration: 0.9, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
-      className="relative mx-auto"
+      className="relative mx-auto w-[270px]"
       style={{
-        width: 270,
-        filter: "drop-shadow(0 0 24px rgba(0,212,255,0.3)) drop-shadow(0 30px 60px rgba(0,0,0,0.12))",
+        filter: "drop-shadow(0 0 24px rgba(0,212,255,0.3)) drop-shadow(0 30px 80px rgba(0,0,0,0.7))",
         animation: "floatPhone 4s ease-in-out infinite",
       }}
     >
       <style>{`
         @keyframes floatPhone {
-          0%,100% { transform: rotate(15deg) translateY(0px); }
-          50%      { transform: rotate(15deg) translateY(-10px); }
+          0%,100% { transform: rotate(6deg) translateY(0px); }
+          50%      { transform: rotate(6deg) translateY(-10px); }
         }
       `}</style>
-      <div className="relative rounded-[2.5rem] overflow-hidden"
-        style={{ background: "#ffffff", border: "2px solid rgba(0,212,255,0.35)", boxShadow: "inset 0 0 0 1px rgba(255,255,255,0.9)" }}>
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-6 rounded-b-2xl z-10" style={{ background: "#F8FAFC" }} />
+      <div
+        className="relative rounded-[2.5rem] overflow-hidden"
+        style={{
+          background: "rgba(8,5,18,0.85)",
+          backdropFilter: "blur(20px)",
+          border: "1.5px solid rgba(255,255,255,0.12)",
+          boxShadow: "0 0 0 6px rgba(40,30,80,0.3), 0 30px 80px rgba(0,0,0,0.7), inset 0 1px 0 rgba(255,255,255,0.15)",
+        }}
+      >
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-24 h-6 rounded-b-2xl z-10 bg-[#050810]" />
         <div className="relative">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={PHOTOS.stadiumNightAbove} alt="Stadium" className="w-full object-cover"
-            style={{ height: 120, objectPosition: "center 30%", opacity: 0.15 }} />
+            style={{ height: 120, objectPosition: "center 30%", opacity: 0.25 }} />
           <div className="absolute inset-0"
-            style={{ background: "linear-gradient(to bottom, #F8FAFC 0%, rgba(248,250,252,0.6) 60%, #F8FAFC 100%)" }} />
+            style={{ background: "linear-gradient(to bottom, rgba(8,5,18,0.3) 0%, rgba(8,5,18,0.8) 70%, rgba(8,5,18,1) 100%)" }} />
         </div>
         <div className="px-4 pb-4 space-y-3 -mt-8 relative z-10">
           <div className="flex items-center justify-between pt-8">
             <div>
-              <div className="text-[9px] font-bold uppercase tracking-widest" style={{ color: "#00D4FF" }}>Cup Clash</div>
-              <div className="font-bold text-sm" style={{ color: "#0B141B" }}>Tech Titans</div>
+              <div className="text-[9px] font-bold uppercase tracking-widest text-cyan">Cup Clash</div>
+              <div className="font-bold text-sm text-white">Tech Titans</div>
             </div>
-            <div className="h-7 w-7 rounded-full flex items-center justify-center text-xs font-bold"
-              style={{ background: "linear-gradient(135deg, #00D4FF, #00FF88)", color: "#0B141B" }}>A</div>
+            <div className="h-7 w-7 rounded-full flex items-center justify-center text-xs font-bold text-[#050e08]"
+              style={{ background: "linear-gradient(135deg, #00D4FF, #00FF88)" }}>A</div>
           </div>
           <div className="rounded-2xl p-3 space-y-2"
-            style={{ background: "rgba(255,255,255,0.85)", border: "1px solid rgba(0,212,255,0.15)", backdropFilter: "blur(8px)" }}>
-            <div className="text-[9px] font-bold uppercase tracking-widest" style={{ color: "#00D4FF" }}>Leaderboard</div>
+            style={{ background: "rgba(0,212,255,0.08)", border: "1px solid rgba(0,212,255,0.25)", backdropFilter: "blur(12px)" }}>
+            <div className="flex items-center justify-between">
+              <div className="text-[9px] font-bold uppercase tracking-widest text-cyan">Leaderboard</div>
+              <div className="flex items-center gap-1 text-[9px] text-cyan font-bold">
+                <span className="w-1.5 h-1.5 rounded-full bg-cyan animate-pulse" />
+                Live
+              </div>
+            </div>
             {[
-              { rank: 1, name: "Amit",  pts: 145, you: true  },
-              { rank: 2, name: "Sarah", pts: 130, you: false },
-              { rank: 3, name: "John",  pts: 95,  you: false },
+              { rank: 1, name: "Amit",  pts: 145, leading: true, me: false },
+              { rank: 2, name: "Sarah", pts: 130, leading: false, me: false },
+              { rank: 3, name: "You",   pts: 110, leading: false, me: true  },
             ].map(p => (
               <div key={p.name} className="flex items-center gap-2 rounded-lg px-2 py-1"
-                style={p.you ? { background: "rgba(0,255,136,0.08)", border: "1px solid rgba(0,255,136,0.2)" } : {}}>
-                <span className="text-[10px] font-black w-4" style={{ color: p.you ? "#00FF88" : "#94a3b8" }}>{p.rank}</span>
-                <div className="h-5 w-5 rounded-full flex items-center justify-center text-[8px] font-bold"
-                  style={{ background: "linear-gradient(135deg, #00D4FF, #00FF88)", color: "#0B141B" }}>{p.name[0]}</div>
-                <span className="text-[10px] font-bold flex-1" style={{ color: "#0B141B" }}>{p.name}</span>
-                <span className="font-bold text-[11px]" style={{ color: p.you ? "#00FF88" : "#334155" }}>{p.pts}</span>
+                style={p.me ? { background: "rgba(0,255,136,0.08)", border: "1px solid rgba(0,255,136,0.2)" } : {}}>
+                <span className="text-[10px] font-black w-4"
+                  style={{ color: p.leading ? "#fbbf24" : p.me ? "#00FF88" : "rgba(255,255,255,0.4)" }}>{p.rank}</span>
+                <div className="h-5 w-5 rounded-full flex items-center justify-center text-[8px] font-bold text-[#050e08]"
+                  style={{ background: "linear-gradient(135deg, #00D4FF, #00FF88)" }}>{p.name[0]}</div>
+                <span className="text-[10px] font-bold flex-1 text-white">{p.name}</span>
+                <span className="font-bold text-[11px]"
+                  style={{ color: p.leading ? "#fbbf24" : p.me ? "#00FF88" : "rgba(255,255,255,0.5)" }}>{p.pts}</span>
               </div>
             ))}
           </div>
           <div className="rounded-2xl p-3"
-            style={{ background: "rgba(255,255,255,0.9)", border: "1px solid rgba(0,255,136,0.25)", boxShadow: "0 4px 16px rgba(0,255,136,0.1)" }}>
-            <div className="text-[8px] font-bold uppercase tracking-widest mb-2" style={{ color: "#00D4FF" }}>Next Match</div>
+            style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(0,255,136,0.25)", boxShadow: "0 4px 16px rgba(0,255,136,0.1)" }}>
+            <div className="text-[8px] font-bold uppercase tracking-widest mb-2 text-cyan">Next Match</div>
             <div className="flex items-center justify-between mb-3">
               <div className="text-center">
                 <div className="relative h-5 w-6 rounded-sm overflow-hidden">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src="https://flagcdn.com/w20/br.png" alt="Brazil" className="w-full h-full object-cover" />
                 </div>
-                <div className="text-[9px] font-bold" style={{ color: "#0B141B" }}>BRA</div>
+                <div className="text-[9px] font-bold text-white">BRA</div>
               </div>
               <div className="flex gap-1 items-center">
                 <div className="w-7 h-7 rounded-lg flex items-center justify-center text-sm font-bold"
-                  style={{ background: "rgba(0,212,255,0.08)", color: "#0B141B", border: "1px solid rgba(0,212,255,0.2)" }}>2</div>
-                <span className="font-bold" style={{ color: "#94a3b8" }}>–</span>
+                  style={{ background: "rgba(0,255,136,0.08)", color: "#00FF88", border: "1px solid rgba(0,255,136,0.3)" }}>2</div>
+                <span className="font-bold text-white/30">–</span>
                 <div className="w-7 h-7 rounded-lg flex items-center justify-center text-sm font-bold"
-                  style={{ background: "rgba(0,212,255,0.08)", color: "#0B141B", border: "1px solid rgba(0,212,255,0.2)" }}>1</div>
+                  style={{ background: "rgba(0,255,136,0.08)", color: "#00FF88", border: "1px solid rgba(0,255,136,0.3)" }}>1</div>
               </div>
               <div className="text-center">
                 <div className="relative h-5 w-6 rounded-sm overflow-hidden">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src="https://flagcdn.com/w20/fr.png" alt="France" className="w-full h-full object-cover" />
                 </div>
-                <div className="text-[9px] font-bold" style={{ color: "#0B141B" }}>FRA</div>
+                <div className="text-[9px] font-bold text-white">FRA</div>
               </div>
             </div>
-            <button className="w-full rounded-xl py-2 text-[9px] font-bold uppercase tracking-widest"
-              style={{ background: "linear-gradient(135deg, #00FF88, #00D4FF)", color: "#0B141B", boxShadow: "0 4px 12px rgba(0,255,136,0.35)" }}>
+            <button className="w-full rounded-xl py-2 text-[9px] font-bold uppercase tracking-widest text-[#050e08]"
+              style={{ background: "linear-gradient(135deg, #00FF88, #00D4FF)", boxShadow: "0 4px 12px rgba(0,255,136,0.35)" }}>
               Save Prediction →
             </button>
           </div>
           <div className="flex justify-center gap-1.5 pt-1">
             {[true, false, false, false, false].map((a, i) => (
-              <div key={i} className="rounded-full" style={{ width: a ? 16 : 6, height: 6, background: a ? "#00FF88" : "rgba(0,212,255,0.2)" }} />
+              <div key={i} className="rounded-full"
+                style={{ width: a ? 16 : 6, height: 6, background: a ? "#00FF88" : "rgba(0,212,255,0.2)" }} />
             ))}
           </div>
         </div>
@@ -117,21 +134,15 @@ const TICKER_ITEMS = [
 
 export function Hero() {
   return (
-    <section className="relative overflow-hidden pb-0"
-      style={{ background: "#F8FAFC", paddingTop: "calc(98px + 3.5rem)" }}>
-
+    <section
+      className="relative overflow-hidden pb-0"
+      style={{ paddingTop: "calc(98px + 3.5rem)" }}
+    >
       {/* Background atmosphere */}
-      <div className="absolute top-0 right-0 w-[650px] h-[650px] pointer-events-none overflow-hidden">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={PHOTOS.stadiumAbove} alt="" className="w-full h-full object-cover"
-          style={{ opacity: 0.07, mixBlendMode: "multiply" }} />
-        <div className="absolute inset-0"
-          style={{ background: "radial-gradient(ellipse 80% 80% at 80% 20%, transparent 20%, #F8FAFC 75%)" }} />
-      </div>
       <div className="absolute top-0 right-0 w-[700px] h-[700px] pointer-events-none"
-        style={{ background: "radial-gradient(circle at top right, rgba(0,212,255,0.09) 0%, rgba(0,255,136,0.04) 30%, transparent 65%)" }} />
+        style={{ background: "radial-gradient(circle at top right, rgba(0,212,255,0.12) 0%, rgba(0,255,136,0.06) 30%, transparent 65%)" }} />
       <div className="absolute top-0 left-0 w-[400px] h-[400px] pointer-events-none"
-        style={{ background: "radial-gradient(circle at top left, rgba(0,255,136,0.05) 0%, transparent 60%)" }} />
+        style={{ background: "radial-gradient(circle at top left, rgba(0,255,136,0.08) 0%, transparent 60%)" }} />
 
       <div className="relative mx-auto max-w-7xl px-5 sm:px-8">
         <div className="grid lg:grid-cols-2 gap-12 xl:gap-16 items-center min-h-[82vh] pb-20">
@@ -141,74 +152,51 @@ export function Hero() {
 
             <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
               className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border mb-6"
-              style={{ borderColor: "rgba(0,212,255,0.3)", background: "rgba(0,212,255,0.06)", backdropFilter: "blur(8px)" }}>
-              <Zap size={12} style={{ color: "#00D4FF" }} />
-              <span className="text-xs font-bold uppercase tracking-widest" style={{ color: "#00D4FF" }}>
-                ⚽ Free Global League Open Now
+              style={{ borderColor: "rgba(0,212,255,0.3)", background: "rgba(0,212,255,0.1)", backdropFilter: "blur(8px)" }}>
+              <Zap size={11} className="text-cyan" fill="#00D4FF" />
+              <span className="text-xs font-bold uppercase tracking-widest text-cyan">
+                World Cup 2026 · June 11 — July 19
               </span>
             </motion.div>
 
             <motion.h1 initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.1 }}
-              className="font-display leading-[0.9] tracking-tight mb-6"
-              style={{ fontSize: "clamp(2.4rem, 5.5vw, 4.2rem)", fontWeight: 900, color: "#0B141B" }}>
-              THE ULTIMATE<br />
-              WORLD CUP 2026<br />
-              <span style={{ background: "linear-gradient(135deg, #00D4FF 0%, #00FF88 100%)", WebkitBackgroundClip: "text", backgroundClip: "text", WebkitTextFillColor: "transparent" }}>
-                PREDICTION
-              </span>{" "}
-              <span style={{ color: "#0B141B" }}>GAME.</span>
+              className="font-display font-black leading-[0.95] tracking-tight mb-6 text-white"
+              style={{ fontSize: "clamp(48px, 7vw, 92px)", letterSpacing: "-0.02em" }}>
+              Predict<br />
+              every match.<br />
+              <span className="bg-gradient-to-br from-ac to-cyan bg-clip-text text-transparent">
+                Beat your friends.
+              </span>
             </motion.h1>
 
-            {/* Sub — experience-first, not signup-first */}
             <motion.p initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.2 }}
-              className="text-lg leading-relaxed mb-8 max-w-md" style={{ color: "#475569" }}>
-              No sign up required to start predicting.
-              Ditch the manual math and payment chasing.{" "}
-              <strong style={{ color: "#0B141B" }}>
-                Run a live World Cup pool for your friends or office in 60 seconds.
-              </strong>
+              className="text-lg leading-relaxed mb-8 max-w-md text-white/70">
+              A private prediction league for World Cup 2026. Built for friend circles and office pools.{" "}
+              <strong className="text-white font-semibold">Free to host. $2 per friend.</strong>{" "}
+              Sponsor your whole team for $75.
             </motion.p>
 
-            {/* ── DUAL CTAs ── */}
+            {/* CTAs */}
             <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.3 }}
-              className="flex flex-col sm:flex-row gap-4 mb-5">
+              className="flex flex-col sm:flex-row gap-4 mb-8">
 
-              {/* Primary — /predictions, no auth wall */}
-              <Link href="/predictions">
-                <button className="group flex flex-col items-center gap-0.5 px-7 py-4 rounded-2xl font-bold uppercase tracking-wider transition-all hover:-translate-y-1 w-full sm:w-auto"
-                  style={{ background: "linear-gradient(135deg, #00FF88, #00D4FF)", color: "#0B141B", boxShadow: "0 20px 50px rgba(0,255,136,0.30), 0 4px 16px rgba(0,255,136,0.2)" }}>
-                  <span className="flex items-center gap-2 text-base">
-                    🎮 Try It Now — No Sign Up
-                    <ArrowRight size={16} className="transition-transform group-hover:translate-x-0.5" />
-                  </span>
-                  <span className="text-[10px] font-bold uppercase tracking-widest opacity-70 leading-none" style={{ color: "#0B141B" }}>
-                    Start predicting instantly · Free
-                  </span>
+              <Link href="/signup">
+                <button
+                  className="group flex items-center gap-2 px-7 py-4 rounded-2xl font-bold uppercase tracking-wider transition-all hover:-translate-y-1 w-full sm:w-auto text-[#050e08]"
+                  style={{ background: "linear-gradient(135deg, #00FF88, #00D4FF)", boxShadow: "0 8px 30px rgba(0,255,136,0.4)" }}>
+                  Start a Friend Circle
+                  <ArrowRight size={16} className="transition-transform group-hover:translate-x-0.5" />
                 </button>
               </Link>
 
-              {/* Corporate */}
               <Link href="/create-group?model=corporate_sponsored">
-                <button className="group flex flex-col items-center gap-0.5 px-7 py-4 rounded-2xl font-bold uppercase tracking-wider transition-all hover:-translate-y-1 w-full sm:w-auto"
-                  style={{ background: "linear-gradient(135deg, #4F46E5, #6366F1)", color: "white", boxShadow: "0 20px 50px rgba(79,70,229,0.25), 0 4px 16px rgba(99,102,241,0.2)" }}>
-                  <span className="flex items-center gap-2 text-base">
-                    <Building2 size={17} />
-                    🏢 Launch Corporate Game
-                    <ArrowRight size={16} className="transition-transform group-hover:translate-x-0.5" />
-                  </span>
-                  <span className="text-[10px] font-bold uppercase tracking-widest opacity-70 leading-none" style={{ color: "white" }}>
-                    One-time flat rate · Employees join free
-                  </span>
+                <button
+                  className="group flex items-center gap-2 px-7 py-4 rounded-2xl font-bold uppercase tracking-wider transition-all hover:-translate-y-1 w-full sm:w-auto text-white"
+                  style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.18)", backdropFilter: "blur(20px)" }}>
+                  <Building2 size={17} />
+                  For Companies
+                  <ArrowRight size={16} className="transition-transform group-hover:translate-x-0.5" />
                 </button>
-              </Link>
-            </motion.div>
-
-            {/* Friend group — tertiary link */}
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.38 }} className="mb-8">
-              <Link href="/create-group?model=pay_per_member"
-                className="inline-flex items-center gap-1.5 text-sm font-bold transition-opacity hover:opacity-70"
-                style={{ color: "rgba(0,212,255,0.8)" }}>
-                <Users size={14} /> Create a friend group instead →
               </Link>
             </motion.div>
 
@@ -216,22 +204,22 @@ export function Hero() {
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.45 }}
               className="flex items-center gap-3 flex-wrap">
               <span className="text-xs font-bold px-3 py-1.5 rounded-full"
-                style={{ background: "rgba(0,255,136,0.08)", color: "#059669", border: "1px solid rgba(0,255,136,0.2)" }}>
-                ✓ No account needed to start
+                style={{ background: "rgba(0,255,136,0.1)", color: "#00FF88", border: "1px solid rgba(0,255,136,0.2)" }}>
+                ✓ Admin always free
               </span>
               <span className="text-xs font-bold px-3 py-1.5 rounded-full"
-                style={{ background: "rgba(0,212,255,0.06)", color: "#0891B2", border: "1px solid rgba(0,212,255,0.2)" }}>
-                ✓ $2 per member · Admin free
+                style={{ background: "rgba(0,212,255,0.08)", color: "#00D4FF", border: "1px solid rgba(0,212,255,0.2)" }}>
+                ✓ $2 per friend
               </span>
               <span className="text-xs font-bold px-3 py-1.5 rounded-full"
-                style={{ background: "rgba(0,212,255,0.06)", color: "#0891B2", border: "1px solid rgba(0,212,255,0.2)" }}>
+                style={{ background: "rgba(0,212,255,0.08)", color: "#00D4FF", border: "1px solid rgba(0,212,255,0.2)" }}>
                 ✓ No ads · No subscription
               </span>
             </motion.div>
 
             {/* Countdown */}
             <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.55 }} className="mt-10">
-              <div className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: "#94a3b8" }}>
+              <div className="text-xs font-bold uppercase tracking-widest mb-3 text-white/40">
                 First match kicks off in
               </div>
               <div style={{ filter: "drop-shadow(0 20px 50px rgba(0,255,136,0.20))" }}>
@@ -244,29 +232,22 @@ export function Hero() {
           <motion.div initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
             className="hidden lg:flex items-center justify-center relative">
-            <div className="absolute inset-0 overflow-hidden rounded-3xl pointer-events-none">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={PHOTOS.stadiumNightAbove} alt="" className="w-full h-full object-cover"
-                style={{ opacity: 0.08, filter: "blur(2px)" }} />
-              <div className="absolute inset-0"
-                style={{ background: "radial-gradient(ellipse 70% 70% at 50% 50%, transparent 30%, #F8FAFC 80%)" }} />
-            </div>
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
               <div className="h-80 w-80 rounded-full blur-3xl"
-                style={{ background: "radial-gradient(circle, rgba(0,212,255,0.10), rgba(0,255,136,0.06), transparent)" }} />
+                style={{ background: "radial-gradient(circle, rgba(0,255,136,0.15), rgba(0,212,255,0.08), transparent)" }} />
             </div>
             <PhoneMockup />
             <motion.div animate={{ y: [0, -6, 0] }} transition={{ duration: 3, repeat: Infinity, delay: 1 }}
               className="absolute top-16 -left-4 rounded-2xl px-3 py-2 text-xs font-bold"
-              style={{ background: "rgba(255,255,255,0.92)", backdropFilter: "blur(12px)", border: "1px solid rgba(0,255,136,0.3)", boxShadow: "0 8px 24px rgba(0,255,136,0.15)", color: "#00c46a" }}>
+              style={{ background: "rgba(18,14,38,0.9)", backdropFilter: "blur(12px)", border: "1px solid rgba(0,255,136,0.3)", boxShadow: "0 8px 24px rgba(0,255,136,0.15)", color: "#00FF88" }}>
               +25 pts
-              <div className="text-[10px]" style={{ color: "#94a3b8" }}>Exact score!</div>
+              <div className="text-[10px] text-white/40">Exact score!</div>
             </motion.div>
             <motion.div animate={{ y: [0, 8, 0] }} transition={{ duration: 3.5, repeat: Infinity, delay: 0.5 }}
-              className="absolute bottom-24 -right-4 rounded-2xl px-3 py-2 text-xs font-bold"
-              style={{ background: "rgba(255,255,255,0.92)", backdropFilter: "blur(12px)", border: "1px solid rgba(0,212,255,0.3)", boxShadow: "0 8px 24px rgba(0,212,255,0.15)", color: "#00D4FF" }}>
+              className="absolute bottom-24 -right-4 rounded-2xl px-3 py-2 text-xs font-bold text-cyan"
+              style={{ background: "rgba(18,14,38,0.9)", backdropFilter: "blur(12px)", border: "1px solid rgba(0,212,255,0.3)", boxShadow: "0 8px 24px rgba(0,212,255,0.15)" }}>
               $240 pot
-              <div className="text-[10px]" style={{ color: "#94a3b8" }}>12 members</div>
+              <div className="text-[10px] text-white/40">12 members</div>
             </motion.div>
           </motion.div>
         </div>
@@ -274,9 +255,9 @@ export function Hero() {
 
       {/* Host nations bar */}
       <div className="border-t border-b py-4 px-5"
-        style={{ borderColor: "rgba(0,212,255,0.12)", background: "rgba(255,255,255,0.6)", backdropFilter: "blur(12px)" }}>
+        style={{ borderColor: "rgba(255,255,255,0.06)", background: "rgba(5,8,16,0.6)", backdropFilter: "blur(12px)" }}>
         <div className="max-w-7xl mx-auto flex items-center justify-between gap-6 flex-wrap">
-          <div className="text-xs font-bold uppercase tracking-widest" style={{ color: "#94a3b8" }}>Host Nations</div>
+          <div className="text-xs font-bold uppercase tracking-widest text-white/40">Host Nations</div>
           <div className="flex items-center gap-6">
             {[
               { flag: "us", name: "United States", matches: "60 matches" },
@@ -285,26 +266,27 @@ export function Hero() {
             ].map(({ flag, name, matches }) => (
               <div key={name} className="flex items-center gap-2">
                 <span className="relative rounded-sm overflow-hidden inline-block" style={{ width: 32, height: 24 }}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img src={`https://flagcdn.com/w80/${flag}.png`} alt={name} width={32} height={24}
                     className="object-cover" style={{ width: 32, height: 24 }} />
                 </span>
                 <div>
-                  <div className="text-xs font-bold" style={{ color: "#0B141B" }}>{name}</div>
-                  <div className="text-[10px]" style={{ color: "#94a3b8" }}>{matches}</div>
+                  <div className="text-xs font-bold text-white">{name}</div>
+                  <div className="text-[10px] text-white/40">{matches}</div>
                 </div>
               </div>
             ))}
           </div>
-          <div className="text-xs font-bold" style={{ color: "#94a3b8" }}>48 teams · 104 matches · 16 cities</div>
+          <div className="text-xs font-bold text-white/40">48 teams · 104 matches · 16 cities</div>
         </div>
       </div>
 
       {/* Ticker */}
       <div className="overflow-hidden py-2.5"
-        style={{ background: "rgba(0,255,136,0.05)", borderBottom: "1px solid rgba(0,255,136,0.12)" }}>
+        style={{ background: "rgba(0,255,136,0.04)", borderBottom: "1px solid rgba(0,255,136,0.1)" }}>
         <div className="flex animate-ticker whitespace-nowrap">
           {[...TICKER_ITEMS, ...TICKER_ITEMS].map((item, i) => (
-            <span key={i} className="text-xs font-bold uppercase tracking-widest mx-8" style={{ color: "#00c46a" }}>
+            <span key={i} className="text-xs font-bold uppercase tracking-widest mx-8 text-ac/80">
               {item}
             </span>
           ))}

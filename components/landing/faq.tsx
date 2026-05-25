@@ -4,35 +4,34 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 
-// Gemini copy — exact questions and answers
 const FAQS = [
   {
-    q: "How do tie-breakers work?",
-    a: "Speed is king. If points are identical, the user who submitted their predictions earliest earns the higher rank. No arguments, just physics. As a secondary tie-breaker: most exact scores. Third: correctly predicted the tournament winner. If still tied, the admin can split the pot — the UI supports dual 1st place.",
+    q: "How much does it cost to host a group?",
+    a: "Hosting is free for friend groups — you pay $0 to create and run a Friend Circle. Each friend pays $2 to join. For corporate groups, you pay a one-time fee of $75 (up to 50 employees) or $130 (up to 100 employees) and your entire team joins for free.",
   },
   {
-    q: "Does Cup Clash handle the actual prize money?",
-    a: "To keep things legal and peer-to-peer, the Commissioner handles the transfers. We provide the tracker, the payout splits, and the \"Paid\" status so everyone knows who's good for it. Cup Clash tracks the pot and calculates exactly who gets what — the actual money stays between your group.",
+    q: "When does the tournament start?",
+    a: "World Cup 2026 kicks off June 11, 2026 with Mexico vs South Africa. The tournament runs through July 19 (Final at MetLife Stadium, New Jersey). You can create your group anytime — predictions lock 5 minutes before each match kickoff.",
   },
   {
-    q: "When do predictions lock?",
-    a: "All predictions lock automatically 5 minutes before the match kicks off. No \"I forgot,\" no \"The app crashed,\" and zero late entries. Tournament-level picks (winner, top scorer, Golden Ball, etc.) lock before the very first match on June 11.",
+    q: "Can I customise the scoring rules?",
+    a: "Yes. Cup Clash ships with 9 togglable scoring rules: Match Outcome, Exact Scoreline, Knockout Advancement, Tournament Champion, Golden Boot, Top Assist, Best Defence, Best Young Player, and Golden Ball. Default values are 10/25/20/100/50/50/40/30/40 pts respectively, and every value is customisable.",
   },
   {
-    q: "Is it ready for the 48-team expansion?",
-    a: "Absolutely. We have mapped out all 12 groups and the new Round of 32 knockout stage. 104 matches, 16 host cities, the whole thing. We've done the heavy lifting so you don't have to.",
+    q: "How are prizes paid out?",
+    a: "For friend groups with a buy-in pot, you set the % split between 1st/2nd/3rd (default 60/30/10) and we track payments via PayPal. For corporate groups, you can either run a cash pool or define custom company rewards (e.g. \"Extra day off + $100 Amazon Voucher\").",
   },
   {
-    q: "Can I join multiple groups?",
-    a: "Yes. Your dashboard aggregates all your active leagues so you can see your total potential winnings across all friend groups in one view. Office group, family group, bar squad — all tracked simultaneously with a single \"Show Me The Money\" total.",
+    q: "What if my team has more than 100 employees?",
+    a: "Cup Clash offers an Enterprise tier with SSO, custom URLs, a dedicated CSM and invoicing for teams larger than 100 employees. Reach out via the contact page.",
   },
   {
-    q: "Can we create a group for just the Final?",
-    a: "Yes. Admins can toggle \"Single Match Mode\" for high-stakes betting on the big ones — from the opening match in Mexico City to the MetLife Final. You can also add extra predictions: yellow cards, corners, whether it goes to extra time or penalties.",
+    q: "Is there a mobile app for Cup Clash?",
+    a: "Cup Clash is a Progressive Web App (PWA) — install it directly from your browser to get a near-native experience on iOS and Android, with all features and no app store friction.",
   },
   {
-    q: "What's the Trivia Challenge?",
-    a: "20 World Cup questions, 7 seconds each. One shot to earn up to 20 bonus points — 1 point per correct answer. The Trivia Champion badge (pulsing gold trophy) is awarded to whoever gets the most correct, with total answer time as the tie-breaker. After the points round, you can play the remaining questions for fun.",
+    q: "Is Cup Clash gambling?",
+    a: "No. Cup Clash is a skill-based prediction league between friends or coworkers. There is no house, no odds, and no operator take. Optional cash pools are peer-to-peer and managed by the group host.",
   },
   {
     q: "Is Cup Clash really ad-free?",
@@ -46,31 +45,50 @@ export function Faq() {
   return (
     <section id="faq" className="py-24 px-5 sm:px-8">
       <div className="max-w-3xl mx-auto">
-        <motion.div initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="text-center mb-16">
-          <div className="label-caps mb-3">FAQ</div>
-          <h2 className="font-display text-4xl sm:text-5xl uppercase" style={{ color: "#0F172A" }}>
-            Good questions.<br />
-            <span style={{ background: "linear-gradient(135deg, #00D4FF, #00FF88)", WebkitBackgroundClip: "text", backgroundClip: "text", WebkitTextFillColor: "transparent" }}>Straight answers.</span>
+        <motion.div initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+          className="text-center mb-14">
+          <div className="text-[11px] font-bold uppercase tracking-[0.18em] text-cyan mb-3">Frequently Asked</div>
+          <h2 className="font-display font-black text-4xl sm:text-5xl uppercase text-white">
+            Questions &amp; answers.
           </h2>
         </motion.div>
 
-        <div className="space-y-2">
+        <div className="flex flex-col gap-2.5">
           {FAQS.map((faq, i) => (
             <motion.div key={i}
-              initial={{ opacity: 0, y: 8 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.04 }}
-              className="rounded-2xl overflow-hidden border transition-all"
-              style={{ borderColor: open === i ? "rgba(0,212,255,0.3)" : "#e2e8f0", background: open === i ? "rgba(0,212,255,0.03)" : "rgba(255,255,255,0.85)" }}
+              initial={{ opacity: 0, y: 8 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
+              transition={{ delay: i * 0.04 }}
+              className="rounded-2xl overflow-hidden transition-all"
+              style={{
+                background: "rgba(18,14,38,0.32)",
+                backdropFilter: "blur(40px) saturate(180%)",
+                border: open === i ? "1px solid rgba(0,255,136,0.35)" : "1px solid rgba(255,255,255,0.1)",
+                boxShadow: "0 12px 40px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06)",
+              }}
             >
               <button onClick={() => setOpen(open === i ? null : i)}
-                className="w-full flex items-center justify-between gap-4 px-6 py-4 text-left">
-                <span className="text-sm font-bold leading-relaxed" style={{ color: "#0F172A" }}>{faq.q}</span>
-                <ChevronDown size={18} className={`shrink-0 transition-transform ${open === i ? "rotate-180" : ""}`}
-                  style={{ color: open === i ? "#00D4FF" : "#94a3b8" }} />
+                className="w-full flex items-center justify-between gap-4 px-6 py-5 text-left">
+                <span className="text-sm font-bold leading-relaxed text-white">{faq.q}</span>
+                <div
+                  className="h-7 w-7 rounded-full flex items-center justify-center shrink-0 transition-all"
+                  style={{
+                    background: open === i ? "rgba(0,255,136,0.18)" : "rgba(255,255,255,0.06)",
+                    border: `1px solid ${open === i ? "rgba(0,255,136,0.4)" : "rgba(255,255,255,0.12)"}`,
+                  }}
+                >
+                  <ChevronDown size={14}
+                    className={`transition-transform duration-200 ${open === i ? "rotate-180" : ""}`}
+                    style={{ color: open === i ? "#00FF88" : "rgba(255,255,255,0.5)" }}
+                  />
+                </div>
               </button>
               <AnimatePresence>
                 {open === i && (
-                  <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }}>
-                    <div className="px-6 pb-5 text-sm leading-relaxed border-t" style={{ color: "#94a3b8", borderColor: "rgba(16,185,129,0.1)" }}>
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }} animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2 }}>
+                    <div className="px-6 pb-5 text-sm leading-relaxed border-t text-white/65"
+                      style={{ borderColor: "rgba(0,255,136,0.1)" }}>
                       <div className="pt-4">{faq.a}</div>
                     </div>
                   </motion.div>

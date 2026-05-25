@@ -4,62 +4,57 @@ import { motion } from "framer-motion";
 import { Trophy, Brain, BarChart2, Target, Users, Zap, Globe, Download, Ban, Building2 } from "lucide-react";
 
 const FEATURES = [
-  { icon: Target,    title: "Score Predictions", body: "Lock in your exact score guesses for all 104 matches with automated deadline enforcement.",                    accentColor: "#00FF88", bg: "rgba(0,255,136,0.07)",  border: "rgba(0,255,136,0.2)"  },
-  { icon: Trophy,    title: "Live Leaderboard",  body: "Watch the ranks shift in real-time as goals hit the net from Vancouver to Miami.",                                  accentColor: "#d97706", bg: "rgba(217,119,6,0.07)",  border: "rgba(217,119,6,0.2)"  },
-  { icon: Brain,     title: "Trivia Challenge",  body: "Earn bonus tie-breaker points with a 7-second pressure-cooker round on World Cup history.",                         accentColor: "#8b5cf6", bg: "rgba(139,92,246,0.07)", border: "rgba(139,92,246,0.2)" },
-  { icon: BarChart2, title: "Tournament Picks",  body: "Predict the Champion, Golden Boot, and Golden Glove before the opening whistle in Mexico City.",                    accentColor: "#00D4FF", bg: "rgba(0,212,255,0.07)",  border: "rgba(0,212,255,0.2)"  },
-  { icon: Globe,     title: "Full Bracket",      body: "Visualize the road to MetLife with a dynamic Round of 32-to-Final knockout bracket.",                               accentColor: "#ec4899", bg: "rgba(236,72,153,0.07)", border: "rgba(236,72,153,0.2)" },
-  { icon: Users,     title: "Multiple Groups",   body: "Dominate the office, the family, and the bar squad simultaneously from one unified dashboard.",                      accentColor: "#00FF88", bg: "rgba(0,255,136,0.07)",  border: "rgba(0,255,136,0.2)"  },
-  { icon: Zap,       title: "Single Match Bets", body: "Want to go all-in on USA vs. England? Create micro-groups for the tournament's biggest individual clashes.",         accentColor: "#d97706", bg: "rgba(217,119,6,0.07)",  border: "rgba(217,119,6,0.2)"  },
-  { icon: Download,  title: "Winner Poster",     body: "Generate a branded, high-res victory card to show off your friends on social media once you've claimed the crown.",  accentColor: "#00D4FF", bg: "rgba(0,212,255,0.07)",  border: "rgba(0,212,255,0.2)"  },
-  { icon: Building2, title: "Corporate Teams",  body: "Sponsor your entire office with flat-rate packages. Employees join free with zero checkout friction.",               accentColor: "#8b5cf6", bg: "rgba(139,92,246,0.07)", border: "rgba(139,92,246,0.2)" },
-  { icon: Ban,       title: "100% Ad-Free",      body: "CupClash is a space to compete, not a place for advertisers. No ads. No pop-ups. No malicious analytics trackers.", accentColor: "#ec4899", bg: "rgba(236,72,153,0.07)", border: "rgba(236,72,153,0.2)" },
+  { icon: Target,    title: "Score Predictions", body: "Lock in your exact score guesses for all 104 matches with automated deadline enforcement 5 min before kickoff.",              accentColor: "#00FF88", bg: "rgba(0,255,136,0.1)",   border: "rgba(0,255,136,0.25)"  },
+  { icon: Trophy,    title: "Live Leaderboard",  body: "Ranks shift in real-time as goals hit the net from Vancouver to Miami.",                                                       accentColor: "#fbbf24", bg: "rgba(251,191,36,0.1)",  border: "rgba(251,191,36,0.25)" },
+  { icon: Brain,     title: "Trivia Challenge",  body: "Tie-breaker bonus points via a 7-second pressure-cooker round on World Cup history.",                                          accentColor: "#8b5cf6", bg: "rgba(139,92,246,0.1)",  border: "rgba(139,92,246,0.25)" },
+  { icon: BarChart2, title: "Tournament Picks",  body: "Predict Champion, Golden Boot and Golden Ball before the opening whistle in Mexico City.",                                     accentColor: "#00D4FF", bg: "rgba(0,212,255,0.1)",   border: "rgba(0,212,255,0.25)"  },
+  { icon: Globe,     title: "Full Bracket",      body: "Dynamic Round of 16 → Final knockout tree, updated live as games conclude.",                                                   accentColor: "#ec4899", bg: "rgba(236,72,153,0.1)",  border: "rgba(236,72,153,0.25)" },
+  { icon: Users,     title: "Multiple Groups",   body: "Dominate the office, family and bar squad simultaneously from one unified dashboard.",                                          accentColor: "#00FF88", bg: "rgba(0,255,136,0.1)",   border: "rgba(0,255,136,0.25)"  },
+  { icon: Zap,       title: "Single Match Bets", body: "Want to go all-in on USA vs. England? Create micro-groups for the tournament's biggest individual clashes.",                  accentColor: "#fbbf24", bg: "rgba(251,191,36,0.1)",  border: "rgba(251,191,36,0.25)" },
+  { icon: Download,  title: "Winner Poster",     body: "Generate a branded, high-res victory card to flex on friends after the trophy is raised.",                                    accentColor: "#00D4FF", bg: "rgba(0,212,255,0.1)",   border: "rgba(0,212,255,0.25)"  },
+  { icon: Building2, title: "Corporate Teams",   body: "Sponsor your entire office with flat-rate packages. Employees join free with zero checkout friction.",                        accentColor: "#8b5cf6", bg: "rgba(139,92,246,0.1)",  border: "rgba(139,92,246,0.25)" },
+  { icon: Ban,       title: "100% Ad-Free",      body: "No ads. No pop-ups. No analytics tracking. We will never clutter your experience with corporate junk. Always. Forever.",     accentColor: "#ec4899", bg: "rgba(236,72,153,0.1)",  border: "rgba(236,72,153,0.25)" },
 ];
 
 export function Features() {
   return (
-    <section id="features" className="py-12 px-5 sm:px-8"
-      style={{ background: "linear-gradient(180deg, #F8FAFC 0%, rgba(0,212,255,0.03) 100%)" }}>
+    <section id="features" className="py-24 px-5 sm:px-8">
       <div className="max-w-7xl mx-auto">
 
         <motion.div initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
-          className="text-center mb-10">
-          <div className="label-caps mb-3">Everything you need</div>
-          <h2 className="font-display text-4xl sm:text-5xl lg:text-6xl uppercase" style={{ color: "#0B141B" }}>
-            BUILT FOR THE STADIUM.<br />
-            <span style={{ background: "linear-gradient(135deg, #00D4FF, #00FF88)", WebkitBackgroundClip: "text", backgroundClip: "text", WebkitTextFillColor: "transparent" }}>
-              DESIGNED FOR WINNERS.
+          className="text-center mb-12">
+          <div className="text-[11px] font-bold uppercase tracking-[0.18em] text-cyan mb-3">Everything you need</div>
+          <h2 className="font-display font-black text-4xl sm:text-5xl lg:text-6xl uppercase text-white">
+            Built for the stadium.<br />
+            <span className="bg-gradient-to-br from-cyan to-ac bg-clip-text text-transparent">
+              Designed for winners.
             </span>
           </h2>
-          <p className="mt-4 text-lg max-w-2xl mx-auto" style={{ color: "#64748b" }}>
+          <p className="mt-4 text-lg max-w-2xl mx-auto text-white/60">
             Manage the chaos of a 48-team tournament without breaking a sweat.
           </p>
         </motion.div>
 
-        {/* Balanced 3-column grid — 10 tiles, clean 3+3+3+1 layout */}
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {FEATURES.map((f, i) => (
             <motion.div key={f.title}
               initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
               transition={{ delay: i * 0.04 }}
-              className="group relative rounded-2xl p-5 transition-all hover:-translate-y-1 flex flex-col justify-between"
+              className="group relative rounded-2xl p-6 flex flex-col transition-all hover:-translate-y-1"
               style={{
-                background: "rgba(255,255,255,0.80)",
-                backdropFilter: "blur(16px)",
-                WebkitBackdropFilter: "blur(16px)",
+                background: "rgba(18,14,38,0.32)",
+                backdropFilter: "blur(40px) saturate(180%)",
                 border: `1px solid ${f.border}`,
-                boxShadow: `0 4px 20px ${f.bg}`,
+                boxShadow: `0 4px 20px ${f.bg}, 0 12px 40px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.08)`,
               }}>
-              <div>
-                <div className="h-10 w-10 rounded-xl flex items-center justify-center mb-4"
-                  style={{ background: f.bg, border: `1px solid ${f.border}` }}>
-                  <f.icon size={20} style={{ color: f.accentColor }} />
-                </div>
-                <h3 className="font-display text-lg uppercase mb-2" style={{ color: "#0B141B" }}>{f.title}</h3>
-                <p className="text-sm leading-relaxed mb-4" style={{ color: "#64748b" }}>{f.body}</p>
+              <div className="h-11 w-11 rounded-xl flex items-center justify-center mb-4"
+                style={{ background: f.bg, border: `1px solid ${f.border}` }}>
+                <f.icon size={20} style={{ color: f.accentColor }} />
               </div>
+              <h3 className="font-display text-lg uppercase mb-2 text-white">{f.title}</h3>
+              <p className="text-sm leading-relaxed text-white/62">{f.body}</p>
               {f.title === "100% Ad-Free" && (
-                <div className="text-xs font-bold tracking-wider uppercase mt-auto pt-2"
+                <div className="text-xs font-bold tracking-wider uppercase mt-3"
                   style={{ color: f.accentColor }}>
                   Always. Forever. ✓
                 </div>
