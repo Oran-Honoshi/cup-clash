@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Cup Clash — Interactive Prototype</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=Outfit:wght@400;500;600;700;800;900&family=Sora:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;700;900&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;overflow:hidden;font-family:'Outfit',sans-serif;-webkit-font-smoothing:antialiased;}
+#root{height:100%;display:flex;align-items:center;justify-content:center;position:relative;z-index:1;}
+
+/* Display font — swapped via tweak */
+:root{--display-font:'Outfit',sans-serif;}
+
+/* ── Real stadium photo background ── */
+body{
+  background:#050810;
+}
+body::after{
+  content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:url('stadium-bg.png');
+  background-size:cover;
+  background-position:center center;
+  background-repeat:no-repeat;
+}
+/* Dim + vignette over the stadium so glass tiles read */
+body::before{
+  content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:
+    radial-gradient(ellipse 60% 40% at 50% 50%, rgba(0,0,0,0.15) 0%, rgba(0,0,0,0.55) 80%),
+    linear-gradient(180deg, rgba(8,5,30,0.45) 0%, rgba(0,0,0,0.25) 40%, rgba(8,5,30,0.55) 100%);
+}
+
+/* ── Phone shell — glassy slab ── */
+.phone-shell{
+  position:relative;width:390px;height:844px;
+  background:linear-gradient(180deg,rgba(20,18,40,0.45) 0%,rgba(12,10,28,0.55) 100%);
+  backdrop-filter:blur(18px) saturate(140%);
+  -webkit-backdrop-filter:blur(18px) saturate(140%);
+  border-radius:44px;
+  overflow:hidden;
+  box-shadow:
+    0 0 0 1.5px rgba(255,255,255,0.16),
+    0 0 0 6px rgba(40,30,80,0.25),
+    0 40px 120px rgba(0,0,0,0.85),
+    0 0 100px rgba(80,40,180,0.15),
+    inset 0 1px 0 rgba(255,255,255,0.18),
+    inset 0 0 60px rgba(140,100,220,0.05);
+  display:flex;flex-direction:column;
+  z-index:2;
+}
+
+/* Notch */
+.phone-shell::before{
+  content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);
+  width:126px;height:34px;background:rgba(8,5,18,0.92);
+  border-radius:0 0 22px 22px;z-index:50;pointer-events:none;
+}
+
+/* Side button */
+.phone-shell::after{
+  content:'';position:absolute;top:120px;right:-2px;
+  width:3px;height:70px;background:rgba(255,255,255,0.12);
+  border-radius:0 2px 2px 0;pointer-events:none;
+}
+
+/* ── Screen content ── */
+.screen-wrap{
+  flex:1;display:flex;flex-direction:column;
+  overflow:hidden;position:relative;
+}
+
+/* ── Scrollbars ── */
+::-webkit-scrollbar{width:2px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:2px;}
+
+/* ── Keyframes ── */
+@keyframes livePulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:0.5;transform:scale(1.4);}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+@keyframes slideIn{from{opacity:0;transform:translateX(18px);}to{opacity:1;transform:translateX(0);}}
+@keyframes scaleIn{from{opacity:0;transform:scale(0.96);}to{opacity:1;transform:scale(1);}}
+@keyframes shimmer{0%{background-position:-200% 0;}100%{background-position:200% 0;}}
+
+/* ── Bottom home indicator ── */
+.home-bar{
+  position:absolute;bottom:8px;left:50%;transform:translateX(-50%);
+  width:120px;height:5px;border-radius:3px;
+  background:rgba(255,255,255,0.32);pointer-events:none;
+}
+
+/* ── Responsive: shrink on small viewports ── */
+@media(max-height:900px),(max-width:430px){
+  .phone-shell{
+    transform:scale(var(--phone-scale,1));
+    transform-origin:center center;
+  }
+}
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel" src="cup-clash-ui.jsx"></script>
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+<script type="text/babel" src="cup-clash-screens.jsx"></script>
+<script type="text/babel" src="cup-clash-extras.jsx"></script>
+<script type="text/babel" src="cup-clash-funnels.jsx"></script>
+<script type="text/babel" src="cup-clash-more.jsx"></script>
+
+<script type="text/babel">
+const {useState,useEffect,useRef}=React;
+const {TweaksPanel,useTweaks,TweakSection,TweakColor,TweakToggle,TweakRadio}=window;
+const {StatusBar,Flag,Avatar,GlassCard,NeonBar}=window;
+const {DashboardScreen,PredictionsScreen,ScheduleScreen,StandingsScreen,LeaderboardScreen,ProfileScreen}=window;
+const {ChatScreen,NotificationsScreen,BracketScreen,TournamentPicksScreen}=window;
+const {WelcomeScreen,SignUpScreen,CreateGroupScreen,PricingScreen,AdminPanelScreen}=window;
+const {MyGroupsScreen,JoinGroupScreen,TriviaScreen}=window;
+
+// ── TWEAK DEFAULTS ──────────────────────────────────────
+const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+  "accentColor": "#00FF88",
+  "glowEffects": true,
+  "displayFont": "bricolage",
+  "bgStyle": "stadium"
+}/*EDITMODE-END*/;
+
+// ── NAV CONFIG ──────────────────────────────────────────
+const NAV=[
+  {id:'dashboard', label:'Home',     icon:(a)=>(
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={a?'currentColor':'currentColor'} strokeWidth={a?2.5:1.75} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
+    </svg>
+  )},
+  {id:'leaderboard',label:'Group',   icon:(a)=>(
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={a?2.5:1.75} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+      <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+    </svg>
+  )},
+  {id:'predictions',label:'My Bets', icon:(a)=>(
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={a?2.5:1.75} strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10"/><line x1="22" y1="12" x2="18" y2="12"/>
+      <line x1="6" y1="12" x2="2" y2="12"/><line x1="12" y1="6" x2="12" y2="2"/>
+      <line x1="12" y1="22" x2="12" y2="18"/>
+    </svg>
+  )},
+  {id:'standings', label:'Table',    icon:(a)=>(
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={a?2.5:1.75} strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="18 20 18 10"/><polyline points="12 20 12 4"/><polyline points="6 20 6 14"/>
+    </svg>
+  )},
+  {id:'profile',  label:'Profile',   icon:(a)=>(
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={a?2.5:1.75} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+    </svg>
+  )},
+];
+
+// ── BOTTOM NAV ──────────────────────────────────────────
+function BottomNav({screen,setScreen,accentColor}){
+  return(
+    <nav style={{
+      position:'absolute',bottom:0,left:0,right:0,height:74,
+      background:'rgba(7,11,22,0.94)',
+      backdropFilter:'blur(28px)',WebkitBackdropFilter:'blur(28px)',
+      borderTop:'1px solid rgba(255,255,255,0.07)',
+      display:'flex',alignItems:'center',justifyContent:'space-around',
+      padding:'0 4px 10px',zIndex:40,
+    }}>
+      {NAV.map(({id,label,icon})=>{
+        const active=screen===id;
+        return(
+          <button key={id} onClick={()=>setScreen(id)} style={{
+            display:'flex',flexDirection:'column',alignItems:'center',gap:3,
+            background:'none',border:'none',cursor:'pointer',
+            color:active?accentColor:'rgba(255,255,255,0.38)',
+            transition:'color 0.18s',flex:1,padding:'6px 0',
+            position:'relative',
+          }}>
+            {active&&<div style={{
+              position:'absolute',top:-1,left:'50%',transform:'translateX(-50%)',
+              width:28,height:2.5,borderRadius:'0 0 3px 3px',
+              background:accentColor,
+              boxShadow:`0 0 10px ${accentColor}80`,
+            }}/>}
+            {icon(active)}
+            <span style={{
+              fontSize:9.5,fontWeight:active?700:600,textTransform:'uppercase',
+              letterSpacing:'0.1em',fontFamily:'Outfit,sans-serif',lineHeight:1,
+            }}>{label}</span>
+          </button>
+        );
+      })}
+    </nav>
+  );
+}
+
+// ── SCREEN TRANSITION WRAPPER ───────────────────────────
+function ScreenTransition({screenKey,children}){
+  const [key,setKey]=useState(screenKey);
+  const [vis,setVis]=useState(true);
+
+  useEffect(()=>{
+    if(screenKey!==key){
+      setVis(false);
+      const t=setTimeout(()=>{setKey(screenKey);setVis(true);},120);
+      return()=>clearTimeout(t);
+    }
+  },[screenKey]);
+
+  return(
+    <div style={{
+      flex:1,display:'flex',flexDirection:'column',overflow:'hidden',
+      opacity:vis?1:0,transform:vis?'translateY(0)':'translateY(6px)',
+      transition:'opacity 0.14s ease-out, transform 0.14s ease-out',
+    }}>
+      {children}
+    </div>
+  );
+}
+
+// ── APP ──────────────────────────────────────────────────
+function App(){
+  const [screen,setScreen]=useState('dashboard');
+  const [picks,setPicks]=useState({
+    m1:{h:0,a:0,saved:false},
+    m2:{h:1,a:2,saved:true},
+  });
+  const [tweaks,setTweak]=useTweaks(TWEAK_DEFAULTS);
+
+  // Scale phone to fit viewport
+  useEffect(()=>{
+    function resize(){
+      const scaleX=(window.innerWidth -20)/390;
+      const scaleY=(window.innerHeight-20)/844;
+      const s=Math.min(1,scaleX,scaleY);
+      document.documentElement.style.setProperty('--phone-scale',s);
+    }
+    resize();window.addEventListener('resize',resize);
+    return()=>window.removeEventListener('resize',resize);
+  },[]);
+
+  // Apply display font globally
+  useEffect(()=>{
+    const map = {bricolage:'"Bricolage Grotesque",sans-serif',outfit:"'Outfit',sans-serif",sora:"'Sora',sans-serif"};
+    document.documentElement.style.setProperty('--display-font',map[tweaks.displayFont]||map.outfit);
+  },[tweaks.displayFont]);
+
+  const ac=tweaks.accentColor;
+
+  const screenProps={picks,setPicks,setScreen,tweaks};
+
+  return(
+    <>
+      {/* Stadium bg pitch-mark overlay */}
+      <div style={{position:'fixed',inset:0,pointerEvents:'none',zIndex:0,
+        background:tweaks.bgStyle==='grid'
+          ?'repeating-linear-gradient(90deg,rgba(255,255,255,0.018) 0px,rgba(255,255,255,0.018) 1px,transparent 1px,transparent 80px),repeating-linear-gradient(0deg,rgba(255,255,255,0.018) 0px,rgba(255,255,255,0.018) 1px,transparent 1px,transparent 80px)'
+          :tweaks.bgStyle==='dark'?'rgba(6,9,18,0.5)':'transparent'}}/>
+
+      <div className="phone-shell" style={{transform:`scale(var(--phone-scale,1))`}}>
+        <div className="screen-wrap">
+          <ScreenTransition screenKey={screen}>
+            {screen==='dashboard' &&<DashboardScreen   {...screenProps}/>}
+            {screen==='predictions'&&<PredictionsScreen {...screenProps}/>}
+            {screen==='schedule'  &&<ScheduleScreen    {...screenProps}/>}
+            {screen==='standings' &&<StandingsScreen   {...screenProps}/>}
+            {screen==='leaderboard'&&<LeaderboardScreen {...screenProps}/>}
+            {screen==='profile'   &&<ProfileScreen     {...screenProps}/>}
+            {screen==='chat'      &&<ChatScreen        {...screenProps}/>}
+            {screen==='notifications'&&<NotificationsScreen {...screenProps}/>}
+            {screen==='bracket'   &&<BracketScreen     {...screenProps}/>}
+            {screen==='tournament'&&<TournamentPicksScreen {...screenProps}/>}
+            {screen==='welcome'   &&<WelcomeScreen     {...screenProps}/>}
+            {screen==='signup'    &&<SignUpScreen      {...screenProps}/>}
+            {screen==='createGroup'&&<CreateGroupScreen {...screenProps}/>}
+            {screen==='pricing'   &&<PricingScreen     {...screenProps}/>}
+            {screen==='admin'     &&<AdminPanelScreen  {...screenProps}/>}
+            {screen==='groups'    &&<MyGroupsScreen    {...screenProps}/>}
+            {screen==='joinGroup' &&<JoinGroupScreen   {...screenProps}/>}
+            {screen==='trivia'    &&<TriviaScreen      {...screenProps}/>}
+          </ScreenTransition>
+
+          {!['chat','welcome','signup','createGroup'].includes(screen)&&<BottomNav screen={screen} setScreen={setScreen} accentColor={ac}/>}
+          {screen!=='chat'&&<div className="home-bar"/>}
+        </div>
+      </div>
+
+      {/* Tweaks Panel */}
+      <TweaksPanel>
+        <TweakSection label="Accent Color"/>
+        <TweakColor
+          label="Color"
+          value={tweaks.accentColor}
+          options={['#00FF88','#00D4FF','#8B5CF6','#fbbf24']}
+          onChange={v=>setTweak('accentColor',v)}
+        />
+        <TweakSection label="Neon Glow"/>
+        <TweakToggle
+          label="Score box glow"
+          value={tweaks.glowEffects}
+          onChange={v=>setTweak('glowEffects',v)}
+        />
+        <TweakSection label="Display Font"/>
+        <TweakRadio
+          label="Font"
+          value={tweaks.displayFont}
+          options={[{value:'outfit',label:'Outfit'},{value:'bricolage',label:'Bricolage'},{value:'sora',label:'Sora'}]}
+          onChange={v=>setTweak('displayFont',v)}
+        />
+        <TweakSection label="Background"/>
+        <TweakRadio
+          label="Style"
+          value={tweaks.bgStyle}
+          options={[{value:'stadium',label:'Stadium'},{value:'dark',label:'Dark'},{value:'grid',label:'Grid'}]}
+          onChange={v=>setTweak('bgStyle',v)}
+        />
+        <TweakSection label="Jump to Flow"/>
+        <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:5}}>
+          {[
+            ['dashboard','Home'],
+            ['groups','My Groups'],
+            ['joinGroup','Join Group'],
+            ['trivia','Trivia'],
+            ['welcome','Welcome'],
+            ['signup','Sign Up'],
+            ['createGroup','Create Group'],
+            ['pricing','Pricing'],
+            ['admin','Admin Panel'],
+            ['chat','Chat'],
+            ['notifications','Notifications'],
+            ['bracket','Bracket'],
+            ['tournament','Tournament'],
+          ].map(([k,l])=>(
+            <button key={k} onClick={()=>setScreen(k)} style={{
+              padding:'7px 8px',borderRadius:7,background:screen===k?'rgba(0,255,136,0.18)':'rgba(0,0,0,0.05)',
+              border:screen===k?'1px solid rgba(0,255,136,0.4)':'1px solid rgba(0,0,0,0.08)',
+              color:screen===k?'#0a4d2a':'#29261b',
+              font:'500 11px/1.2 ui-sans-serif,system-ui,sans-serif',cursor:'pointer',textAlign:'left',
+            }}>{l}</button>
+          ))}
+        </div>
+      </TweaksPanel>
+    </>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+<template id="__bundler_thumbnail">
+<svg viewBox="0 0 120 80" xmlns="http://www.w3.org/2000/svg">
+  <rect width="120" height="80" fill="#070c18"/>
+  <ellipse cx="60" cy="44" rx="28" ry="14" fill="rgba(8,38,12,0.7)"/>
+  <rect x="34" y="8" width="52" height="64" rx="8" fill="rgba(11,16,30,0.9)" stroke="rgba(255,255,255,0.15)" strokeWidth="1"/>
+  <rect x="34" y="8" width="52" height="2.5" rx="1" fill="url(#ng)"/>
+  <defs><linearGradient id="ng" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stopColor="#00D4FF"/><stop offset="100%" stopColor="#00FF88"/></linearGradient></defs>
+  <text x="60" y="38" textAnchor="middle" fontFamily="sans-serif" fontWeight="900" fontSize="14" fill="white">2 – 1</text>
+  <text x="60" y="50" textAnchor="middle" fontFamily="sans-serif" fontSize="6" fill="#00D4FF" letterSpacing="1">LIVE · 73'</text>
+  <circle cx="46" cy="28" r="5" fill="none" stroke="#00FF88" strokeWidth="1.5"/>
+  <circle cx="74" cy="28" r="5" fill="none" stroke="#00FF88" strokeWidth="1.5"/>
+</svg>
+</template>
+</body>
+</html>
