@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Urbanist, Inter, JetBrains_Mono, Barlow_Condensed } from "next/font/google";
+import { Bricolage_Grotesque, Outfit, JetBrains_Mono } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { ThemeProvider } from "@/components/theme-provider";
 import { PWAInit } from "@/components/pwa-init";
@@ -8,11 +8,12 @@ import { SoftwareAppSchema, FAQSchema, HowToSchema } from "@/components/seo/sche
 import { PayPalScriptLoader } from "@/components/payments/paypal-script-loader";
 import "./globals.css";
 
-const urbanist  = Urbanist({      subsets: ["latin"], variable: "--font-display",  display: "swap" });
-const inter     = Inter({          subsets: ["latin"], variable: "--font-sans",     display: "swap" });
-const jetbrains = JetBrains_Mono({ subsets: ["latin"], variable: "--font-mono",    display: "swap" });
-const barlow    = Barlow_Condensed({ subsets: ["latin"], variable: "--font-barlow", display: "swap",
-  weight: ["400", "600", "700", "900"] });
+const bricolage = Bricolage_Grotesque({ subsets: ["latin"], variable: "--font-display", display: "swap",
+  weight: ["400", "500", "600", "700", "800"] });
+const outfit    = Outfit({             subsets: ["latin"], variable: "--font-ui",      display: "swap",
+  weight: ["400", "500", "600", "700"] });
+const jetbrains = JetBrains_Mono({     subsets: ["latin"], variable: "--font-mono",    display: "swap",
+  weight: ["400", "600", "700"] });
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://cupclash.live"),
@@ -78,7 +79,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${urbanist.variable} ${inter.variable} ${jetbrains.variable} ${barlow.variable}`}>
+    <html lang="en" className={`${bricolage.variable} ${outfit.variable} ${jetbrains.variable}`}>
       <head>
         <link rel="icon" type="image/x-icon"    href="/favicon.ico" />
         <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
