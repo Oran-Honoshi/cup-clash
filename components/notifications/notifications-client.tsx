@@ -22,11 +22,10 @@ const SETTINGS: NotifSetting[] = [
 ];
 
 const glass = {
-  background: "rgba(255,255,255,0.07)",
-  backdropFilter: "blur(24px) saturate(120%)",
-  WebkitBackdropFilter: "blur(24px) saturate(120%)",
-  border: "1px solid rgba(255,255,255,0.12)",
-  boxShadow: "0 12px 40px rgba(0,0,0,0.25), inset 0 1px 1px rgba(255,255,255,0.08)",
+  background: "rgba(18,14,38,0.32)",
+  backdropFilter: "blur(40px) saturate(180%)",
+  WebkitBackdropFilter: "blur(40px) saturate(180%)",
+  border: "1px solid rgba(255,255,255,0.14)",
 } as const;
 
 export function NotificationsClient({ userId }: { userId: string }) {

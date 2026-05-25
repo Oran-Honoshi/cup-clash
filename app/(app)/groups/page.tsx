@@ -4,6 +4,8 @@ import { redirect } from "next/navigation";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { getCurrentUserProfile } from "@/lib/services/user-group";
 import { ShareGroup } from "@/components/sharing/share-group";
+import { NeonBar } from "@/components/ui/neon-bar";
+import { EmptyState } from "@/components/ui/empty-state";
 import { Trophy, Users, DollarSign, ArrowRight, Plus, LogIn } from "lucide-react";
 import Link from "next/link";
 
@@ -45,7 +47,7 @@ export default async function GroupsPage() {
     <div className="space-y-6">
       <div className="flex items-end justify-between flex-wrap gap-3">
         <div>
-          <div className="label-caps mb-1">Your groups</div>
+          <div style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: "0.12em", color: "#00D4FF", fontFamily: "var(--font-ui)", marginBottom: 4 }}>Your groups</div>
           <h1 className="font-display text-4xl sm:text-5xl uppercase tracking-tight text-white">My Groups</h1>
         </div>
         <div className="flex gap-2">
@@ -65,30 +67,12 @@ export default async function GroupsPage() {
       </div>
 
       {groups.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-16 text-center space-y-4">
-          <div className="h-16 w-16 rounded-2xl flex items-center justify-center"
-            style={{ background: "rgba(0,212,255,0.08)", border: "1px solid rgba(0,212,255,0.2)" }}>
-            <Trophy size={28} style={{ color: "#00D4FF" }} />
-          </div>
-          <div>
-            <h2 className="font-display text-2xl uppercase text-white">No groups yet</h2>
-            <p className="text-sm mt-1" style={{ color: "rgba(255,255,255,0.4)" }}>Create a group or join one with a passkey.</p>
-          </div>
-          <div className="flex gap-3 flex-wrap justify-center">
-            <Link href="/create-group">
-              <button className="px-5 py-2.5 rounded-xl font-bold text-sm uppercase tracking-wider"
-                style={{ background: "linear-gradient(135deg, #00FF88, #00D4FF)", color: "#0B141B" }}>
-                Create Group
-              </button>
-            </Link>
-            <Link href="/join/enter">
-              <button className="px-5 py-2.5 rounded-xl font-bold text-sm uppercase tracking-wider"
-                style={{ background: "rgba(0,212,255,0.1)", border: "1px solid rgba(0,212,255,0.25)", color: "#00D4FF" }}>
-                Join with Passkey
-              </button>
-            </Link>
-          </div>
-        </div>
+        <EmptyState
+          icon={<Trophy size={32} style={{ color: "#00D4FF" }} />}
+          title="No groups yet"
+          body="Create a group or join one with a passkey."
+          cta={{ label: "Create Group", href: "/create-group" }}
+        />
       ) : (
         <div className="grid gap-4 sm:grid-cols-2">
           {groups.map((m) => {
@@ -98,9 +82,9 @@ export default async function GroupsPage() {
             const isPaid  = m.payment_status === "paid";
             const memberCount = memberCounts[m.group_id] ?? 0;
             return (
-              <div key={m.group_id} className="rounded-2xl overflow-hidden transition-all hover:-translate-y-0.5"
-                style={{ background: "rgba(255,255,255,0.07)", backdropFilter: "blur(24px)", WebkitBackdropFilter: "blur(24px)", border: "1px solid rgba(255,255,255,0.12)", boxShadow: "0 8px 32px rgba(0,0,0,0.25)" }}>
-                <div className="h-[2px]" style={{ background: "linear-gradient(90deg, #00D4FF, #00FF88)" }} />
+              <div key={m.group_id} className="rounded-2xl overflow-hidden transition-all duration-200 hover:-translate-y-0.5"
+                style={{ background: "rgba(18,14,38,0.32)", backdropFilter: "blur(40px) saturate(180%)", WebkitBackdropFilter: "blur(40px) saturate(180%)", border: "1px solid rgba(255,255,255,0.14)" }}>
+                <NeonBar />
                 <div className="px-5 py-4 border-b" style={{ borderColor: "rgba(255,255,255,0.07)" }}>
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">

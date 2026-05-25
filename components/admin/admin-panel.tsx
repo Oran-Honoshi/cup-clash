@@ -22,11 +22,10 @@ interface AdminPanelProps {
 }
 
 const glass = {
-  background: "rgba(255,255,255,0.07)",
-  backdropFilter: "blur(24px) saturate(120%)",
-  WebkitBackdropFilter: "blur(24px) saturate(120%)",
-  border: "1px solid rgba(255,255,255,0.12)",
-  boxShadow: "0 12px 40px rgba(0,0,0,0.25), inset 0 1px 1px rgba(255,255,255,0.08)",
+  background: "rgba(18,14,38,0.32)",
+  backdropFilter: "blur(40px) saturate(180%)",
+  WebkitBackdropFilter: "blur(40px) saturate(180%)",
+  border: "1px solid rgba(255,255,255,0.14)",
 } as const;
 
 export function AdminPanel({ group, initialMembers }: AdminPanelProps) {
@@ -103,11 +102,12 @@ export function AdminPanel({ group, initialMembers }: AdminPanelProps) {
         </div>
 
         {/* Progress bar */}
-        <div className="h-1.5 rounded-full overflow-hidden mb-5" style={{ background: "rgba(255,255,255,0.08)" }}>
-          <div className="h-full rounded-full transition-all"
+        <div className="overflow-hidden mb-5" style={{ height: 4, borderRadius: 3, background: "rgba(255,255,255,0.08)" }}>
+          <div className="h-full transition-all"
             style={{
               width: `${members.length ? (paidCount / members.length) * 100 : 0}%`,
               background: "linear-gradient(90deg, #00D4FF, #00FF88)",
+              borderRadius: 3,
             }} />
         </div>
 
@@ -147,10 +147,10 @@ export function AdminPanel({ group, initialMembers }: AdminPanelProps) {
         {/* Total */}
         <div className="mt-4 pt-4 border-t flex items-center justify-between"
           style={{ borderColor: "rgba(255,255,255,0.07)" }}>
-          <span className="text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>Total pot collected</span>
-          <div>
-            <span className="font-display text-2xl font-black" style={{ color: "#00FF88" }}>${paidAmount}</span>
-            <span className="text-sm ml-1" style={{ color: "rgba(255,255,255,0.3)" }}>/ ${totalPot}</span>
+          <div className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.35)" }}>Total pot collected</div>
+          <div className="flex items-baseline gap-1">
+            <span className="font-display font-extrabold" style={{ fontSize: 40, lineHeight: 1, color: "#00FF88" }}>${paidAmount}</span>
+            <span className="text-sm" style={{ color: "rgba(255,255,255,0.3)" }}>/ ${totalPot}</span>
           </div>
         </div>
       </div>
