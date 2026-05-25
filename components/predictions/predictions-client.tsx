@@ -9,19 +9,17 @@ import { GuestStore } from "@/components/ui/guest-signup-modal";
 
 // ── Shared glass tokens ───────────────────────────────────────────────────────
 const glass = {
-  background: "rgba(255,255,255,0.07)",
-  backdropFilter: "blur(24px) saturate(120%)",
-  WebkitBackdropFilter: "blur(24px) saturate(120%)",
-  border: "1px solid rgba(255,255,255,0.12)",
-  boxShadow: "0 12px 40px rgba(0,0,0,0.25), inset 0 1px 1px rgba(255,255,255,0.1)",
+  background: "rgba(18,14,38,0.32)",
+  backdropFilter: "blur(40px) saturate(180%)",
+  WebkitBackdropFilter: "blur(40px) saturate(180%)",
+  border: "1px solid rgba(255,255,255,0.14)",
 } as const;
 
 const glassActive = {
   background: "rgba(0,212,255,0.1)",
-  backdropFilter: "blur(24px) saturate(120%)",
-  WebkitBackdropFilter: "blur(24px) saturate(120%)",
+  backdropFilter: "blur(40px) saturate(180%)",
+  WebkitBackdropFilter: "blur(40px) saturate(180%)",
   border: "1px solid rgba(0,212,255,0.35)",
-  boxShadow: "0 4px 20px rgba(0,212,255,0.15), inset 0 1px 1px rgba(255,255,255,0.08)",
 } as const;
 
 const TABS = [
@@ -105,13 +103,13 @@ export function PredictionsClient({
 
           {groupPickerOpen && (
             <div className="absolute top-full left-0 right-0 mt-1 rounded-2xl overflow-hidden z-20"
-              style={{ background: "rgba(10,15,30,0.95)", backdropFilter: "blur(24px)", WebkitBackdropFilter: "blur(24px)", border: "1px solid rgba(255,255,255,0.12)", boxShadow: "0 16px 40px rgba(0,0,0,0.5)" }}>
+              style={{ background: "rgba(10,8,24,0.96)", backdropFilter: "blur(40px)", WebkitBackdropFilter: "blur(40px)", border: "1px solid rgba(255,255,255,0.14)", boxShadow: "0 16px 40px rgba(0,0,0,0.5)" }}>
               {allGroups.map((g, i) => (
                 <button key={g.id} onClick={() => switchGroup(g.id)}
                   className="w-full flex items-center gap-3 px-4 py-3 text-left transition-all"
                   style={{ borderBottom: i < allGroups.length - 1 ? "1px solid rgba(255,255,255,0.06)" : undefined, background: g.id === groupId ? "rgba(0,212,255,0.08)" : undefined }}
-                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.05)"; }}
-                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = g.id === groupId ? "rgba(0,212,255,0.08)" : "transparent"; }}>
+                  onMouseEnter={(e: { currentTarget: HTMLElement }) => { e.currentTarget.style.background = "rgba(255,255,255,0.05)"; }}
+                  onMouseLeave={(e: { currentTarget: HTMLElement }) => { e.currentTarget.style.background = g.id === groupId ? "rgba(0,212,255,0.08)" : "transparent"; }}>
                   <div className="flex-1 min-w-0">
                     <div className="font-bold text-sm truncate text-white">{g.name}</div>
                     <div className="text-xs font-mono" style={{ color: "rgba(255,255,255,0.35)" }}>{g.passkey}</div>
@@ -146,8 +144,8 @@ export function PredictionsClient({
           const active = tab === t.id;
           return (
             <button key={t.id} onClick={() => setTab(t.id)}
-              className="flex items-center gap-3 px-4 py-3 rounded-2xl text-left transition-all"
-              style={active ? glassActive : glass}>
+              className="flex items-center gap-3 text-left transition-all"
+              style={{ ...(active ? glassActive : glass), borderRadius: 18, padding: "14px 16px" }}>
               <div className="h-9 w-9 rounded-xl flex items-center justify-center shrink-0"
                 style={active
                   ? { background: "rgba(0,212,255,0.15)", border: "1px solid rgba(0,212,255,0.35)" }

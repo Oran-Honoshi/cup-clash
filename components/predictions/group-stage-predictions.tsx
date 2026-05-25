@@ -8,16 +8,17 @@ import {
 } from "lucide-react";
 import { CopyPredictions } from "@/components/predictions/copy-predictions";
 import { FlaggedTeam } from "@/components/predictions/flagged-team";
+import { Flag } from "@/components/ui/flag";
+import { ScoreInputCC } from "@/components/ui/score-input-cc";
 import { WC2026_MATCHES } from "@/lib/schedule";
 import { createClient } from "@/lib/supabase/client";
 
 // ── Glass tokens ──────────────────────────────────────────────────────────────
 const glassCard = {
-  background: "rgba(255,255,255,0.07)",
-  backdropFilter: "blur(24px) saturate(120%)",
-  WebkitBackdropFilter: "blur(24px) saturate(120%)",
-  border: "1px solid rgba(255,255,255,0.12)",
-  boxShadow: "0 12px 40px rgba(0,0,0,0.25), inset 0 1px 1px rgba(255,255,255,0.1)",
+  background: "rgba(18,14,38,0.32)",
+  backdropFilter: "blur(40px) saturate(180%)",
+  WebkitBackdropFilter: "blur(40px) saturate(180%)",
+  border: "1px solid rgba(255,255,255,0.14)",
 } as const;
 
 // ── Time-based locking ────────────────────────────────────────────────────────
@@ -121,172 +122,69 @@ function useAutoSave(predictions: GroupPredictions, userId: string | undefined, 
 }
 
 // ── Match Card Block ──────────────────────────────────────────────────────────
-// Each match is its own standalone glass card with semantic status badges
-
 function MatchCard({ match, prediction, onChange, globalLocked }: {
   match: typeof WC2026_MATCHES[0];
   prediction: ScorePrediction;
   onChange: (home: string, away: string) => void;
   globalLocked: boolean;
 }) {
-  const filled       = prediction.home !== "" && prediction.away !== "";
-  const matchLocked  = globalLocked || isMatchLocked(match.utcTime);
-  const countdown    = !matchLocked ? getCountdown(match.utcTime) : "";
-  const isEditing    = filled && !matchLocked;
+  const filled      = prediction.home !== "" && prediction.away !== "";
+  const matchLocked = globalLocked || isMatchLocked(match.utcTime);
+  const countdown   = !matchLocked ? getCountdown(match.utcTime) : "";
+  const status      = matchLocked ? "locked" : filled ? "saved" : "open";
 
-  // Status: open | filled | locked
-  const status = matchLocked ? "locked" : filled ? "saved" : "open";
-
-  const statusStyle = {
-    open: {
-      border: "1px solid rgba(0,255,136,0.3)",
-      boxShadow: "0 0 20px rgba(0,255,136,0.08), inset 0 1px 1px rgba(255,255,255,0.08)",
-    },
-    saved: {
-      border: "1px solid rgba(251,191,36,0.3)",
-      boxShadow: "0 0 20px rgba(251,191,36,0.06), inset 0 1px 1px rgba(255,255,255,0.06)",
-    },
-    locked: {
-      border: "1px solid rgba(255,255,255,0.07)",
-      boxShadow: "inset 0 1px 1px rgba(255,255,255,0.04)",
-    },
+  const cardStyle = {
+    open:   { background: "rgba(0,255,136,0.05)",   border: "1px solid rgba(0,255,136,0.25)"   },
+    saved:  { background: "rgba(251,191,36,0.05)",  border: "1px solid rgba(251,191,36,0.25)"  },
+    locked: { background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" },
   }[status];
 
   return (
-    <div className="rounded-2xl overflow-hidden"
-      style={{ ...glassCard, ...statusStyle, opacity: matchLocked && !filled ? 0.6 : 1 }}>
+    <div style={{ ...cardStyle, borderRadius: 16, padding: "12px 14px", opacity: matchLocked ? 0.7 : 1 }}>
 
-      {/* Top strip — match meta */}
-      <div className="flex items-center justify-between px-4 py-2 border-b"
-        style={{ borderColor: "rgba(255,255,255,0.07)" }}>
-        <div className="text-[10px] font-bold uppercase tracking-widest"
-          style={{ color: "rgba(255,255,255,0.35)" }}>
+      {/* Row 1 — meta strip */}
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+        <div style={{ fontSize: 10, color: "rgba(255,255,255,0.35)", fontFamily: "var(--font-ui)" }}>
           {new Date(match.utcTime).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
           {" · "}{match.time} {match.timezone}
         </div>
-
-        {/* Status badge */}
         {status === "open" && countdown && (
-          <span className="text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full"
-            style={{ background: "rgba(0,255,136,0.12)", color: "#00FF88", border: "1px solid rgba(0,255,136,0.25)" }}>
+          <span className="flex items-center text-[10px] font-bold uppercase tracking-widest px-2.5 py-0.5 rounded-full"
+            style={{ background: "rgba(0,255,136,0.12)", color: "#00FF88", border: "1px solid rgba(0,255,136,0.25)", fontFamily: "var(--font-ui)" }}>
             {countdown}
           </span>
         )}
         {status === "saved" && (
-          <span className="text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-full flex items-center gap-1"
-            style={{ background: "rgba(251,191,36,0.12)", color: "#fbbf24", border: "1px solid rgba(251,191,36,0.25)" }}>
+          <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest px-2.5 py-0.5 rounded-full"
+            style={{ background: "rgba(251,191,36,0.12)", color: "#fbbf24", border: "1px solid rgba(251,191,36,0.25)", fontFamily: "var(--font-ui)" }}>
             <CheckCircle2 size={10} /> Saved
           </span>
         )}
         {status === "locked" && (
-          <span className="text-[10px] font-bold uppercase tracking-widest px-2.5 py-1 rounded-full flex items-center gap-1"
-            style={{ background: "rgba(255,255,255,0.05)", color: "rgba(255,255,255,0.3)" }}>
+          <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest px-2.5 py-0.5 rounded-full"
+            style={{ background: "rgba(255,255,255,0.05)", color: "rgba(255,255,255,0.3)", fontFamily: "var(--font-ui)" }}>
             <Lock size={9} /> Locked
           </span>
         )}
       </div>
 
-      {/* Main match row */}
-      <div className="px-4 py-4">
-        <div className="flex items-center gap-3">
-
-          {/* Home team */}
-          <div className="flex-1 flex flex-col items-center gap-2">
-            {match.homeFlagCode && (
-              <div className="h-9 w-13 rounded-lg overflow-hidden"
-                style={{ border: "1px solid rgba(255,255,255,0.15)", boxShadow: "0 2px 8px rgba(0,0,0,0.3)", width: 52, height: 36 }}>
-                <img src={`https://flagcdn.com/w80/${match.homeFlagCode}.png`} alt={match.home}
-                  className="w-full h-full object-cover" />
-              </div>
-            )}
-            <span className="font-display font-black text-sm uppercase tracking-wide text-center text-white leading-none">
-              {match.home.length > 3 ? match.home.substring(0, 3).toUpperCase() : match.home}
-            </span>
-          </div>
-
-          {/* Score inputs */}
-          <div className="flex items-center gap-2 shrink-0">
-            <ScoreInput value={prediction.home} onChange={v => onChange(v, prediction.away)} locked={matchLocked} status={status} />
-            <span className="font-display text-xl font-black" style={{ color: "rgba(255,255,255,0.25)" }}>:</span>
-            <ScoreInput value={prediction.away} onChange={v => onChange(prediction.home, v)} locked={matchLocked} status={status} />
-          </div>
-
-          {/* Away team */}
-          <div className="flex-1 flex flex-col items-center gap-2">
-            {match.awayFlagCode && (
-              <div className="h-9 rounded-lg overflow-hidden"
-                style={{ border: "1px solid rgba(255,255,255,0.15)", boxShadow: "0 2px 8px rgba(0,0,0,0.3)", width: 52, height: 36 }}>
-                <img src={`https://flagcdn.com/w80/${match.awayFlagCode}.png`} alt={match.away}
-                  className="w-full h-full object-cover" />
-              </div>
-            )}
-            <span className="font-display font-black text-sm uppercase tracking-wide text-center text-white leading-none">
-              {match.away.length > 3 ? match.away.substring(0, 3).toUpperCase() : match.away}
-            </span>
-          </div>
+      {/* Row 2 — teams + scores */}
+      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+        <Flag code={match.homeFlagCode ?? "un"} size="sm" />
+        <span style={{ fontSize: 12, fontFamily: "var(--font-ui)", color: "white", fontWeight: 700, textTransform: "uppercase" }}>
+          {(match.home ?? "").substring(0, 3).toUpperCase()}
+        </span>
+        <div style={{ display: "flex", alignItems: "center", gap: 6, flex: 1, justifyContent: "center" }}>
+          <ScoreInputCC value={prediction.home} onChange={v => onChange(v, prediction.away)} disabled={matchLocked} />
+          <span style={{ fontFamily: "var(--font-mono)", fontSize: 18, fontWeight: 700, color: "rgba(255,255,255,0.25)" }}>:</span>
+          <ScoreInputCC value={prediction.away} onChange={v => onChange(prediction.home, v)} disabled={matchLocked} />
         </div>
-
-        {/* Full team names below */}
-        <div className="flex items-center mt-2" style={{ color: "rgba(255,255,255,0.35)", fontSize: 10 }}>
-          <span className="flex-1 text-center">{match.home}</span>
-          <span className="w-16 text-center font-bold" style={{ color: "rgba(255,255,255,0.2)" }}>vs</span>
-          <span className="flex-1 text-center">{match.away}</span>
-        </div>
+        <span style={{ fontSize: 12, fontFamily: "var(--font-ui)", color: "white", fontWeight: 700, textTransform: "uppercase" }}>
+          {(match.away ?? "").substring(0, 3).toUpperCase()}
+        </span>
+        <Flag code={match.awayFlagCode ?? "un"} size="sm" />
       </div>
-
-      {/* Action footer — only show when editable */}
-      {!matchLocked && (
-        <div className="px-4 pb-3">
-          {status === "open" ? (
-            <div className="text-center text-[10px]" style={{ color: "rgba(255,255,255,0.3)" }}>
-              Enter score above · saves automatically
-            </div>
-          ) : (
-            <div className="flex items-center justify-center gap-2 text-[10px]"
-              style={{ color: "rgba(255,255,255,0.3)" }}>
-              <CheckCircle2 size={11} style={{ color: "#00FF88" }} />
-              <span>Prediction saved · <span style={{ color: "#fbbf24" }}>tap scores to edit</span></span>
-            </div>
-          )}
-        </div>
-      )}
     </div>
-  );
-}
-
-// ── Score Input ───────────────────────────────────────────────────────────────
-function ScoreInput({ value, onChange, locked, status }: {
-  value: string; onChange: (v: string) => void; locked: boolean; status: "open"|"saved"|"locked";
-}) {
-  const accentColor = status === "open" ? "#00FF88" : status === "saved" ? "#fbbf24" : "rgba(255,255,255,0.3)";
-  const accentBg    = status === "open" ? "rgba(0,255,136,0.08)" : status === "saved" ? "rgba(251,191,36,0.08)" : "rgba(255,255,255,0.04)";
-  const accentBorder= status === "open" ? "rgba(0,255,136,0.3)" : status === "saved" ? "rgba(251,191,36,0.3)" : "rgba(255,255,255,0.1)";
-
-  return (
-    <input
-      type="number" min="0" max="20" value={value} placeholder="–"
-      disabled={locked}
-      onChange={e => onChange(e.target.value)}
-      className="text-center font-display font-black [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none transition-all disabled:cursor-not-allowed"
-      style={{
-        width: 56, height: 56,
-        fontSize: 28,
-        borderRadius: 14,
-        background: accentBg,
-        border: `2px solid ${accentBorder}`,
-        color: accentColor,
-        outline: "none",
-        opacity: locked && !value ? 0.4 : 1,
-      }}
-      onFocus={e => {
-        e.target.style.borderColor = accentColor;
-        e.target.style.boxShadow = `0 0 0 3px ${accentBg}, 0 0 16px ${accentBg}`;
-      }}
-      onBlur={e => {
-        e.target.style.borderColor = accentBorder;
-        e.target.style.boxShadow = "none";
-      }}
-    />
   );
 }
 
@@ -296,7 +194,7 @@ function GroupTable({ standings }: { standings: TeamStanding[] }) {
   return (
     <div className="rounded-xl overflow-hidden" style={{ border: "1px solid rgba(255,255,255,0.08)" }}>
       <div className="grid grid-cols-[1fr_auto_auto_auto_auto_auto_auto] gap-2 px-3 py-2 text-[10px] font-bold uppercase tracking-widest"
-        style={{ background: "rgba(255,255,255,0.04)", color: "rgba(255,255,255,0.3)", borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
+        style={{ background: "rgba(255,255,255,0.03)", color: "rgba(255,255,255,0.3)", borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
         <div>Team</div>
         {["P","W","D","L","GD","Pts"].map(h => (
           <div key={h} className="w-6 text-center" style={h==="Pts" ? { color: "#00D4FF" } : undefined}>{h}</div>
@@ -326,7 +224,7 @@ function GroupTable({ standings }: { standings: TeamStanding[] }) {
               style={{ color: team.gd > 0 ? "#00FF88" : team.gd < 0 ? "#f87171" : "rgba(255,255,255,0.4)" }}>
               {team.gd > 0 ? `+${team.gd}` : team.gd}
             </div>
-            <div className="w-6 text-center font-mono font-black text-sm" style={{ color: "#00D4FF" }}>{team.pts}</div>
+            <div className="w-6 text-center font-black text-sm" style={{ fontFamily: "var(--font-mono)", color: "#00D4FF" }}>{team.pts}</div>
           </div>
         );
       })}
@@ -479,17 +377,17 @@ export function GroupStagePredictions({ groupId, locked = false, userId }: Group
     <div className="space-y-4">
 
       {/* Progress + save status */}
-      <div className="rounded-2xl px-4 py-3" style={glassCard}>
+      <div className="rounded-2xl px-4 py-3" style={{ ...glassCard, borderRadius: 18 }}>
         <div className="flex items-center justify-between mb-2">
           <span className="text-sm font-bold text-white">Group Stage Progress</span>
           <div className="flex items-center gap-3">
             <SaveIndicator status={saveStatus} />
-            <span className="text-sm font-mono font-black" style={{ color: "#00D4FF" }}>{completedCount} / 12</span>
+            <span className="text-sm font-black" style={{ fontFamily: "var(--font-mono)", color: "#00D4FF" }}>{completedCount} / 12</span>
           </div>
         </div>
-        <div className="h-1.5 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.08)" }}>
-          <div className="h-full rounded-full transition-all duration-500"
-            style={{ width: `${(completedCount/12)*100}%`, background: "linear-gradient(90deg, #00D4FF, #00FF88)" }} />
+        <div className="overflow-hidden" style={{ height: 6, borderRadius: 3, background: "rgba(255,255,255,0.08)" }}>
+          <div className="h-full transition-all duration-500"
+            style={{ width: `${(completedCount/12)*100}%`, background: "linear-gradient(90deg, #00D4FF, #00FF88)", borderRadius: 3 }} />
         </div>
         <p className="text-[10px] mt-1.5" style={{ color: "rgba(255,255,255,0.25)" }}>
           Auto-saves as you type · Each match locks 5 min before kickoff
@@ -504,15 +402,18 @@ export function GroupStagePredictions({ groupId, locked = false, userId }: Group
           const teams    = getGroupTeams(g);
           return (
             <button key={g} onClick={() => setActiveGroup(g)}
-              className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all shrink-0"
+              className="flex items-center gap-1.5 px-3 py-2 text-xs font-bold uppercase tracking-wider transition-all shrink-0"
               style={isActive ? {
-                background: "rgba(0,212,255,0.15)",
+                background: "rgba(0,212,255,0.12)",
                 color: "#00D4FF",
                 border: "1px solid rgba(0,212,255,0.35)",
+                borderRadius: 100,
+                boxShadow: "0 0 12px rgba(0,212,255,0.15)",
               } : {
                 background: "rgba(255,255,255,0.05)",
-                color: "rgba(255,255,255,0.45)",
-                border: "1px solid rgba(255,255,255,0.08)",
+                color: "rgba(255,255,255,0.5)",
+                border: "1px solid rgba(255,255,255,0.1)",
+                borderRadius: 100,
               }}>
               Grp {g}
               <span className="flex -space-x-0.5">
@@ -553,7 +454,7 @@ export function GroupStagePredictions({ groupId, locked = false, userId }: Group
           </div>
 
           {/* Match cards — single column stack */}
-          <div className="space-y-2">
+          <div className="flex flex-col" style={{ gap: 6 }}>
             {groupMatches.map(match => (
               <MatchCard
                 key={match.id}
@@ -567,7 +468,7 @@ export function GroupStagePredictions({ groupId, locked = false, userId }: Group
 
           {/* Predicted table — collapsible below matches */}
           {standings.some(t => t.played > 0) && (
-            <div className="rounded-2xl p-4" style={glassCard}>
+            <div className="p-4" style={{ ...glassCard, borderRadius: 18 }}>
               <div className="flex items-center gap-2 mb-3">
                 <ArrowUpDown size={14} strokeWidth={1.5} style={{ color: "#00D4FF" }} />
                 <span className="font-display text-lg uppercase tracking-tight text-white">Predicted Table</span>
