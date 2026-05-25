@@ -151,11 +151,11 @@ export function PickOverridesPanel({ groupId, adminId }: PickOverridesPanelProps
   }, {} as Record<string, MemberPick[]>);
 
   if (loading) return (
-    <div className="text-center py-8 text-sm" style={{ color: "#94a3b8" }}>Loading picks...</div>
+    <div className="text-center py-8 text-sm" style={{ color: "rgba(255,255,255,0.35)" }}>Loading picks...</div>
   );
 
   if (!picks.length) return (
-    <div className="text-center py-8 text-sm" style={{ color: "#94a3b8" }}>
+    <div className="text-center py-8 text-sm" style={{ color: "rgba(255,255,255,0.35)" }}>
       No tournament picks submitted yet.
     </div>
   );
@@ -188,13 +188,13 @@ export function PickOverridesPanel({ groupId, adminId }: PickOverridesPanelProps
                   <div key={key}
                     className="rounded-xl p-3 flex items-center gap-3"
                     style={{
-                      background: pick.hasOverride ? "rgba(0,255,136,0.06)" : "rgba(255,255,255,0.9)",
-                      border: `1px solid ${pick.hasOverride ? "rgba(0,255,136,0.2)" : "#e2e8f0"}`,
+                      background: pick.hasOverride ? "rgba(0,255,136,0.06)" : "rgba(18,14,38,0.4)",
+                      border: `1px solid ${pick.hasOverride ? "rgba(0,255,136,0.2)" : "rgba(255,255,255,0.1)"}`,
                     }}>
                     {/* Member + submission */}
                     <div className="flex-1 min-w-0">
-                      <div className="text-sm font-bold" style={{ color: "#0F172A" }}>{pick.userName}</div>
-                      <div className="text-xs mt-0.5" style={{ color: "#64748b" }}>
+                      <div className="text-sm font-bold" style={{ color: "white" }}>{pick.userName}</div>
+                      <div className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>
                         Submitted: <span className="font-bold">{pick.submitted}</span>
                       </div>
                       {pick.hasOverride && (
@@ -212,8 +212,8 @@ export function PickOverridesPanel({ groupId, adminId }: PickOverridesPanelProps
                           placeholder="Correct answer"
                           value={actualValues[key] ?? ""}
                           onChange={e => setActualValues(prev => ({ ...prev, [key]: e.target.value }))}
-                          className="w-28 px-2 py-1.5 rounded-lg text-xs border focus:outline-none"
-                          style={{ borderColor: "#e2e8f0", color: "#0F172A" }}
+                          className="w-28 px-2 py-1.5 rounded-lg text-xs focus:outline-none"
+                          style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", color: "#ffffff" }}
                         />
                         {/* Points input */}
                         <input
@@ -221,8 +221,8 @@ export function PickOverridesPanel({ groupId, adminId }: PickOverridesPanelProps
                           placeholder="pts"
                           value={pointValues[key] ?? ""}
                           onChange={e => setPointValues(prev => ({ ...prev, [key]: Number(e.target.value) }))}
-                          className="w-14 px-2 py-1.5 rounded-lg text-xs border focus:outline-none text-center"
-                          style={{ borderColor: "#e2e8f0", color: "#0F172A" }}
+                          className="w-14 px-2 py-1.5 rounded-lg text-xs focus:outline-none text-center"
+                          style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", color: "#ffffff" }}
                         />
                         <button
                           onClick={() => grantPoints(pick)}

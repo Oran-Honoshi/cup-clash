@@ -98,6 +98,16 @@ const DEFAULT_RULES: ScoringRules = {
   enable_golden_ball: false,
 };
 
+// ── Glass token ───────────────────────────────────────────────────────────────
+const glassCard = {
+  background: "rgba(18,14,38,0.32)",
+  backdropFilter: "blur(40px) saturate(180%)",
+  WebkitBackdropFilter: "blur(40px) saturate(180%)",
+  border: "1px solid rgba(255,255,255,0.14)",
+  boxShadow: "0 12px 40px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.18)",
+  borderRadius: 22,
+} as const;
+
 export function TournamentPicks({ groupId, userId, locked = false }: TournamentPicksProps) {
   const [picks,   setPicks]   = useState<Picks>({ winner: "", topScorer: "", topAssister: "", goldenBall: "", bestThird: [] });
   const [rules,   setRules]   = useState<ScoringRules>(DEFAULT_RULES);
@@ -229,18 +239,18 @@ export function TournamentPicks({ groupId, userId, locked = false }: TournamentP
     return (
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <span className="text-xs font-bold uppercase tracking-widest" style={{ color: "#64748b" }}>{label}</span>
-          <span className="text-xs font-bold" style={{ color: "#059669" }}>+{pts} pts</span>
+          <span className="text-xs font-bold uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.5)" }}>{label}</span>
+          <span className="text-xs font-bold" style={{ color: "#00D4FF", fontFamily: "var(--font-mono)" }}>+{pts} pts</span>
         </div>
         <div className="relative">
-          <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: "#94a3b8" }} />
+          <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: "rgba(255,255,255,0.4)" }} />
           <input type="text" placeholder="Search country..." value={search}
             onChange={e => onSearch(e.target.value)}
             disabled={isLocked}
-            className="w-full pl-8 pr-3 py-2 rounded-xl text-sm border focus:outline-none disabled:opacity-40"
-            style={{ background: "white", borderColor: "#e2e8f0", color: "#0F172A" }}
-            onFocus={e => e.target.style.borderColor = "#00D4FF"}
-            onBlur={e => e.target.style.borderColor = "#e2e8f0"}
+            className="w-full pl-8 pr-3 py-2 rounded-xl text-sm focus:outline-none disabled:opacity-40"
+            style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", color: "#ffffff" }}
+            onFocus={e => { e.target.style.border = "1px solid #00D4FF"; }}
+            onBlur={e => { e.target.style.border = "1px solid rgba(255,255,255,0.12)"; }}
           />
         </div>
         <div className="grid grid-cols-8 sm:grid-cols-12 gap-1.5 max-h-48 overflow-y-auto">
@@ -249,13 +259,15 @@ export function TournamentPicks({ groupId, userId, locked = false }: TournamentP
             return (
               <button key={c.flagCode} title={c.name} disabled={isLocked}
                 onClick={() => { onSelect(c.name); onSearch(""); }}
-                className={cn("flex flex-col items-center gap-0.5 p-1.5 rounded-lg border transition-all",
-                  isSelected ? "border-cyan-400 bg-cyan-50" : "border-slate-100 hover:border-cyan-200",
-                  isLocked && "opacity-40 cursor-not-allowed")}>
+                className={cn("flex flex-col items-center gap-0.5 p-1.5 rounded-lg transition-all",
+                  isLocked && "opacity-40 cursor-not-allowed")}
+                style={isSelected
+                  ? { border: "1px solid rgba(0,255,136,0.4)", background: "rgba(0,255,136,0.1)" }
+                  : { border: "1px solid rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.04)" }}>
                 <img src={`https://flagcdn.com/w20/${c.flagCode}.png`} alt={c.name}
                   className="w-7 h-4 object-cover rounded-sm"
                   onError={e => { (e.target as HTMLImageElement).style.display = "none"; }} />
-                <span className="text-[8px] font-bold truncate w-full text-center" style={{ color: "#64748b" }}>
+                <span className="text-[8px] font-bold truncate w-full text-center" style={{ color: "rgba(255,255,255,0.5)" }}>
                   {(c.code ?? c.flagCode).toUpperCase()}
                 </span>
               </button>
@@ -283,40 +295,45 @@ export function TournamentPicks({ groupId, userId, locked = false }: TournamentP
     return (
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <span className="text-xs font-bold uppercase tracking-widest" style={{ color: "#64748b" }}>{label}</span>
-          <span className="text-xs font-bold" style={{ color: "#059669" }}>+{pts} pts</span>
+          <span className="text-xs font-bold uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.5)" }}>{label}</span>
+          <span className="text-xs font-bold" style={{ color: "#00D4FF", fontFamily: "var(--font-mono)" }}>+{pts} pts</span>
         </div>
         <div className="relative">
-          <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: "#94a3b8" }} />
+          <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: "rgba(255,255,255,0.4)" }} />
           <input
             type="text"
             placeholder="Search or type player name..."
             value={search}
             onChange={e => onSearch(e.target.value)}
             disabled={isLocked}
-            className="w-full pl-8 pr-3 py-2 rounded-xl text-sm border focus:outline-none disabled:opacity-40"
-            style={{ background: "white", borderColor: "#e2e8f0", color: "#0F172A" }}
-            onFocus={e => e.target.style.borderColor = "#00D4FF"}
-            onBlur={e => e.target.style.borderColor = "#e2e8f0"}
+            className="w-full pl-8 pr-3 py-2 rounded-xl text-sm focus:outline-none disabled:opacity-40"
+            style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", color: "#ffffff" }}
+            onFocus={e => { e.target.style.border = "1px solid #00D4FF"; }}
+            onBlur={e => { e.target.style.border = "1px solid rgba(255,255,255,0.12)"; }}
           />
         </div>
         {search.length > 0 && (
-          <div className="rounded-xl border overflow-hidden" style={{ borderColor: "#e2e8f0" }}>
+          <div className="rounded-xl overflow-hidden" style={{ border: "1px solid rgba(255,255,255,0.08)" }}>
             <div className="max-h-48 overflow-y-auto">
               {filtered.map(player => {
                 const active = value === player.name;
                 return (
                   <button key={player.name} disabled={isLocked}
                     onClick={() => { updatePick(pickKey, player.name); onSearch(""); }}
-                    className={cn("w-full flex items-center gap-2.5 px-3 py-2.5 border-b last:border-0 text-left transition-all hover:bg-slate-50",
-                      active && "bg-cyan-50", isLocked && "opacity-40 cursor-not-allowed")}
-                    style={{ borderColor: "#f1f5f9" }}>
+                    className={cn("w-full flex items-center gap-2.5 px-3 py-2.5 border-b last:border-0 text-left transition-all",
+                      isLocked && "opacity-40 cursor-not-allowed")}
+                    style={{
+                      borderColor: "rgba(255,255,255,0.08)",
+                      background: active ? "rgba(0,255,136,0.1)" : "rgba(255,255,255,0.04)",
+                    }}
+                    onMouseEnter={e => { if (!active) (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,255,255,0.07)"; }}
+                    onMouseLeave={e => { if (!active) (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,255,255,0.04)"; }}>
                     <img src={`https://flagcdn.com/w20/${player.flagCode}.png`} alt={player.team}
                       className="w-6 h-4 object-cover rounded-sm shrink-0"
                       onError={e => { (e.target as HTMLImageElement).style.display = "none"; }} />
                     <div className="flex-1 min-w-0">
-                      <div className="text-sm font-bold truncate" style={{ color: "#0F172A" }}>{player.name}</div>
-                      <div className="text-xs" style={{ color: "#94a3b8" }}>{player.team}</div>
+                      <div className="text-sm font-bold truncate" style={{ color: "rgba(255,255,255,0.85)" }}>{player.name}</div>
+                      <div className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>{player.team}</div>
                     </div>
                     {active && <Check size={13} style={{ color: "#0891B2" }} />}
                   </button>
@@ -325,15 +342,17 @@ export function TournamentPicks({ groupId, userId, locked = false }: TournamentP
               {showCustom && (
                 <button
                   onClick={() => { updatePick(pickKey, search); onSearch(""); }}
-                  className="w-full flex items-center gap-2.5 px-3 py-2.5 text-left hover:bg-slate-50 border-t"
-                  style={{ borderColor: "#e2e8f0" }}>
+                  className="w-full flex items-center gap-2.5 px-3 py-2.5 text-left transition-all"
+                  style={{ borderTop: "1px solid rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.04)" }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,255,255,0.07)"; }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,255,255,0.04)"; }}>
                   <div className="h-6 w-6 rounded-full flex items-center justify-center shrink-0"
                     style={{ background: "rgba(0,212,255,0.1)", border: "1px solid rgba(0,212,255,0.2)" }}>
                     <span style={{ color: "#0891B2", fontSize: 10 }}>+</span>
                   </div>
                   <div>
-                    <div className="text-sm font-bold" style={{ color: "#0F172A" }}>Use &quot;{search}&quot;</div>
-                    <div className="text-xs" style={{ color: "#94a3b8" }}>Custom player pick</div>
+                    <div className="text-sm font-bold" style={{ color: "rgba(255,255,255,0.85)" }}>Use &quot;{search}&quot;</div>
+                    <div className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>Custom player pick</div>
                   </div>
                 </button>
               )}
@@ -355,25 +374,25 @@ export function TournamentPicks({ groupId, userId, locked = false }: TournamentP
     return (
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <span className="text-xs font-bold uppercase tracking-widest" style={{ color: "#64748b" }}>
+          <span className="text-xs font-bold uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.5)" }}>
             8 qualifying 3rd-place teams
           </span>
-          <span className="text-xs font-bold" style={{ color: "#059669" }}>
+          <span className="text-xs font-bold" style={{ color: "#00D4FF", fontFamily: "var(--font-mono)" }}>
             +{rules.best_third} pts each · {picks.bestThird.length}/8
           </span>
         </div>
-        <p className="text-xs" style={{ color: "#94a3b8" }}>
+        <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>
           Pick which 8 of the 12 group 3rd-place finishers advance to the Round of 32.
         </p>
         <div className="relative">
-          <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: "#94a3b8" }} />
+          <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: "rgba(255,255,255,0.4)" }} />
           <input type="text" placeholder="Search country..." value={thirdSearch}
             onChange={e => setThirdSearch(e.target.value)}
             disabled={isLocked}
-            className="w-full pl-8 pr-3 py-2 rounded-xl text-sm border focus:outline-none disabled:opacity-40"
-            style={{ background: "white", borderColor: "#e2e8f0", color: "#0F172A" }}
-            onFocus={e => e.target.style.borderColor = "#00D4FF"}
-            onBlur={e => e.target.style.borderColor = "#e2e8f0"}
+            className="w-full pl-8 pr-3 py-2 rounded-xl text-sm focus:outline-none disabled:opacity-40"
+            style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", color: "#ffffff" }}
+            onFocus={e => { e.target.style.border = "1px solid #00D4FF"; }}
+            onBlur={e => { e.target.style.border = "1px solid rgba(255,255,255,0.12)"; }}
           />
         </div>
         <div className="grid grid-cols-8 sm:grid-cols-12 gap-1.5 max-h-48 overflow-y-auto">
@@ -384,13 +403,15 @@ export function TournamentPicks({ groupId, userId, locked = false }: TournamentP
               <button key={c.flagCode} title={c.name}
                 disabled={isLocked || isDisabled}
                 onClick={() => toggleBestThird(c.name)}
-                className={cn("flex flex-col items-center gap-0.5 p-1.5 rounded-lg border transition-all",
-                  isSelected ? "border-cyan-400 bg-cyan-50" : "border-slate-100 hover:border-cyan-200",
-                  (isLocked || isDisabled) && "opacity-40 cursor-not-allowed")}>
+                className={cn("flex flex-col items-center gap-0.5 p-1.5 rounded-lg transition-all",
+                  (isLocked || isDisabled) && "opacity-40 cursor-not-allowed")}
+                style={isSelected
+                  ? { border: "1px solid rgba(0,255,136,0.4)", background: "rgba(0,255,136,0.1)" }
+                  : { border: "1px solid rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.04)" }}>
                 <img src={`https://flagcdn.com/w20/${c.flagCode}.png`} alt={c.name}
                   className="w-7 h-4 object-cover rounded-sm"
                   onError={e => { (e.target as HTMLImageElement).style.display = "none"; }} />
-                <span className="text-[8px] font-bold truncate w-full text-center" style={{ color: "#64748b" }}>
+                <span className="text-[8px] font-bold truncate w-full text-center" style={{ color: "rgba(255,255,255,0.5)" }}>
                   {(c.code ?? c.flagCode).toUpperCase()}
                 </span>
               </button>
@@ -418,7 +439,7 @@ export function TournamentPicks({ groupId, userId, locked = false }: TournamentP
       {/* Auto-save status */}
       {!isLocked && (saving || saved || error) && (
         <div className="flex items-center gap-2 text-xs font-bold"
-          style={{ color: saved ? "#059669" : error ? "#dc2626" : "#94a3b8" }}>
+          style={{ color: saved ? "#00FF88" : error ? "#dc2626" : "rgba(255,255,255,0.4)" }}>
           {saving && <span className="animate-spin">⟳</span>}
           {saved  && <Check size={12} />}
           {error  && <AlertCircle size={12} />}
@@ -427,12 +448,12 @@ export function TournamentPicks({ groupId, userId, locked = false }: TournamentP
       )}
 
       {/* Tournament Winner */}
-      <div className="rounded-2xl p-5" style={{ background: "rgba(255,255,255,0.9)", border: "1px solid rgba(0,212,255,0.15)" }}>
+      <div className="p-5" style={glassCard}>
         <div className="flex items-center gap-2 mb-4">
           <Trophy size={18} style={{ color: "#d97706" }} />
-          <span className="font-display text-xl uppercase font-black" style={{ color: "#0F172A" }}>Tournament Winner</span>
+          <span className="font-display text-xl uppercase font-black" style={{ color: "white" }}>Tournament Winner</span>
           <span className="ml-auto text-xs font-bold px-2 py-0.5 rounded-full"
-            style={{ background: "rgba(0,255,136,0.1)", color: "#059669" }}>
+            style={{ background: "rgba(0,255,136,0.1)", color: "#00D4FF", fontFamily: "var(--font-mono)" }}>
             +{rules.tournament_winner} pts
           </span>
         </div>
@@ -447,19 +468,19 @@ export function TournamentPicks({ groupId, userId, locked = false }: TournamentP
       </div>
 
       {/* Best 3rd place */}
-      <div className="rounded-2xl p-5" style={{ background: "rgba(255,255,255,0.9)", border: "1px solid rgba(0,212,255,0.15)" }}>
+      <div className="p-5" style={glassCard}>
         <div className="flex items-center gap-2 mb-1">
           <BarChart2 size={18} style={{ color: "#0891B2" }} />
-          <span className="font-display text-xl uppercase font-black" style={{ color: "#0F172A" }}>Best 3rd-Place Teams</span>
+          <span className="font-display text-xl uppercase font-black" style={{ color: "white" }}>Best 3rd-Place Teams</span>
         </div>
         <BestThirdPicker />
       </div>
 
       {/* Player awards */}
-      <div className="rounded-2xl p-5 space-y-5" style={{ background: "rgba(255,255,255,0.9)", border: "1px solid rgba(0,212,255,0.15)" }}>
+      <div className="p-5 space-y-5" style={glassCard}>
         <div className="flex items-center gap-2">
           <Star size={18} style={{ color: "#d97706" }} />
-          <span className="font-display text-xl uppercase font-black" style={{ color: "#0F172A" }}>Player Awards</span>
+          <span className="font-display text-xl uppercase font-black" style={{ color: "white" }}>Player Awards</span>
         </div>
         {rules.enable_scorer && (
           <PlayerPicker pickKey="topScorer" label="Top Scorer — Golden Boot" pts={rules.top_scorer}
@@ -477,7 +498,7 @@ export function TournamentPicks({ groupId, userId, locked = false }: TournamentP
 
       {/* Scoring rules summary */}
       <div className="rounded-2xl p-4" style={{ background: "rgba(0,212,255,0.04)", border: "1px solid rgba(0,212,255,0.12)" }}>
-        <div className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: "#64748b" }}>
+        <div className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: "rgba(255,255,255,0.5)" }}>
           Points for these picks
         </div>
         <div className="grid grid-cols-2 gap-2 text-xs">
@@ -489,16 +510,16 @@ export function TournamentPicks({ groupId, userId, locked = false }: TournamentP
             { label: "Best 3rd (each)",   pts: rules.best_third,        enabled: true                   },
           ].filter(r => r.enabled).map(r => (
             <div key={r.label} className="flex items-center justify-between rounded-lg px-3 py-2"
-              style={{ background: "rgba(255,255,255,0.6)" }}>
-              <span style={{ color: "#475569" }}>{r.label}</span>
-              <span className="font-black" style={{ color: "#0891B2" }}>+{r.pts}</span>
+              style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
+              <span style={{ color: "rgba(255,255,255,0.5)" }}>{r.label}</span>
+              <span className="font-black" style={{ color: "#00D4FF", fontFamily: "var(--font-mono)" }}>+{r.pts}</span>
             </div>
           ))}
         </div>
       </div>
 
       {!isLocked && (
-        <p className="text-xs text-center" style={{ color: "#94a3b8" }}>
+        <p className="text-xs text-center" style={{ color: "rgba(255,255,255,0.4)" }}>
           ✓ Picks save automatically · All picks lock June 11, 2026 at first kickoff
         </p>
       )}

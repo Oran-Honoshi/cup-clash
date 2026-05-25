@@ -227,9 +227,12 @@ function GuestSignupModal({ isOpen, trigger, groupName, onClose }: GuestSignupMo
               transition={{ type: "spring", damping: 22, stiffness: 320 }}
               className="w-full max-w-sm pointer-events-auto rounded-3xl overflow-hidden relative"
               style={{
-                background: "rgba(255,255,255,0.97)",
+                background: "rgba(18,14,38,0.32)",
+                backdropFilter: "blur(40px) saturate(180%)",
+                WebkitBackdropFilter: "blur(40px) saturate(180%)",
                 border: `2px solid ${cfg.accent}44`,
-                boxShadow: `0 24px 80px ${cfg.accent}22, 0 8px 32px rgba(0,0,0,0.12)`,
+                boxShadow: `0 12px 40px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.18), 0 24px 80px ${cfg.accent}22`,
+                borderRadius: 28,
               }}
             >
               {/* Top gradient bar */}
@@ -238,8 +241,8 @@ function GuestSignupModal({ isOpen, trigger, groupName, onClose }: GuestSignupMo
               {/* Close button */}
               <button
                 onClick={handleDismiss}
-                className="absolute top-4 right-4 h-8 w-8 rounded-full flex items-center justify-center transition-colors hover:bg-slate-100"
-                style={{ color: "#94a3b8" }}
+                className="absolute top-4 right-4 h-8 w-8 rounded-full flex items-center justify-center transition-colors"
+                style={{ color: "#94a3b8", background: "transparent" }}
                 aria-label="Close"
               >
                 <X size={16} />
@@ -261,13 +264,13 @@ function GuestSignupModal({ isOpen, trigger, groupName, onClose }: GuestSignupMo
                 {/* Headline */}
                 <h2
                   className="font-display text-2xl uppercase font-black mb-2 leading-tight"
-                  style={{ color: "#0F172A" }}
+                  style={{ color: "white" }}
                 >
                   {headline}
                 </h2>
 
                 {/* Sub-headline */}
-                <p className="text-sm leading-relaxed mb-6" style={{ color: "#475569" }}>
+                <p className="text-sm leading-relaxed mb-6" style={{ color: "rgba(255,255,255,0.5)" }}>
                   {cfg.sub}
                 </p>
 
@@ -288,25 +291,25 @@ function GuestSignupModal({ isOpen, trigger, groupName, onClose }: GuestSignupMo
                 {/* Sign in link */}
                 <Link href={signinUrl} className="block w-full mb-5">
                   <button
-                    className="w-full py-3 rounded-xl font-bold text-sm uppercase tracking-wider transition-all hover:bg-slate-50"
-                    style={{ border: "1px solid rgba(0,212,255,0.2)", color: "#0891B2", background: "transparent" }}
+                    className="w-full py-3 rounded-xl font-bold text-sm uppercase tracking-wider transition-all"
+                    style={{ border: "1px solid rgba(0,212,255,0.2)", color: "#00D4FF", background: "transparent" }}
                   >
                     Already have an account? Sign in
                   </button>
                 </Link>
 
                 {/* Privacy + Terms consent copy */}
-                <p className="text-[10px] text-center leading-relaxed" style={{ color: "#94a3b8" }}>
+                <p className="text-[10px] text-center leading-relaxed" style={{ color: "rgba(255,255,255,0.35)" }}>
                   By signing up you agree to our{" "}
-                  <Link href="/terms" className="underline hover:opacity-70" style={{ color: "#64748b" }} target="_blank">
+                  <Link href="/terms" className="underline hover:opacity-70" style={{ color: "rgba(255,255,255,0.5)" }} target="_blank">
                     Terms of Service
                   </Link>
                   {" "}and{" "}
-                  <Link href="/privacy" className="underline hover:opacity-70" style={{ color: "#64748b" }} target="_blank">
+                  <Link href="/privacy" className="underline hover:opacity-70" style={{ color: "rgba(255,255,255,0.5)" }} target="_blank">
                     Privacy Policy
                   </Link>
                   . We collect your email and prediction data to run your group. No spam, ever.{" "}
-                  <Link href="/privacy#data" className="underline hover:opacity-70" style={{ color: "#64748b" }} target="_blank">
+                  <Link href="/privacy#data" className="underline hover:opacity-70" style={{ color: "rgba(255,255,255,0.5)" }} target="_blank">
                     What data we store →
                   </Link>
                 </p>

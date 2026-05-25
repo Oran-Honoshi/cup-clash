@@ -39,7 +39,7 @@ export function PWAInstallBanner() {
   return (
     <div className="fixed bottom-20 left-4 right-4 z-40 sm:left-auto sm:right-4 sm:w-80">
       <div className="rounded-2xl p-4 shadow-2xl"
-        style={{ background: "white", border: "1px solid rgba(0,212,255,0.25)", boxShadow: "0 8px 32px rgba(0,0,0,0.15)" }}>
+        style={{ background: "rgba(18,14,38,0.92)", backdropFilter: "blur(24px)", WebkitBackdropFilter: "blur(24px)", border: "1px solid rgba(0,212,255,0.25)", boxShadow: "0 8px 32px rgba(0,0,0,0.15)" }}>
         <div className="h-0.5 rounded-full mb-3" style={{ background: "linear-gradient(90deg, #00D4FF, #00FF88)" }} />
         <div className="flex items-start gap-3">
           <div className="h-10 w-10 rounded-xl flex items-center justify-center shrink-0"
@@ -47,17 +47,17 @@ export function PWAInstallBanner() {
             <Smartphone size={20} style={{ color: "#0B141B" }} />
           </div>
           <div className="flex-1 min-w-0">
-            <div className="font-bold text-sm" style={{ color: "#0F172A" }}>
+            <div className="font-bold text-sm" style={{ color: "white" }}>
               Add Cup Clash to your home screen
             </div>
-            <div className="text-xs mt-1 leading-relaxed" style={{ color: "#64748b" }}>
+            <div className="text-xs mt-1 leading-relaxed" style={{ color: "rgba(255,255,255,0.5)" }}>
               {isIOS
                 ? "Tap the Share button (□↑) → 'Add to Home Screen' for the full app experience."
                 : "Tap Menu (⋮) → 'Add to Home Screen' to install the app."}
             </div>
           </div>
           <button onClick={dismiss} className="shrink-0 mt-0.5"
-            style={{ color: "#94a3b8" }}>
+            style={{ color: "rgba(255,255,255,0.4)" }}>
             <X size={16} />
           </button>
         </div>

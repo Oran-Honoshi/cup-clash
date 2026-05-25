@@ -47,7 +47,7 @@ export function JoinButton({ groupId, groupName, enrollmentFee, demoMode }: Join
           {loading ? <><Loader2 size={15} className="animate-spin" /> Joining...</> : <>Join Free <ArrowRight size={15} /></>}
         </button>
         {error && <p className="text-xs text-center rounded-xl px-3 py-2" style={{ color: "#dc2626", background: "rgba(220,38,38,0.06)" }}>{error}</p>}
-        <p className="text-center text-xs" style={{ color: "#94a3b8" }}>Free beta · No payment required</p>
+        <p className="text-center text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>Free beta · No payment required</p>
       </div>
     );
   }
@@ -55,7 +55,7 @@ export function JoinButton({ groupId, groupName, enrollmentFee, demoMode }: Join
   // PayPal mode — show button first, expand PayPal on click
   if (showPayPal) {
     return (
-      <div className="rounded-2xl p-4" style={{ background: "#f8fafc", border: "1px solid #e2e8f0" }}>
+      <div className="rounded-2xl p-4" style={{ background: "rgba(18,14,38,0.32)", backdropFilter: "blur(40px) saturate(180%)", border: "1px solid rgba(255,255,255,0.14)", borderRadius: 22 }}>
         <PayPalCheckout groupId={groupId} groupName={groupName} amount={enrollmentFee} />
       </div>
     );
@@ -69,7 +69,7 @@ export function JoinButton({ groupId, groupName, enrollmentFee, demoMode }: Join
         style={{ background: "linear-gradient(135deg, #00FF88, #00D4FF)", color: "#0B141B", boxShadow: "0 4px 16px rgba(0,255,136,0.25)" }}>
         Join for ${enrollmentFee.toFixed(0)} <ArrowRight size={15} />
       </button>
-      <p className="text-center text-xs" style={{ color: "#94a3b8" }}>
+      <p className="text-center text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>
         One-time · Secured by PayPal · No account required
       </p>
     </div>

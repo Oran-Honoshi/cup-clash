@@ -134,9 +134,9 @@ function MatchCard({ match, prediction, onChange, globalLocked }: {
   const status      = matchLocked ? "locked" : filled ? "saved" : "open";
 
   const cardStyle = {
-    open:   { background: "rgba(0,255,136,0.05)",   border: "1px solid rgba(0,255,136,0.25)"   },
-    saved:  { background: "rgba(251,191,36,0.05)",  border: "1px solid rgba(251,191,36,0.25)"  },
-    locked: { background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" },
+    open:   { background: "rgba(18,14,38,0.55)",  border: "1px solid rgba(0,255,136,0.25)"   },
+    saved:  { background: "rgba(30,20,10,0.55)",  border: "1px solid rgba(251,191,36,0.25)"  },
+    locked: { background: "rgba(18,14,38,0.45)",  border: "1px solid rgba(255,255,255,0.07)" },
   }[status];
 
   return (
@@ -168,21 +168,28 @@ function MatchCard({ match, prediction, onChange, globalLocked }: {
         )}
       </div>
 
-      {/* Row 2 — teams + scores */}
-      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-        <Flag code={match.homeFlagCode ?? "un"} size="sm" />
-        <span style={{ fontSize: 12, fontFamily: "var(--font-ui)", color: "white", fontWeight: 700, textTransform: "uppercase" }}>
-          {(match.home ?? "").substring(0, 3).toUpperCase()}
-        </span>
-        <div style={{ display: "flex", alignItems: "center", gap: 6, flex: 1, justifyContent: "center" }}>
+      {/* Row 2 — teams + scores (stacks on mobile, horizontal on sm+) */}
+      <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+        {/* Home team */}
+        <div className="flex items-center gap-1.5 sm:flex-none">
+          <Flag code={match.homeFlagCode ?? "un"} size="sm" />
+          <span style={{ fontSize: 12, fontFamily: "var(--font-ui)", color: "white", fontWeight: 700, textTransform: "uppercase" }}>
+            {(match.home ?? "").substring(0, 3).toUpperCase()}
+          </span>
+        </div>
+        {/* Score inputs — centered on mobile, flex-1 centered on sm+ */}
+        <div className="flex items-center gap-2 justify-center sm:flex-1">
           <ScoreInputCC value={prediction.home} onChange={v => onChange(v, prediction.away)} disabled={matchLocked} />
           <span style={{ fontFamily: "var(--font-mono)", fontSize: 18, fontWeight: 700, color: "rgba(255,255,255,0.25)" }}>:</span>
           <ScoreInputCC value={prediction.away} onChange={v => onChange(prediction.home, v)} disabled={matchLocked} />
         </div>
-        <span style={{ fontSize: 12, fontFamily: "var(--font-ui)", color: "white", fontWeight: 700, textTransform: "uppercase" }}>
-          {(match.away ?? "").substring(0, 3).toUpperCase()}
-        </span>
-        <Flag code={match.awayFlagCode ?? "un"} size="sm" />
+        {/* Away team */}
+        <div className="flex items-center gap-1.5 justify-end sm:flex-none sm:justify-start">
+          <span style={{ fontSize: 12, fontFamily: "var(--font-ui)", color: "white", fontWeight: 700, textTransform: "uppercase" }}>
+            {(match.away ?? "").substring(0, 3).toUpperCase()}
+          </span>
+          <Flag code={match.awayFlagCode ?? "un"} size="sm" />
+        </div>
       </div>
     </div>
   );

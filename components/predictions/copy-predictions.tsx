@@ -91,7 +91,7 @@ export function CopyPredictions({ currentGroupId, userId, onCopied }: CopyPredic
         </span>
       </div>
 
-      <p className="text-xs" style={{ color: "#64748b" }}>
+      <p className="text-xs" style={{ color: "rgba(255,255,255,0.5)" }}>
         Copy your predictions from a different group. Only matching matches will be filled.
       </p>
 
@@ -99,21 +99,21 @@ export function CopyPredictions({ currentGroupId, userId, onCopied }: CopyPredic
       <div className="relative">
         <button onClick={() => setOpen(v => !v)}
           className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl border text-sm"
-          style={{ background: "white", borderColor: "#e2e8f0", color: "#0F172A" }}>
+          style={{ background: "rgba(255,255,255,0.06)", borderColor: "rgba(255,255,255,0.12)", color: "rgba(255,255,255,0.85)" }}>
           <span>{selectedGroup ? `${selectedGroup.groupName} (${selectedGroup.predCount} predictions)` : "Select a group..."}</span>
-          <ChevronDown size={14} style={{ color: "#94a3b8", transform: open ? "rotate(180deg)" : "none", transition: "transform 0.2s" }} />
+          <ChevronDown size={14} style={{ color: "rgba(255,255,255,0.4)", transform: open ? "rotate(180deg)" : "none", transition: "transform 0.2s" }} />
         </button>
 
         {open && (
           <div className="absolute top-full left-0 right-0 mt-1 rounded-xl border overflow-hidden z-20"
-            style={{ background: "white", borderColor: "#e2e8f0", boxShadow: "0 4px 16px rgba(0,0,0,0.1)" }}>
+            style={{ background: "rgba(10,8,24,0.96)", borderColor: "rgba(255,255,255,0.14)", boxShadow: "0 4px 16px rgba(0,0,0,0.1)" }}>
             {groups.map(g => (
               <button key={g.groupId}
                 onClick={() => { setSelected(g.groupId); setOpen(false); }}
-                className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-slate-50 border-b last:border-0"
-                style={{ borderColor: "#f1f5f9", color: selected === g.groupId ? "#0891B2" : "#475569" }}>
+                className="w-full flex items-center justify-between px-4 py-3 text-left border-b last:border-0"
+                style={{ borderColor: "rgba(255,255,255,0.08)", color: selected === g.groupId ? "#00D4FF" : "rgba(255,255,255,0.6)" }}>
                 <span className="font-bold text-sm">{g.groupName}</span>
-                <span className="text-xs" style={{ color: "#94a3b8" }}>{g.predCount} predictions</span>
+                <span className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>{g.predCount} predictions</span>
               </button>
             ))}
           </div>
@@ -138,7 +138,7 @@ export function CopyPredictions({ currentGroupId, userId, onCopied }: CopyPredic
       </button>
 
       {copied && (
-        <div className="flex items-start gap-2 text-xs" style={{ color: "#64748b" }}>
+        <div className="flex items-start gap-2 text-xs" style={{ color: "rgba(255,255,255,0.5)" }}>
           <AlertCircle size={12} className="shrink-0 mt-0.5" style={{ color: "#d97706" }} />
           Only matches that exist in this group were copied. Review before saving.
         </div>

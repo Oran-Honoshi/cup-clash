@@ -1,6 +1,7 @@
 import { AppSidebar } from "@/components/app/sidebar";
 import { MobileNav } from "@/components/app/mobile-nav";
 import { AppHeader } from "@/components/app/app-header";
+import { PageTransition } from "@/components/app/page-transition";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -19,7 +20,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       <main className="relative z-10 flex-1 lg:ml-60 pb-20 lg:pb-0 flex flex-col">
         <AppHeader />
         <div className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-6">
-          {children}
+          <PageTransition>{children}</PageTransition>
         </div>
       </main>
       <MobileNav />

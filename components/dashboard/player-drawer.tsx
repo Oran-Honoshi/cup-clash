@@ -46,6 +46,7 @@ export function PlayerDrawer({ userId, groupId, name, country, points, rank, ope
   const [loading,  setLoading]  = useState(false);
   const [exactCount,   setExactCount]   = useState(0);
   const [outcomeCount, setOutcomeCount] = useState(0);
+  const [closeHover, setCloseHover] = useState(false);
 
   useEffect(() => {
     if (!open || !userId || !groupId) return;
@@ -98,34 +99,40 @@ export function PlayerDrawer({ userId, groupId, name, country, points, rank, ope
         <>
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             className="fixed inset-0 z-50"
-            style={{ background: "rgba(15,23,42,0.4)", backdropFilter: "blur(4px)" }}
+            style={{ background: "rgba(0,0,0,0.6)", backdropFilter: "blur(4px)" }}
             onClick={onClose} />
 
           <motion.div
             initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }}
             transition={{ type: "spring", damping: 28, stiffness: 280 }}
             className="fixed right-0 top-0 bottom-0 z-50 w-full sm:w-96 overflow-y-auto"
-            style={{ background: "rgba(255,255,255,0.97)", backdropFilter: "blur(24px)", borderLeft: "1px solid rgba(0,212,255,0.15)", boxShadow: "-8px 0 40px rgba(0,0,0,0.1)" }}>
+            style={{ background: "rgba(8,6,20,0.95)", backdropFilter: "blur(24px)", WebkitBackdropFilter: "blur(24px)", borderLeft: "1px solid rgba(0,212,255,0.15)", boxShadow: "-8px 0 40px rgba(0,0,0,0.1)" }}>
 
             {/* Header */}
-            <div className="sticky top-0 px-5 py-4 border-b flex items-center justify-between"
-              style={{ borderColor: "rgba(0,212,255,0.12)", background: "rgba(255,255,255,0.95)", backdropFilter: "blur(12px)" }}>
+            <div className="sticky top-0 px-5 py-4 flex items-center justify-between"
+              style={{ borderBottom: "1px solid rgba(255,255,255,0.08)", background: "rgba(18,14,38,0.6)", backdropFilter: "blur(12px)" }}>
               <div className="flex items-center gap-3">
                 <div className="relative h-10 w-10 rounded-full overflow-hidden"
                   style={{ border: "2px solid rgba(0,212,255,0.2)" }}>
                   <Image src={flagUrl(country, 40)} alt={country} fill className="object-cover" unoptimized />
                 </div>
                 <div>
-                  <div className="font-display text-xl uppercase font-black" style={{ color: "#0F172A" }}>{name}</div>
+                  <div className="font-display text-xl uppercase font-black" style={{ color: "white" }}>{name}</div>
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold" style={{ color: "#0891B2" }}>Rank #{rank}</span>
-                    <span className="text-xs" style={{ color: "#94a3b8" }}>·</span>
-                    <span className="text-xs font-black" style={{ color: "#0F172A" }}>{points} pts</span>
+                    <span className="text-xs font-bold" style={{ color: "#00D4FF" }}>Rank #{rank}</span>
+                    <span className="text-xs" style={{ color: "rgba(255,255,255,0.3)" }}>·</span>
+                    <span className="text-xs font-black" style={{ color: "white" }}>{points} pts</span>
                   </div>
                 </div>
               </div>
-              <button onClick={onClose} className="p-2 rounded-xl hover:bg-slate-100">
-                <X size={18} style={{ color: "#64748b" }} />
+              <button
+                onClick={onClose}
+                className="p-2 rounded-xl"
+                style={{ background: closeHover ? "rgba(255,255,255,0.1)" : "transparent", transition: "background 0.15s" }}
+                onMouseEnter={() => setCloseHover(true)}
+                onMouseLeave={() => setCloseHover(false)}
+              >
+                <X size={18} style={{ color: "rgba(255,255,255,0.6)" }} />
               </button>
             </div>
 
@@ -137,26 +144,26 @@ export function PlayerDrawer({ userId, groupId, name, country, points, rank, ope
                 { icon: TrendingUp,label: "Outcome",    value: outcomeCount, color: "#d97706" },
               ].map(({ icon: Icon, label, value, color }) => (
                 <div key={label} className="rounded-xl p-3 text-center"
-                  style={{ background: "rgba(0,212,255,0.04)", border: "1px solid rgba(0,212,255,0.1)" }}>
+                  style={{ background: "rgba(18,14,38,0.4)", border: "1px solid rgba(255,255,255,0.08)" }}>
                   <Icon size={16} className="mx-auto mb-1" style={{ color }} />
-                  <div className="font-black text-xl" style={{ color: "#0F172A" }}>{value}</div>
-                  <div className="text-[10px] uppercase tracking-widest" style={{ color: "#94a3b8" }}>{label}</div>
+                  <div className="font-black text-xl" style={{ color: "white" }}>{value}</div>
+                  <div className="text-[10px] uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.4)" }}>{label}</div>
                 </div>
               ))}
             </div>
 
             {/* Point history */}
             <div className="px-5 pb-8">
-              <div className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: "#64748b" }}>
+              <div className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: "rgba(255,255,255,0.5)" }}>
                 Point History
               </div>
 
               {loading ? (
-                <div className="py-8 text-center text-sm" style={{ color: "#94a3b8" }}>Loading...</div>
+                <div className="py-8 text-center text-sm" style={{ color: "rgba(255,255,255,0.35)" }}>Loading...</div>
               ) : history.length === 0 ? (
                 <div className="py-8 text-center space-y-2">
-                  <Zap size={28} className="mx-auto" style={{ color: "#e2e8f0" }} />
-                  <p className="text-sm" style={{ color: "#94a3b8" }}>
+                  <Zap size={28} className="mx-auto" style={{ color: "rgba(255,255,255,0.2)" }} />
+                  <p className="text-sm" style={{ color: "rgba(255,255,255,0.35)" }}>
                     No points scored yet — check back after matches are played.
                   </p>
                 </div>
@@ -174,17 +181,17 @@ export function PlayerDrawer({ userId, groupId, name, country, points, rank, ope
                         <div className="relative h-4 w-5 rounded-sm overflow-hidden">
                           <Image src={flagUrl(item.homeFlagCode, 20)} alt={item.home} fill className="object-cover" unoptimized />
                         </div>
-                        <span className="text-[10px]" style={{ color: "#94a3b8" }}>vs</span>
+                        <span className="text-[10px]" style={{ color: "rgba(255,255,255,0.4)" }}>vs</span>
                         <div className="relative h-4 w-5 rounded-sm overflow-hidden">
                           <Image src={flagUrl(item.awayFlagCode, 20)} alt={item.away} fill className="object-cover" unoptimized />
                         </div>
                       </div>
                       {/* Match */}
                       <div className="flex-1 min-w-0">
-                        <div className="text-xs font-bold truncate" style={{ color: "#0F172A" }}>
+                        <div className="text-xs font-bold truncate" style={{ color: "white" }}>
                           {item.home} vs {item.away}
                         </div>
-                        <div className="text-[10px]" style={{ color: "#94a3b8" }}>
+                        <div className="text-[10px]" style={{ color: "rgba(255,255,255,0.4)" }}>
                           Guessed: {item.predicted}
                         </div>
                       </div>

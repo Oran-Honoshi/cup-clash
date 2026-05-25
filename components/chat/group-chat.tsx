@@ -200,25 +200,25 @@ export function GroupChat({ groupId, currentUserId, currentUserName, isPaid }: G
             className="fixed bottom-36 right-4 lg:bottom-24 lg:right-6 z-40 w-80 sm:w-96 rounded-3xl overflow-hidden flex flex-col"
             style={{
               height: 480,
-              background: "rgba(255,255,255,0.95)",
+              background: "rgba(8,6,20,0.95)",
               backdropFilter: "blur(24px)",
               border: "1px solid rgba(0,212,255,0.2)",
-              boxShadow: "0 20px 60px rgba(0,212,255,0.15), 0 4px 16px rgba(0,0,0,0.08)",
+              boxShadow: "0 20px 60px rgba(0,0,0,0.4), 0 4px 16px rgba(0,0,0,0.2)",
             }}>
 
             {/* Header */}
             <div className="px-4 py-3 border-b flex items-center justify-between shrink-0"
-              style={{ borderColor: "rgba(0,212,255,0.12)", background: "rgba(248,250,252,0.8)" }}>
+              style={{ borderColor: "rgba(0,212,255,0.12)", background: "rgba(18,14,38,0.6)" }}>
               <div className="flex items-center gap-2">
                 <span className="relative flex h-2 w-2">
                   <span className="absolute inline-flex h-full w-full rounded-full animate-ping opacity-75"
                     style={{ backgroundColor: "#00FF88" }} />
                   <span className="relative inline-flex h-2 w-2 rounded-full" style={{ backgroundColor: "#00FF88" }} />
                 </span>
-                <span className="font-display text-lg uppercase" style={{ color: "#0F172A" }}>Group Chat</span>
+                <span className="font-display text-lg uppercase" style={{ color: "white" }}>Group Chat</span>
               </div>
               <button onClick={() => setIsOpen(false)}>
-                <X size={16} style={{ color: "#94a3b8" }} />
+                <X size={16} style={{ color: "rgba(255,255,255,0.5)" }} />
               </button>
             </div>
 
@@ -227,8 +227,8 @@ export function GroupChat({ groupId, currentUserId, currentUserName, isPaid }: G
               {messages.length === 0 && (
                 <div className="h-full flex items-center justify-center text-center">
                   <div>
-                    <MessageCircle size={32} className="mx-auto mb-2" style={{ color: "#cbd5e1" }} />
-                    <p className="text-sm" style={{ color: "#94a3b8" }}>No messages yet. Say hi! 👋</p>
+                    <MessageCircle size={32} className="mx-auto mb-2" style={{ color: "rgba(255,255,255,0.2)" }} />
+                    <p className="text-sm" style={{ color: "rgba(255,255,255,0.35)" }}>No messages yet. Say hi! 👋</p>
                   </div>
                 </div>
               )}
@@ -247,7 +247,7 @@ export function GroupChat({ groupId, currentUserId, currentUserName, isPaid }: G
                     )}
                     <div className={cn("max-w-[75%] space-y-0.5", isOwn && "items-end flex flex-col")}>
                       {showAvatar && !isOwn && profile && (
-                        <div className="text-[10px] font-bold px-1" style={{ color: "#64748b" }}>{profile.name}</div>
+                        <div className="text-[10px] font-bold px-1" style={{ color: "rgba(255,255,255,0.45)" }}>{profile.name}</div>
                       )}
                       {msg.type === "gif" && msg.gif_url ? (
                         // eslint-disable-next-line @next/next/no-img-element
@@ -258,12 +258,12 @@ export function GroupChat({ groupId, currentUserId, currentUserName, isPaid }: G
                             background: "linear-gradient(135deg, #00D4FF, #00FF88)",
                             color: "#0B141B", borderBottomRightRadius: 4,
                           } : {
-                            background: "#f1f5f9", color: "#0F172A", borderBottomLeftRadius: 4,
+                            background: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.85)", borderBottomLeftRadius: 4,
                           }}>
                           {msg.content}
                         </div>
                       )}
-                      <div className="text-[9px] px-1" style={{ color: "#94a3b8" }}>
+                      <div className="text-[9px] px-1" style={{ color: "rgba(255,255,255,0.25)" }}>
                         {formatTime(msg.created_at)}
                       </div>
                     </div>
@@ -281,10 +281,10 @@ export function GroupChat({ groupId, currentUserId, currentUserName, isPaid }: G
                     onKeyDown={e => e.key === "Enter" && searchGifs(gifQuery)}
                     placeholder="Search GIFs..."
                     className="flex-1 text-xs px-3 py-1.5 rounded-lg"
-                    style={{ border: "1px solid #e2e8f0", color: "#0F172A", background: "white" }} />
+                    style={{ border: "1px solid rgba(255,255,255,0.12)", color: "rgba(255,255,255,0.85)", background: "rgba(255,255,255,0.06)" }} />
                   <button onClick={() => searchGifs(gifQuery)}
                     className="px-3 py-1.5 rounded-lg text-xs font-bold"
-                    style={{ background: "rgba(0,212,255,0.1)", color: "#0891B2" }}>
+                    style={{ background: "rgba(0,212,255,0.1)", color: "#00D4FF" }}>
                     {gifLoading ? "..." : "Go"}
                   </button>
                 </div>
@@ -301,9 +301,9 @@ export function GroupChat({ groupId, currentUserId, currentUserName, isPaid }: G
 
             {/* Input */}
             <div className="px-3 py-3 border-t shrink-0"
-              style={{ borderColor: "rgba(0,212,255,0.12)", background: "rgba(248,250,252,0.8)" }}>
+              style={{ borderColor: "rgba(0,212,255,0.12)", background: "rgba(18,14,38,0.6)" }}>
               {!isPaid ? (
-                <div className="text-center text-sm py-2" style={{ color: "#94a3b8" }}>
+                <div className="text-center text-sm py-2" style={{ color: "rgba(255,255,255,0.4)" }}>
                   Join the group to chat
                 </div>
               ) : (
@@ -316,8 +316,8 @@ export function GroupChat({ groupId, currentUserId, currentUserName, isPaid }: G
                   )}
                   <div className="flex gap-2 items-center">
                     <button onClick={() => setShowGif(g => !g)}
-                      className="h-9 w-9 rounded-xl flex items-center justify-center shrink-0 transition-colors hover:bg-slate-100"
-                      style={{ color: showGif ? "#00D4FF" : "#94a3b8" }}>
+                      className="h-9 w-9 rounded-xl flex items-center justify-center shrink-0 transition-colors"
+                      style={{ color: showGif ? "#00D4FF" : "rgba(255,255,255,0.4)" }}>
                       <ImageIcon size={18} />
                     </button>
                     <input ref={inputRef} value={input}
@@ -325,9 +325,9 @@ export function GroupChat({ groupId, currentUserId, currentUserName, isPaid }: G
                       onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(input); } }}
                       placeholder="Message..."
                       className="flex-1 px-3 py-2 rounded-xl text-sm"
-                      style={{ border: "1px solid #e2e8f0", background: "white", color: "#0F172A", outline: "none" }}
+                      style={{ border: "1px solid rgba(255,255,255,0.12)", background: "rgba(255,255,255,0.06)", color: "#ffffff", outline: "none" }}
                       onFocus={e => (e.target.style.border = "1px solid #00D4FF")}
-                      onBlur={e => (e.target.style.border = "1px solid #e2e8f0")} />
+                      onBlur={e => (e.target.style.border = "1px solid rgba(255,255,255,0.12)")} />
                     <button
                       onClick={() => sendMessage(input)}
                       disabled={!input.trim() || sending}

@@ -76,7 +76,7 @@ export function DashboardPopups({ groupId, userId }: FirstPredictionPopupProps) 
 
             <button onClick={close}
               className="absolute top-4 right-4 h-8 w-8 rounded-full flex items-center justify-center"
-              style={{ background: "rgba(0,0,0,0.1)", color: "#64748b" }}>
+              style={{ background: "rgba(255,255,255,0.15)", color: "rgba(255,255,255,0.6)" }}>
               <X size={16} />
             </button>
 
@@ -85,26 +85,26 @@ export function DashboardPopups({ groupId, userId }: FirstPredictionPopupProps) 
               <Target size={28} style={{ color: "#0B141B" }} />
             </div>
 
-            <h2 className="font-display text-2xl uppercase font-black mb-2" style={{ color: "#0F172A" }}>
+            <h2 className="font-display text-2xl uppercase font-black mb-2" style={{ color: "white" }}>
               First Bet Locked!
             </h2>
 
             {matchInfo && (
               <div className="rounded-2xl px-4 py-3 mb-4"
-                style={{ background: "rgba(255,255,255,0.8)", border: "1px solid rgba(0,212,255,0.15)" }}>
-                <div className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: "#94a3b8" }}>
+                style={{ background: "rgba(18,14,38,0.6)", border: "1px solid rgba(0,212,255,0.15)" }}>
+                <div className="text-xs font-bold uppercase tracking-widest mb-1" style={{ color: "rgba(255,255,255,0.4)" }}>
                   {matchInfo.home} vs {matchInfo.away}
                 </div>
-                <div className="font-display text-3xl font-black" style={{ color: "#0F172A" }}>
+                <div className="font-display text-3xl font-black" style={{ color: "white" }}>
                   {matchInfo.homeScore}–{matchInfo.awayScore}
                 </div>
               </div>
             )}
 
-            <p className="text-sm mb-1" style={{ color: "#64748b" }}>
+            <p className="text-sm mb-1" style={{ color: "rgba(255,255,255,0.5)" }}>
               Your prediction is locked in. Now wait for the match — every goal counts!
             </p>
-            <p className="text-xs mb-6" style={{ color: "#94a3b8" }}>
+            <p className="text-xs mb-6" style={{ color: "rgba(255,255,255,0.4)" }}>
               ⚡ +25 pts if exact · +10 pts if correct outcome
             </p>
 

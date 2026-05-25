@@ -34,13 +34,13 @@ function GuestShellInner() {
           className="h-10 w-10 rounded-xl flex items-center justify-center shrink-0"
           style={{ background: "rgba(0,212,255,0.1)", border: "1px solid rgba(0,212,255,0.2)" }}
         >
-          <Trophy size={18} style={{ color: "#0891B2" }} />
+          <Trophy size={18} style={{ color: "#00D4FF" }} />
         </div>
         <div className="flex-1">
-          <div className="font-bold text-sm" style={{ color: "#0F172A" }}>
+          <div className="font-bold text-sm" style={{ color: "white" }}>
             You&apos;re in guest mode
           </div>
-          <div className="text-xs" style={{ color: "#64748b" }}>
+          <div className="text-xs" style={{ color: "rgba(255,255,255,0.5)" }}>
             Fill in your predictions now — they&apos;ll be saved to your account the moment you sign up.
           </div>
         </div>
@@ -77,13 +77,13 @@ function GuestShellInner() {
       */}
       <div
         className="rounded-3xl p-8 text-center"
-        style={{ background: "white", border: "1px solid #e2e8f0" }}
+        style={{ background: "rgba(18,14,38,0.55)", border: "1px solid rgba(255,255,255,0.12)" }}
       >
         <div className="text-4xl mb-3">⚽</div>
-        <div className="font-display text-2xl uppercase font-black mb-2" style={{ color: "#0F172A" }}>
+        <div className="font-display text-2xl uppercase font-black mb-2" style={{ color: "white" }}>
           Predictions Open
         </div>
-        <p className="text-sm" style={{ color: "#64748b" }}>
+        <p className="text-sm" style={{ color: "rgba(255,255,255,0.5)" }}>
           All 104 World Cup matches available to predict.
           Your picks are saved locally until you create a free account.
         </p>

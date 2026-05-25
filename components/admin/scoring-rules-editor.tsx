@@ -3,8 +3,6 @@
 import { useState, useEffect } from "react";
 import { Check, AlertCircle, Calculator, Lock } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 
 const TOTAL_MATCHES = 104;
@@ -167,17 +165,32 @@ export function ScoringRulesEditor({ groupId }: ScoringRulesEditorProps) {
   const maxTotal  = maxMatch + maxKo + maxWinner + maxScorer + maxAssist + maxGB + maxDef + maxYoung + maxThird;
 
   if (loading) return (
-    <div className="rounded-2xl p-5 text-center text-sm" style={{ background: "rgba(255,255,255,0.9)", color: "#94a3b8" }}>
+    <div className="rounded-2xl p-5 text-center text-sm" style={{
+      background: "rgba(18,14,38,0.32)",
+      backdropFilter: "blur(40px) saturate(180%)",
+      WebkitBackdropFilter: "blur(40px) saturate(180%)",
+      border: "1px solid rgba(255,255,255,0.14)",
+      boxShadow: "0 12px 40px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.18)",
+      borderRadius: 28,
+      color: "rgba(255,255,255,0.35)",
+    }}>
       Loading scoring rules...
     </div>
   );
 
   return (
     <div className="rounded-2xl p-5 space-y-5"
-      style={{ background: "rgba(255,255,255,0.9)", border: "1px solid rgba(0,212,255,0.15)" }}>
+      style={{
+        background: "rgba(18,14,38,0.32)",
+        backdropFilter: "blur(40px) saturate(180%)",
+        WebkitBackdropFilter: "blur(40px) saturate(180%)",
+        border: "1px solid rgba(255,255,255,0.14)",
+        boxShadow: "0 12px 40px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.18)",
+        borderRadius: 28,
+      }}>
       <div className="flex items-center gap-2.5">
         <Calculator size={18} style={{ color: "#0891B2" }} />
-        <span className="font-display text-xl uppercase font-black" style={{ color: "#0F172A" }}>Scoring Rules</span>
+        <span className="font-display text-xl uppercase font-black" style={{ color: "white" }}>Scoring Rules</span>
         {locked && (
           <span className="ml-auto flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest"
             style={{ color: "#d97706" }}>
@@ -185,7 +198,7 @@ export function ScoringRulesEditor({ groupId }: ScoringRulesEditorProps) {
           </span>
         )}
       </div>
-      <p className="text-xs" style={{ color: "#64748b" }}>
+      <p className="text-xs" style={{ color: "rgba(255,255,255,0.5)" }}>
         {locked
           ? "Rules are locked — the tournament has started."
           : "These rules lock June 11 when the first match kicks off. Enable/disable and set point values below."}
@@ -197,28 +210,34 @@ export function ScoringRulesEditor({ groupId }: ScoringRulesEditorProps) {
           return (
             <div key={key}
               className={cn("flex items-center gap-3 p-3 rounded-xl border transition-all",
-                isOn ? "border-slate-200 bg-slate-50/50" : "border-slate-100 opacity-50")}>
+                !isOn && "opacity-50")}
+              style={{
+                background: "rgba(255,255,255,0.04)",
+                border: "1px solid rgba(255,255,255,0.07)",
+              }}>
               <button
                 onClick={() => { if (!locked) setEnabled(e => ({ ...e, [feKey]: !e[feKey] })); }}
                 disabled={locked}
-                className={cn("h-5 w-5 rounded border-2 flex items-center justify-center shrink-0 transition-all",
-                  isOn ? "border-cyan-400 bg-cyan-50" : "border-slate-200 bg-white")}
+                className="h-5 w-5 rounded flex items-center justify-center shrink-0 transition-all"
+                style={isOn
+                  ? { borderColor: "rgba(0,212,255,1)", background: "rgba(0,212,255,0.2)", border: "2px solid rgba(0,212,255,1)" }
+                  : { background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)" }}
               >
                 {isOn && <Check size={11} style={{ color: "#0891B2" }} />}
               </button>
               <div className="flex-1 min-w-0">
-                <div className="text-sm font-bold" style={{ color: "#0F172A" }}>{label}</div>
-                <div className="text-[11px]" style={{ color: "#94a3b8" }}>{desc} · {per}</div>
+                <div className="text-sm font-bold" style={{ color: "white" }}>{label}</div>
+                <div className="text-[11px]" style={{ color: "rgba(255,255,255,0.4)" }}>{desc} · {per}</div>
               </div>
               <div className="flex items-center gap-1.5 shrink-0">
                 <input
                   type="number" min={0} max={999} value={rules[key]}
                   disabled={!isOn || locked}
                   onChange={e => { setRules(r => ({ ...r, [key]: Number(e.target.value) })); setSaved(false); }}
-                  className="w-16 rounded-lg px-2 py-1.5 text-sm text-center border focus:outline-none focus:border-cyan-400 disabled:opacity-30"
-                  style={{ background: "white", borderColor: "#e2e8f0", color: "#0F172A" }}
+                  className="w-16 rounded-lg px-2 py-1.5 text-sm text-center focus:outline-none disabled:opacity-30"
+                  style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", color: "#ffffff" }}
                 />
-                <span className="text-xs" style={{ color: "#94a3b8" }}>pts</span>
+                <span className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>pts</span>
               </div>
             </div>
           );
@@ -227,22 +246,22 @@ export function ScoringRulesEditor({ groupId }: ScoringRulesEditorProps) {
 
       {/* Max points */}
       <div className="rounded-xl p-4" style={{ background: "rgba(0,212,255,0.04)", border: "1px solid rgba(0,212,255,0.12)" }}>
-        <div className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: "#64748b" }}>
+        <div className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: "rgba(255,255,255,0.5)" }}>
           Maximum possible points
         </div>
         <div className="space-y-1.5 text-sm">
-          {enabled.exact && <div className="flex justify-between" style={{ color: "#475569" }}><span>Exact scores ({TOTAL_MATCHES} × {rules.exactScore})</span><span className="font-bold" style={{ color: "#0F172A" }}>{maxMatch}</span></div>}
-          {enabled.outcome && !enabled.exact && <div className="flex justify-between" style={{ color: "#475569" }}><span>Outcomes ({TOTAL_MATCHES} × {rules.correctOutcome})</span><span className="font-bold" style={{ color: "#0F172A" }}>{maxMatch}</span></div>}
-          {enabled.koAdv    && <div className="flex justify-between" style={{ color: "#475569" }}><span>KO advancement ({TOTAL_KO} × {rules.koAdvancement})</span><span className="font-bold" style={{ color: "#0F172A" }}>{maxKo}</span></div>}
-          {enabled.winner   && <div className="flex justify-between" style={{ color: "#475569" }}><span>Tournament winner</span><span className="font-bold" style={{ color: "#0F172A" }}>{maxWinner}</span></div>}
-          {enabled.scorer   && <div className="flex justify-between" style={{ color: "#475569" }}><span>Top scorer</span><span className="font-bold" style={{ color: "#0F172A" }}>{maxScorer}</span></div>}
-          {enabled.assister && <div className="flex justify-between" style={{ color: "#475569" }}><span>Top assister</span><span className="font-bold" style={{ color: "#0F172A" }}>{maxAssist}</span></div>}
-          {enabled.goldenBall      && <div className="flex justify-between" style={{ color: "#475569" }}><span>Golden Ball</span><span className="font-bold" style={{ color: "#0F172A" }}>{maxGB}</span></div>}
-          {enabled.bestDefence     && <div className="flex justify-between" style={{ color: "#475569" }}><span>Best defence</span><span className="font-bold" style={{ color: "#0F172A" }}>{maxDef}</span></div>}
-          {enabled.bestYoungPlayer && <div className="flex justify-between" style={{ color: "#475569" }}><span>Best young player</span><span className="font-bold" style={{ color: "#0F172A" }}>{maxYoung}</span></div>}
-          {enabled.bestThird && <div className="flex justify-between" style={{ color: "#475569" }}><span>Best 3rd-place teams (8 × {rules.bestThird})</span><span className="font-bold" style={{ color: "#0F172A" }}>{maxThird}</span></div>}
-          <div className="flex justify-between pt-2 border-t" style={{ borderColor: "#e2e8f0" }}>
-            <span className="font-bold" style={{ color: "#0F172A" }}>Perfect score</span>
+          {enabled.exact && <div className="flex justify-between" style={{ color: "rgba(255,255,255,0.5)" }}><span>Exact scores ({TOTAL_MATCHES} × {rules.exactScore})</span><span className="font-bold" style={{ color: "white" }}>{maxMatch}</span></div>}
+          {enabled.outcome && !enabled.exact && <div className="flex justify-between" style={{ color: "rgba(255,255,255,0.5)" }}><span>Outcomes ({TOTAL_MATCHES} × {rules.correctOutcome})</span><span className="font-bold" style={{ color: "white" }}>{maxMatch}</span></div>}
+          {enabled.koAdv    && <div className="flex justify-between" style={{ color: "rgba(255,255,255,0.5)" }}><span>KO advancement ({TOTAL_KO} × {rules.koAdvancement})</span><span className="font-bold" style={{ color: "white" }}>{maxKo}</span></div>}
+          {enabled.winner   && <div className="flex justify-between" style={{ color: "rgba(255,255,255,0.5)" }}><span>Tournament winner</span><span className="font-bold" style={{ color: "white" }}>{maxWinner}</span></div>}
+          {enabled.scorer   && <div className="flex justify-between" style={{ color: "rgba(255,255,255,0.5)" }}><span>Top scorer</span><span className="font-bold" style={{ color: "white" }}>{maxScorer}</span></div>}
+          {enabled.assister && <div className="flex justify-between" style={{ color: "rgba(255,255,255,0.5)" }}><span>Top assister</span><span className="font-bold" style={{ color: "white" }}>{maxAssist}</span></div>}
+          {enabled.goldenBall      && <div className="flex justify-between" style={{ color: "rgba(255,255,255,0.5)" }}><span>Golden Ball</span><span className="font-bold" style={{ color: "white" }}>{maxGB}</span></div>}
+          {enabled.bestDefence     && <div className="flex justify-between" style={{ color: "rgba(255,255,255,0.5)" }}><span>Best defence</span><span className="font-bold" style={{ color: "white" }}>{maxDef}</span></div>}
+          {enabled.bestYoungPlayer && <div className="flex justify-between" style={{ color: "rgba(255,255,255,0.5)" }}><span>Best young player</span><span className="font-bold" style={{ color: "white" }}>{maxYoung}</span></div>}
+          {enabled.bestThird && <div className="flex justify-between" style={{ color: "rgba(255,255,255,0.5)" }}><span>Best 3rd-place teams (8 × {rules.bestThird})</span><span className="font-bold" style={{ color: "white" }}>{maxThird}</span></div>}
+          <div className="flex justify-between pt-2 border-t" style={{ borderColor: "rgba(255,255,255,0.08)" }}>
+            <span className="font-bold" style={{ color: "white" }}>Perfect score</span>
             <span className="font-display text-2xl font-black" style={{ color: "#0891B2" }}>{maxTotal}</span>
           </div>
         </div>
@@ -255,10 +274,9 @@ export function ScoringRulesEditor({ groupId }: ScoringRulesEditorProps) {
         </div>
       )}
 
-      <Button onClick={handleSave} loading={saving} disabled={locked} size="sm" className="w-full"
-        leftIcon={saved ? <Check size={14} /> : <Calculator size={14} />}>
-        {locked ? "Rules locked" : saved ? "Saved!" : "Save scoring rules"}
-      </Button>
+      <button onClick={handleSave} disabled={locked || saving} style={{ padding: "12px 24px", borderRadius: 12, background: locked ? "rgba(255,255,255,0.08)" : "linear-gradient(135deg, #00FF88, #00D4FF)", color: locked ? "rgba(255,255,255,0.3)" : "#050810", fontSize: 14, fontWeight: 800, fontFamily: "var(--font-display)", textTransform: "uppercase" as const, letterSpacing: "0.05em", cursor: locked ? "not-allowed" : "pointer", border: "none", width: "100%", opacity: saving ? 0.7 : 1 }}>
+        {locked ? "Rules locked" : saved ? "Saved!" : saving ? "Saving..." : "Save changes"}
+      </button>
     </div>
   );
 }

@@ -50,7 +50,7 @@ export default async function AdminGroupPage({ params }: { params: { groupId: st
           ← {group.name}
         </Link>
         <div className="label-caps mb-1">{group.name}</div>
-        <h1 className="font-display text-4xl sm:text-5xl uppercase tracking-tight" style={{ color: "#0F172A" }}>
+        <h1 className="font-display text-4xl sm:text-5xl uppercase tracking-tight" style={{ color: "white" }}>
           Admin Panel
         </h1>
         {tournamentLocked && (
@@ -75,11 +75,18 @@ export default async function AdminGroupPage({ params }: { params: { groupId: st
         <ScoringRulesEditor groupId={group.id} />
       ) : (
         <div className="rounded-2xl p-5"
-          style={{ background: "rgba(255,255,255,0.9)", border: "1px solid rgba(217,119,6,0.2)" }}>
+          style={{
+            background: "rgba(18,14,38,0.32)",
+            backdropFilter: "blur(40px) saturate(180%)",
+            WebkitBackdropFilter: "blur(40px) saturate(180%)",
+            border: "1px solid rgba(217,119,6,0.2)",
+            boxShadow: "0 12px 40px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.18)",
+            borderRadius: 28,
+          }}>
           <div className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#d97706" }}>
             Scoring Rules — Locked
           </div>
-          <p className="text-sm" style={{ color: "#64748b" }}>
+          <p className="text-sm" style={{ color: "rgba(255,255,255,0.5)" }}>
             Scoring rules are locked once the tournament starts. Members can view them in the group page.
           </p>
         </div>
@@ -89,7 +96,14 @@ export default async function AdminGroupPage({ params }: { params: { groupId: st
       <div>
         <div className="label-caps mb-3">Tournament Pick Overrides</div>
         <div className="rounded-2xl p-5"
-          style={{ background: "rgba(255,255,255,0.9)", border: "1px solid rgba(0,212,255,0.15)" }}>
+          style={{
+            background: "rgba(18,14,38,0.32)",
+            backdropFilter: "blur(40px) saturate(180%)",
+            WebkitBackdropFilter: "blur(40px) saturate(180%)",
+            border: "1px solid rgba(255,255,255,0.14)",
+            boxShadow: "0 12px 40px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.18)",
+            borderRadius: 28,
+          }}>
           <PickOverridesPanel groupId={groupId} adminId={userProfile.id} />
         </div>
       </div>

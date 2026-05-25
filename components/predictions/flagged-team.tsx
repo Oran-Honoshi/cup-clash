@@ -37,8 +37,9 @@ export function FlaggedTeam({ name, flagCode, size = "sm", className = "" }: Fla
   if (name === "TBD") {
     return (
       <span className={`inline-flex items-center gap-1.5 ${className}`}>
-        <span className={`${dims.h} ${dims.w} rounded-sm bg-slate-100 inline-block border border-slate-200`} />
-        <span className={`${dims.text} font-bold text-slate-400`}>TBD</span>
+        <span className={`${dims.h} ${dims.w} rounded-sm inline-block`}
+          style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }} />
+        <span className={`${dims.text} font-bold`} style={{ color: "rgba(255,255,255,0.4)" }}>TBD</span>
       </span>
     );
   }
@@ -51,7 +52,7 @@ export function FlaggedTeam({ name, flagCode, size = "sm", className = "" }: Fla
           <Image src={flagUrl(code, 20)} alt={name} fill className="object-cover" unoptimized />
         </span>
       )}
-      <span className={`${dims.text} font-bold`} style={{ color: "#0F172A" }}>{name}</span>
+      <span className={`${dims.text} font-bold`} style={{ color: "#ffffff" }}>{name}</span>
     </span>
   );
 }

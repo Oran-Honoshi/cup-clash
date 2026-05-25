@@ -3,8 +3,6 @@
 import { useState, useEffect } from "react";
 import { FileText, Check, AlertCircle, Percent, Users } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { SCORING_EXAMPLES } from "@/lib/scoring";
 import { cn } from "@/lib/utils";
 
@@ -80,10 +78,17 @@ export function GroupRulesEditor({
 
         {/* Max members */}
         <div className="rounded-2xl p-5"
-          style={{ background: "rgba(255,255,255,0.9)", border: "1px solid rgba(0,212,255,0.15)" }}>
+          style={{
+            background: "rgba(18,14,38,0.32)",
+            backdropFilter: "blur(40px) saturate(180%)",
+            WebkitBackdropFilter: "blur(40px) saturate(180%)",
+            border: "1px solid rgba(255,255,255,0.14)",
+            boxShadow: "0 12px 40px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.18)",
+            borderRadius: 22,
+          }}>
           <div className="flex items-center gap-2.5 mb-4">
             <Users size={18} style={{ color: "#0891B2" }} />
-            <span className="font-display text-xl uppercase font-black" style={{ color: "#0F172A" }}>
+            <span className="font-display text-xl uppercase font-black" style={{ color: "white" }}>
               Max Members
             </span>
           </div>
@@ -92,21 +97,28 @@ export function GroupRulesEditor({
             value={maxMembers}
             onChange={e => { setMaxMembers(Number(e.target.value)); setSaved(false); }}
             className="w-full px-4 py-3 rounded-xl text-center font-display text-3xl font-black border focus:outline-none"
-            style={{ background: "white", borderColor: "#e2e8f0", color: "#0F172A" }}
+            style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", color: "#ffffff" }}
             onFocus={e => e.target.style.borderColor = "#00D4FF"}
-            onBlur={e => e.target.style.borderColor = "#e2e8f0"}
+            onBlur={e => e.target.style.borderColor = "rgba(255,255,255,0.12)"}
           />
-          <p className="text-xs mt-2" style={{ color: "#94a3b8" }}>
+          <p className="text-xs mt-2" style={{ color: "rgba(255,255,255,0.4)" }}>
             {memberCount} joined so far · min {memberCount || 1}
           </p>
         </div>
 
         {/* Admin fee */}
         <div className="rounded-2xl p-5"
-          style={{ background: "rgba(255,255,255,0.9)", border: "1px solid rgba(0,212,255,0.15)" }}>
+          style={{
+            background: "rgba(18,14,38,0.32)",
+            backdropFilter: "blur(40px) saturate(180%)",
+            WebkitBackdropFilter: "blur(40px) saturate(180%)",
+            border: "1px solid rgba(255,255,255,0.14)",
+            boxShadow: "0 12px 40px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.18)",
+            borderRadius: 22,
+          }}>
           <div className="flex items-center gap-2.5 mb-4">
             <Percent size={18} style={{ color: "#0891B2" }} />
-            <span className="font-display text-xl uppercase font-black" style={{ color: "#0F172A" }}>
+            <span className="font-display text-xl uppercase font-black" style={{ color: "white" }}>
               Admin Fee
             </span>
           </div>
@@ -116,30 +128,30 @@ export function GroupRulesEditor({
               value={adminFee}
               onChange={e => { setAdminFee(Number(e.target.value)); setSaved(false); }}
               className="flex-1 px-4 py-3 rounded-xl text-center font-display text-3xl font-black border focus:outline-none"
-              style={{ background: "white", borderColor: "#e2e8f0", color: "#0F172A" }}
+              style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", color: "#ffffff" }}
               onFocus={e => e.target.style.borderColor = "#00D4FF"}
-              onBlur={e => e.target.style.borderColor = "#e2e8f0"}
+              onBlur={e => e.target.style.borderColor = "rgba(255,255,255,0.12)"}
             />
-            <span className="font-black text-2xl" style={{ color: "#94a3b8" }}>%</span>
+            <span className="font-black text-2xl" style={{ color: "rgba(255,255,255,0.4)" }}>%</span>
           </div>
           {adminFee > 0 ? (
             <div className="mt-3 rounded-xl p-3 space-y-1 text-xs"
               style={{ background: "rgba(0,212,255,0.04)", border: "1px solid rgba(0,212,255,0.12)" }}>
-              <div className="flex justify-between" style={{ color: "#64748b" }}>
+              <div className="flex justify-between" style={{ color: "rgba(255,255,255,0.5)" }}>
                 <span>Total pot ({memberCount} × ${buyInAmount})</span>
-                <span className="font-bold" style={{ color: "#0F172A" }}>${totalPot}</span>
+                <span className="font-bold" style={{ color: "white" }}>${totalPot}</span>
               </div>
-              <div className="flex justify-between" style={{ color: "#64748b" }}>
+              <div className="flex justify-between" style={{ color: "rgba(255,255,255,0.5)" }}>
                 <span>Admin fee ({adminFee}%)</span>
                 <span className="font-bold" style={{ color: "#d97706" }}>${feeAmount}</span>
               </div>
-              <div className="flex justify-between pt-1 border-t" style={{ borderColor: "#e2e8f0" }}>
-                <span className="font-bold" style={{ color: "#0F172A" }}>Prize pool</span>
+              <div className="flex justify-between pt-1 border-t" style={{ borderColor: "rgba(255,255,255,0.08)" }}>
+                <span className="font-bold" style={{ color: "white" }}>Prize pool</span>
                 <span className="font-display text-lg font-black" style={{ color: "#0891B2" }}>${netPot}</span>
               </div>
             </div>
           ) : (
-            <p className="text-xs mt-2" style={{ color: "#94a3b8" }}>
+            <p className="text-xs mt-2" style={{ color: "rgba(255,255,255,0.4)" }}>
               0% by default. Members see any fee you set.
             </p>
           )}
@@ -148,14 +160,21 @@ export function GroupRulesEditor({
 
       {/* Group rules text */}
       <div className="rounded-2xl p-5"
-        style={{ background: "rgba(255,255,255,0.9)", border: "1px solid rgba(0,212,255,0.15)" }}>
+        style={{
+          background: "rgba(18,14,38,0.32)",
+          backdropFilter: "blur(40px) saturate(180%)",
+          WebkitBackdropFilter: "blur(40px) saturate(180%)",
+          border: "1px solid rgba(255,255,255,0.14)",
+          boxShadow: "0 12px 40px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.18)",
+          borderRadius: 22,
+        }}>
         <div className="flex items-center gap-2.5 mb-4">
           <FileText size={18} style={{ color: "#0891B2" }} />
-          <span className="font-display text-xl uppercase font-black" style={{ color: "#0F172A" }}>
+          <span className="font-display text-xl uppercase font-black" style={{ color: "white" }}>
             Group Rules
           </span>
         </div>
-        <p className="text-xs mb-3" style={{ color: "#64748b" }}>
+        <p className="text-xs mb-3" style={{ color: "rgba(255,255,255,0.5)" }}>
           Shown to all members and sent in the welcome email.
           Auto-populated with your scoring settings — add custom rules below.
         </p>
@@ -165,26 +184,26 @@ export function GroupRulesEditor({
           placeholder="e.g. No changing predictions after discussing with others. Buy-ins collected by June 10."
           rows={5}
           className="w-full px-4 py-3 rounded-xl text-sm border placeholder:text-slate-300 focus:outline-none resize-none"
-          style={{ background: "white", borderColor: "#e2e8f0", color: "#0F172A" }}
+          style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", color: "#ffffff" }}
           onFocus={e => e.target.style.borderColor = "#00D4FF"}
-          onBlur={e => e.target.style.borderColor = "#e2e8f0"}
+          onBlur={e => e.target.style.borderColor = "rgba(255,255,255,0.12)"}
         />
 
         {/* Scoring examples */}
-        <div className="mt-4 pt-4 border-t" style={{ borderColor: "#f1f5f9" }}>
-          <div className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: "#94a3b8" }}>
+        <div className="mt-4 pt-4 border-t" style={{ borderColor: "rgba(255,255,255,0.08)" }}>
+          <div className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: "rgba(255,255,255,0.4)" }}>
             Scoring examples (auto-included in rules)
           </div>
           {SCORING_EXAMPLES.map(ex => (
             <div key={ex.match} className="mb-4 last:mb-0">
-              <div className="text-xs font-bold mb-1" style={{ color: "#0F172A" }}>{ex.match}</div>
+              <div className="text-xs font-bold mb-1" style={{ color: "white" }}>{ex.match}</div>
               <div className="space-y-1">
                 {ex.predictions.map(p => (
                   <div key={p.guess} className="flex items-center gap-3 text-xs">
-                    <span className="font-mono w-8 shrink-0" style={{ color: "#64748b" }}>{p.guess}</span>
-                    <span className="flex-1" style={{ color: "#94a3b8" }}>{p.label}</span>
+                    <span className="font-mono w-8 shrink-0" style={{ color: "rgba(255,255,255,0.5)" }}>{p.guess}</span>
+                    <span className="flex-1" style={{ color: "rgba(255,255,255,0.4)" }}>{p.label}</span>
                     <span className={cn("font-bold shrink-0",
-                      p.points >= 3 ? "text-emerald-600" : p.points > 0 ? "text-slate-600" : "text-slate-300")}>
+                      p.points >= 3 ? "text-emerald-400" : p.points > 0 ? "text-slate-400" : "text-slate-600")}>
                       {p.points > 0 ? `+${p.points}` : "0"} pts
                     </span>
                   </div>
@@ -202,10 +221,9 @@ export function GroupRulesEditor({
         </div>
       )}
 
-      <Button onClick={handleSave} loading={saving} size="sm" className="w-full"
-        leftIcon={saved ? <Check size={14} /> : <FileText size={14} />}>
-        {saved ? "Saved!" : "Save group settings"}
-      </Button>
+      <button onClick={handleSave} disabled={saving} style={{ padding: "12px 24px", borderRadius: 12, background: "linear-gradient(135deg, #00FF88, #00D4FF)", color: "#050810", fontSize: 14, fontWeight: 800, fontFamily: "var(--font-display)", textTransform: "uppercase" as const, letterSpacing: "0.05em", cursor: "pointer", border: "none", width: "100%", opacity: saving ? 0.7 : 1 }}>
+        {saved ? "Saved!" : saving ? "Saving..." : "Save changes"}
+      </button>
     </div>
   );
 }
