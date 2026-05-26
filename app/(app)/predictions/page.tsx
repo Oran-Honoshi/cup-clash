@@ -36,7 +36,8 @@ function GuestPredictionsBanner() {
             background: "linear-gradient(135deg, #00D4FF, #00FF88)",
             color: "#0B141B",
             borderRadius: 10,
-            padding: "8px 16px",
+            padding: "12px 18px",
+            minHeight: 44,
           }}
         >
           Save my picks →

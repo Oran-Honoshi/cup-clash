@@ -16,6 +16,8 @@ export function ScoreInputCC({
   return (
     <input
       type="number"
+      inputMode="numeric"
+      pattern="[0-9]*"
       min={0}
       max={20}
       value={value}

@@ -155,7 +155,7 @@ export function PredictionsClient({
               <div className="min-w-0">
                 <div className="text-sm font-bold leading-none mb-1"
                   style={{ color: active ? "#00D4FF" : "rgba(255,255,255,0.7)" }}>{t.label}</div>
-                <div className="text-[10px]" style={{ color: "rgba(255,255,255,0.3)" }}>{t.sub}</div>
+                <div className="text-[11px]" style={{ color: "rgba(255,255,255,0.3)" }}>{t.sub}</div>
               </div>
             </button>
           );

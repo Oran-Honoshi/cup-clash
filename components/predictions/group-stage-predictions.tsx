@@ -168,27 +168,27 @@ function MatchCard({ match, prediction, onChange, globalLocked }: {
         )}
       </div>
 
-      {/* Row 2 — teams + scores (stacks on mobile, horizontal on sm+) */}
-      <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-        {/* Home team */}
-        <div className="flex items-center gap-1.5 sm:flex-none">
-          <Flag code={match.homeFlagCode ?? "un"} size="sm" />
-          <span style={{ fontSize: 12, fontFamily: "var(--font-ui)", color: "white", fontWeight: 700, textTransform: "uppercase" }}>
+      {/* Row 2 — scoreboard row: home | score : score | away */}
+      <div className="flex items-center gap-2">
+        {/* Home team — right-aligned, flag closest to the scores */}
+        <div className="flex items-center gap-1.5 flex-1 justify-end">
+          <span style={{ fontSize: 11, fontFamily: "var(--font-ui)", color: "white", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.04em" }}>
             {(match.home ?? "").substring(0, 3).toUpperCase()}
           </span>
+          <Flag code={match.homeFlagCode ?? "un"} size="sm" />
         </div>
-        {/* Score inputs — centered on mobile, flex-1 centered on sm+ */}
-        <div className="flex items-center gap-2 justify-center sm:flex-1">
+        {/* Score inputs */}
+        <div className="flex items-center gap-1.5 shrink-0">
           <ScoreInputCC value={prediction.home} onChange={v => onChange(v, prediction.away)} disabled={matchLocked} />
-          <span style={{ fontFamily: "var(--font-mono)", fontSize: 18, fontWeight: 700, color: "rgba(255,255,255,0.25)" }}>:</span>
+          <span style={{ fontFamily: "var(--font-mono)", fontSize: 16, fontWeight: 700, color: "rgba(255,255,255,0.25)" }}>:</span>
           <ScoreInputCC value={prediction.away} onChange={v => onChange(prediction.home, v)} disabled={matchLocked} />
         </div>
-        {/* Away team */}
-        <div className="flex items-center gap-1.5 justify-end sm:flex-none sm:justify-start">
-          <span style={{ fontSize: 12, fontFamily: "var(--font-ui)", color: "white", fontWeight: 700, textTransform: "uppercase" }}>
+        {/* Away team — left-aligned, flag closest to the scores */}
+        <div className="flex items-center gap-1.5 flex-1">
+          <Flag code={match.awayFlagCode ?? "un"} size="sm" />
+          <span style={{ fontSize: 11, fontFamily: "var(--font-ui)", color: "white", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.04em" }}>
             {(match.away ?? "").substring(0, 3).toUpperCase()}
           </span>
-          <Flag code={match.awayFlagCode ?? "un"} size="sm" />
         </div>
       </div>
     </div>
@@ -200,11 +200,11 @@ function GroupTable({ standings }: { standings: TeamStanding[] }) {
   if (!standings.length) return null;
   return (
     <div className="rounded-xl overflow-hidden" style={{ border: "1px solid rgba(255,255,255,0.08)" }}>
-      <div className="grid grid-cols-[1fr_auto_auto_auto_auto_auto_auto] gap-2 px-3 py-2 text-[10px] font-bold uppercase tracking-widest"
+      <div className="grid grid-cols-[1fr_auto_auto_auto] sm:grid-cols-[1fr_auto_auto_auto_auto_auto_auto] gap-2 px-3 py-2 text-[10px] font-bold uppercase tracking-widest"
         style={{ background: "rgba(255,255,255,0.03)", color: "rgba(255,255,255,0.3)", borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
         <div>Team</div>
         {["P","W","D","L","GD","Pts"].map(h => (
-          <div key={h} className="w-6 text-center" style={h==="Pts" ? { color: "#00D4FF" } : undefined}>{h}</div>
+          <div key={h} className={`w-6 text-center${["W","D","L"].includes(h) ? " hidden sm:block" : ""}`} style={h==="Pts" ? { color: "#00D4FF" } : undefined}>{h}</div>
         ))}
       </div>
       {standings.map((team, i) => {
@@ -212,21 +212,21 @@ function GroupTable({ standings }: { standings: TeamStanding[] }) {
         const thirdPlace = i === 2;
         return (
           <div key={team.name}
-            className="grid grid-cols-[1fr_auto_auto_auto_auto_auto_auto] gap-2 items-center px-3 py-2"
+            className="grid grid-cols-[1fr_auto_auto_auto] sm:grid-cols-[1fr_auto_auto_auto_auto_auto_auto] gap-2 items-center px-3 py-2"
             style={{
               borderBottom: i < standings.length - 1 ? "1px solid rgba(255,255,255,0.05)" : undefined,
               background: qualifies ? "rgba(0,255,136,0.04)" : undefined,
               borderLeft: qualifies ? "2px solid rgba(0,255,136,0.5)" : thirdPlace ? "2px solid rgba(251,191,36,0.35)" : "2px solid transparent",
             }}>
             <div className="flex items-center gap-2 min-w-0">
-              <span className="text-xs font-black w-3" style={{ color: qualifies ? "#00FF88" : "rgba(255,255,255,0.25)" }}>{i + 1}</span>
+              <span className="text-xs font-black w-3 shrink-0" style={{ color: qualifies ? "#00FF88" : "rgba(255,255,255,0.25)" }}>{i + 1}</span>
               <FlaggedTeam name={team.name} flagCode={team.flagCode} size="xs" />
-              {qualifies && <span className="hidden sm:inline text-[9px] font-bold px-1 rounded" style={{ background: "rgba(0,255,136,0.12)", color: "#00FF88" }}>Q</span>}
+              {qualifies && <span className="hidden sm:inline text-[9px] font-bold px-1 rounded shrink-0" style={{ background: "rgba(0,255,136,0.12)", color: "#00FF88" }}>Q</span>}
             </div>
             <div className="w-6 text-center text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>{team.played}</div>
-            <div className="w-6 text-center text-xs" style={{ color: "#00FF88" }}>{team.won}</div>
-            <div className="w-6 text-center text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>{team.drawn}</div>
-            <div className="w-6 text-center text-xs" style={{ color: "#f87171" }}>{team.lost}</div>
+            <div className="w-6 text-center text-xs hidden sm:block" style={{ color: "#00FF88" }}>{team.won}</div>
+            <div className="w-6 text-center text-xs hidden sm:block" style={{ color: "rgba(255,255,255,0.4)" }}>{team.drawn}</div>
+            <div className="w-6 text-center text-xs hidden sm:block" style={{ color: "#f87171" }}>{team.lost}</div>
             <div className="w-6 text-center text-xs font-bold"
               style={{ color: team.gd > 0 ? "#00FF88" : team.gd < 0 ? "#f87171" : "rgba(255,255,255,0.4)" }}>
               {team.gd > 0 ? `+${team.gd}` : team.gd}
@@ -409,7 +409,7 @@ export function GroupStagePredictions({ groupId, locked = false, userId }: Group
           const teams    = getGroupTeams(g);
           return (
             <button key={g} onClick={() => setActiveGroup(g)}
-              className="flex items-center gap-1.5 px-3 py-2 text-xs font-bold uppercase tracking-wider transition-all shrink-0"
+              className="flex items-center gap-1.5 px-3 py-2 min-h-[44px] text-xs font-bold uppercase tracking-wider transition-all shrink-0"
               style={isActive ? {
                 background: "rgba(0,212,255,0.12)",
                 color: "#00D4FF",
@@ -505,14 +505,14 @@ export function GroupStagePredictions({ groupId, locked = false, userId }: Group
             <button
               onClick={() => activeIdx > 0 && setActiveGroup(GROUPS[activeIdx - 1])}
               disabled={activeIdx === 0}
-              className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-bold transition-all disabled:opacity-30"
+              className="flex-1 flex items-center justify-center gap-1.5 min-h-[44px] rounded-xl text-xs font-bold transition-all disabled:opacity-30"
               style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.5)" }}>
               <ChevronLeft size={13} /> Group {GROUPS[activeIdx - 1] ?? ""}
             </button>
             <button
               onClick={() => activeIdx < GROUPS.length - 1 && setActiveGroup(GROUPS[activeIdx + 1])}
               disabled={activeIdx === GROUPS.length - 1}
-              className="flex-1 flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-xs font-bold transition-all disabled:opacity-30"
+              className="flex-1 flex items-center justify-center gap-1.5 min-h-[44px] rounded-xl text-xs font-bold transition-all disabled:opacity-30"
               style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.5)" }}>
               Group {GROUPS[activeIdx + 1] ?? ""} <ChevronRight size={13} />
             </button>
