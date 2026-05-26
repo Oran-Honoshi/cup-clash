@@ -55,6 +55,12 @@ function BuntingStrip() {
         .animate-bunting {
           animation: buntingScroll ${BUNTING_FLAGS.length * 1.8}s linear infinite;
         }
+        @media (prefers-reduced-motion: reduce) {
+          .animate-bunting {
+            animation: none;
+            transform: translateX(-${(BUNTING_FLAGS.length / 2) * 52}px);
+          }
+        }
       `}</style>
     </div>
   );
