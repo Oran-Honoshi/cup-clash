@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Trophy, Brain, BarChart2, Target, Users, Zap, Globe, Download, Ban } from "lucide-react";
+import { BarChart2, Brain, Globe, Target, Trophy, Users } from "lucide-react";
 
 // Two-channel palette only (DESIGN.md Three-Channel Rule):
 //   mint = the user's actions / wins / picks
@@ -12,13 +12,10 @@ const CYAN = { accentColor: "#00D4FF", bg: "rgba(0,212,255,0.10)", border: "rgba
 const FEATURES = [
   { icon: Target,    ...MINT, title: "Score Predictions", body: "Lock in your exact score guesses for all 104 matches with automated deadline enforcement 5 min before kickoff." },
   { icon: Trophy,    ...CYAN, title: "Live Leaderboard",  body: "Ranks shift in real-time as goals hit the net from Vancouver to Miami." },
-  { icon: Brain,     ...CYAN, title: "Trivia Challenge",  body: "Tie-breaker bonus points via a 7-second pressure-cooker round on World Cup history." },
   { icon: BarChart2, ...MINT, title: "Tournament Picks",  body: "Predict Champion, Golden Boot and Golden Ball before the opening whistle in Mexico City." },
   { icon: Globe,     ...CYAN, title: "Full Bracket",      body: "Dynamic Round of 16 → Final knockout tree, updated live as games conclude." },
   { icon: Users,     ...MINT, title: "Multiple Groups",   body: "Dominate the office, family and bar squad simultaneously from one unified dashboard." },
-  { icon: Zap,       ...MINT, title: "Single Match Bets", body: "Want to go all-in on USA vs. England? Create micro-groups for the tournament's biggest individual clashes." },
-  { icon: Download,  ...CYAN, title: "Winner Poster",     body: "Generate a branded, high-res victory card to flex on friends after the trophy is raised." },
-  { icon: Ban,       ...MINT, title: "100% Ad-Free",      body: "No ads. No pop-ups. No analytics tracking. We will never clutter your experience with corporate junk. Always. Forever." },
+  { icon: Brain,     ...CYAN, title: "Trivia Challenge",  body: "Tie-breaker bonus points via a 7-second pressure-cooker round on World Cup history." },
 ];
 
 export function Features() {
@@ -55,12 +52,6 @@ export function Features() {
               </div>
               <h3 className="font-display text-lg uppercase mb-2 text-white">{f.title}</h3>
               <p className="text-sm leading-relaxed text-white/62">{f.body}</p>
-              {f.title === "100% Ad-Free" && (
-                <div className="text-xs font-bold tracking-wider uppercase mt-3"
-                  style={{ color: f.accentColor }}>
-                  Always. Forever. ✓
-                </div>
-              )}
             </motion.div>
           ))}
         </div>

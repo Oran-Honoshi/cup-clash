@@ -3,7 +3,6 @@ export const dynamic = "force-dynamic";
 import { Hero }             from "@/components/landing/hero";
 import { StatsStrip }       from "@/components/landing/stats-strip";
 import { HowItWorks }       from "@/components/landing/how-it-works";
-import { AppShowcase }      from "@/components/landing/app-showcase";
 import { Features }         from "@/components/landing/features";
 import { CorporateSection } from "@/components/landing/corporate-section";
 import { Pricing }          from "@/components/landing/pricing";
@@ -35,7 +34,6 @@ export default function LandingPage() {
         <Hero />
         <StatsStrip />
         <HowItWorks />
-        <AppShowcase />
         <Features />
         <CorporateSection />
         <Pricing />
