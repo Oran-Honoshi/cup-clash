@@ -51,10 +51,10 @@ const neutralTagStyle = {
 };
 
 const FEATURED_MATCHES = [
-  { id: "final", label: "Final — MetLife Stadium",           detail: "Jul 19" },
-  { id: "sf-1",  label: "Semi-Final 1 — MetLife Stadium",    detail: "Jul 14" },
-  { id: "sf-2",  label: "Semi-Final 2 — AT&T Stadium",       detail: "Jul 15" },
-  { id: "qf-1",  label: "Quarter-Final 1 — MetLife Stadium", detail: "Jul 9"  },
+  { id: "final", label: "Final, MetLife Stadium",           detail: "Jul 19" },
+  { id: "sf-1",  label: "Semi-Final 1, MetLife Stadium",    detail: "Jul 14" },
+  { id: "sf-2",  label: "Semi-Final 2, AT&T Stadium",       detail: "Jul 15" },
+  { id: "qf-1",  label: "Quarter-Final 1, MetLife Stadium", detail: "Jul 9"  },
   { id: "g001",  label: "Opening: Mexico vs South Africa",   detail: "Jun 11" },
 ];
 
@@ -270,7 +270,7 @@ function CreateGroupInner() {
             <p style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", marginTop: 6, fontFamily: "var(--font-ui)" }}>
               {isCorporate
                 ? "Your corporate group is ready. Go to the group to unlock team invites."
-                : "Share the passkey — members pay $2 to join."}
+                : "Share the passkey: members pay $2 to join."}
             </p>
           </div>
 
@@ -284,7 +284,7 @@ function CreateGroupInner() {
                 fontSize: 15, textTransform: "uppercase", cursor: "pointer",
                 boxShadow: "0 0 24px rgba(0,255,136,0.3)",
               }}>
-              <Building2 size={16} /> Go to Group — Unlock Invites
+              <Building2 size={16} /> Go to Group: Unlock Invites
             </button>
           ) : (
             <>
@@ -357,7 +357,7 @@ function CreateGroupInner() {
         </p>
       </div>
 
-      {/* ── STEP 0 — Payment model ─────────────────────────────────────────── */}
+      {/* ── STEP 0: Payment model ──────────────────────────────────────────── */}
       {step === 0 && (
         <div className="space-y-3">
           <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "rgba(255,255,255,0.35)", fontFamily: "var(--font-ui)" }}>
@@ -437,7 +437,7 @@ function CreateGroupInner() {
                     <Chip label="Team pays $0" color="#00D4FF" />
                   </div>
                   <p style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", fontFamily: "var(--font-ui)", lineHeight: 1.45, margin: 0 }}>
-                    You cover the whole team with a one-time flat fee. Every employee joins for <strong style={{ color: "white" }}>$0 — zero friction</strong>.
+                    You cover the whole team with a one-time flat fee. Every employee joins for <strong style={{ color: "white" }}>$0 (zero friction)</strong>.
                   </p>
                   <div style={{ display: "flex", gap: 6, marginTop: 10 }}>
                     <span style={{ fontSize: 11, fontWeight: 700, color: "#00D4FF", background: "rgba(0,212,255,0.1)", padding: "4px 8px", borderRadius: 8, fontFamily: "var(--font-mono)" }}>
@@ -516,7 +516,7 @@ function CreateGroupInner() {
               style={{ background: "rgba(0,212,255,0.05)", border: "1px solid rgba(0,212,255,0.15)" }}>
               <Building2 size={14} style={{ color: "#00D4FF" }} />
               <span className="text-xs font-medium" style={{ color: "#00D4FF" }}>
-                Corporate mode — employees join free · activate dashboard link after setup
+                Corporate mode: employees join free · activate dashboard link after setup
               </span>
             </div>
           )}
@@ -541,7 +541,7 @@ function CreateGroupInner() {
                   ? <Building2 size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: "rgba(255,255,255,0.35)" }} />
                   : <Users size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: "rgba(255,255,255,0.35)" }} />}
                 <input type="text"
-                  placeholder={isCorporate ? "e.g. Engineering Dept — World Cup 2026" : "e.g. Sunday Squad World Cup"}
+                  placeholder={isCorporate ? "e.g. Engineering Dept, World Cup 2026" : "e.g. Sunday Squad World Cup"}
                   value={groupName} onChange={(e: { target: HTMLInputElement }) => setGroupName(e.target.value)}
                   onFocus={(e: { target: HTMLInputElement }) => { e.target.style.borderColor = "rgba(0,255,136,0.5)"; e.target.style.boxShadow = "0 0 0 3px rgba(0,255,136,0.1)"; }}
                   onBlur={(e: { target: HTMLInputElement }) => { e.target.style.borderColor = "rgba(255,255,255,0.12)"; e.target.style.boxShadow = "none"; }}

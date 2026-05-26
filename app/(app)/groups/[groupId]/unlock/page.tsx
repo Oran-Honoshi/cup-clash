@@ -1,5 +1,5 @@
 // app/(app)/groups/[groupId]/unlock/page.tsx
-// Dedicated payment page for corporate unlock — same pattern as /join/[code]
+// Dedicated payment page for corporate unlock, same pattern as /join/[code]
 export const dynamic = "force-dynamic";
 
 import { redirect } from "next/navigation";

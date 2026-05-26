@@ -49,7 +49,7 @@ export default async function AdminPage() {
     redirect(`/admin/${adminGroups[0].id}`);
   }
 
-  // Multiple groups — show picker
+  // Multiple groups: show picker
   return (
     <div className="space-y-6 max-w-2xl mx-auto">
       <div>

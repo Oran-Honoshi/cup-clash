@@ -36,7 +36,7 @@ function GuestBanner() {
     >
       <div>
         <div className="text-sm" style={{ color: "rgba(255,255,255,0.8)" }}>
-          👋 You&apos;re exploring as a guest — no account needed yet.
+          👋 You&apos;re exploring as a guest. No account needed yet.
         </div>
         <div className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.45)" }}>
           Save predictions, create a group, or join one to get started.
@@ -81,7 +81,7 @@ export default async function DashboardPage({
 }) {
   const userProfile = await getCurrentUserProfile();
 
-  // Guest mode — explore without account
+  // Guest mode: explore without account
   if (!userProfile) {
     return (
       <div>
@@ -106,7 +106,7 @@ export default async function DashboardPage({
     })
     .filter(Boolean) as Array<{ id: string; name: string; passkey: string }>;
 
-  // No groups — show rich empty state with clear paths
+  // No groups: show rich empty state with clear paths
   if (!allGroups.length) {
     return (
       <div className="space-y-6">

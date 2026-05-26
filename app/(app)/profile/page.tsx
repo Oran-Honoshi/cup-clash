@@ -94,7 +94,7 @@ export default function ProfilePage() {
     setSaving(true); setError(null);
     const sb = createClient();
     const { data: { user } } = await sb.auth.getUser();
-    if (!user) { setError("Not signed in — please refresh and try again"); setSaving(false); return; }
+    if (!user) { setError("Not signed in. Please refresh and try again."); setSaving(false); return; }
 
     const { error: updateError } = await sb.from("profiles")
       .update({ name: profile.name, country: profile.country, avatar_url: profile.avatar_url } as Record<string, unknown>)

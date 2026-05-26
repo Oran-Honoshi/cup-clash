@@ -85,7 +85,7 @@ export default async function PredictionsPage({
     })
     .filter(Boolean) as Array<{ id: string; name: string; passkey: string }>;
 
-  // Solo user — no paid groups, allow solo predictions
+  // Solo user: no paid groups, allow solo predictions
   if (!groups.length) {
     return (
       <PredictionsClient

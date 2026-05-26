@@ -55,7 +55,7 @@ export default async function AdminGroupPage({ params }: { params: { groupId: st
         </h1>
         {tournamentLocked && (
           <p className="text-sm mt-1 font-bold" style={{ color: "#d97706" }}>
-            ⚠ Tournament has started — scoring rules are locked
+            ⚠ Tournament has started. Scoring rules are locked.
           </p>
         )}
       </div>
@@ -63,14 +63,14 @@ export default async function AdminGroupPage({ params }: { params: { groupId: st
       {/* Member management */}
       <AdminPanel group={group} initialMembers={members} />
 
-      {/* Group settings — buy-in, prize split */}
+      {/* Group settings: buy-in, prize split */}
       <GroupRulesEditor
         groupId={group.id}
         buyInAmount={group.buyInAmount}
         memberCount={members.length}
       />
 
-      {/* Scoring rules — locked after June 11 */}
+      {/* Scoring rules: locked after June 11 */}
       {!tournamentLocked ? (
         <ScoringRulesEditor groupId={group.id} />
       ) : (
@@ -84,7 +84,7 @@ export default async function AdminGroupPage({ params }: { params: { groupId: st
             borderRadius: 28,
           }}>
           <div className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#d97706" }}>
-            Scoring Rules — Locked
+            Scoring Rules (Locked)
           </div>
           <p className="text-sm" style={{ color: "rgba(255,255,255,0.5)" }}>
             Scoring rules are locked once the tournament starts. Members can view them in the group page.
