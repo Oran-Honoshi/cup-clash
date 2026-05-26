@@ -136,7 +136,7 @@ export function Pricing() {
                   ))}
                 </div>
 
-                <Link href="/signup" className="block mt-auto">
+                <Link href="/dashboard?action=create-group" className="block mt-auto">
                   <button
                     className="w-full py-3.5 rounded-2xl font-bold text-sm uppercase tracking-wider flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5"
                     style={{ background: "linear-gradient(135deg, #00FF88, #00D4FF)", color: "#050e08", boxShadow: "0 4px 20px rgba(0,255,136,0.25)" }}>
@@ -230,7 +230,7 @@ export function Pricing() {
                   </button>
                 </p>
 
-                <Link href="/create-group?model=corporate_sponsored" className="block mt-auto">
+                <Link href="/dashboard?action=corporate" className="block mt-auto">
                   <button
                     className="w-full py-3.5 rounded-2xl font-bold text-sm uppercase tracking-wider flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5"
                     style={{ border: "1px solid rgba(0,212,255,0.3)", color: "#00D4FF", background: "transparent" }}>

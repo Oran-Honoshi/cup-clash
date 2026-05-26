@@ -166,7 +166,7 @@ export function CorporateSection() {
             </div>
 
             {/* CTA */}
-            <Link href="/create-group?model=corporate_sponsored">
+            <Link href="/dashboard?action=corporate">
               <button
                 className="flex items-center gap-2 font-bold uppercase tracking-wider transition-all hover:-translate-y-0.5"
                 style={{

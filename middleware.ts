@@ -2,22 +2,22 @@ import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 // ── Guests CAN access these (browse/try without account) ──────────────────────
+// /dashboard    — guest mode, welcome banner, explore groups CTA
 // /predictions  — guest mode, localStorage picks, modal on save
+// /leaderboard  — public view
+// /standings    — public view
+// /bracket      — public view
+// /trivia       — public view
 // /schedule     — public match schedule
 // /join/[code]  — can preview group before signing up
+// /groups       — guest sees empty state with auth-gated CTAs
 
 // ── Fully protected (must be signed in) ───────────────────────────────────────
 const PROTECTED_PREFIXES = [
-  "/dashboard",
-  "/leaderboard",
   "/admin",
   "/create-group",
-  "/bracket",
-  "/testing",
   "/profile",
-  "/standings",
-  "/trivia",
-  "/groups",
+  "/testing",
   "/notifications",
 ];
 

@@ -169,7 +169,7 @@ export function Hero() {
             <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.3 }}
               className="flex flex-col sm:flex-row gap-4 mb-8">
 
-              <Link href="/dashboard">
+              <Link href="/dashboard?action=create-group">
                 <button
                   className="group flex items-center gap-2 px-7 py-4 rounded-2xl font-bold uppercase tracking-wider transition-all hover:-translate-y-1 w-full sm:w-auto text-[#050e08]"
                   style={{ background: "linear-gradient(135deg, #00FF88, #00D4FF)", boxShadow: "0 8px 30px rgba(0,255,136,0.4)" }}>
@@ -178,7 +178,7 @@ export function Hero() {
                 </button>
               </Link>
 
-              <Link href="/create-group?model=corporate_sponsored">
+              <Link href="/dashboard?action=corporate">
                 <button
                   className="group flex items-center gap-2 px-7 py-4 rounded-2xl font-bold uppercase tracking-wider transition-all hover:-translate-y-1 w-full sm:w-auto text-white"
                   style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.18)", backdropFilter: "blur(20px)" }}>

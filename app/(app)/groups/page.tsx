@@ -1,12 +1,11 @@
 export const dynamic = "force-dynamic";
 
-import { redirect } from "next/navigation";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { getCurrentUserProfile } from "@/lib/services/user-group";
 import { ShareGroup } from "@/components/sharing/share-group";
 import { NeonBar } from "@/components/ui/neon-bar";
 import { EmptyState } from "@/components/ui/empty-state";
-import { Trophy, Users, DollarSign, ArrowRight, Plus, LogIn } from "lucide-react";
+import { Trophy, Users, DollarSign, ArrowRight, Plus, LogIn, KeyRound } from "lucide-react";
 import Link from "next/link";
 
 function sbAdmin() {
@@ -18,7 +17,40 @@ function sbAdmin() {
 
 export default async function GroupsPage() {
   const userProfile = await getCurrentUserProfile();
-  if (!userProfile) redirect("/signin");
+
+  if (!userProfile) {
+    return (
+      <div className="space-y-6">
+        <div>
+          <div style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: "0.12em", color: "#00D4FF", fontFamily: "var(--font-ui)", marginBottom: 4 }}>Groups</div>
+          <h1 className="font-display text-4xl sm:text-5xl uppercase tracking-tight text-white">My Groups</h1>
+        </div>
+        <EmptyState
+          icon={<Trophy size={32} style={{ color: "#00D4FF" }} />}
+          title="Join a group to compete"
+          body="Create your own prediction league or join one with a passkey."
+        />
+        <div className="flex flex-col sm:flex-row gap-3">
+          <Link href="/signin?next=/create-group">
+            <button
+              className="flex items-center gap-2 px-5 py-3 rounded-xl font-bold text-sm uppercase tracking-wider transition-all hover:-translate-y-0.5"
+              style={{ background: "linear-gradient(135deg, #00FF88, #00D4FF)", color: "#0B141B", boxShadow: "0 0 20px rgba(0,255,136,0.25)" }}
+            >
+              <Plus size={16} /> Create a group
+            </button>
+          </Link>
+          <Link href="/signin?next=/join/enter">
+            <button
+              className="flex items-center gap-2 px-5 py-3 rounded-xl font-bold text-sm uppercase tracking-wider transition-all hover:-translate-y-0.5"
+              style={{ background: "rgba(0,212,255,0.1)", border: "1px solid rgba(0,212,255,0.25)", color: "#00D4FF" }}
+            >
+              <KeyRound size={15} /> Join with passkey
+            </button>
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   const { data: memberships } = await sbAdmin()
     .from("group_members")

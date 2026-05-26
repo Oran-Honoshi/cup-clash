@@ -40,10 +40,12 @@ export function AppSidebar() {
 
   const ADMIN_EMAILS = ["lipinksy19@gmail.com", "oransch@gmail.com", "oran@honoshi.co.il"];
 
+  const [authLoaded, setAuthLoaded] = useState(false);
+
   const loadProfile = useCallback(async () => {
     const sb = createClient();
     const { data: { user } } = await sb.auth.getUser();
-    if (!user) return;
+    if (!user) { setAuthLoaded(true); return; }
     if (ADMIN_EMAILS.includes(user.email ?? "")) setIsAdmin(true);
     const { data } = await sb
       .from("profiles")
@@ -51,6 +53,7 @@ export function AppSidebar() {
       .eq("id", user.id)
       .single();
     if (data) setProfile(data as UserProfile);
+    setAuthLoaded(true);
   }, []);
 
   useEffect(() => { loadProfile(); }, [loadProfile]);
@@ -145,44 +148,80 @@ export function AppSidebar() {
       {/* User footer */}
       <div className="px-3 py-4 border-t space-y-1" style={{ borderColor: "rgba(255,255,255,0.07)" }}>
 
-        <div className="px-3 py-2">
-          <ReviewTrigger context="general" label="Rate Cup Clash ⭐" />
-        </div>
+        {authLoaded && !profile ? (
+          /* Guest card */
+          <div
+            style={{
+              background: "rgba(0,255,136,0.06)",
+              border: "1px solid rgba(0,255,136,0.15)",
+              borderRadius: 16,
+              padding: "14px 16px",
+              margin: "0 0 4px",
+            }}
+          >
+            <div className="font-display text-white uppercase font-black mb-1" style={{ fontSize: 15 }}>
+              Ready to compete?
+            </div>
+            <p className="text-xs mb-3" style={{ color: "rgba(255,255,255,0.45)" }}>
+              Save picks, join groups, and climb the leaderboard.
+            </p>
+            <Link href="/signup" className="block">
+              <button
+                className="w-full font-bold text-sm rounded-xl py-2 mb-2"
+                style={{
+                  background: "linear-gradient(135deg, #00FF88, #00D4FF)",
+                  color: "#0B141B",
+                }}>
+                Get started →
+              </button>
+            </Link>
+            <Link href="/signin" className="block text-center text-xs font-bold"
+              style={{ color: "rgba(255,255,255,0.4)" }}>
+              Sign in
+            </Link>
+          </div>
+        ) : profile ? (
+          <>
+            <div className="px-3 py-2">
+              <ReviewTrigger context="general" label="Rate Cup Clash ⭐" />
+            </div>
 
-        <Link href="/profile"
-          className="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all"
-          style={{ color: "rgba(255,255,255,0.75)" }}
-          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.07)"; }}
-          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}
-        >
-          <div className="h-8 w-8 rounded-full overflow-hidden shrink-0"
-            style={{ border: "2px solid rgba(0,255,136,0.3)" }}>
-            {profile?.avatar_url ? (
-              <Image src={profile.avatar_url} alt={displayName} width={32} height={32} className="object-cover" />
-            ) : flagCode ? (
-              <Image src={flagCode} alt={profile?.country ?? ""} width={32} height={32} className="object-cover w-full h-full" unoptimized />
-            ) : (
-              <div className="h-full w-full flex items-center justify-center text-xs font-black"
-                style={{ background: "linear-gradient(135deg,#00FF88,#00D4FF)", color: "#0B141B" }}>
-                {displayName[0]?.toUpperCase()}
+            <Link href="/profile"
+              className="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all"
+              style={{ color: "rgba(255,255,255,0.75)" }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.07)"; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}
+            >
+              <div className="h-8 w-8 rounded-full overflow-hidden shrink-0"
+                style={{ border: "2px solid rgba(0,255,136,0.3)" }}>
+                {profile?.avatar_url ? (
+                  <Image src={profile.avatar_url} alt={displayName} width={32} height={32} className="object-cover" />
+                ) : flagCode ? (
+                  <Image src={flagCode} alt={profile?.country ?? ""} width={32} height={32} className="object-cover w-full h-full" unoptimized />
+                ) : (
+                  <div className="h-full w-full flex items-center justify-center text-xs font-black"
+                    style={{ background: "linear-gradient(135deg,#00FF88,#00D4FF)", color: "#0B141B" }}>
+                    {displayName[0]?.toUpperCase()}
+                  </div>
+                )}
               </div>
-            )}
-          </div>
-          <div className="flex-1 min-w-0">
-            <div className="text-sm font-bold truncate text-white">{displayName}</div>
-          </div>
-          <Settings size={14} style={{ color: "rgba(255,255,255,0.35)" }} />
-        </Link>
+              <div className="flex-1 min-w-0">
+                <div className="text-sm font-bold truncate text-white">{displayName}</div>
+              </div>
+              <Settings size={14} style={{ color: "rgba(255,255,255,0.35)" }} />
+            </Link>
 
-        <button onClick={handleSignOut}
-          className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-bold transition-all"
-          style={{ color: "#f87171" }}
-          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "rgba(239,68,68,0.1)"; }}
-          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}
-        >
-          <LogOut size={16} />
-          Sign out
-        </button>
+            <button onClick={handleSignOut}
+              className="w-full flex items-center gap-3 px-3 py-2 rounded-xl text-sm font-bold transition-all"
+              style={{ color: "#f87171" }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "rgba(239,68,68,0.1)"; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}
+            >
+              <LogOut size={16} />
+              Sign out
+            </button>
+          </>
+        ) : null}
       </div>
     </aside>
   );

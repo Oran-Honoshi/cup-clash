@@ -4,11 +4,45 @@ import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { createClient }          from "@/lib/supabase/server";
 import { PredictionsClient }     from "@/components/predictions/predictions-client";
 import { GuestPredictionsShell } from "@/components/predictions/guest-predictions-shell";
+import Link from "next/link";
 
 function sbAdmin() {
   return createAdminClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+}
+
+function GuestPredictionsBanner() {
+  return (
+    <div
+      className="sticky top-0 z-10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 mb-4"
+      style={{
+        background: "rgba(0,212,255,0.08)",
+        border: "1px solid rgba(0,212,255,0.2)",
+        borderRadius: 14,
+        padding: "12px 18px",
+        backdropFilter: "blur(20px)",
+        WebkitBackdropFilter: "blur(20px)",
+      }}
+    >
+      <div className="text-sm font-medium" style={{ color: "rgba(255,255,255,0.8)" }}>
+        You&apos;re predicting as a guest. Sign up to save your picks.
+      </div>
+      <Link href="/signin">
+        <button
+          className="font-bold text-sm shrink-0"
+          style={{
+            background: "linear-gradient(135deg, #00D4FF, #00FF88)",
+            color: "#0B141B",
+            borderRadius: 10,
+            padding: "8px 16px",
+          }}
+        >
+          Save my picks →
+        </button>
+      </Link>
+    </div>
   );
 }
 
@@ -21,20 +55,16 @@ export default async function PredictionsPage({
   const { data: { user } } = await sb.auth.getUser();
 
   // ── GUEST MODE ────────────────────────────────────────────────────────────
-  // No user — render the guest shell which:
-  //  • Displays matches (same UI as signed-in)
-  //  • Stores picks in localStorage via GuestStore
-  //  • Fires signup modal on save attempt
-  //  • Fires 60-second timer trigger
-  //  • Fires returning-guest trigger if they have old picks
   if (!user) {
-    return <GuestPredictionsShell />;
+    return (
+      <div>
+        <GuestPredictionsBanner />
+        <GuestPredictionsShell />
+      </div>
+    );
   }
 
   // ── SIGNED-IN: check for localStorage migration ───────────────────────────
-  // When migrate=1 is in the URL the client-side MigrateGuestPicks component
-  // (rendered inside PredictionsClient) will pick up localStorage predictions
-  // and POST them to /api/predictions/migrate — then clear localStorage.
   const shouldMigrate = searchParams.migrate === "1";
 
   // Get all paid groups this user belongs to

@@ -1,6 +1,5 @@
 export const dynamic = "force-dynamic";
 
-import { redirect }        from "next/navigation";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { Leaderboard }     from "@/components/dashboard/leaderboard";
 import { NextMatchCard }   from "@/components/dashboard/next-match-card";
@@ -14,6 +13,7 @@ import { DashboardEmptyState } from "@/components/dashboard/empty-state";
 import { getLeaderboard, getMembers, getGroup } from "@/lib/services/groups";
 import { getNextMatch }    from "@/lib/services/matches";
 import { getCurrentUserProfile } from "@/lib/services/user-group";
+import Link from "next/link";
 
 function sbAdmin() {
   return createAdminClient(
@@ -22,13 +22,74 @@ function sbAdmin() {
   );
 }
 
+function GuestBanner() {
+  return (
+    <div
+      className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
+      style={{
+        background: "rgba(0,255,136,0.08)",
+        border: "1px solid rgba(0,255,136,0.2)",
+        borderRadius: 16,
+        padding: "16px 20px",
+        marginBottom: 24,
+      }}
+    >
+      <div>
+        <div className="text-sm" style={{ color: "rgba(255,255,255,0.8)" }}>
+          👋 You&apos;re exploring as a guest — no account needed yet.
+        </div>
+        <div className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.45)" }}>
+          Save predictions, create a group, or join one to get started.
+        </div>
+      </div>
+      <div className="flex items-center gap-2 shrink-0">
+        <Link href="/create-group">
+          <button
+            className="font-bold text-sm"
+            style={{
+              background: "linear-gradient(135deg, #00FF88, #00D4FF)",
+              color: "#0B141B",
+              borderRadius: 10,
+              padding: "8px 16px",
+            }}
+          >
+            Create Group
+          </button>
+        </Link>
+        <Link href="/signin">
+          <button
+            className="font-bold text-sm text-white"
+            style={{
+              background: "rgba(255,255,255,0.08)",
+              border: "1px solid rgba(255,255,255,0.15)",
+              borderRadius: 10,
+              padding: "8px 16px",
+            }}
+          >
+            Sign in
+          </button>
+        </Link>
+      </div>
+    </div>
+  );
+}
+
 export default async function DashboardPage({
   searchParams,
 }: {
-  searchParams: { group?: string };
+  searchParams: { group?: string; action?: string };
 }) {
   const userProfile = await getCurrentUserProfile();
-  if (!userProfile) redirect("/signin");
+
+  // Guest mode — explore without account
+  if (!userProfile) {
+    return (
+      <div>
+        <GuestBanner />
+        <DashboardEmptyState highlight={searchParams.action} />
+      </div>
+    );
+  }
 
   // Get all groups this user belongs to
   const { data: memberships } = await sbAdmin()
