@@ -6,34 +6,42 @@ import { ChevronDown } from "lucide-react";
 
 const FAQS = [
   {
+    id: "faq-cost",
     q: "How much does it cost to host a group?",
     a: "Hosting is free for friend groups — you pay $0 to create and run a Friend Circle. Each friend pays $2 to join. For corporate groups, you pay a one-time fee of $75 (up to 50 employees) or $130 (up to 100 employees) and your entire team joins for free.",
   },
   {
+    id: "faq-start",
     q: "When does the tournament start?",
     a: "World Cup 2026 kicks off June 11, 2026 with Mexico vs South Africa. The tournament runs through July 19 (Final at MetLife Stadium, New Jersey). You can create your group anytime — predictions lock 5 minutes before each match kickoff.",
   },
   {
+    id: "faq-rules",
     q: "Can I customise the scoring rules?",
     a: "Yes. Cup Clash ships with 9 togglable scoring rules: Match Outcome, Exact Scoreline, Knockout Advancement, Tournament Champion, Golden Boot, Top Assist, Best Defence, Best Young Player, and Golden Ball. Default values are 10/25/20/100/50/50/40/30/40 pts respectively, and every value is customisable.",
   },
   {
+    id: "faq-prizes",
     q: "How are prizes paid out?",
     a: "For friend groups with a buy-in pot, you set the % split between 1st/2nd/3rd (default 60/30/10) and we track payments via PayPal. For corporate groups, you can either run a cash pool or define custom company rewards (e.g. \"Extra day off + $100 Amazon Voucher\").",
   },
   {
+    id: "faq-enterprise",
     q: "What if my team has more than 100 employees?",
     a: "Cup Clash offers an Enterprise tier with SSO, custom URLs, a dedicated CSM and invoicing for teams larger than 100 employees. Reach out via the contact page.",
   },
   {
+    id: "faq-app",
     q: "Is there a mobile app for Cup Clash?",
     a: "Cup Clash is a Progressive Web App (PWA) — install it directly from your browser to get a near-native experience on iOS and Android, with all features and no app store friction.",
   },
   {
+    id: "faq-gambling",
     q: "Is Cup Clash gambling?",
     a: "No. Cup Clash is a skill-based prediction league between friends or coworkers. There is no house, no odds, and no operator take. Optional cash pools are peer-to-peer and managed by the group host.",
   },
   {
+    id: "faq-adfree",
     q: "Is Cup Clash really ad-free?",
     a: "Cup Clash is built by fans, for fans. We will never clutter your experience with ads, trackers, or corporate junk — just 104 matches of pure competition. Your payment is the business model. That's the deal.",
   },
@@ -56,6 +64,7 @@ export function Faq() {
         <div className="flex flex-col gap-2.5">
           {FAQS.map((faq, i) => (
             <motion.div key={i}
+              id={faq.id}
               initial={{ opacity: 0, y: 8 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
               transition={{ delay: i * 0.04 }}
               className="rounded-2xl overflow-hidden transition-all"

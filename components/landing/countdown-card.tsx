@@ -2,9 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { differenceInSeconds } from "date-fns";
-import { formatInTimeZone } from "date-fns-tz";
 import { motion } from "framer-motion";
-import { Radio } from "lucide-react";
 
 interface CountdownProps {
   target: Date;
@@ -27,7 +25,7 @@ function getTimeUnits(target: Date): TimeUnit[] {
   ];
 }
 
-export function CountdownCard({ target, matchLabel }: CountdownProps) {
+export function CountdownCard({ target }: CountdownProps) {
   const [units,   setUnits]   = useState<TimeUnit[]>(() => getTimeUnits(target));
   const [mounted, setMounted] = useState(false);
 
@@ -44,64 +42,67 @@ export function CountdownCard({ target, matchLabel }: CountdownProps) {
       initial={{ opacity: 0, y: 24 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.6, delay: 0.3, ease: [0.2, 0.8, 0.2, 1] }}
-      className="relative rounded-3xl p-5 overflow-hidden w-full"
+      className="relative overflow-hidden w-full"
       style={{
-        background: "rgba(255,255,255,0.88)",
-        backdropFilter: "blur(20px)",
-        WebkitBackdropFilter: "blur(20px)",
-        border: "1px solid rgba(0,212,255,0.2)",
-        boxShadow: "0 8px 32px rgba(0,212,255,0.08)",
+        background: "rgba(18,14,38,0.5)",
+        backdropFilter: "blur(40px) saturate(180%)",
+        WebkitBackdropFilter: "blur(40px) saturate(180%)",
+        border: "1px solid rgba(255,255,255,0.18)",
+        boxShadow: "0 24px 60px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.2)",
+        borderRadius: 24,
+        padding: 20,
       }}
     >
       {/* Top accent line */}
       <div className="absolute top-0 left-8 right-8 h-px"
         style={{ background: "linear-gradient(90deg, transparent, rgba(0,212,255,0.5), transparent)" }} />
 
-      {/* Header */}
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-2">
-          <span className="relative flex h-2 w-2">
-            <span className="absolute inline-flex h-full w-full rounded-full opacity-75 animate-ping"
-              style={{ backgroundColor: "#00FF88" }} />
-            <span className="relative inline-flex h-2 w-2 rounded-full"
-              style={{ backgroundColor: "#00FF88" }} />
-          </span>
-          <span className="text-[11px] font-bold uppercase tracking-widest" style={{ color: "#475569" }}>
-            Next Kickoff
-          </span>
-        </div>
-        <Radio size={14} style={{ color: "#cbd5e1" }} />
+      {/* Match preview label */}
+      <div className="text-[10px] font-bold uppercase tracking-[0.18em] mb-3" style={{ color: "rgba(255,255,255,0.4)" }}>
+        First Match · June 11 · 21:00 UTC
       </div>
 
-      {/* Match name */}
-      <div className="mb-4">
-        <div className="font-display text-2xl uppercase tracking-tight leading-tight" style={{ color: "#0B141B" }}>
-          {matchLabel}
+      {/* Match row with flags */}
+      <div className="flex items-center justify-between mb-5">
+        <div className="flex items-center gap-2">
+          <div style={{ width: 32, height: 32, borderRadius: "50%", overflow: "hidden", border: "2px solid rgba(255,255,255,0.2)", flexShrink: 0 }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="https://flagcdn.com/w40/mx.png" alt="Mexico" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          </div>
+          <span style={{ fontSize: 13, fontWeight: 700, color: "white" }}>MEXICO</span>
         </div>
-        <div className="text-xs font-mono mt-1" style={{ color: "#64748b" }} suppressHydrationWarning>
-          {mounted ? formatInTimeZone(target, "UTC", "EEE, dd MMM · HH:mm 'UTC'") : "—"}
+        <span style={{ fontSize: 11, color: "rgba(255,255,255,0.4)" }}>VS</span>
+        <div className="flex items-center gap-2">
+          <span style={{ fontSize: 13, fontWeight: 700, color: "white" }}>SOUTH AFRICA</span>
+          <div style={{ width: 32, height: 32, borderRadius: "50%", overflow: "hidden", border: "2px solid rgba(255,255,255,0.2)", flexShrink: 0 }}>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="https://flagcdn.com/w40/za.png" alt="South Africa" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          </div>
         </div>
       </div>
 
       {/* Countdown boxes */}
       <div className="grid grid-cols-4 gap-2">
         {units.map((unit) => (
-          <div key={unit.label}
-            className="rounded-xl py-3 text-center flex flex-col items-center justify-center"
+          <div
+            key={unit.label}
+            className="text-center flex flex-col items-center justify-center"
             style={{
-              background: "rgba(255,255,255,0.9)",
-              border: "1px solid rgba(0,212,255,0.15)",
-              boxShadow: "0 2px 8px rgba(0,212,255,0.06)",
+              background: "rgba(255,255,255,0.06)",
+              border: "1px solid rgba(255,255,255,0.12)",
+              borderRadius: 14,
+              padding: "16px 4px",
+              boxShadow: "inset 0 2px 4px rgba(0,0,0,0.3)",
             }}
           >
             <div
-              className="tabular font-display leading-none font-black"
-              style={{ fontSize: "clamp(22px, 4vw, 44px)", color: "#0B141B" }}
+              className="tabular leading-none"
+              style={{ fontFamily: "var(--font-mono, monospace)", fontSize: "clamp(24px, 5vw, 40px)", fontWeight: 800, color: "white" }}
               suppressHydrationWarning
             >
               {mounted ? String(unit.value).padStart(2, "0") : "--"}
             </div>
-            <div className="text-[9px] font-bold tracking-[0.2em] mt-1.5 uppercase" style={{ color: "#94a3b8" }}>
+            <div className="text-[9px] font-bold tracking-[0.2em] mt-1.5 uppercase" style={{ color: "rgba(255,255,255,0.4)" }}>
               {unit.label}
             </div>
           </div>
@@ -110,7 +111,7 @@ export function CountdownCard({ target, matchLabel }: CountdownProps) {
 
       {/* Hint */}
       <div className="mt-4 pt-4 text-[10px] text-center uppercase tracking-widest"
-        style={{ color: "#94a3b8", borderTop: "1px solid rgba(0,212,255,0.1)" }}>
+        style={{ color: "rgba(255,255,255,0.3)", borderTop: "1px solid rgba(255,255,255,0.08)" }}>
         Bets lock 5 min before kickoff
       </div>
     </motion.div>

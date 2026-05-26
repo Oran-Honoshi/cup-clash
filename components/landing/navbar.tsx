@@ -129,7 +129,7 @@ export function Navbar() {
                 Sign in
               </button>
             </Link>
-            <Link href="/signup">
+            <Link href="/dashboard">
               <button
                 className="flex items-center gap-1.5 text-sm font-bold uppercase tracking-wider px-5 py-2.5 rounded-full transition-all hover:-translate-y-0.5 text-[#050e08]"
                 style={{ background: "linear-gradient(135deg, #00FF88, #00D4FF)", boxShadow: "0 8px 30px rgba(0,255,136,0.4)" }}
@@ -176,7 +176,7 @@ export function Navbar() {
                 </a>
               ))}
               <div className="flex flex-col gap-2.5 pt-5 px-3">
-                <Link href="/signup">
+                <Link href="/dashboard">
                   <button
                     className="w-full py-3 rounded-xl text-sm font-bold uppercase tracking-wider flex items-center justify-center gap-2 text-[#050e08]"
                     style={{ background: "linear-gradient(135deg, #00FF88, #00D4FF)" }}
