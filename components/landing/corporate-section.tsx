@@ -1,426 +1,119 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useState } from "react";
-import { Building2, Users, Trophy, Zap, ArrowRight } from "lucide-react";
+import { Building2, ArrowRight } from "lucide-react";
 import Link from "next/link";
-import { EnterpriseModal } from "@/components/landing/enterprise-modal";
 
-// ── Image URLs ───────────────────────────────────────────────────────────────
-const CORPORATE_CULTURE_IMAGE = "https://ljivgwkczgqvcqkdzsxr.supabase.co/storage/v1/object/public/landing-assets/The%20Corporate%20Culture%20Feature%20Image.png";
-const REMOTE_HYBRID_IMAGE     = "https://ljivgwkczgqvcqkdzsxr.supabase.co/storage/v1/object/public/landing-assets/The%20Remote%20Work%20%20Hybrid%20Image.png";
-const STADIUM_PHOTO           = "https://ljivgwkczgqvcqkdzsxr.supabase.co/storage/v1/object/public/landing-assets/outside%20stadium%20and%20many%20blureed%20people%20outside.jpg";
-
-// ── Benefits ─────────────────────────────────────────────────────────────────
-const BENEFITS = [
-  { icon: Users,     title: "Zero friction for employees",  body: "Staff click the invite link and go straight in. No checkout, no card details, no friction."    },
-  { icon: Zap,       title: "One payment, whole team",      body: "HR or a manager pays once. Every employee gets full platform access automatically."             },
-  { icon: Trophy,    title: "Your prizes, your rules",      body: "Replace cash pots with company prizes — gift cards, extra days off, tech gadgets."              },
-  { icon: Building2, title: "Distributed teams welcome",   body: "Works for remote, hybrid, or office teams across any timezone. Just share the link on Slack."    },
+const BULLETS = [
+  { title: "Zero friction for employees",  body: "One link, one tap. No payment, no app downloads." },
+  { title: "Branded for your company",     body: "Group name, custom rewards. Made to feel like yours." },
+  { title: "Admin tools that don't suck",  body: "Member tracking, nudge reminders, payout management." },
+  { title: "IT-friendly invoicing",        body: "PayPal Business invoices. SSO available on Enterprise." },
 ];
 
-// ── Bunting flags for section divider ────────────────────────────────────────
-const BUNTING_FLAGS = [
-  { code: "us",     name: "USA"          },
-  { code: "mx",     name: "Mexico"       },
-  { code: "ca",     name: "Canada"       },
-  { code: "ar",     name: "Argentina"    },
-  { code: "br",     name: "Brazil"       },
-  { code: "fr",     name: "France"       },
-  { code: "de",     name: "Germany"      },
-  { code: "gb-eng", name: "England"      },
-  { code: "es",     name: "Spain"        },
-  { code: "pt",     name: "Portugal"     },
-  { code: "nl",     name: "Netherlands"  },
-  { code: "jp",     name: "Japan"        },
-  { code: "ma",     name: "Morocco"      },
-  { code: "ng",     name: "Nigeria"      },
-  { code: "kr",     name: "South Korea"  },
-  { code: "au",     name: "Australia"    },
-  { code: "us",     name: "USA"          },
-  { code: "mx",     name: "Mexico"       },
-  { code: "ca",     name: "Canada"       },
-  { code: "ar",     name: "Argentina"    },
-  { code: "br",     name: "Brazil"       },
-  { code: "fr",     name: "France"       },
-  { code: "de",     name: "Germany"      },
-  { code: "gb-eng", name: "England"      },
-];
-
-function SectionBunting() {
+function LeaderboardPhone() {
   return (
-    <div
-      className="w-full overflow-hidden flex items-start justify-center"
-      style={{ height: 38, position: "relative" }}
-      aria-hidden="true"
-    >
-      {/* String line */}
-      <div
-        style={{
-          position: "absolute",
-          top: 12,
-          left: 0,
-          right: 0,
-          height: 1,
-          background:
-            "linear-gradient(90deg, transparent 0%, rgba(0,212,255,0.3) 8%, rgba(0,212,255,0.3) 92%, transparent 100%)",
-        }}
-      />
-      <div className="flex items-start" style={{ gap: 0 }}>
-        {BUNTING_FLAGS.map((f, i) => {
-          const tiltLeft = i % 2 === 0;
-          return (
-            <div
-              key={`corp-bunting-${i}`}
-              className="relative flex flex-col items-center shrink-0"
-              style={{ width: 52 }}
-            >
-              <div
-                style={{
-                  width: 4,
-                  height: 4,
-                  borderRadius: "50%",
-                  background: "rgba(0,212,255,0.5)",
-                  marginBottom: 2,
-                  marginTop: 10,
-                }}
-              />
-              <div
-                style={{
-                  width: 30,
-                  height: 19,
-                  clipPath: "polygon(0 0, 100% 0, 50% 100%)",
-                  overflow: "hidden",
-                  transform: `rotate(${tiltLeft ? -3 : 3}deg)`,
-                  boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
-                  flexShrink: 0,
-                }}
-              >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={`https://flagcdn.com/w40/${f.code}.png`}
-                  alt={f.name}
-                  width={30}
-                  height={19}
-                  style={{
-                    width: "100%",
-                    height: "100%",
-                    objectFit: "cover",
-                    objectPosition: "center",
-                    opacity: 0.75,
-                  }}
-                />
-              </div>
-            </div>
-          );
-        })}
-      </div>
+    <div style={{ background: "rgba(8,5,18,0.95)", borderRadius: 28, border: "1px solid rgba(255,255,255,0.15)", boxShadow: "0 32px 80px rgba(0,0,0,0.5)", width: 220, padding: "14px 14px 18px", display: "flex", flexDirection: "column", gap: 10 }}>
+      <div style={{ fontSize: 8, fontWeight: 700, color: "#00D4FF", textTransform: "uppercase", letterSpacing: "0.12em" }}>Cup Clash</div>
+      <div style={{ fontSize: 13, fontWeight: 700, color: "white", marginBottom: 4 }}>Tech Titans</div>
+      <div style={{ fontSize: 8, fontWeight: 700, color: "#fbbf24", textTransform: "uppercase", letterSpacing: "0.1em", marginBottom: 4 }}>Leaderboard</div>
+      {[
+        { rank: 1, name: "Amit",  pts: 145, gold: true,  me: false },
+        { rank: 2, name: "Sarah", pts: 130, gold: false, me: false },
+        { rank: 3, name: "You",   pts: 110, gold: false, me: true  },
+      ].map((p) => (
+        <div key={p.name} style={{ display: "flex", alignItems: "center", gap: 7, padding: "5px 7px", borderRadius: 8, background: p.me ? "rgba(0,255,136,0.08)" : "rgba(255,255,255,0.03)", border: p.me ? "1px solid rgba(0,255,136,0.18)" : "1px solid rgba(255,255,255,0.06)" }}>
+          <span style={{ fontSize: 10, fontWeight: 800, width: 14, color: p.gold ? "#fbbf24" : p.me ? "#00FF88" : "rgba(255,255,255,0.35)" }}>{p.rank}</span>
+          <div style={{ width: 18, height: 18, borderRadius: "50%", background: "linear-gradient(135deg,#00D4FF,#00FF88)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 7, fontWeight: 700, color: "#050e08" }}>{p.name[0]}</div>
+          <span style={{ fontSize: 10, fontWeight: 600, flex: 1, color: "white" }}>{p.name}</span>
+          <span style={{ fontSize: 11, fontWeight: 800, color: p.gold ? "#fbbf24" : p.me ? "#00FF88" : "rgba(255,255,255,0.5)" }}>{p.pts}</span>
+        </div>
+      ))}
     </div>
   );
 }
 
-// ── Main component ────────────────────────────────────────────────────────────
+function NotifPhone() {
+  const notifs = [
+    { color: "#00FF88", bg: "rgba(0,255,136,0.12)", icon: "⚡", title: "+25 pts earned", sub: "Exact score: ARG 2–1 FRA" },
+    { color: "#00D4FF", bg: "rgba(0,212,255,0.12)", icon: "↑", title: "You moved to #3", sub: "Sarah dropped 2 spots" },
+    { color: "#8B5CF6", bg: "rgba(139,92,246,0.12)", icon: "★", title: "Achievement", sub: "5 exact scores in a row" },
+  ];
+  return (
+    <div style={{ background: "rgba(8,5,18,0.95)", borderRadius: 28, border: "1px solid rgba(255,255,255,0.15)", boxShadow: "0 32px 80px rgba(0,0,0,0.5)", width: 220, padding: "14px 14px 18px", display: "flex", flexDirection: "column", gap: 8 }}>
+      <div style={{ fontSize: 8, fontWeight: 700, color: "#00D4FF", textTransform: "uppercase", letterSpacing: "0.12em" }}>Cup Clash</div>
+      <div style={{ fontSize: 13, fontWeight: 700, color: "white", marginBottom: 4 }}>Notifications</div>
+      {notifs.map((n) => (
+        <div key={n.title} style={{ display: "flex", alignItems: "flex-start", gap: 8, padding: "8px 9px", borderRadius: 10, background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" }}>
+          <div style={{ width: 24, height: 24, borderRadius: 7, background: n.bg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, flexShrink: 0, color: n.color }}>{n.icon}</div>
+          <div>
+            <div style={{ fontSize: 9, fontWeight: 700, color: "white", marginBottom: 2 }}>{n.title}</div>
+            <div style={{ fontSize: 8, color: "rgba(255,255,255,0.4)" }}>{n.sub}</div>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
 
 export function CorporateSection() {
-  const [showModal, setShowModal] = useState(false);
-
   return (
-    <>
-      {/* Bunting divider above section */}
-      <div style={{ background: "white", borderTop: "1px solid rgba(0,212,255,0.1)", paddingTop: 4 }}>
-        <SectionBunting />
-      </div>
+    <section id="for-companies" className="py-24 px-5 sm:px-8" style={{ background: "#050810" }}>
+      <div className="max-w-7xl mx-auto">
+        <div className="grid lg:grid-cols-2 gap-16 items-center">
 
-      <section id="corporate" className="py-16 px-5 sm:px-8" style={{ background: "white" }}>
-        <div className="max-w-7xl mx-auto">
-
-          {/* ── Header ── */}
-          <motion.div
-            initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
-            className="text-center mb-12"
-          >
-            <div
-              className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border mb-4"
-              style={{ borderColor: "rgba(0,212,255,0.3)", background: "rgba(0,212,255,0.05)" }}
-            >
-              <Building2 size={13} style={{ color: "#0891B2" }} />
-              <span className="text-xs font-bold uppercase tracking-widest" style={{ color: "#0891B2" }}>
-                For Teams & Companies
+          <motion.div initial={{ opacity: 0, x: -24 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}>
+            <div className="flex items-center gap-2 mb-5">
+              <Building2 size={13} style={{ color: "#00D4FF" }} />
+              <span style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.18em", color: "#00D4FF" }}>
+                For HR, People Ops &amp; Office Managers
               </span>
             </div>
-            <h2
-              className="font-display text-4xl sm:text-5xl uppercase font-black mb-4"
-              style={{ color: "#0F172A" }}
-            >
-              The World Cup is the{" "}
-              <span
-                style={{
-                  background: "linear-gradient(135deg, #00D4FF, #00FF88)",
-                  WebkitBackgroundClip: "text",
-                  backgroundClip: "text",
-                  WebkitTextFillColor: "transparent",
-                }}
-              >
-                best team-building event
-              </span>{" "}
-              of 2026.
+
+            <h2 className="font-display font-black text-white mb-5" style={{ fontSize: "clamp(32px,4vw,52px)", lineHeight: 1.1 }}>
+              Sponsor your whole company team —{" "}
+              <span style={{ color: "#00FF88" }}>from $75.</span>
             </h2>
-            <p className="text-lg max-w-2xl mx-auto" style={{ color: "#64748b" }}>
-              One flat fee covers your entire department. Employees join free — no checkout, no friction, no chasing payments.
+
+            <p className="mb-8 leading-relaxed" style={{ fontSize: 16, color: "rgba(255,255,255,0.65)", lineHeight: 1.6 }}>
+              Replace the awkward Slack thread with something everyone actually shows up for.
+              One flat fee covers your entire team — employees join free, no checkout friction, no IT tickets.
             </p>
-          </motion.div>
 
-          {/* ── Corporate Culture photo + benefits ── */}
-          <div className="grid lg:grid-cols-2 gap-8 mb-10 items-center">
-
-            {/* Corporate Culture Feature Image */}
-            <motion.div
-              initial={{ opacity: 0, x: -20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}
-              className="rounded-3xl overflow-hidden relative"
-              style={{ height: 420 }}
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={CORPORATE_CULTURE_IMAGE}
-                alt="Corporate team enjoying the World Cup together"
-                width={700}
-                height={420}
-                className="w-full h-full object-cover"
-              />
-              <div
-                className="absolute inset-0"
-                style={{ background: "linear-gradient(135deg, rgba(0,212,255,0.12), rgba(0,255,136,0.08))" }}
-              />
-              {/* Stats overlay badge */}
-              <div className="absolute bottom-5 left-5 right-5">
-                <div
-                  className="rounded-2xl px-5 py-4"
-                  style={{ background: "rgba(255,255,255,0.92)", backdropFilter: "blur(12px)" }}
-                >
-                  <div className="flex items-center gap-4">
-                    <div className="text-center">
-                      <div className="font-display text-2xl font-black" style={{ color: "#0F172A" }}>$0</div>
-                      <div className="text-[10px] uppercase tracking-widest" style={{ color: "#64748b" }}>per employee</div>
-                    </div>
-                    <div className="h-8 w-px" style={{ background: "#e2e8f0" }} />
-                    <div className="text-center">
-                      <div className="font-display text-2xl font-black" style={{ color: "#0F172A" }}>1</div>
-                      <div className="text-[10px] uppercase tracking-widest" style={{ color: "#64748b" }}>flat payment</div>
-                    </div>
-                    <div className="h-8 w-px" style={{ background: "#e2e8f0" }} />
-                    <div className="flex-1">
-                      <div className="text-sm font-bold" style={{ color: "#0F172A" }}>Your company covers it</div>
-                      <div className="text-xs" style={{ color: "#64748b" }}>employees join instantly</div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </motion.div>
-
-            {/* Benefits list */}
-            <motion.div
-              initial={{ opacity: 0, x: 20 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }}
-              className="space-y-5"
-            >
-              {BENEFITS.map((b, i) => (
-                <motion.div
-                  key={b.title}
-                  initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
-                  transition={{ delay: i * 0.08 }}
-                  className="flex gap-4 p-4 rounded-2xl"
-                  style={{ background: "#F8FAFC", border: "1px solid rgba(0,212,255,0.1)" }}
-                >
-                  <div
-                    className="h-10 w-10 rounded-xl flex items-center justify-center shrink-0"
-                    style={{ background: "rgba(0,212,255,0.08)", border: "1px solid rgba(0,212,255,0.15)" }}
-                  >
-                    <b.icon size={18} style={{ color: "#0891B2" }} />
-                  </div>
+            <div className="flex flex-col gap-4 mb-10">
+              {BULLETS.map((b, i) => (
+                <motion.div key={b.title} initial={{ opacity: 0, x: -12 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ delay: i * 0.07 }} className="flex items-start gap-3">
+                  <div className="shrink-0 mt-0.5 h-5 w-5 rounded-full flex items-center justify-center text-xs font-black"
+                    style={{ background: "rgba(0,255,136,0.15)", color: "#00FF88", border: "1px solid rgba(0,255,136,0.3)" }}>✓</div>
                   <div>
-                    <div className="font-bold text-sm mb-0.5" style={{ color: "#0F172A" }}>{b.title}</div>
-                    <div className="text-xs leading-relaxed" style={{ color: "#64748b" }}>{b.body}</div>
+                    <div className="text-sm font-bold text-white">{b.title}</div>
+                    <div className="text-sm" style={{ color: "rgba(255,255,255,0.5)" }}>{b.body}</div>
                   </div>
                 </motion.div>
               ))}
-
-              {/* How it works mini steps */}
-              <div className="flex items-center gap-3 pt-2 flex-wrap">
-                {[
-                  { step: "1", text: "Manager pays once" },
-                  { step: "→", text: "" },
-                  { step: "2", text: "Share invite link" },
-                  { step: "→", text: "" },
-                  { step: "3", text: "Team joins free" },
-                ].map((s, i) =>
-                  s.step === "→" ? (
-                    <span key={i} style={{ color: "#cbd5e1" }}>→</span>
-                  ) : (
-                    <div key={i} className="flex items-center gap-1.5">
-                      <div
-                        className="h-6 w-6 rounded-full flex items-center justify-center text-[11px] font-black shrink-0"
-                        style={{ background: "rgba(0,212,255,0.1)", color: "#0891B2" }}
-                      >
-                        {s.step}
-                      </div>
-                      <span className="text-xs font-bold" style={{ color: "#475569" }}>{s.text}</span>
-                    </div>
-                  )
-                )}
-              </div>
-            </motion.div>
-          </div>
-
-          {/* ── Remote / Hybrid highlight row ── */}
-          <motion.div
-            initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
-            className="grid md:grid-cols-2 gap-0 mb-10 rounded-3xl overflow-hidden"
-            style={{ background: "#F8FAFC", border: "1px solid rgba(0,212,255,0.1)" }}
-          >
-            {/* Remote / Hybrid image */}
-            <div className="relative overflow-hidden" style={{ minHeight: 240 }}>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={REMOTE_HYBRID_IMAGE}
-                alt="Remote and hybrid teams joining the World Cup prediction game"
-                width={600}
-                height={260}
-                className="w-full h-full object-cover"
-                style={{ minHeight: 240 }}
-              />
-              <div
-                className="absolute inset-0"
-                style={{
-                  background:
-                    "linear-gradient(90deg, transparent 50%, #F8FAFC 100%)",
-                }}
-              />
             </div>
 
-            {/* Copy */}
-            <div className="p-8 flex flex-col justify-center">
-              <div
-                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-widest mb-4 w-fit"
-                style={{ background: "rgba(0,212,255,0.08)", color: "#0891B2", border: "1px solid rgba(0,212,255,0.18)" }}
-              >
-                🌍 Remote & Hybrid Friendly
-              </div>
-              <h3
-                className="font-display text-2xl sm:text-3xl uppercase font-black mb-3"
-                style={{ color: "#0F172A" }}
-              >
-                Your team is everywhere.<br />
-                <span
-                  style={{
-                    background: "linear-gradient(135deg, #00D4FF, #00FF88)",
-                    WebkitBackgroundClip: "text",
-                    backgroundClip: "text",
-                    WebkitTextFillColor: "transparent",
-                  }}
-                >
-                  Cup Clash goes with them.
-                </span>
-              </h3>
-              <p className="text-sm leading-relaxed mb-5" style={{ color: "#64748b" }}>
-                Share one link on Slack, Teams, or email. Whether your colleagues are in the office, working from home, or spread across 10 time zones — everyone&apos;s on the same leaderboard, competing in real time.
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {["✓ Any timezone", "✓ Works on mobile", "✓ No app download needed", "✓ Slack & Teams friendly"].map(t => (
-                  <span
-                    key={t}
-                    className="text-xs font-bold px-3 py-1.5 rounded-full"
-                    style={{ background: "rgba(0,212,255,0.07)", color: "#0891B2", border: "1px solid rgba(0,212,255,0.15)" }}
-                  >
-                    {t}
-                  </span>
-                ))}
-              </div>
-            </div>
-          </motion.div>
-
-          {/* ── Corporate prize callout ── */}
-          <motion.div
-            initial={{ opacity: 0, y: 12 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
-            className="rounded-2xl p-6 mb-10 flex items-center gap-6 flex-wrap"
-            style={{ background: "rgba(0,255,136,0.05)", border: "1px solid rgba(0,255,136,0.2)" }}
-          >
-            <div className="text-3xl">🏆</div>
-            <div className="flex-1">
-              <div className="font-bold text-sm mb-1" style={{ color: "#0F172A" }}>
-                Replace the cash pool with company prizes
-              </div>
-              <div className="text-xs" style={{ color: "#64748b" }}>
-                Extra vacation day · Amazon gift card · Team lunch · Tech gadget · Charity donation in winner&apos;s name
-              </div>
-            </div>
-            <div className="flex items-center gap-3 flex-wrap">
-              {["✓ No cash handling", "✓ No legal issues", "✓ HR-friendly"].map(t => (
-                <span
-                  key={t}
-                  className="text-xs font-bold px-3 py-1.5 rounded-full"
-                  style={{ background: "rgba(0,255,136,0.1)", color: "#059669" }}
-                >
-                  {t}
-                </span>
-              ))}
-            </div>
-          </motion.div>
-
-          {/* ── Stadium photo strip ── */}
-          <motion.div
-            initial={{ opacity: 0 }} whileInView={{ opacity: 1 }} viewport={{ once: true }}
-            className="rounded-3xl overflow-hidden mb-10 relative"
-            style={{ height: 200 }}
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={STADIUM_PHOTO}
-              alt="Fans outside stadium"
-              width={1400}
-              height={200}
-              className="w-full h-full object-cover"
-            />
-            <div
-              className="absolute inset-0 flex items-center justify-center"
-              style={{ background: "rgba(11,20,27,0.55)" }}
-            >
-              <div className="text-center text-white">
-                <div className="font-display text-3xl sm:text-4xl uppercase font-black mb-2">
-                  104 matches. One platform.
-                </div>
-                <div className="text-sm" style={{ color: "rgba(255,255,255,0.7)" }}>
-                  June 11 – July 19, 2026 · USA, Canada & Mexico
-                </div>
-              </div>
-            </div>
-          </motion.div>
-
-          {/* ── CTAs ── */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link href="/create-group?model=corporate_sponsored">
-              <button
-                className="flex items-center gap-2 px-8 py-4 rounded-full font-bold text-base uppercase tracking-wider w-full sm:w-auto justify-center transition-all hover:-translate-y-0.5"
-                style={{
-                  background: "linear-gradient(135deg, #00FF88, #00D4FF)",
-                  color: "#0B141B",
-                  boxShadow: "0 4px 20px rgba(0,255,136,0.25)",
-                }}
-              >
-                Set Up Your Team <ArrowRight size={18} />
+              <button className="flex items-center gap-2 font-bold uppercase tracking-wider transition-all hover:-translate-y-0.5"
+                style={{ background: "linear-gradient(135deg, #00FF88, #00D4FF)", color: "#0B141B", borderRadius: 12, padding: "16px 32px", fontSize: 14, fontWeight: 700, boxShadow: "0 8px 30px rgba(0,255,136,0.3)" }}>
+                Sponsor your office — from $75
+                <ArrowRight size={16} />
               </button>
             </Link>
-            <button
-              onClick={() => setShowModal(true)}
-              className="flex items-center gap-2 px-8 py-4 rounded-full font-bold text-base uppercase tracking-wider w-full sm:w-auto justify-center transition-all hover:-translate-y-0.5"
-              style={{ border: "2px solid rgba(0,212,255,0.3)", color: "#0891B2", background: "rgba(0,212,255,0.04)" }}
-            >
-              Contact Us for Enterprise
-            </button>
-          </div>
+          </motion.div>
+
+          <motion.div initial={{ opacity: 0, x: 24 }} whileInView={{ opacity: 1, x: 0 }} viewport={{ once: true }} transition={{ duration: 0.7, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
+            className="hidden lg:flex items-center justify-center" style={{ position: "relative", minHeight: 400 }}>
+            <div style={{ position: "absolute", right: 0, top: 0, transform: "rotate(4deg) translateX(30px)", zIndex: 1, filter: "drop-shadow(0 24px 60px rgba(0,0,0,0.5))" }}>
+              <LeaderboardPhone />
+            </div>
+            <div style={{ position: "relative", transform: "rotate(-3deg) translateX(-20px) translateY(20px)", zIndex: 2, filter: "drop-shadow(0 0 24px rgba(0,212,255,0.2)) drop-shadow(0 32px 80px rgba(0,0,0,0.6))" }}>
+              <NotifPhone />
+            </div>
+          </motion.div>
 
         </div>
-      </section>
-
-      <EnterpriseModal isOpen={showModal} onClose={() => setShowModal(false)} />
-    </>
+      </div>
+    </section>
   );
 }

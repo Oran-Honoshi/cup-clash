@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Trophy, Brain, BarChart2, Target, Users, Zap, Globe, Download, Ban, Building2 } from "lucide-react";
+import { Trophy, Brain, BarChart2, Target, Users, Zap, Globe, Download, Ban } from "lucide-react";
 
 const FEATURES = [
   { icon: Target,    title: "Score Predictions", body: "Lock in your exact score guesses for all 104 matches with automated deadline enforcement 5 min before kickoff.",              accentColor: "#00FF88", bg: "rgba(0,255,136,0.1)",   border: "rgba(0,255,136,0.25)"  },
@@ -12,7 +12,6 @@ const FEATURES = [
   { icon: Users,     title: "Multiple Groups",   body: "Dominate the office, family and bar squad simultaneously from one unified dashboard.",                                          accentColor: "#00FF88", bg: "rgba(0,255,136,0.1)",   border: "rgba(0,255,136,0.25)"  },
   { icon: Zap,       title: "Single Match Bets", body: "Want to go all-in on USA vs. England? Create micro-groups for the tournament's biggest individual clashes.",                  accentColor: "#fbbf24", bg: "rgba(251,191,36,0.1)",  border: "rgba(251,191,36,0.25)" },
   { icon: Download,  title: "Winner Poster",     body: "Generate a branded, high-res victory card to flex on friends after the trophy is raised.",                                    accentColor: "#00D4FF", bg: "rgba(0,212,255,0.1)",   border: "rgba(0,212,255,0.25)"  },
-  { icon: Building2, title: "Corporate Teams",   body: "Sponsor your entire office with flat-rate packages. Employees join free with zero checkout friction.",                        accentColor: "#8b5cf6", bg: "rgba(139,92,246,0.1)",  border: "rgba(139,92,246,0.25)" },
   { icon: Ban,       title: "100% Ad-Free",      body: "No ads. No pop-ups. No analytics tracking. We will never clutter your experience with corporate junk. Always. Forever.",     accentColor: "#ec4899", bg: "rgba(236,72,153,0.1)",  border: "rgba(236,72,153,0.25)" },
 ];
 
@@ -20,7 +19,6 @@ export function Features() {
   return (
     <section id="features" className="py-24 px-5 sm:px-8">
       <div className="max-w-7xl mx-auto">
-
         <motion.div initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
           className="text-center mb-12">
           <div className="text-[11px] font-bold uppercase tracking-[0.18em] text-cyan mb-3">Everything you need</div>
@@ -62,7 +60,6 @@ export function Features() {
             </motion.div>
           ))}
         </div>
-
       </div>
     </section>
   );

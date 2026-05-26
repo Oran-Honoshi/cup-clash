@@ -121,24 +121,12 @@ function PhoneMockup() {
   );
 }
 
-const TICKER_ITEMS = [
-  "Mexico vs South Africa — Opening match June 11",
-  "48 teams · 104 matches · 16 host cities across 3 nations",
-  "World Cup Final at MetLife Stadium, New Jersey · July 19",
-  "Group stage runs June 11–29 · Predict all 36 group matches",
-  "Round of 32 begins July 1 · Who will make it through?",
-  "Argentina defending champions · Can Messi win it again?",
-  "USA hosting for the first time since 1994 · Home advantage?",
-  "Predictions lock 5 minutes before kickoff · Don't miss out",
-];
-
 export function Hero() {
   return (
     <section
       className="relative overflow-hidden pb-0"
       style={{ paddingTop: "calc(98px + 3.5rem)" }}
     >
-      {/* Background atmosphere */}
       <div className="absolute top-0 right-0 w-[700px] h-[700px] pointer-events-none"
         style={{ background: "radial-gradient(circle at top right, rgba(0,212,255,0.12) 0%, rgba(0,255,136,0.06) 30%, transparent 65%)" }} />
       <div className="absolute top-0 left-0 w-[400px] h-[400px] pointer-events-none"
@@ -147,9 +135,7 @@ export function Hero() {
       <div className="relative mx-auto max-w-7xl px-5 sm:px-8">
         <div className="grid lg:grid-cols-2 gap-12 xl:gap-16 items-center min-h-[82vh] pb-20">
 
-          {/* ── LEFT COLUMN ── */}
           <div className="relative z-10 py-12 lg:py-0">
-
             <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
               className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border mb-6"
               style={{ borderColor: "rgba(0,212,255,0.3)", background: "rgba(0,212,255,0.1)", backdropFilter: "blur(8px)" }}>
@@ -176,10 +162,8 @@ export function Hero() {
               Sponsor your whole team for $75.
             </motion.p>
 
-            {/* CTAs */}
             <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.3 }}
               className="flex flex-col sm:flex-row gap-4 mb-8">
-
               <Link href="/signup">
                 <button
                   className="group flex items-center gap-2 px-7 py-4 rounded-2xl font-bold uppercase tracking-wider transition-all hover:-translate-y-1 w-full sm:w-auto text-[#050e08]"
@@ -188,7 +172,6 @@ export function Hero() {
                   <ArrowRight size={16} className="transition-transform group-hover:translate-x-0.5" />
                 </button>
               </Link>
-
               <Link href="/create-group?model=corporate_sponsored">
                 <button
                   className="group flex items-center gap-2 px-7 py-4 rounded-2xl font-bold uppercase tracking-wider transition-all hover:-translate-y-1 w-full sm:w-auto text-white"
@@ -200,7 +183,6 @@ export function Hero() {
               </Link>
             </motion.div>
 
-            {/* Trust badges */}
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.45 }}
               className="flex items-center gap-3 flex-wrap">
               <span className="text-xs font-bold px-3 py-1.5 rounded-full"
@@ -217,7 +199,6 @@ export function Hero() {
               </span>
             </motion.div>
 
-            {/* Countdown */}
             <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.55 }} className="mt-10">
               <div className="text-xs font-bold uppercase tracking-widest mb-3 text-white/40">
                 First match kicks off in
@@ -228,7 +209,6 @@ export function Hero() {
             </motion.div>
           </div>
 
-          {/* ── RIGHT COLUMN ── */}
           <motion.div initial={{ opacity: 0, x: 40 }} animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
             className="hidden lg:flex items-center justify-center relative">
@@ -250,46 +230,6 @@ export function Hero() {
               <div className="text-[10px] text-white/40">12 members</div>
             </motion.div>
           </motion.div>
-        </div>
-      </div>
-
-      {/* Host nations bar */}
-      <div className="border-t border-b py-4 px-5"
-        style={{ borderColor: "rgba(255,255,255,0.06)", background: "rgba(5,8,16,0.6)", backdropFilter: "blur(12px)" }}>
-        <div className="max-w-7xl mx-auto flex items-center justify-between gap-6 flex-wrap">
-          <div className="text-xs font-bold uppercase tracking-widest text-white/40">Host Nations</div>
-          <div className="flex items-center gap-6">
-            {[
-              { flag: "us", name: "United States", matches: "60 matches" },
-              { flag: "mx", name: "Mexico",        matches: "22 matches" },
-              { flag: "ca", name: "Canada",        matches: "13 matches" },
-            ].map(({ flag, name, matches }) => (
-              <div key={name} className="flex items-center gap-2">
-                <span className="relative rounded-sm overflow-hidden inline-block" style={{ width: 32, height: 24 }}>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={`https://flagcdn.com/w80/${flag}.png`} alt={name} width={32} height={24}
-                    className="object-cover" style={{ width: 32, height: 24 }} />
-                </span>
-                <div>
-                  <div className="text-xs font-bold text-white">{name}</div>
-                  <div className="text-[10px] text-white/40">{matches}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-          <div className="text-xs font-bold text-white/40">48 teams · 104 matches · 16 cities</div>
-        </div>
-      </div>
-
-      {/* Ticker */}
-      <div className="overflow-hidden py-2.5"
-        style={{ background: "rgba(0,255,136,0.04)", borderBottom: "1px solid rgba(0,255,136,0.1)" }}>
-        <div className="flex animate-ticker whitespace-nowrap">
-          {[...TICKER_ITEMS, ...TICKER_ITEMS].map((item, i) => (
-            <span key={i} className="text-xs font-bold uppercase tracking-widest mx-8 text-ac/80">
-              {item}
-            </span>
-          ))}
         </div>
       </div>
     </section>
