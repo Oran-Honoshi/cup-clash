@@ -1,0 +1,238 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-05-26T00:00:00.000Z",
+  "title": "Design System: Cup Clash",
+  "extensions": {
+    "colorMeta": {
+      "bg": {
+        "role": "neutral",
+        "displayName": "Deep Navy Field",
+        "canonical": "oklch(11% 0.03 261)",
+        "tonalRamp": ["#02030A", "#040712", "#050810", "#080C16", "#0F1422", "#1A2238", "#2D3A5F", "#5C6B8E"]
+      },
+      "bg-alt": {
+        "role": "neutral",
+        "displayName": "Stadium Alt Ground",
+        "canonical": "oklch(11% 0.03 280)",
+        "tonalRamp": ["#040513", "#070612", "#080510", "#0A0918", "#161325", "#241F44", "#3C347B", "#6F6ABF"]
+      },
+      "surface-glass": {
+        "role": "surface",
+        "displayName": "Tinted Purple Glass",
+        "canonical": "rgba(18, 14, 38, 0.32)",
+        "tonalRamp": ["#0A0820", "#120E26", "#1A1535", "#241F44", "#332C5A", "#4A4279", "#7064AF", "#A498D6"]
+      },
+      "surface-glass-strong": {
+        "role": "surface",
+        "displayName": "Strong Purple Glass",
+        "canonical": "rgba(18, 14, 38, 0.5)",
+        "tonalRamp": ["#0A0820", "#120E26", "#1A1535", "#241F44", "#332C5A", "#4A4279", "#7064AF", "#A498D6"]
+      },
+      "accent-mint": {
+        "role": "primary",
+        "displayName": "Neon Mint (You/Win)",
+        "canonical": "oklch(89% 0.27 156)",
+        "tonalRamp": ["#003319", "#00552B", "#00773D", "#00A857", "#00D070", "#00FF88", "#5CFFB4", "#B8FFD9"]
+      },
+      "accent-cyan": {
+        "role": "secondary",
+        "displayName": "Electric Cyan (Live/Info)",
+        "canonical": "oklch(83% 0.16 217)",
+        "tonalRamp": ["#002633", "#004A66", "#006B99", "#0096CC", "#00B8E6", "#00D4FF", "#6FE4FF", "#C2F3FF"]
+      },
+      "accent-purple": {
+        "role": "tertiary",
+        "displayName": "Tournament Purple",
+        "canonical": "oklch(63% 0.22 297)",
+        "tonalRamp": ["#1F1338", "#33205C", "#4B2D85", "#6541B5", "#7E4FD7", "#8B5CF6", "#B299FA", "#DCD0FE"]
+      },
+      "accent-amber": {
+        "role": "tertiary",
+        "displayName": "Stadium Amber (Leader)",
+        "canonical": "oklch(83% 0.16 80)",
+        "tonalRamp": ["#3D2D02", "#665008", "#917114", "#C09524", "#E5B438", "#FBBF24", "#FDDA80", "#FEF0C9"]
+      },
+      "accent-pink": {
+        "role": "tertiary",
+        "displayName": "Bracket Pink",
+        "canonical": "oklch(67% 0.24 360)",
+        "tonalRamp": ["#3D0F26", "#671A3F", "#902758", "#B83472", "#D63E87", "#EC4899", "#F590BB", "#FCD3E1"]
+      },
+      "state-danger": {
+        "role": "state",
+        "displayName": "Result Red",
+        "canonical": "oklch(70% 0.18 22)",
+        "tonalRamp": ["#3D1010", "#661A1A", "#902626", "#B83434", "#D44848", "#F87171", "#FBA5A5", "#FED7D7"]
+      },
+      "fg-primary": {
+        "role": "neutral",
+        "displayName": "White",
+        "canonical": "#FFFFFF",
+        "tonalRamp": ["#FFFFFF", "#FFFFFFEE", "#FFFFFFCC", "#FFFFFFB3", "#FFFFFF80", "#FFFFFF59", "#FFFFFF26", "#FFFFFF0F"]
+      },
+      "landing-ink": {
+        "role": "neutral",
+        "displayName": "Landing Ink",
+        "canonical": "oklch(24% 0.04 264)",
+        "tonalRamp": ["#020611", "#070C1B", "#0F172A", "#1E293B", "#334155", "#475569", "#94A3B8", "#E2E8F0"]
+      }
+    },
+    "typographyMeta": {
+      "hero": { "displayName": "Hero", "purpose": "Landing-page H1 only. 'Predict every match' headline." },
+      "display": { "displayName": "Display", "purpose": "Landing section H2s, profile stat displays." },
+      "title": { "displayName": "Title", "purpose": "Card titles, group titles, How-it-works step headings." },
+      "card": { "displayName": "Card", "purpose": "Phone-screen card headings, dashboard section headings." },
+      "body-lg": { "displayName": "Body Large", "purpose": "Hero subtitle, calm second voice under a big headline." },
+      "body": { "displayName": "Body", "purpose": "Default paragraph. Cap at 65–75ch on landing." },
+      "meta": { "displayName": "Meta", "purpose": "Nav links, meta info, secondary card text." },
+      "label": { "displayName": "Label", "purpose": "Uppercase eyebrow labels (SIMPLE BY DESIGN, UPCOMING)." },
+      "chip": { "displayName": "Chip", "purpose": "Inside chip components and status badges." },
+      "scoreboard": { "displayName": "Scoreboard", "purpose": "Every number that changes during a match — scores, points, ranks, timers, countdowns. The Mono-For-Numbers Rule." }
+    },
+    "shadows": [
+      { "name": "glass", "value": "0 12px 40px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.18)", "purpose": "Default elevation for every glass panel. Inset highlight is non-negotiable." },
+      { "name": "card", "value": "0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.06)", "purpose": "Tighter variant for in-page cards." },
+      { "name": "glow-mint", "value": "0 8px 30px rgba(0,255,136,0.4)", "purpose": "Primary CTA at rest and on hover; 'you' highlight on leaderboard." },
+      { "name": "glow-mint-radial", "value": "0 0 20px rgba(0,255,136,0.35), 0 4px 12px rgba(0,255,136,0.15)", "purpose": "Pulsing variant for live state." },
+      { "name": "glow-cyan", "value": "0 8px 30px rgba(0,212,255,0.4)", "purpose": "Secondary/info CTAs and live-dot." },
+      { "name": "glow-purple", "value": "0 8px 30px rgba(139,92,246,0.4)", "purpose": "Premium / tournament-picks CTAs." },
+      { "name": "neon-green", "value": "0 0 20px rgba(0,255,136,0.35), 0 4px 12px rgba(0,255,136,0.15)", "purpose": "Saved-state cards and 'you' row." },
+      { "name": "neon-cyan", "value": "0 0 20px rgba(0,212,255,0.3), 0 4px 12px rgba(0,212,255,0.12)", "purpose": "Live state cards, score bar." }
+    ],
+    "motion": [
+      { "name": "ease-out", "value": "cubic-bezier(0.16, 1, 0.3, 1)", "purpose": "Default easing for all state transitions; exponential ease-out." },
+      { "name": "duration-fast", "value": "140ms", "purpose": "Hover snaps, button-press feedback, page transitions." },
+      { "name": "duration-normal", "value": "220ms", "purpose": "State changes, modal entrances, FAQ accordion." },
+      { "name": "duration-slow", "value": "400ms", "purpose": "Hero entrances, scroll-driven reveals." },
+      { "name": "live-pulse", "value": "1.4s ease-in-out infinite", "purpose": "Live indicator dot, LIVE chip on match cards." },
+      { "name": "float-y", "value": "6s ease-in-out infinite", "purpose": "Hero phone-frame gentle float." },
+      { "name": "score-flip", "value": "300ms ease-out", "purpose": "Score digit flip when a result updates." }
+    ],
+    "breakpoints": [
+      { "name": "phone-only", "value": "max-width: 479px" },
+      { "name": "mobile", "value": "min-width: 480px" },
+      { "name": "tablet", "value": "min-width: 720px" },
+      { "name": "desktop", "value": "min-width: 1024px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary CTA",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Mint→cyan gradient pill with navy ink and neon glow. Reserved for the strongest action on any screen.",
+      "html": "<button class=\"ds-btn-primary\">LET'S PLAY <svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M5 12h14M13 6l6 6-6 6\"/></svg></button>",
+      "css": ".ds-btn-primary { display: inline-flex; align-items: center; justify-content: center; gap: 10px; height: 44px; padding: 0 28px; background: linear-gradient(135deg, #00FF88, #00D4FF); color: #0B141B; font-family: 'Outfit', system-ui, sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; border: none; border-radius: 100px; box-shadow: 0 0 15px rgba(0,255,136,0.35), 0 4px 16px rgba(0,255,136,0.2); cursor: pointer; transition: transform 150ms cubic-bezier(0.16, 1, 0.3, 1), filter 150ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 150ms cubic-bezier(0.16, 1, 0.3, 1); } .ds-btn-primary svg { width: 16px; height: 16px; } .ds-btn-primary:hover { transform: translateY(-2px); filter: brightness(1.05); box-shadow: 0 0 25px rgba(0,255,136,0.5), 0 6px 22px rgba(0,255,136,0.3); } .ds-btn-primary:active { transform: scale(0.97); } .ds-btn-primary:focus-visible { outline: 2px solid #00FF88; outline-offset: 3px; }"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Glass-surface secondary action. Used for 'I have a passkey', 'Cancel', alternate funnel paths.",
+      "html": "<button class=\"ds-btn-secondary\">I HAVE A PASSKEY</button>",
+      "css": ".ds-btn-secondary { display: inline-flex; align-items: center; justify-content: center; height: 44px; padding: 0 20px; background: rgba(18, 14, 38, 0.5); color: #ffffff; font-family: 'Outfit', system-ui, sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; border: 1px solid rgba(255,255,255,0.18); border-radius: 18px; cursor: pointer; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); transition: transform 150ms cubic-bezier(0.16, 1, 0.3, 1), background 150ms cubic-bezier(0.16, 1, 0.3, 1); } .ds-btn-secondary:hover { transform: translateY(-2px); background: rgba(18, 14, 38, 0.7); } .ds-btn-secondary:active { transform: scale(0.97); } .ds-btn-secondary:focus-visible { outline: 2px solid #00D4FF; outline-offset: 3px; }"
+    },
+    {
+      "name": "Mint Chip",
+      "kind": "chip",
+      "refersTo": "chip-accent",
+      "description": "Status pill for win, saved, you. Tinted glass with thin border and optional glow.",
+      "html": "<span class=\"ds-chip-mint\"><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"3\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><polyline points=\"20 6 9 17 4 12\"/></svg> SAVED</span>",
+      "css": ".ds-chip-mint { display: inline-flex; align-items: center; gap: 4px; padding: 4px 10px; background: rgba(0,255,136,0.09); color: #00FF88; border: 1px solid rgba(0,255,136,0.22); border-radius: 100px; font-family: 'Outfit', system-ui, sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); white-space: nowrap; } .ds-chip-mint svg { width: 11px; height: 11px; }"
+    },
+    {
+      "name": "Cyan Live Chip",
+      "kind": "chip",
+      "refersTo": "chip-cyan",
+      "description": "Live-state chip with a pulsing dot. Used wherever a match is currently in play.",
+      "html": "<span class=\"ds-chip-cyan\"><span class=\"ds-live-dot\"></span> LIVE 67'</span>",
+      "css": ".ds-chip-cyan { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; background: rgba(0,212,255,0.09); color: #00D4FF; border: 1px solid rgba(0,212,255,0.22); border-radius: 100px; font-family: 'Outfit', system-ui, sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); white-space: nowrap; } .ds-live-dot { width: 7px; height: 7px; border-radius: 50%; background: #00D4FF; animation: dsLivePulse 1.4s ease-in-out infinite; } @keyframes dsLivePulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.6; transform: scale(1.3); } } @media (prefers-reduced-motion: reduce) { .ds-live-dot { animation: none; } }"
+    },
+    {
+      "name": "Glass Card",
+      "kind": "card",
+      "refersTo": "glass-card",
+      "description": "Default elevated surface for product screens. Purple-tinted glass with inset top highlight.",
+      "html": "<div class=\"ds-glass-card\"><div class=\"ds-card-eyebrow\">YOUR RANK</div><div class=\"ds-card-stat\">#3</div><div class=\"ds-card-meta\">of 7 · Tech Titans</div></div>",
+      "css": ".ds-glass-card { display: inline-block; padding: 24px; background: rgba(18, 14, 38, 0.32); backdrop-filter: blur(40px) saturate(180%); -webkit-backdrop-filter: blur(40px) saturate(180%); border: 1px solid rgba(255,255,255,0.14); border-radius: 22px; box-shadow: 0 12px 40px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.18); min-width: 200px; } .ds-card-eyebrow { font-family: 'Outfit', system-ui, sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; color: #00D4FF; margin-bottom: 8px; } .ds-card-stat { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 30px; font-weight: 900; color: #00FF88; line-height: 1; } .ds-card-meta { margin-top: 4px; font-family: 'Outfit', system-ui, sans-serif; font-size: 13px; font-weight: 500; color: rgba(255,255,255,0.5); }"
+    },
+    {
+      "name": "Score Cell Pair",
+      "kind": "input",
+      "refersTo": "score-cell",
+      "description": "Two 32×32 mint-tinted squares with mono digits, separated by em-dash. The pick-entry primitive.",
+      "html": "<div class=\"ds-score-row\"><span class=\"ds-score-cell\">2</span><span class=\"ds-score-sep\">—</span><span class=\"ds-score-cell\">1</span></div>",
+      "css": ".ds-score-row { display: inline-flex; align-items: center; gap: 8px; } .ds-score-cell { display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; background: rgba(0,255,136,0.08); color: #00FF88; border: 1px solid rgba(0,255,136,0.3); border-radius: 8px; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 18px; font-weight: 900; cursor: pointer; transition: background 150ms cubic-bezier(0.16, 1, 0.3, 1), border-color 150ms cubic-bezier(0.16, 1, 0.3, 1); } .ds-score-cell:hover { background: rgba(0,255,136,0.15); border-color: rgba(0,255,136,0.5); } .ds-score-sep { color: rgba(255,255,255,0.35); font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 14px; }"
+    },
+    {
+      "name": "Input Field",
+      "kind": "input",
+      "refersTo": "input-default",
+      "description": "Standard glass input — signup, group name, magic-link email. 44px tall.",
+      "html": "<input class=\"ds-input\" type=\"text\" placeholder=\"name@email.com\" />",
+      "css": ".ds-input { display: block; width: 280px; height: 44px; padding: 0 16px; background: rgba(18, 14, 38, 0.32); color: #ffffff; font-family: 'Outfit', system-ui, sans-serif; font-size: 14px; font-weight: 500; border: 1px solid rgba(255,255,255,0.14); border-radius: 14px; outline: none; transition: border-color 150ms cubic-bezier(0.16, 1, 0.3, 1), box-shadow 150ms cubic-bezier(0.16, 1, 0.3, 1); } .ds-input::placeholder { color: rgba(255,255,255,0.35); } .ds-input:focus-visible { border-color: rgba(0,255,136,0.5); box-shadow: 0 0 0 3px rgba(0,255,136,0.12), 0 4px 16px rgba(0,255,136,0.15); }"
+    },
+    {
+      "name": "Bottom Nav (Active Item)",
+      "kind": "nav",
+      "refersTo": "bottom-nav-item-active",
+      "description": "Single active item from the mobile bottom nav. Top neon bar + accent label.",
+      "html": "<div class=\"ds-nav-wrap\"><div class=\"ds-nav-item ds-nav-active\"><span class=\"ds-nav-bar\"></span><svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z\"/><polyline points=\"9 22 9 12 15 12 15 22\"/></svg><span class=\"ds-nav-label\">HOME</span></div></div>",
+      "css": ".ds-nav-wrap { display: inline-block; padding: 12px 0; background: rgba(8, 12, 22, 0.85); backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); border-top: 1px solid rgba(255,255,255,0.07); width: 100px; } .ds-nav-item { position: relative; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 0; cursor: pointer; } .ds-nav-active { color: #00FF88; } .ds-nav-bar { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); width: 28px; height: 2.5px; border-radius: 2px; background: linear-gradient(90deg, #00FF88, #00D4FF); box-shadow: 0 0 10px rgba(0,255,136,0.6); } .ds-nav-item svg { width: 22px; height: 22px; } .ds-nav-label { font-family: 'Outfit', system-ui, sans-serif; font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; }"
+    },
+    {
+      "name": "Live Score Bar",
+      "kind": "custom",
+      "refersTo": "glass-card",
+      "description": "Signature component — the cyan-glass scoreboard strip that anchors the live-match dashboard and the chat header. Where the metaphor becomes literal.",
+      "html": "<div class=\"ds-score-bar\"><span class=\"ds-live-pip\"></span><div class=\"ds-flag\" style=\"background:#009C3B;\">BR</div><span class=\"ds-big-score\">2</span><span class=\"ds-score-dash\">—</span><span class=\"ds-big-score\">1</span><div class=\"ds-flag\" style=\"background:#0038A8;\">FR</div><span class=\"ds-min\">67'</span></div>",
+      "css": ".ds-score-bar { display: inline-flex; align-items: center; gap: 12px; padding: 14px 18px; background: rgba(0,212,255,0.06); backdrop-filter: blur(24px) saturate(120%); -webkit-backdrop-filter: blur(24px) saturate(120%); border: 1px solid rgba(0,212,255,0.2); border-radius: 16px; box-shadow: 0 8px 32px rgba(0,212,255,0.08), inset 0 1px 0 rgba(255,255,255,0.06); } .ds-live-pip { width: 7px; height: 7px; border-radius: 50%; background: #00D4FF; box-shadow: 0 0 8px rgba(0,212,255,0.7); animation: dsLivePulseBar 1.4s ease-in-out infinite; } @keyframes dsLivePulseBar { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.6; transform: scale(1.3); } } .ds-flag { display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; color: #fff; font-family: 'Outfit', system-ui, sans-serif; font-size: 9px; font-weight: 800; border: 1.5px solid rgba(255,255,255,0.18); } .ds-big-score { font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 30px; font-weight: 900; color: #ffffff; line-height: 1; } .ds-score-dash { color: rgba(255,255,255,0.35); font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 22px; } .ds-min { margin-left: 6px; font-family: 'JetBrains Mono', ui-monospace, monospace; font-size: 13px; font-weight: 700; color: #00D4FF; } @media (prefers-reduced-motion: reduce) { .ds-live-pip { animation: none; } }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Stadium Scoreboard",
+    "overview": "Cup Clash is built like the floodlit perimeter board of a packed stadium at kickoff: deep navy-black field, illuminated glass panels floating above it, neon mint and electric cyan as the channels that light up when something happens. Big numerals are mono, not pretty — they belong on a scoreboard, not a marketing slide. Type set in Bricolage Grotesque carries the loud, almost broadcast-graphics title voice; Outfit handles the calm legible body; JetBrains Mono owns every number that changes during a match.\n\nThe system is two surfaces sharing one design language. The product app lives in the dark scoreboard. The marketing landing inverts to a light surface — same accents, same type, same component shapes, but on a pale background with #0F172A ink.\n\nWhat this system explicitly rejects: the aggressive odds-board patina of sportsbooks, the cream-and-rounded sameness of generic SaaS landings, and the mascot-driven warmth of Duolingo-style cartoon UI. The scoreboard metaphor draws the line — informational, broadcast-grade, sharp; never urgency-manipulative, never twee.",
+    "keyCharacteristics": [
+      "Dark navy-black field (#050810) with translucent purple-tinted glass panels (rgba(18,14,38,0.32)), not flat dark grey.",
+      "Three illuminated accents in fixed roles: mint (#00FF88) = you / wins / primary CTA; cyan (#00D4FF) = live / info / secondary CTA; amber (#FBBF24) = leaders / crowns. Purple and pink are tertiary, never primary.",
+      "Tri-font system: Bricolage Grotesque (display, 800), Outfit (UI, 500), JetBrains Mono (scoreboard numerals, 900).",
+      "Glass-blur surfaces with inset top highlight — the panels feel lit from above, not flat.",
+      "Neon glow shadows reserved for moments of state (primary CTA, live indicator, 'you' row on leaderboard). Never decorative.",
+      "Motion timed in three steps: 140ms for snaps, 220ms for state changes, 400ms for entrances; eased with cubic-bezier(0.16, 1, 0.3, 1)."
+    ],
+    "rules": [
+      { "name": "The Three-Channel Rule", "body": "Cup Clash has exactly three accent roles: you/win = mint, live/info = cyan, leader = amber. Designers must not invent a fourth accent role. Purple, pink, and red are reserved for the specific surfaces named in §2. If a new screen seems to need a new color, the answer is to lean harder into one of the three.", "section": "colors" },
+      { "name": "The Glass-Tinted-Purple Rule", "body": "Glass panels carry a purple-tinted base (rgb(18,14,38) at 32% / 50% alpha), never flat grey. The purple tint is what separates this from generic dark UI. If a panel looks grey, the alpha is wrong or the tint was dropped.", "section": "colors" },
+      { "name": "The Neon-Is-Earned Rule", "body": "Glow shadows (shadow-neon-*, glow-ac, glow-cyan) appear on three things only: primary CTAs, the live-dot indicator, and the 'you' highlight. Glow on decorative elements reads as crypto-throwback.", "section": "colors" },
+      { "name": "The Mono-For-Numbers Rule", "body": "Any number that changes during the tournament — scores, points totals, ranks, countdowns, streaks, timers — must be JetBrains Mono at weight 900. Static numbers in body prose (e.g. '104 matches' in marketing copy) use the body font like normal. This is the rule that makes the scoreboard feel like a scoreboard.", "section": "typography" },
+      { "name": "The Uppercase Eyebrow Rule", "body": "Every section is announced by a tiny uppercase label one step above the heading (label-caps, 11px, weight 700, tracking 0.18em, often in cyan). It anchors hierarchy without forcing a heavier H2.", "section": "typography" },
+      { "name": "The Inset-Highlight Rule", "body": "Every glass panel carries the inset top highlight (inset 0 1px 0 rgba(255,255,255,0.18)). It's the only thing keeping the panel from looking like a flat dark rectangle. Drop the inset, lose the lit-from-above effect, lose the whole illusion.", "section": "elevation" },
+      { "name": "The Glow-Only-On-State Rule", "body": "Glow shadows appear only on (a) primary CTAs at rest and on hover, (b) the live-dot indicator, (c) the 'you' row on the leaderboard, (d) the active bottom-nav item. Never on decorative containers, never on inactive elements. Glow on a card-at-rest is the single fastest way to make the UI read as crypto-throwback.", "section": "elevation" },
+      { "name": "The No-Nested-Glass Rule", "body": "Glass panels do not nest. A .glass inside another .glass reads as muddy; the blur compounds, the inset highlights stack, the transparency stops carrying depth. If you need a sub-region, use a tinted solid (bg-white/4, bg-ac/6) inside the glass instead.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do use the purple-tinted glass panel base (rgba(18,14,38,0.32)) for every surface that calls for elevation. The purple tint is the single token that separates Cup Clash from generic dark UI.",
+      "Do keep the inset top highlight (inset 0 1px 0 rgba(255,255,255,0.18)) on every glass panel. Without it, the panel reads flat.",
+      "Do set every score, point total, rank, timer, and countdown in JetBrains Mono weight 900. This is the scoreboard contract.",
+      "Do reserve the mint→cyan gradient (linear-gradient(135deg, #00FF88, #00D4FF)) for the primary CTA only. It is the one strongest visual signal in the system; spread it across multiple elements and it stops being a signal.",
+      "Do use the LIVE pulse + cyan glass score bar to make matches feel like they're happening right now. This is what the dark theme is for.",
+      "Do pair color-coded state with an icon or label (crown for #1, dimmed avatar for eliminated, danger icon next to red). Green/red alone is not enough.",
+      "Do respect prefers-reduced-motion: reduce. The livePulse, floatY, score-flip, and slide-down animations all need a static fallback.",
+      "Do keep body prose to a 65–75ch line length on landing surfaces."
+    ],
+    "donts": [
+      "Don't ship sportsbook patterns. No 'Lock in your pick' pressure copy, no countdown-to-deadline urgency animations, no odds-board layouts, no 'free $50 bet' carrots, no dark-pattern unsubscribe flows.",
+      "Don't ship the generic SaaS landing template: hero + three feature cards + pricing table + FAQ. Keep the bespoke phone-frame, glass countdown, FAQ accordion that the handoff designs around it.",
+      "Don't introduce mascots, cartoon UI, or 'Whoops! Better luck next time!' copy. Cup Clash is playful but adult.",
+      "Don't invent a fourth accent role. Three channels: mint (you/win), cyan (live/info), amber (leader). Purple/pink/red are reserved.",
+      "Don't nest glass inside glass. The blur compounds, the inset highlights stack, the transparency stops carrying depth.",
+      "Don't glow at rest on anything that isn't a primary CTA, the live-dot, the 'you' row, or the active bottom-nav item.",
+      "Don't use a colored left/right stripe greater than 1px as an accent on cards or list items. The 'you' leaderboard row's 2px mint left-border is the one sanctioned exception.",
+      "Don't use #000 or #fff raw. Use tinted near-blacks and translucent whites.",
+      "Don't use em-dashes or -- in copy. Use commas, colons, or periods.",
+      "Don't gate the first session. Guests explore the seeded demo dashboard freely.",
+      "Don't ship gradient-text on new surfaces. The legacy class is an anti-pattern; migrate to single-color emphasis when touched.",
+      "Don't ship third-party flag CDN calls or third-party fonts in production. Self-host before launch."
+    ]
+  }
+}

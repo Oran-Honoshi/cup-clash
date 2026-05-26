@@ -66,7 +66,7 @@ export default function PrivacyPage() {
 
           <section>
             <h2 className="font-display text-xl uppercase font-black mb-3" style={{ color: "#0F172A" }}>5. Cookies</h2>
-            <p>Cup Clash uses essential cookies for authentication and session management. We do not use advertising or tracking cookies. We use Vercel Analytics for anonymous usage statistics — no personally identifiable information is collected.</p>
+            <p>Cup Clash uses essential cookies for authentication and session management. We do not use advertising cookies, tracking cookies, or third-party analytics. No usage data is sent to advertising networks or analytics vendors.</p>
           </section>
 
           <section>

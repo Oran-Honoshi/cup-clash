@@ -1,6 +1,5 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Bricolage_Grotesque, Outfit, JetBrains_Mono } from "next/font/google";
-import { Analytics } from "@vercel/analytics/next";
 import { ThemeProvider } from "@/components/theme-provider";
 import { PWAInit } from "@/components/pwa-init";
 import { PWAInstallBanner } from "@/components/ui/pwa-install-banner";
@@ -15,10 +14,17 @@ const outfit    = Outfit({             subsets: ["latin"], variable: "--font-ui"
 const jetbrains = JetBrains_Mono({     subsets: ["latin"], variable: "--font-mono",    display: "swap",
   weight: ["400", "600", "700"] });
 
+export const viewport: Viewport = {
+  themeColor: "#00D4FF",
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+};
+
 export const metadata: Metadata = {
   metadataBase: new URL("https://cupclash.live"),
   title: {
-    default: "CupClash 2026 — The Ultimate World Cup Prediction Arena",
+    default: "CupClash 2026: The Ultimate World Cup Prediction Arena",
     template: "%s | Cup Clash",
   },
   description: "104 matches, 3 countries, and your football IQ against friends. Join the ultimate 2026 World Cup prediction group. For the love of the game.",
@@ -36,21 +42,33 @@ export const metadata: Metadata = {
     "ליגת חברים למונדיאל 2026",
     "תחזיות כדורגל 2026",
   ],
+  applicationName: "Cup Clash",
+  appleWebApp: {
+    capable: true,
+    title: "Cup Clash",
+    statusBarStyle: "black-translucent",
+  },
+  formatDetection: {
+    telephone: false,
+    email: false,
+    address: false,
+  },
   openGraph: {
-    title:       "CupClash 2026: The Social Prediction Arena",
-    description: "104 matches, 3 countries, and your football IQ against friends. Join the ultimate 2026 World Cup prediction group. For the love of the game.",
-    url:         "https://cupclash.live",
-    siteName:    "Cup Clash",
-    type:        "website",
+    title:          "CupClash 2026: The Social Prediction Arena",
+    description:    "104 matches, 3 countries, and your football IQ against friends. Join the ultimate 2026 World Cup prediction group. For the love of the game.",
+    url:            "https://cupclash.live",
+    siteName:       "Cup Clash",
+    type:           "website",
+    locale:         "en_US",
+    alternateLocale: ["he_IL"],
     images: [
       {
         url:    "https://cupclash.live/opengraph-image",
         width:  1200,
         height: 630,
-        alt:    "Cup Clash — World Cup 2026 Prediction League",
+        alt:    "Cup Clash: World Cup 2026 Prediction League",
       },
     ],
-    locale: "en_US",
   },
   twitter: {
     card:        "summary_large_image",
@@ -60,7 +78,6 @@ export const metadata: Metadata = {
   },
   alternates: {
     canonical: "https://cupclash.live",
-    languages: { "he": "https://cupclash.live", "en": "https://cupclash.live" },
   },
   icons: {
     icon: [
@@ -81,28 +98,26 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={`${bricolage.variable} ${outfit.variable} ${jetbrains.variable}`}>
       <head>
-        <link rel="icon" type="image/x-icon"    href="/favicon.ico" />
-        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
-        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
-        <link rel="apple-touch-icon" sizes="180x180"    href="/apple-touch-icon.png" />
-        <link rel="alternate" hrefLang="he" href="https://cupclash.live" />
-        <link rel="alternate" hrefLang="en" href="https://cupclash.live" />
-
-        {/* Extra OG tags not covered by Next.js metadata */}
-        <meta property="og:locale"           content="en_US" />
-        <meta property="og:locale:alternate" content="he_IL" />
-        <meta property="og:image:width"      content="1200" />
-        <meta property="og:image:height"     content="630"  />
-
-        {/* WhatsApp / LinkedIn specific */}
-        <meta property="og:site_name" content="Cup Clash" />
-        <meta name="theme-color"      content="#00D4FF" />
-
         <SoftwareAppSchema />
         <FAQSchema />
         <HowToSchema />
       </head>
       <body>
+        <noscript>
+          <div style={{
+            padding: "2.5rem 1.5rem",
+            textAlign: "center",
+            background: "#050810",
+            color: "#ffffff",
+            fontFamily: "system-ui, sans-serif",
+            lineHeight: 1.5,
+          }}>
+            <strong style={{ display: "block", marginBottom: "0.5rem", fontSize: "1.125rem" }}>
+              Cup Clash needs JavaScript.
+            </strong>
+            Predictions, the live leaderboard, and the countdown clock all run in your browser. Enable JavaScript to play.
+          </div>
+        </noscript>
         <ThemeProvider>
           {/* PayPal SDK preloaded globally so checkout components mount instantly */}
           <PayPalScriptLoader />
@@ -110,7 +125,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </ThemeProvider>
         <PWAInit />
         <PWAInstallBanner />
-        <Analytics />
       </body>
     </html>
   );
