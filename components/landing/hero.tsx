@@ -85,7 +85,7 @@ function PhoneMockup() {
               <div className="text-center">
                 <div className="relative h-5 w-6 rounded-sm overflow-hidden">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src="https://flagcdn.com/w20/br.png" alt="Brazil" className="w-full h-full object-cover" />
+                  <img src="/flags/br.svg" alt="Brazil" className="w-full h-full object-cover" />
                 </div>
                 <div className="text-[9px] font-bold text-white">BRA</div>
               </div>
@@ -99,7 +99,7 @@ function PhoneMockup() {
               <div className="text-center">
                 <div className="relative h-5 w-6 rounded-sm overflow-hidden">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src="https://flagcdn.com/w20/fr.png" alt="France" className="w-full h-full object-cover" />
+                  <img src="/flags/fr.svg" alt="France" className="w-full h-full object-cover" />
                 </div>
                 <div className="text-[9px] font-bold text-white">FRA</div>
               </div>

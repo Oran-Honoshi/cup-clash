@@ -67,7 +67,7 @@ export function CountdownCard({ target }: CountdownProps) {
         <div className="flex items-center gap-2">
           <div style={{ width: 32, height: 32, borderRadius: "50%", overflow: "hidden", border: "2px solid rgba(255,255,255,0.2)", flexShrink: 0 }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="https://flagcdn.com/w40/mx.png" alt="Mexico" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            <img src="/flags/mx.svg" alt="Mexico" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
           </div>
           <span style={{ fontSize: 13, fontWeight: 700, color: "white" }}>MEXICO</span>
         </div>
@@ -76,7 +76,7 @@ export function CountdownCard({ target }: CountdownProps) {
           <span style={{ fontSize: 13, fontWeight: 700, color: "white" }}>SOUTH AFRICA</span>
           <div style={{ width: 32, height: 32, borderRadius: "50%", overflow: "hidden", border: "2px solid rgba(255,255,255,0.2)", flexShrink: 0 }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="https://flagcdn.com/w40/za.png" alt="South Africa" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            <img src="/flags/za.svg" alt="South Africa" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
           </div>
         </div>
       </div>

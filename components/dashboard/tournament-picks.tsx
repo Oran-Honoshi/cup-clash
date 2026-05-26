@@ -264,7 +264,7 @@ export function TournamentPicks({ groupId, userId, locked = false }: TournamentP
                 style={isSelected
                   ? { border: "1px solid rgba(0,255,136,0.4)", background: "rgba(0,255,136,0.1)" }
                   : { border: "1px solid rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.04)" }}>
-                <img src={`https://flagcdn.com/w20/${c.flagCode}.png`} alt={c.name}
+                <img src={`/flags/${c.flagCode}.svg`} alt={c.name}
                   className="w-7 h-4 object-cover rounded-sm"
                   onError={e => { (e.target as HTMLImageElement).style.display = "none"; }} />
                 <span className="text-[8px] font-bold truncate w-full text-center" style={{ color: "rgba(255,255,255,0.5)" }}>
@@ -328,7 +328,7 @@ export function TournamentPicks({ groupId, userId, locked = false }: TournamentP
                     }}
                     onMouseEnter={e => { if (!active) (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,255,255,0.07)"; }}
                     onMouseLeave={e => { if (!active) (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,255,255,0.04)"; }}>
-                    <img src={`https://flagcdn.com/w20/${player.flagCode}.png`} alt={player.team}
+                    <img src={`/flags/${player.flagCode}.svg`} alt={player.team}
                       className="w-6 h-4 object-cover rounded-sm shrink-0"
                       onError={e => { (e.target as HTMLImageElement).style.display = "none"; }} />
                     <div className="flex-1 min-w-0">
@@ -408,7 +408,7 @@ export function TournamentPicks({ groupId, userId, locked = false }: TournamentP
                 style={isSelected
                   ? { border: "1px solid rgba(0,255,136,0.4)", background: "rgba(0,255,136,0.1)" }
                   : { border: "1px solid rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.04)" }}>
-                <img src={`https://flagcdn.com/w20/${c.flagCode}.png`} alt={c.name}
+                <img src={`/flags/${c.flagCode}.svg`} alt={c.name}
                   className="w-7 h-4 object-cover rounded-sm"
                   onError={e => { (e.target as HTMLImageElement).style.display = "none"; }} />
                 <span className="text-[8px] font-bold truncate w-full text-center" style={{ color: "rgba(255,255,255,0.5)" }}>

@@ -86,7 +86,7 @@ export function StandingRow({
       <span className="w-4 text-center text-slate-500 font-bold shrink-0">{pos}</span>
       {flagCode && (
         <span className="w-5 h-3.5 rounded-sm overflow-hidden shrink-0">
-          <img src={`https://flagcdn.com/w40/${flagCode}.png`} alt="" className="w-full h-full object-cover"/>
+          <img src={`/flags/${flagCode}.svg`} alt="" className="w-full h-full object-cover"/>
         </span>
       )}
       <span className="flex-1 font-semibold text-slate-200 truncate">{name}</span>
@@ -143,7 +143,7 @@ export function BracketMatchPair({
       )}>
         {teamAFlag && (
           <span className="w-5 h-3.5 rounded-sm overflow-hidden shrink-0">
-            <img src={`https://flagcdn.com/w40/${teamAFlag}.png`} alt="" className="w-full h-full object-cover"/>
+            <img src={`/flags/${teamAFlag}.svg`} alt="" className="w-full h-full object-cover"/>
           </span>
         )}
         <span className={cn("flex-1 text-xs font-semibold", winnerTeam === "A" ? "text-emerald-300" : "text-slate-300")}>
@@ -165,7 +165,7 @@ export function BracketMatchPair({
       )}>
         {teamBFlag && (
           <span className="w-5 h-3.5 rounded-sm overflow-hidden shrink-0">
-            <img src={`https://flagcdn.com/w40/${teamBFlag}.png`} alt="" className="w-full h-full object-cover"/>
+            <img src={`/flags/${teamBFlag}.svg`} alt="" className="w-full h-full object-cover"/>
           </span>
         )}
         <span className={cn("flex-1 text-xs font-semibold", winnerTeam === "B" ? "text-emerald-300" : "text-slate-300")}>
@@ -502,7 +502,7 @@ export function ProfileHero({
         </div>
         {flagCode && (
           <div className="absolute -bottom-1 -right-1 h-7 w-9 rounded-md overflow-hidden border-2 border-slate-900">
-            <img src={`https://flagcdn.com/w40/${flagCode}.png`} alt="" className="w-full h-full object-cover" />
+            <img src={`/flags/${flagCode}.svg`} alt="" className="w-full h-full object-cover" />
           </div>
         )}
       </div>

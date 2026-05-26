@@ -45,7 +45,7 @@ function BracketPhone() {
             }}
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={`https://flagcdn.com/w20/${t.code}.png`} alt={t.name} width={18} height={12}
+            <img src={`/flags/${t.code}.svg`} alt={t.name} width={18} height={12}
               style={{ borderRadius: 2, objectFit: "cover", flexShrink: 0 }} />
             <span style={{ fontSize: 10, fontWeight: 600, color: "rgba(255,255,255,0.8)", flex: 1 }}>{t.name}</span>
             <span style={{ fontSize: 9, fontWeight: 700, color: "#00D4FF", background: "rgba(0,212,255,0.1)", padding: "2px 6px", borderRadius: 6 }}>{t.pts}</span>
@@ -99,7 +99,7 @@ function DashboardPhone() {
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="https://flagcdn.com/w20/ar.png" alt="ARG" width={16} height={11} style={{ borderRadius: 2 }} />
+            <img src="/flags/ar.svg" alt="ARG" width={16} height={11} style={{ borderRadius: 2 }} />
             <span style={{ fontSize: 10, fontWeight: 700, color: "white" }}>ARG</span>
           </div>
           <div style={{ display: "flex", gap: 4 }}>
@@ -110,7 +110,7 @@ function DashboardPhone() {
           <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
             <span style={{ fontSize: 10, fontWeight: 700, color: "white" }}>FRA</span>
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="https://flagcdn.com/w20/fr.png" alt="FRA" width={16} height={11} style={{ borderRadius: 2 }} />
+            <img src="/flags/fr.svg" alt="FRA" width={16} height={11} style={{ borderRadius: 2 }} />
           </div>
         </div>
       </div>

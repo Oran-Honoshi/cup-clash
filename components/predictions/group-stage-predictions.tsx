@@ -427,7 +427,7 @@ export function GroupStagePredictions({ groupId, locked = false, userId }: Group
                 {teams.slice(0,2).map(t => t.flagCode && (
                   <span key={t.name} className="h-3 w-4 rounded-sm overflow-hidden inline-block border"
                     style={{ borderColor: "rgba(0,0,0,0.3)" }}>
-                    <img src={`https://flagcdn.com/w20/${t.flagCode}.png`} alt={t.name} className="w-full h-full object-cover" />
+                    <img src={`/flags/${t.flagCode}.svg`} alt={t.name} className="w-full h-full object-cover" />
                   </span>
                 ))}
               </span>

@@ -1,8 +1,8 @@
 import type { Country, CountryCode } from "@/lib/types";
 
-// Flag images from flagcdn.com — free, no API key, works everywhere.
-// Usage: flagUrl(country.flagCode, 40) → "https://flagcdn.com/w40/us.png"
-// Available widths: 20, 40, 80, 160, 320
+// Flag SVGs are self-hosted under /public/flags/ — see PRODUCT.md privacy
+// principle and DESIGN.md "Don't ship third-party flag CDN calls".
+// Usage: flagUrl(country.flagCode) → "/flags/us.svg"
 
 export const COUNTRIES: Record<CountryCode, Country> = {
   // ── CONCACAF ──────────────────────────────────────────────────────────────
@@ -71,7 +71,13 @@ export const ALL_COUNTRIES = Object.values(COUNTRIES);
 /** The three 2026 host nations — shown prominently on the landing page */
 export const HOST_NATIONS: CountryCode[] = ["USA", "CAN", "MEX"];
 
-/** Returns a flagcdn.com PNG URL at the specified pixel width */
-export function flagUrl(flagCode: string, width: 20 | 40 | 80 | 160 = 40): string {
-  return `https://flagcdn.com/w${width}/${flagCode}.png`;
+/**
+ * Returns the local SVG path for a flag, e.g. "br" → "/flags/br.svg".
+ *
+ * The legacy `width` parameter is accepted for source-compatibility with
+ * callers from the flagcdn era and is intentionally ignored — SVGs scale
+ * losslessly, so a single asset replaces the per-width PNG variants.
+ */
+export function flagUrl(flagCode: string, _width?: 20 | 40 | 80 | 160): string {
+  return `/flags/${flagCode}.svg`;
 }

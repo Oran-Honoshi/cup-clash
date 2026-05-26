@@ -364,7 +364,7 @@ export function LeaderboardRow({ rank, name, points, flagCode, isCurrentUser, av
       {flagCode && (
         <span className="w-6 h-4 rounded-sm overflow-hidden shrink-0">
           <img
-            src={`https://flagcdn.com/w40/${flagCode}.png`}
+            src={`/flags/${flagCode}.svg`}
             alt=""
             className="w-full h-full object-cover"
           />

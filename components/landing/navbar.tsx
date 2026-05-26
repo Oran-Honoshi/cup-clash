@@ -74,7 +74,7 @@ function BuntingFlag({ code, name, index }: { code: string; name: string; index:
       >
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
-          src={`https://flagcdn.com/w40/${code}.png`}
+          src={`/flags/${code}.svg`}
           alt={name}
           width={32}
           height={20}
