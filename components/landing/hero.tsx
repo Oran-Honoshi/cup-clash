@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ArrowRight, Zap, Building2 } from "lucide-react";
+import { ArrowRight, ArrowUpRight, Building2, Eye, Zap } from "lucide-react";
 import Link from "next/link";
 import { CountdownCard } from "@/components/landing/countdown-card";
 import { PHOTOS } from "@/lib/assets";
@@ -176,6 +176,27 @@ export function Hero() {
                   For Companies
                   <ArrowRight size={16} className="transition-transform group-hover:translate-x-0.5" />
                 </button>
+              </Link>
+            </motion.div>
+
+            {/* Guest-explore escape hatch — PRODUCT.md Principle 3: never gate the first session. */}
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}
+              className="-mt-3 mb-6">
+              <Link
+                href="/dashboard"
+                className="group inline-flex items-center gap-2 text-[13px] font-semibold text-cyan rounded-md
+                           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-cyan/60
+                           focus-visible:ring-offset-2 focus-visible:ring-offset-[#080C16]"
+              >
+                <Eye size={13} strokeWidth={2.25} />
+                <span className="border-b border-transparent group-hover:border-cyan/60 transition-colors duration-200">
+                  Peek inside without signing up
+                </span>
+                <ArrowUpRight
+                  size={13}
+                  strokeWidth={2.25}
+                  className="transition-transform duration-200 ease-out group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+                />
               </Link>
             </motion.div>
 
