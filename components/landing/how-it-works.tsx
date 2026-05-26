@@ -113,7 +113,7 @@ export function HowItWorks() {
           <div className="text-[11px] font-bold uppercase tracking-[0.18em] text-cyan mb-3">Simple by design</div>
           <h2 className="font-display font-black text-4xl sm:text-5xl lg:text-6xl uppercase text-white">
             Up and running in{" "}
-            <span className="bg-gradient-to-br from-cyan to-ac bg-clip-text text-transparent">60 seconds.</span>
+            <span className="text-ac">60 seconds.</span>
           </h2>
         </motion.div>
 

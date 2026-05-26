@@ -16,16 +16,10 @@ function PhoneMockup() {
       transition={{ duration: 0.9, delay: 0.3, ease: [0.16, 1, 0.3, 1] }}
       className="relative mx-auto w-[270px]"
       style={{
-        filter: "drop-shadow(0 0 24px rgba(0,212,255,0.3)) drop-shadow(0 30px 80px rgba(0,0,0,0.7))",
-        animation: "floatPhone 4s ease-in-out infinite",
+        filter: "drop-shadow(0 30px 80px rgba(0,0,0,0.7))",
+        transform: "rotate(6deg)",
       }}
     >
-      <style>{`
-        @keyframes floatPhone {
-          0%,100% { transform: rotate(6deg) translateY(0px); }
-          50%      { transform: rotate(6deg) translateY(-10px); }
-        }
-      `}</style>
       <div
         className="relative rounded-[2.5rem] overflow-hidden"
         style={{
@@ -127,11 +121,9 @@ export function Hero() {
       className="relative overflow-hidden pb-0"
       style={{ paddingTop: "calc(98px + 3.5rem)" }}
     >
-      {/* Background atmosphere */}
+      {/* Background atmosphere — one quiet wash, not two competing blobs */}
       <div className="absolute top-0 right-0 w-[700px] h-[700px] pointer-events-none"
-        style={{ background: "radial-gradient(circle at top right, rgba(0,212,255,0.12) 0%, rgba(0,255,136,0.06) 30%, transparent 65%)" }} />
-      <div className="absolute top-0 left-0 w-[400px] h-[400px] pointer-events-none"
-        style={{ background: "radial-gradient(circle at top left, rgba(0,255,136,0.08) 0%, transparent 60%)" }} />
+        style={{ background: "radial-gradient(circle at top right, rgba(0,212,255,0.06) 0%, transparent 60%)" }} />
 
       <div className="relative mx-auto max-w-7xl px-5 sm:px-8">
         <div className="grid lg:grid-cols-2 gap-12 xl:gap-16 items-center min-h-[82vh] pb-20">
@@ -153,9 +145,7 @@ export function Hero() {
               style={{ fontSize: "clamp(48px, 7vw, 92px)", letterSpacing: "-0.02em" }}>
               Predict<br />
               every match.<br />
-              <span className="bg-gradient-to-br from-ac to-cyan bg-clip-text text-transparent">
-                Beat your friends.
-              </span>
+              <span className="text-ac">Beat your friends.</span>
             </motion.h1>
 
             <motion.p initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.2 }}
@@ -226,15 +216,19 @@ export function Hero() {
                 style={{ background: "radial-gradient(circle, rgba(0,255,136,0.15), rgba(0,212,255,0.08), transparent)" }} />
             </div>
             <PhoneMockup />
-            <motion.div animate={{ y: [0, -6, 0] }} transition={{ duration: 3, repeat: Infinity, delay: 1 }}
+            <motion.div
+              initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.9, ease: [0.16, 1, 0.3, 1] }}
               className="absolute top-16 -left-4 rounded-2xl px-3 py-2 text-xs font-bold"
-              style={{ background: "rgba(18,14,38,0.9)", backdropFilter: "blur(12px)", border: "1px solid rgba(0,255,136,0.3)", boxShadow: "0 8px 24px rgba(0,255,136,0.15)", color: "#00FF88" }}>
+              style={{ background: "rgba(18,14,38,0.9)", backdropFilter: "blur(12px)", border: "1px solid rgba(0,255,136,0.3)", color: "#00FF88" }}>
               +25 pts
               <div className="text-[10px] text-white/40">Exact score!</div>
             </motion.div>
-            <motion.div animate={{ y: [0, 8, 0] }} transition={{ duration: 3.5, repeat: Infinity, delay: 0.5 }}
+            <motion.div
+              initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 1.1, ease: [0.16, 1, 0.3, 1] }}
               className="absolute bottom-24 -right-4 rounded-2xl px-3 py-2 text-xs font-bold text-cyan"
-              style={{ background: "rgba(18,14,38,0.9)", backdropFilter: "blur(12px)", border: "1px solid rgba(0,212,255,0.3)", boxShadow: "0 8px 24px rgba(0,212,255,0.15)" }}>
+              style={{ background: "rgba(18,14,38,0.9)", backdropFilter: "blur(12px)", border: "1px solid rgba(0,212,255,0.3)" }}>
               $240 pot
               <div className="text-[10px] text-white/40">12 members</div>
             </motion.div>

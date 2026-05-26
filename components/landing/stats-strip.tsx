@@ -2,11 +2,13 @@
 
 import { motion } from "framer-motion";
 
+// Numbers in solid white; hierarchy comes from scale + label tracking, not
+// from a four-color rainbow. (See DESIGN.md Three-Channel Rule.)
 const STATS = [
-  { number: "48",   label: "Teams",         color: "#00FF88" },
-  { number: "104",  label: "Matches",       color: "#00D4FF" },
-  { number: "16",   label: "Host Cities",   color: "#8B5CF6" },
-  { number: "$0",   label: "For Employees", color: "#fbbf24" },
+  { number: "48",  label: "Teams" },
+  { number: "104", label: "Matches" },
+  { number: "16",  label: "Host Cities" },
+  { number: "$0",  label: "For Employees" },
 ];
 
 export function StatsStrip() {
@@ -47,7 +49,7 @@ export function StatsStrip() {
                   fontFamily: "var(--font-display, 'Anton', sans-serif)",
                   fontSize: "clamp(40px, 5vw, 64px)",
                   fontWeight: 800,
-                  color: stat.color,
+                  color: "#FFFFFF",
                   lineHeight: 1,
                   letterSpacing: "-0.02em",
                 }}
