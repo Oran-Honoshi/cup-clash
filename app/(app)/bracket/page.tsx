@@ -12,7 +12,7 @@ export default async function BracketPage() {
     <div className="space-y-6">
       <div>
         <div className="label-caps mb-1">World Cup 2026</div>
-        <h1 className="font-display text-4xl sm:text-5xl uppercase tracking-tight text-white">
+        <h1 className="font-display text-4xl sm:text-5xl uppercase font-black leading-none tracking-tight text-white">
           Knockout Bracket
         </h1>
         <p className="text-sm mt-2" style={{ color: "rgba(255,255,255,0.4)" }}>

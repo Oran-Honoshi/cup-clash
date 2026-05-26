@@ -1,5 +1,6 @@
 "use client";
 
+import { useRef } from "react";
 import { motion } from "framer-motion";
 import { Trophy, MapPin, Clock, ChevronRight } from "lucide-react";
 import Image from "next/image";
@@ -65,6 +66,14 @@ const QF_MATCHES: BracketMatch[] = [
 const SF_MATCHES: BracketMatch[] = [
   { id: "sf-1", home: { label: "W QF-1", isConfirmed: false }, away: { label: "W QF-2", isConfirmed: false }, date: "Jul 21", time: "20:00 ET", stadium: "MetLife Stadium", city: "New York/NJ", stage: "Semi-Final" },
   { id: "sf-2", home: { label: "W QF-3", isConfirmed: false }, away: { label: "W QF-4", isConfirmed: false }, date: "Jul 22", time: "20:00 ET", stadium: "AT&T Stadium",   city: "Dallas",      stage: "Semi-Final" },
+];
+
+const ROUND_TABS = [
+  { id: "r32",   label: "R32",   count: 16 },
+  { id: "r16",   label: "R16",   count: 8  },
+  { id: "qf",    label: "QF",    count: 4  },
+  { id: "sf",    label: "SF",    count: 2  },
+  { id: "final", label: "Final", count: 1  },
 ];
 
 const FINAL_MATCH: BracketMatch = {
@@ -142,14 +151,15 @@ function BracketMatchCard({ match, highlight = false }: { match: BracketMatch; h
   );
 }
 
-function StageColumn({ title, matches, color, highlight = false }: {
+function StageColumn({ title, matches, color, highlight = false, id }: {
   title: string;
   matches: BracketMatch[];
   color: string;
   highlight?: boolean;
+  id?: string;
 }) {
   return (
-    <div className="min-w-[200px] flex-1">
+    <div id={id} className="min-w-[200px] flex-1">
       <div className="flex items-center gap-2 mb-3 pb-2 border-b border-white/[0.06]">
         <div className="h-2 w-2 rounded-full" style={{ backgroundColor: color }} />
         <span className="label-caps">{title}</span>
@@ -166,6 +176,16 @@ function StageColumn({ title, matches, color, highlight = false }: {
 
 export function KnockoutBracket({ groupId: _groupId }: { groupId?: string }) {
   const allUnconfirmed = R32_MATCHES.every(m => !m.home.isConfirmed && !m.away.isConfirmed);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const scrollToRound = (roundId: string) => {
+    const container = scrollRef.current;
+    const el = document.getElementById(`round-${roundId}`);
+    if (!container || !el) return;
+    const containerRect = container.getBoundingClientRect();
+    const elRect = el.getBoundingClientRect();
+    container.scrollTo({ left: Math.max(0, container.scrollLeft + elRect.left - containerRect.left - 16), behavior: "smooth" });
+  };
 
   return (
     <div className="space-y-8">
@@ -185,59 +205,75 @@ export function KnockoutBracket({ groupId: _groupId }: { groupId?: string }) {
       )}
 
       {/* Legend */}
-      <div style={{
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3" style={{
         background: "rgba(18,14,38,0.32)",
         backdropFilter: "blur(40px) saturate(180%)",
         WebkitBackdropFilter: "blur(40px) saturate(180%)",
         border: "1px solid rgba(255,255,255,0.1)",
         borderRadius: 14, padding: 16,
-        display: "flex", flexWrap: "wrap", alignItems: "center", gap: 24,
         fontSize: 12,
       }}>
         <div className="flex items-center gap-2">
-          <div className="w-5 h-3 rounded-sm"
+          <div className="w-5 h-3 rounded-sm shrink-0"
             style={{ border: "1px dashed rgba(255,255,255,0.18)", background: "rgba(255,255,255,0.04)" }} />
-          <span style={{ color: "rgba(255,255,255,0.4)" }}>TBD: team not yet confirmed</span>
+          <span style={{ color: "rgba(255,255,255,0.4)" }}>TBD</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-5 h-3 rounded-sm"
+          <div className="w-5 h-3 rounded-sm shrink-0"
             style={{ background: "rgba(0,255,136,0.08)", border: "1px solid rgba(0,255,136,0.25)" }} />
-          <span style={{ color: "rgba(255,255,255,0.4)" }}>Confirmed team</span>
+          <span style={{ color: "rgba(255,255,255,0.4)" }}>Confirmed</span>
         </div>
-        <div className="flex items-center gap-2">
-          <div className="w-5 h-3 rounded-sm"
+        <div className="col-span-2 sm:col-span-1 flex items-center gap-2">
+          <div className="w-5 h-3 rounded-sm shrink-0"
             style={{ border: "1px solid rgba(212,175,55,0.3)", boxShadow: "0 0 8px rgba(212,175,55,0.2)" }} />
           <span style={{ color: "rgba(255,255,255,0.4)" }}>Final match</span>
         </div>
       </div>
 
-      {/* Scrollable bracket: horizontal scroll on mobile. */}
-      <div className="overflow-x-auto pb-4">
-        <div className="flex gap-4 min-w-max">
-          <StageColumn title="Round of 32" matches={R32_MATCHES} color="#8B5CF6" />
-          <div className="flex flex-col justify-center">
-            <ChevronRight size={20} style={{ color: "rgba(255,255,255,0.25)" }} />
-          </div>
-          <StageColumn title="Round of 16" matches={R16_MATCHES} color="#8B5CF6" />
-          <div className="flex flex-col justify-center">
-            <ChevronRight size={20} style={{ color: "rgba(255,255,255,0.25)" }} />
-          </div>
-          <StageColumn title="Quarter-Finals" matches={QF_MATCHES} color="#8B5CF6" />
-          <div className="flex flex-col justify-center">
-            <ChevronRight size={20} style={{ color: "rgba(255,255,255,0.25)" }} />
-          </div>
-          <StageColumn title="Semi-Finals" matches={SF_MATCHES} color="#8B5CF6" />
-          <div className="flex flex-col justify-center">
-            <ChevronRight size={20} style={{ color: "rgba(255,255,255,0.25)" }} />
-          </div>
-          {/* Final */}
-          <div className="min-w-[220px]">
-            <div className="flex items-center gap-2 mb-3 pb-2 border-b border-white/[0.06]">
-              <Trophy size={14} style={{ color: "#D4AF37" }} />
-              <span className="label-caps">Final</span>
-              <span style={{ fontSize: 10, color: "rgba(255,255,255,0.25)" }}>MetLife · Jul 19</span>
+      {/* Mobile round navigation — jump to any stage in the horizontal scroll */}
+      <div className="sm:hidden flex gap-1.5 overflow-x-auto pb-1" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
+        {ROUND_TABS.map(tab => (
+          <button key={tab.id} onClick={() => scrollToRound(tab.id)}
+            className="flex-none flex items-center gap-1.5 px-3 min-h-[44px] rounded-full text-xs font-bold uppercase tracking-wider whitespace-nowrap transition-all active:scale-95"
+            style={{ background: "rgba(139,92,246,0.1)", color: "#8B5CF6", border: "1px solid rgba(139,92,246,0.25)" }}>
+            {tab.label}
+            <span style={{ fontSize: 9, color: "rgba(139,92,246,0.5)" }}>{tab.count}</span>
+          </button>
+        ))}
+      </div>
+
+      {/* Scrollable bracket: horizontal scroll on mobile */}
+      <div className="relative">
+        {/* Right-edge fade signals more content to the right */}
+        <div className="pointer-events-none absolute right-0 top-0 bottom-4 w-14 z-10 sm:hidden"
+          style={{ background: "linear-gradient(to left, rgba(8,12,22,0.95) 0%, transparent 100%)" }} />
+        <div ref={scrollRef} className="overflow-x-auto pb-4" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
+          <div className="flex gap-4 min-w-max">
+            <StageColumn id="round-r32" title="Round of 32" matches={R32_MATCHES} color="#8B5CF6" />
+            <div className="flex flex-col justify-center">
+              <ChevronRight size={20} style={{ color: "rgba(255,255,255,0.25)" }} />
             </div>
-            <BracketMatchCard match={FINAL_MATCH} highlight />
+            <StageColumn id="round-r16" title="Round of 16" matches={R16_MATCHES} color="#8B5CF6" />
+            <div className="flex flex-col justify-center">
+              <ChevronRight size={20} style={{ color: "rgba(255,255,255,0.25)" }} />
+            </div>
+            <StageColumn id="round-qf" title="Quarter-Finals" matches={QF_MATCHES} color="#8B5CF6" />
+            <div className="flex flex-col justify-center">
+              <ChevronRight size={20} style={{ color: "rgba(255,255,255,0.25)" }} />
+            </div>
+            <StageColumn id="round-sf" title="Semi-Finals" matches={SF_MATCHES} color="#8B5CF6" />
+            <div className="flex flex-col justify-center">
+              <ChevronRight size={20} style={{ color: "rgba(255,255,255,0.25)" }} />
+            </div>
+            {/* Final */}
+            <div id="round-final" className="min-w-[220px]">
+              <div className="flex items-center gap-2 mb-3 pb-2 border-b border-white/[0.06]">
+                <Trophy size={14} style={{ color: "#D4AF37" }} />
+                <span className="label-caps">Final</span>
+                <span style={{ fontSize: 10, color: "rgba(255,255,255,0.25)" }}>MetLife · Jul 19</span>
+              </div>
+              <BracketMatchCard match={FINAL_MATCH} highlight />
+            </div>
           </div>
         </div>
       </div>
