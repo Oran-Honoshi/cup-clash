@@ -121,7 +121,7 @@ export function Hero() {
       className="relative overflow-hidden pb-0"
       style={{ paddingTop: "calc(98px + 3.5rem)" }}
     >
-      {/* Background atmosphere — one quiet wash, not two competing blobs */}
+      {/* Background atmosphere, one quiet wash, not two competing blobs. */}
       <div className="absolute top-0 right-0 w-[700px] h-[700px] pointer-events-none"
         style={{ background: "radial-gradient(circle at top right, rgba(0,212,255,0.06) 0%, transparent 60%)" }} />
 
@@ -136,7 +136,7 @@ export function Hero() {
               style={{ borderColor: "rgba(0,212,255,0.3)", background: "rgba(0,212,255,0.1)", backdropFilter: "blur(8px)" }}>
               <Zap size={11} className="text-cyan" fill="#00D4FF" />
               <span className="text-xs font-bold uppercase tracking-widest text-cyan">
-                World Cup 2026 · June 11 — July 19
+                World Cup 2026 · June 11 to July 19
               </span>
             </motion.div>
 
@@ -179,7 +179,7 @@ export function Hero() {
               </Link>
             </motion.div>
 
-            {/* Guest-explore escape hatch — PRODUCT.md Principle 3: never gate the first session. */}
+            {/* Guest-explore escape hatch. PRODUCT.md Principle 3: never gate the first session. */}
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.4 }}
               className="-mt-3 mb-6">
               <Link
@@ -223,7 +223,7 @@ export function Hero() {
                 First match kicks off in
               </div>
               <div style={{ filter: "drop-shadow(0 20px 50px rgba(0,255,136,0.20))" }}>
-                <CountdownCard target={KICKOFF} matchLabel="Mexico vs South Africa — Opening Match" />
+                <CountdownCard target={KICKOFF} matchLabel="Mexico vs South Africa, Opening Match" />
               </div>
             </motion.div>
           </div>
@@ -242,16 +242,16 @@ export function Hero() {
               transition={{ duration: 0.6, delay: 0.9, ease: [0.16, 1, 0.3, 1] }}
               className="absolute top-16 -left-4 rounded-2xl px-3 py-2 text-xs font-bold"
               style={{ background: "rgba(18,14,38,0.9)", backdropFilter: "blur(12px)", border: "1px solid rgba(0,255,136,0.3)", color: "#00FF88" }}>
-              +25 pts
-              <div className="text-[10px] text-white/40">Exact score!</div>
+              Nailed it
+              <div className="text-[10px] text-white/40">Exact score · +25</div>
             </motion.div>
             <motion.div
               initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, delay: 1.1, ease: [0.16, 1, 0.3, 1] }}
               className="absolute bottom-24 -right-4 rounded-2xl px-3 py-2 text-xs font-bold text-cyan"
               style={{ background: "rgba(18,14,38,0.9)", backdropFilter: "blur(12px)", border: "1px solid rgba(0,212,255,0.3)" }}>
-              $240 pot
-              <div className="text-[10px] text-white/40">12 members</div>
+              12 friends in
+              <div className="text-[10px] text-white/40">Tech Titans</div>
             </motion.div>
           </motion.div>
         </div>

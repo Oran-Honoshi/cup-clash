@@ -8,12 +8,12 @@ const FAQS = [
   {
     id: "faq-cost",
     q: "How much does it cost to host a group?",
-    a: "Hosting is free for friend groups — you pay $0 to create and run a Friend Circle. Each friend pays $2 to join. For corporate groups, you pay a one-time fee of $75 (up to 50 employees) or $130 (up to 100 employees) and your entire team joins for free.",
+    a: "Hosting is free for friend groups: you pay $0 to create and run a Friend Circle. Each friend pays $2 to join. For corporate groups, you pay a one-time fee of $75 (up to 50 employees) or $130 (up to 100 employees) and your entire team joins for free.",
   },
   {
     id: "faq-start",
     q: "When does the tournament start?",
-    a: "World Cup 2026 kicks off June 11, 2026 with Mexico vs South Africa. The tournament runs through July 19 (Final at MetLife Stadium, New Jersey). You can create your group anytime — predictions lock 5 minutes before each match kickoff.",
+    a: "World Cup 2026 kicks off June 11, 2026 with Mexico vs South Africa. The tournament runs through July 19 (Final at MetLife Stadium, New Jersey). You can create your group anytime. Predictions lock 5 minutes before each match kickoff.",
   },
   {
     id: "faq-rules",
@@ -33,7 +33,7 @@ const FAQS = [
   {
     id: "faq-app",
     q: "Is there a mobile app for Cup Clash?",
-    a: "Cup Clash is a Progressive Web App (PWA) — install it directly from your browser to get a near-native experience on iOS and Android, with all features and no app store friction.",
+    a: "Cup Clash is a Progressive Web App (PWA). Install it directly from your browser to get a near-native experience on iOS and Android, with all features and no app store friction.",
   },
   {
     id: "faq-gambling",
@@ -43,7 +43,7 @@ const FAQS = [
   {
     id: "faq-adfree",
     q: "Is Cup Clash really ad-free?",
-    a: "Cup Clash is built by fans, for fans. We will never clutter your experience with ads, trackers, or corporate junk — just 104 matches of pure competition. Your payment is the business model. That's the deal.",
+    a: "Cup Clash is built by fans, for fans. We will never clutter your experience with ads, trackers, or corporate junk. Just 104 matches of pure competition. Your payment is the business model. That's the deal.",
   },
 ];
 

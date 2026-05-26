@@ -112,7 +112,7 @@ export function CountdownCard({ target }: CountdownProps) {
       {/* Hint */}
       <div className="mt-4 pt-4 text-[10px] text-center uppercase tracking-widest"
         style={{ color: "rgba(255,255,255,0.3)", borderTop: "1px solid rgba(255,255,255,0.08)" }}>
-        Bets lock 5 min before kickoff
+        Picks lock 5 min before kickoff
       </div>
     </motion.div>
   );

@@ -56,7 +56,7 @@ export function CtaAndFooter() {
               <Link href="/signup">
                 <button className="flex items-center gap-2 px-8 py-4 rounded-full font-bold text-base uppercase tracking-wider transition-all hover:-translate-y-0.5 text-[#050e08]"
                   style={{ background: "linear-gradient(135deg, #00FF88, #00D4FF)", boxShadow: "0 8px 30px rgba(0,255,136,0.4)" }}>
-                  Get Started — Free <ArrowRight size={18} />
+                  Get Started · Free <ArrowRight size={18} />
                 </button>
               </Link>
               <Link href="/#pricing">
@@ -71,7 +71,7 @@ export function CtaAndFooter() {
               <Link href="/terms" className="underline hover:opacity-70 text-white/50">Terms</Link>{" "}
               and{" "}
               <Link href="/privacy" className="underline hover:opacity-70 text-white/50">Privacy Policy</Link>.
-              We store your email and predictions only — no selling, no ads, ever.
+              We store your email and predictions only. No selling, no ads, ever.
             </p>
           </div>
         </div>

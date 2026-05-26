@@ -67,7 +67,7 @@ function LeaderboardPhone() {
 
 function NotifPhone() {
   const notifs = [
-    { color: "#00FF88", bg: "rgba(0,255,136,0.12)", icon: "⚡", title: "+25 pts earned", sub: "Exact score: ARG 2–1 FRA" },
+    { color: "#00FF88", bg: "rgba(0,255,136,0.12)", icon: "⚡", title: "Nailed it",       sub: "Exact score: ARG 2–1 FRA" },
     { color: "#00D4FF", bg: "rgba(0,212,255,0.12)", icon: "↑", title: "You moved to #3", sub: "Sarah dropped 2 spots" },
     { color: "#8B5CF6", bg: "rgba(139,92,246,0.12)", icon: "★", title: "Achievement", sub: "5 exact scores in a row" },
   ];
@@ -130,14 +130,14 @@ export function CorporateSection() {
               className="font-display font-black text-white mb-5"
               style={{ fontSize: "clamp(32px,4vw,52px)", lineHeight: 1.1 }}
             >
-              Sponsor your whole company team —{" "}
-              <span style={{ color: "#00FF88" }}>from $75.</span>
+              Sponsor your whole company team.{" "}
+              <span style={{ color: "#00FF88" }}>From $75.</span>
             </h2>
 
             {/* Body */}
             <p className="mb-8 leading-relaxed" style={{ fontSize: 16, color: "rgba(255,255,255,0.65)", lineHeight: 1.6 }}>
               Replace the awkward Slack thread with something everyone actually shows up for.
-              One flat fee covers your entire team — employees join free, no checkout friction, no IT tickets.
+              One flat fee covers your entire team. Employees join free, no checkout friction, no IT tickets.
             </p>
 
             {/* Bullets */}
@@ -179,13 +179,13 @@ export function CorporateSection() {
                   boxShadow: "0 8px 30px rgba(0,255,136,0.3)",
                 }}
               >
-                Sponsor your office — from $75
+                Sponsor your office · from $75
                 <ArrowRight size={16} />
               </button>
             </Link>
           </motion.div>
 
-          {/* ── RIGHT COLUMN — Phone mockups ── */}
+          {/* RIGHT COLUMN: Phone mockups */}
           <motion.div
             initial={{ opacity: 0, x: 24 }}
             whileInView={{ opacity: 1, x: 0 }}

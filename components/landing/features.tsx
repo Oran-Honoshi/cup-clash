@@ -14,7 +14,7 @@ const FEATURES = [
   { icon: Trophy,    ...CYAN, title: "Live Leaderboard",  body: "Ranks shift in real-time as goals hit the net from Vancouver to Miami." },
   { icon: BarChart2, ...MINT, title: "Tournament Picks",  body: "Predict Champion, Golden Boot and Golden Ball before the opening whistle in Mexico City." },
   { icon: Globe,     ...CYAN, title: "Full Bracket",      body: "Dynamic Round of 16 → Final knockout tree, updated live as games conclude." },
-  { icon: Users,     ...MINT, title: "Multiple Groups",   body: "Dominate the office, family and bar squad simultaneously from one unified dashboard." },
+  { icon: Users,     ...MINT, title: "Multiple Groups",   body: "Run the office, family, and bar squad simultaneously from one unified dashboard." },
   { icon: Brain,     ...CYAN, title: "Trivia Challenge",  body: "Tie-breaker bonus points via a 7-second pressure-cooker round on World Cup history." },
 ];
 

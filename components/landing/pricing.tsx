@@ -55,7 +55,7 @@ export function Pricing() {
               <div className="font-display font-extrabold text-white mb-2" style={{ fontSize: 22 }}>Solo Player</div>
               <p className="leading-relaxed" style={{ color: "rgba(255,255,255,0.55)", fontSize: 14 }}>
                 Predict all 104 matches solo. Live results.{" "}
-                Compete against the Cup Clash Expert — our AI benchmark built from crowd wisdom and match odds.
+                Compete against the Cup Clash Expert, our AI benchmark built from crowd wisdom and match odds.
               </p>
             </div>
 
@@ -82,7 +82,7 @@ export function Pricing() {
 
           <div className="grid sm:grid-cols-2 gap-6 items-stretch">
 
-            {/* LEFT — Friend Circle */}
+            {/* LEFT: Friend Circle */}
             <motion.div
               initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
               className="rounded-3xl overflow-hidden flex flex-col"
@@ -146,7 +146,7 @@ export function Pricing() {
               </div>
             </motion.div>
 
-            {/* RIGHT — Corporate Sponsor */}
+            {/* RIGHT: Corporate Sponsor */}
             <motion.div
               initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
               transition={{ delay: 0.1 }}
