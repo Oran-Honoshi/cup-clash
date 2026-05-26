@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { useEffect, useRef } from "react";
 import { Users, Building2, KeyRound, Trophy, ArrowRight } from "lucide-react";
 import Link from "next/link";
+import { FOCUS_RING } from "@/lib/a11y";
 
 interface DashboardEmptyStateProps {
   highlight?: string;
@@ -62,7 +63,7 @@ export function DashboardEmptyState({ highlight }: DashboardEmptyStateProps = {}
           >
             <Link
               href="/create-group?model=pay_per_member"
-              className="block rounded-3xl overflow-hidden h-full"
+              className={`block rounded-3xl overflow-hidden h-full ${FOCUS_RING}`}
               style={{
                 background: "rgba(10, 18, 30, 0.75)",
                 border: "1px solid rgba(0,255,136,0.25)",
@@ -118,7 +119,7 @@ export function DashboardEmptyState({ highlight }: DashboardEmptyStateProps = {}
           >
             <Link
               href="/create-group?model=corporate_sponsored"
-              className="block rounded-3xl overflow-hidden h-full"
+              className={`block rounded-3xl overflow-hidden h-full ${FOCUS_RING}`}
               style={{
                 background: "rgba(10, 18, 30, 0.75)",
                 border: "1px solid rgba(0,212,255,0.25)",
@@ -173,7 +174,7 @@ export function DashboardEmptyState({ highlight }: DashboardEmptyStateProps = {}
         <motion.div whileHover={{ y: -2 }} transition={{ duration: 0.15 }}>
           <Link
             href="/join/enter"
-            className="block rounded-2xl p-5 flex items-center gap-4"
+            className={`block rounded-2xl p-5 flex items-center gap-4 ${FOCUS_RING}`}
             style={{
               background: "rgba(10, 18, 30, 0.65)",
               border: "1px solid rgba(255,255,255,0.08)",
@@ -197,7 +198,7 @@ export function DashboardEmptyState({ highlight }: DashboardEmptyStateProps = {}
         <motion.div whileHover={{ y: -2 }} transition={{ duration: 0.15 }}>
           <Link
             href="/predictions"
-            className="block rounded-2xl p-5 flex items-center gap-4"
+            className={`block rounded-2xl p-5 flex items-center gap-4 ${FOCUS_RING}`}
             style={{
               background: "rgba(10, 18, 30, 0.65)",
               border: "1px solid rgba(255,255,255,0.08)",

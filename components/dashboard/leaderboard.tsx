@@ -1,11 +1,23 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type KeyboardEvent } from "react";
 import { Crown, Trophy, TrendingUp, TrendingDown, Minus, ChevronRight, Ghost } from "lucide-react";
 import { PlayerDrawer } from "@/components/dashboard/player-drawer";
 import { AvatarCC } from "@/components/ui/avatar-cc";
+import { FOCUS_RING, FOCUS_RING_INSET } from "@/lib/a11y";
 import { cn } from "@/lib/utils";
 import type { Member } from "@/lib/types";
+
+// Keyboard activation handler for elements that use role="button".
+// Enter and Space both trigger, matching native button semantics.
+function activateOnEnterOrSpace(handler: () => void) {
+  return (e: KeyboardEvent<HTMLElement>) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      handler();
+    }
+  };
+}
 
 interface LeaderboardProps {
   members:        Member[];
@@ -92,7 +104,12 @@ export function Leaderboard({ members, currentUserId, groupId, showGhost = true 
             return (
               <div
                 key={member.id}
+                role="button"
+                tabIndex={0}
+                aria-label={`View ${member.name}'s stats, ${RANK_LABELS[rank - 1]} place, ${member.points} points`}
                 onClick={() => setSelected(member)}
+                onKeyDown={activateOnEnterOrSpace(() => setSelected(member))}
+                className={cn("rounded-lg", FOCUS_RING)}
                 style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", cursor: "pointer" }}
               >
                 {/* Crown above 1st place */}
@@ -228,13 +245,21 @@ export function Leaderboard({ members, currentUserId, groupId, showGhost = true 
             const isGhost       = member.isGhost;
             const realRank      = isGhost ? null : sorted.findIndex(m => m.id === member.id) + 1;
 
+            const activate = () => { if (!isGhost) setSelected(member); };
             return (
               <div
                 key={member.id}
-                onClick={() => !isGhost && setSelected(member)}
+                {...(!isGhost && {
+                  role: "button",
+                  tabIndex: 0,
+                  "aria-label": `View ${member.name}'s stats, rank ${realRank}, ${member.points} points`,
+                  onClick: activate,
+                  onKeyDown: activateOnEnterOrSpace(activate),
+                })}
                 className={cn(
                   "flex items-center gap-3 px-5 py-3 transition-all",
                   !isGhost && "cursor-pointer group",
+                  !isGhost && FOCUS_RING_INSET,
                   isGhost && "opacity-50",
                 )}
                 style={

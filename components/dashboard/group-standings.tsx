@@ -7,6 +7,7 @@ import Image from "next/image";
 import { flagUrl } from "@/lib/countries";
 import { WC2026_MATCHES } from "@/lib/schedule";
 import { NeonBar } from "@/components/ui/neon-bar";
+import { FOCUS_RING } from "@/lib/a11y";
 
 // All 12 groups with real teams from the official FIFA draw
 const GROUPS: Record<string, string[]> = {
@@ -185,8 +186,8 @@ export function GroupStandings({ groupId: _groupId }: { groupId?: string }) {
       {/* Group selector */}
       <div className="flex flex-wrap gap-2">
         {groups.map(g => (
-          <button key={g} onClick={() => setActiveGroup(g)}
-            className="font-display font-black text-sm transition-all"
+          <button key={g} type="button" aria-label={`View Group ${g}`} aria-pressed={activeGroup === g} onClick={() => setActiveGroup(g)}
+            className={`font-display font-black text-sm transition-all ${FOCUS_RING}`}
             style={activeGroup === g ? {
               width: 36,
               height: 36,

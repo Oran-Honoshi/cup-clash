@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Target } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { FOCUS_RING } from "@/lib/a11y";
 
 interface FirstPredictionPopupProps {
   groupId?: string;
@@ -74,8 +75,8 @@ export function DashboardPopups({ groupId, userId }: FirstPredictionPopupProps) 
             className="rounded-3xl p-8 max-w-sm w-full text-center relative"
             style={{ background: "linear-gradient(135deg, rgba(0,212,255,0.08), rgba(0,255,136,0.08))", border: "1px solid rgba(0,255,136,0.3)", boxShadow: "0 24px 64px rgba(0,0,0,0.2)" }}>
 
-            <button onClick={close}
-              className="absolute top-4 right-4 h-8 w-8 rounded-full flex items-center justify-center"
+            <button type="button" aria-label="Close dialog" onClick={close}
+              className={`absolute top-4 right-4 h-8 w-8 rounded-full flex items-center justify-center ${FOCUS_RING}`}
               style={{ background: "rgba(255,255,255,0.15)", color: "rgba(255,255,255,0.6)" }}>
               <X size={16} />
             </button>
@@ -108,8 +109,8 @@ export function DashboardPopups({ groupId, userId }: FirstPredictionPopupProps) 
               ⚡ +25 pts if exact · +10 pts if correct outcome
             </p>
 
-            <button onClick={close}
-              className="w-full py-3.5 rounded-2xl font-bold text-sm uppercase tracking-wider"
+            <button type="button" onClick={close}
+              className={`w-full py-3.5 rounded-2xl font-bold text-sm uppercase tracking-wider ${FOCUS_RING}`}
               style={{ background: "linear-gradient(135deg, #00FF88, #00D4FF)", color: "#0B141B" }}>
               Let&apos;s Go! 🎯
             </button>

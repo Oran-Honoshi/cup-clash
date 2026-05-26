@@ -10,6 +10,7 @@ import { NeonBar } from "@/components/ui/neon-bar";
 import { Flag } from "@/components/ui/flag";
 import { ScoreInputCC } from "@/components/ui/score-input-cc";
 import { LiveDot } from "@/components/ui/live-dot";
+import { FOCUS_RING } from "@/lib/a11y";
 import { cn } from "@/lib/utils";
 import type { Match } from "@/lib/types";
 
@@ -195,8 +196,9 @@ export function NextMatchCard({ match, groupId = "" }: NextMatchCardProps) {
                 <CheckCircle size={15} /> Prediction saved
               </div>
               <button
+                type="button"
                 onClick={() => setSaveState("idle")}
-                className="text-xs uppercase tracking-widest transition-opacity hover:opacity-70"
+                className={`text-xs uppercase tracking-widest transition-opacity hover:opacity-70 rounded ${FOCUS_RING}`}
                 style={{ color: "rgba(255,255,255,0.3)" }}
               >
                 Edit

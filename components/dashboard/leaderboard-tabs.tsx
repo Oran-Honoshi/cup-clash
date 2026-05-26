@@ -5,6 +5,7 @@ import { Trophy, Star, Users, Brain } from "lucide-react";
 import { Leaderboard } from "@/components/dashboard/leaderboard";
 import { TopScorersLeaderboard, TopAssistersLeaderboard } from "@/components/dashboard/player-stats-leaderboard";
 import { TriviaLeaderboard } from "@/components/trivia/trivia-leaderboard";
+import { FOCUS_RING_INSET } from "@/lib/a11y";
 import { cn } from "@/lib/utils";
 import type { Member } from "@/lib/types";
 
@@ -28,16 +29,20 @@ export function LeaderboardTabs({ members, currentUserId = "1" }: LeaderboardTab
   return (
     <div className="space-y-5">
       {/* Tab bar */}
-      <div className="flex gap-1 p-1 glass rounded-2xl">
+      <div role="tablist" aria-label="Leaderboard view" className="flex gap-1 p-1 glass rounded-2xl">
         {TABS.map((tab) => (
           <button
             key={tab.id}
+            type="button"
+            role="tab"
+            aria-selected={active === tab.id}
             onClick={() => setActive(tab.id)}
             className={cn(
               "flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold uppercase tracking-wider transition-all duration-200",
               active === tab.id
                 ? "text-white"
-                : "text-pitch-500 hover:text-pitch-300"
+                : "text-pitch-500 hover:text-pitch-300",
+              FOCUS_RING_INSET,
             )}
             style={active === tab.id ? {
               backgroundColor: "rgb(var(--accent) / 0.15)",

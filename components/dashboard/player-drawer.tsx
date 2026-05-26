@@ -6,6 +6,7 @@ import { X, Target, Trophy, Zap, TrendingUp } from "lucide-react";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 import { flagUrl } from "@/lib/countries";
+import { FOCUS_RING } from "@/lib/a11y";
 
 interface PointHistoryItem {
   matchId:    string;
@@ -93,16 +94,28 @@ export function PlayerDrawer({ userId, groupId, name, country, points, rank, ope
       });
   }, [open, userId, groupId]);
 
+  // Escape closes the drawer (keyboard parity with the backdrop click).
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open, onClose]);
+
   return (
     <AnimatePresence>
       {open && (
         <>
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            aria-hidden="true"
             className="fixed inset-0 z-50"
             style={{ background: "rgba(0,0,0,0.6)", backdropFilter: "blur(4px)" }}
             onClick={onClose} />
 
           <motion.div
+            role="dialog"
+            aria-modal="true"
+            aria-label={`${name} player details`}
             initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }}
             transition={{ type: "spring", damping: 28, stiffness: 280 }}
             className="fixed right-0 top-0 bottom-0 z-50 w-full sm:w-96 overflow-y-auto"
@@ -126,8 +139,10 @@ export function PlayerDrawer({ userId, groupId, name, country, points, rank, ope
                 </div>
               </div>
               <button
+                type="button"
+                aria-label="Close player details"
                 onClick={onClose}
-                className="p-2 rounded-xl"
+                className={`p-2 rounded-xl ${FOCUS_RING}`}
                 style={{ background: closeHover ? "rgba(255,255,255,0.1)" : "transparent", transition: "background 0.15s" }}
                 onMouseEnter={() => setCloseHover(true)}
                 onMouseLeave={() => setCloseHover(false)}

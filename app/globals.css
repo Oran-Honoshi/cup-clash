@@ -45,6 +45,22 @@ body {
   background-color: #080c16;
 }
 
+/* ── Accessibility: honor the OS-level reduced-motion preference ──
+   Disables transitions and animations for users who set
+   prefers-reduced-motion: reduce, while preserving state changes
+   (the new state is just shown instantly instead of animated). */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 /* ── Typography ── */
 h1, h2, h3, h4 {
   font-family: var(--font-display);

@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ALL_COUNTRIES, flagUrl } from "@/lib/countries";
+import { FOCUS_RING } from "@/lib/a11y";
 import { cn } from "@/lib/utils";
 
 // ─── Time locking ─────────────────────────────────────────────────────────────
@@ -257,10 +258,11 @@ export function TournamentPicks({ groupId, userId, locked = false }: TournamentP
           {filtered.map(c => {
             const isSelected = value === c.name;
             return (
-              <button key={c.flagCode} title={c.name} disabled={isLocked}
+              <button key={c.flagCode} type="button" title={c.name} aria-label={c.name} aria-pressed={isSelected} disabled={isLocked}
                 onClick={() => { onSelect(c.name); onSearch(""); }}
                 className={cn("flex flex-col items-center gap-0.5 p-1.5 rounded-lg transition-all",
-                  isLocked && "opacity-40 cursor-not-allowed")}
+                  isLocked && "opacity-40 cursor-not-allowed",
+                  FOCUS_RING)}
                 style={isSelected
                   ? { border: "1px solid rgba(0,255,136,0.4)", background: "rgba(0,255,136,0.1)" }
                   : { border: "1px solid rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.04)" }}>
@@ -318,10 +320,11 @@ export function TournamentPicks({ groupId, userId, locked = false }: TournamentP
               {filtered.map(player => {
                 const active = value === player.name;
                 return (
-                  <button key={player.name} disabled={isLocked}
+                  <button key={player.name} type="button" aria-label={`Pick ${player.name} (${player.team})`} aria-pressed={active} disabled={isLocked}
                     onClick={() => { updatePick(pickKey, player.name); onSearch(""); }}
                     className={cn("w-full flex items-center gap-2.5 px-3 py-2.5 border-b last:border-0 text-left transition-all",
-                      isLocked && "opacity-40 cursor-not-allowed")}
+                      isLocked && "opacity-40 cursor-not-allowed",
+                      FOCUS_RING)}
                     style={{
                       borderColor: "rgba(255,255,255,0.08)",
                       background: active ? "rgba(0,255,136,0.1)" : "rgba(255,255,255,0.04)",
@@ -341,8 +344,10 @@ export function TournamentPicks({ groupId, userId, locked = false }: TournamentP
               })}
               {showCustom && (
                 <button
+                  type="button"
+                  aria-label={`Use custom pick "${search}"`}
                   onClick={() => { updatePick(pickKey, search); onSearch(""); }}
-                  className="w-full flex items-center gap-2.5 px-3 py-2.5 text-left transition-all"
+                  className={`w-full flex items-center gap-2.5 px-3 py-2.5 text-left transition-all ${FOCUS_RING}`}
                   style={{ borderTop: "1px solid rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.04)" }}
                   onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,255,255,0.07)"; }}
                   onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,255,255,0.04)"; }}>
@@ -400,11 +405,12 @@ export function TournamentPicks({ groupId, userId, locked = false }: TournamentP
             const isSelected = picks.bestThird.includes(c.name);
             const isDisabled = !isSelected && picks.bestThird.length >= 8;
             return (
-              <button key={c.flagCode} title={c.name}
+              <button key={c.flagCode} type="button" title={c.name} aria-label={c.name} aria-pressed={isSelected}
                 disabled={isLocked || isDisabled}
                 onClick={() => toggleBestThird(c.name)}
                 className={cn("flex flex-col items-center gap-0.5 p-1.5 rounded-lg transition-all",
-                  (isLocked || isDisabled) && "opacity-40 cursor-not-allowed")}
+                  (isLocked || isDisabled) && "opacity-40 cursor-not-allowed",
+                  FOCUS_RING)}
                 style={isSelected
                   ? { border: "1px solid rgba(0,255,136,0.4)", background: "rgba(0,255,136,0.1)" }
                   : { border: "1px solid rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.04)" }}>

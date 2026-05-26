@@ -8,6 +8,7 @@ import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Flag } from "@/components/ui/flag";
+import { FOCUS_RING } from "@/lib/a11y";
 import { cn } from "@/lib/utils";
 import type { Match } from "@/lib/types";
 
@@ -157,12 +158,15 @@ export function KnockoutMatchCard({ match, groupId }: KnockoutMatchCardProps) {
             ].map(({ team, flagCode }) => {
               const active = advancementPick === team;
               return (
-                <button key={team} disabled={isLocked || canEdit}
+                <button key={team} type="button" disabled={isLocked || canEdit}
+                  aria-label={`${active ? "Currently picked" : "Pick"} ${team} to advance`}
+                  aria-pressed={active}
                   onClick={() => setAdvancementPick(team)}
                   className={cn(
                     "flex items-center gap-2 px-3 py-2.5 rounded-xl border transition-all font-bold text-sm",
                     active ? "text-white" : "text-pitch-400 border-white/[0.08] bg-white/[0.02] hover:border-white/20",
-                    (isLocked || canEdit) && "cursor-not-allowed opacity-60"
+                    (isLocked || canEdit) && "cursor-not-allowed opacity-60",
+                    FOCUS_RING,
                   )}
                   style={active ? {
                     borderColor: "rgb(var(--accent)/0.5)",
@@ -203,7 +207,7 @@ export function KnockoutMatchCard({ match, groupId }: KnockoutMatchCardProps) {
             <div className="flex items-center gap-1.5 text-sm font-bold uppercase tracking-widest text-success">
               <CheckCircle size={15} /> Prediction saved
             </div>
-            <button onClick={() => setSaveState("idle")} className="text-xs text-pitch-500 hover:text-white transition-colors uppercase tracking-widest">Edit</button>
+            <button type="button" onClick={() => setSaveState("idle")} className={`text-xs text-pitch-500 hover:text-white transition-colors uppercase tracking-widest rounded ${FOCUS_RING}`}>Edit</button>
           </div>
         ) : (
           <Button onClick={handleSubmit}

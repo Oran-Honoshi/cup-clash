@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronDown, Users } from "lucide-react";
+import { FOCUS_RING, FOCUS_RING_INSET } from "@/lib/a11y";
 
 type HoverMap = Record<string, boolean>;
 
@@ -18,6 +19,14 @@ export function DashboardGroupPicker({
   basePath = "/dashboard",
 }: DashboardGroupPickerProps) {
   const [open, setOpen] = useState(false);
+
+  // Escape closes the dropdown when it's open.
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setOpen(false); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open]);
   const [hovered, setHovered] = useState<HoverMap>({});
   const router = useRouter();
   const active = groups.find(g => g.id === activeGroupId);
@@ -25,8 +34,12 @@ export function DashboardGroupPicker({
   return (
     <div className="relative">
       <button
+        type="button"
+        aria-haspopup="listbox"
+        aria-expanded={open}
+        aria-label={`Switch group, currently ${active?.name ?? "none"}`}
         onClick={() => setOpen(v => !v)}
-        className="flex items-center gap-2.5 px-4 py-2.5 rounded-2xl transition-all"
+        className={`flex items-center gap-2.5 px-4 py-2.5 rounded-2xl transition-all ${FOCUS_RING}`}
         style={{
           background: "rgba(18,14,38,0.8)",
           backdropFilter: "blur(12px)",
@@ -59,13 +72,16 @@ export function DashboardGroupPicker({
             {groups.map(g => (
               <button
                 key={g.id}
+                type="button"
+                role="option"
+                aria-selected={g.id === activeGroupId}
                 onClick={() => {
                   setOpen(false);
                   router.push(`${basePath}?group=${g.id}`);
                 }}
                 onMouseEnter={() => setHovered(h => ({ ...h, [g.id]: true }))}
                 onMouseLeave={() => setHovered(h => ({ ...h, [g.id]: false }))}
-                className="w-full flex items-center gap-3 px-4 py-3 text-left transition-all border-b last:border-0"
+                className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-all border-b last:border-0 ${FOCUS_RING_INSET}`}
                 style={{
                   borderColor: "rgba(255,255,255,0.08)",
                   background: g.id === activeGroupId ? "rgba(0,212,255,0.08)" : hovered[g.id] ? "rgba(255,255,255,0.05)" : undefined,
