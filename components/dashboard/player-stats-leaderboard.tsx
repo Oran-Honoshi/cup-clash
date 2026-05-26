@@ -14,7 +14,7 @@ export interface PlayerStat {
   matches: number;   // matches played
 }
 
-// Mock data — will be replaced by real API data (TheSportsDB / API-Football)
+// Mock data, will be replaced by real API data (TheSportsDB / API-Football).
 const MOCK_TOP_SCORERS: PlayerStat[] = [
   { rank: 1, name: "Kylian Mbappé",    team: "France",      teamFlagCode: "fr",     count: 0, matches: 0 },
   { rank: 2, name: "Erling Haaland",   team: "Norway",      teamFlagCode: "no",     count: 0, matches: 0 },

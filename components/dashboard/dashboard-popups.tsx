@@ -35,7 +35,7 @@ export function DashboardPopups({ groupId, userId }: FirstPredictionPopupProps) 
 
         if (data) {
           const row = data as { match_id: string; home_score: number; away_score: number };
-          // Parse match_id to get team names — format is usually "m1", look up from schedule
+          // Parse match_id to get team names. Format is usually "m1", look up from schedule.
           setMatchInfo({
             home:      "Mexico",        // Will be replaced with real data
             away:      "South Africa",  // Will be replaced with real data
@@ -103,7 +103,7 @@ export function DashboardPopups({ groupId, userId }: FirstPredictionPopupProps) 
             )}
 
             <p className="text-sm mb-1" style={{ color: "rgba(255,255,255,0.5)" }}>
-              Your prediction is locked in. Now wait for the match — every goal counts!
+              Your prediction is locked in. Now wait for the match. Every goal counts!
             </p>
             <p className="text-xs mb-6" style={{ color: "rgba(255,255,255,0.4)" }}>
               ⚡ +25 pts if exact · +10 pts if correct outcome

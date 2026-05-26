@@ -77,7 +77,7 @@ export function Leaderboard({ members, currentUserId, groupId, showGhost = true 
       : [...sorted.slice(0, insertAt), ghost, ...sorted.slice(insertAt)];
   }
 
-  // Podium: top 3 real members — order: 2nd (left) · 1st (center) · 3rd (right)
+  // Podium: top 3 real members in order 2nd (left) · 1st (center) · 3rd (right).
   const top3 = sorted.slice(0, 3);
   const podiumOrder = [top3[1], top3[0], top3[2]].filter((m): m is Member => m !== undefined);
 
@@ -238,7 +238,7 @@ export function Leaderboard({ members, currentUserId, groupId, showGhost = true 
           <div />
         </div>
 
-        {/* Rows — 4th place onward */}
+        {/* Rows: 4th place onward */}
         <div className="divide-y" style={{ borderColor: "rgba(255,255,255,0.05)" }}>
           {tableDisplay.map((member) => {
             const isCurrentUser = member.id === currentUserId;
@@ -279,7 +279,7 @@ export function Leaderboard({ members, currentUserId, groupId, showGhost = true 
                       color: isCurrentUser ? "#00FF88" : "rgba(255,255,255,0.3)",
                     }}
                   >
-                    {isGhost ? "—" : realRank}
+                    {isGhost ? "-" : realRank}
                   </span>
                 </div>
 
@@ -369,7 +369,7 @@ export function Leaderboard({ members, currentUserId, groupId, showGhost = true 
           >
             <Ghost size={11} />
             <span>
-              <strong style={{ color: "rgba(255,255,255,0.5)" }}>The Expert</strong> shows the group average — a benchmark to beat.
+              <strong style={{ color: "rgba(255,255,255,0.5)" }}>The Expert</strong> shows the group average, a benchmark to beat.
             </span>
           </div>
         )}

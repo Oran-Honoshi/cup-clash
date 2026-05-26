@@ -48,7 +48,7 @@ export function DashboardEmptyState({ highlight }: DashboardEmptyStateProps = {}
           How would you like to play?
         </h1>
         <p className="text-sm mt-2" style={{ color: "rgba(255,255,255,0.45)" }}>
-          Pick your path — you can always change later.
+          Pick your path. You can always change later.
         </p>
       </div>
 
@@ -144,7 +144,7 @@ export function DashboardEmptyState({ highlight }: DashboardEmptyStateProps = {}
                   Cover the whole team with a{" "}
                   <strong style={{ color: "#00D4FF" }}>single flat rate</strong>.
                   Everyone you invite joins for{" "}
-                  <strong style={{ color: "#00FF88" }}>$0 — zero friction</strong>.
+                  <strong style={{ color: "#00FF88" }}>$0, zero friction</strong>.
                 </p>
                 <div className="flex gap-3 mb-6">
                   <span

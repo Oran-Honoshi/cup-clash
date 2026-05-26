@@ -24,7 +24,7 @@ interface BracketMatch {
   stage: string;
 }
 
-// Bracket data — labels show group positions until draw is made
+// Bracket data: labels show group positions until draw is made.
 const R32_MATCHES: BracketMatch[] = [
   { id: "r32-1",  home: { label: "1A", isConfirmed: false }, away: { label: "2B", isConfirmed: false }, date: "Jul 1",  time: "16:00 ET", stadium: "MetLife Stadium",          city: "New York/NJ",    stage: "Round of 32" },
   { id: "r32-2",  home: { label: "1B", isConfirmed: false }, away: { label: "2A", isConfirmed: false }, date: "Jul 1",  time: "20:00 ET", stadium: "SoFi Stadium",             city: "Los Angeles",    stage: "Round of 32" },
@@ -179,7 +179,7 @@ export function KnockoutBracket({ groupId: _groupId }: { groupId?: string }) {
         }}>
           <Trophy size={16} style={{ color: "#8B5CF6", flexShrink: 0 }} />
           <span style={{ fontSize: 14, color: "#8B5CF6", fontWeight: 600, fontFamily: "var(--font-ui)" }}>
-            Bracket not yet open — team positions will be filled after the group stage concludes.
+            Bracket not yet open. Team positions will be filled after the group stage concludes.
           </span>
         </div>
       )}
@@ -197,7 +197,7 @@ export function KnockoutBracket({ groupId: _groupId }: { groupId?: string }) {
         <div className="flex items-center gap-2">
           <div className="w-5 h-3 rounded-sm"
             style={{ border: "1px dashed rgba(255,255,255,0.18)", background: "rgba(255,255,255,0.04)" }} />
-          <span style={{ color: "rgba(255,255,255,0.4)" }}>TBD — team not yet confirmed</span>
+          <span style={{ color: "rgba(255,255,255,0.4)" }}>TBD: team not yet confirmed</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-5 h-3 rounded-sm"
@@ -211,7 +211,7 @@ export function KnockoutBracket({ groupId: _groupId }: { groupId?: string }) {
         </div>
       </div>
 
-      {/* Scrollable bracket — horizontal scroll on mobile */}
+      {/* Scrollable bracket: horizontal scroll on mobile. */}
       <div className="overflow-x-auto pb-4">
         <div className="flex gap-4 min-w-max">
           <StageColumn title="Round of 32" matches={R32_MATCHES} color="#8B5CF6" />

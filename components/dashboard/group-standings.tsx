@@ -73,7 +73,7 @@ function buildStandings(group: string, results: Array<{ home: string; away: stri
 }
 
 function GroupTable({ group }: { group: string }) {
-  // No results yet — show pre-tournament standings (all zeros)
+  // No results yet, show pre-tournament standings (all zeros).
   const standings = buildStandings(group, []);
 
   return (
@@ -139,13 +139,13 @@ function GroupTable({ group }: { group: string }) {
               {row.team}
             </span>
           </div>
-          {/* Stats — played */}
+          {/* Stats: played */}
           <span className="text-xs text-center" style={{ color: "rgba(255,255,255,0.4)" }}>{row.played}</span>
-          {/* Stats — won */}
+          {/* Stats: won */}
           <span className="text-xs text-center" style={{ color: "#00FF88" }}>{row.won}</span>
-          {/* Stats — drawn */}
+          {/* Stats: drawn */}
           <span className="text-xs text-center" style={{ color: "rgba(255,255,255,0.4)" }}>{row.drawn}</span>
-          {/* Stats — lost */}
+          {/* Stats: lost */}
           <span className="text-xs text-center" style={{ color: "#f87171" }}>{row.lost}</span>
           {/* GD */}
           <span className="text-xs text-center" style={{ color: row.gd > 0 ? "#00FF88" : row.gd < 0 ? "#f87171" : "rgba(255,255,255,0.4)" }}>

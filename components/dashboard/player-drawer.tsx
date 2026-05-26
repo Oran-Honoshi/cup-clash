@@ -179,7 +179,7 @@ export function PlayerDrawer({ userId, groupId, name, country, points, rank, ope
                 <div className="py-8 text-center space-y-2">
                   <Zap size={28} className="mx-auto" style={{ color: "rgba(255,255,255,0.2)" }} />
                   <p className="text-sm" style={{ color: "rgba(255,255,255,0.35)" }}>
-                    No points scored yet — check back after matches are played.
+                    No points scored yet. Check back after matches are played.
                   </p>
                 </div>
               ) : (

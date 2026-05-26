@@ -116,7 +116,7 @@ export function TournamentPicks({ groupId, userId, locked = false }: TournamentP
   const [saved,   setSaved]   = useState(false);
   const [error,   setError]   = useState<string | null>(null);
 
-  // Separate search state per picker — fixes typing lag
+  // Separate search state per picker, fixes typing lag.
   const [winnerSearch,    setWinnerSearch]    = useState("");
   const [scorerSearch,    setScorerSearch]    = useState("");
   const [assisterSearch,  setAssisterSearch]  = useState("");
@@ -438,7 +438,7 @@ export function TournamentPicks({ groupId, userId, locked = false }: TournamentP
         <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest p-3 rounded-xl"
           style={{ background: "rgba(217,119,6,0.06)", border: "1px solid rgba(217,119,6,0.2)", color: "#d97706" }}>
           <Lock size={13} />
-          {timeLocked ? "Tournament picks are locked — first match has started" : "Picks locked by admin"}
+          {timeLocked ? "Tournament picks are locked. First match has started." : "Picks locked by admin"}
         </div>
       )}
 
@@ -489,7 +489,7 @@ export function TournamentPicks({ groupId, userId, locked = false }: TournamentP
           <span className="font-display text-xl uppercase font-black" style={{ color: "white" }}>Player Awards</span>
         </div>
         {rules.enable_scorer && (
-          <PlayerPicker pickKey="topScorer" label="Top Scorer — Golden Boot" pts={rules.top_scorer}
+          <PlayerPicker pickKey="topScorer" label="Top Scorer · Golden Boot" pts={rules.top_scorer}
             search={scorerSearch} onSearch={setScorerSearch} />
         )}
         {rules.enable_assister && (
@@ -497,7 +497,7 @@ export function TournamentPicks({ groupId, userId, locked = false }: TournamentP
             search={assisterSearch} onSearch={setAssisterSearch} />
         )}
         {rules.enable_golden_ball && (
-          <PlayerPicker pickKey="goldenBall" label="Golden Ball — Best Player" pts={rules.golden_ball}
+          <PlayerPicker pickKey="goldenBall" label="Golden Ball · Best Player" pts={rules.golden_ball}
             search={goldenSearch} onSearch={setGoldenSearch} />
         )}
       </div>

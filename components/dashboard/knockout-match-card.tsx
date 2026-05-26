@@ -146,7 +146,7 @@ export function KnockoutMatchCard({ match, groupId }: KnockoutMatchCardProps) {
           </div>
         </div>
 
-        {/* Advancement pick — who goes through */}
+        {/* Advancement pick: who goes through */}
         <div className="border-t border-white/[0.06] pt-4">
           <div className="label-caps mb-2.5 flex items-center gap-1.5">
             <ArrowRight size={11} /> Who advances? <span className="text-success ml-auto">+20 pts</span>

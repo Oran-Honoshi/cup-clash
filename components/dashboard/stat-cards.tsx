@@ -13,7 +13,7 @@ export function StatCards({ rank, points, totalPlayers, exactScores }: StatCards
     {
       Icon: TrendingUp,
       label: "Your Rank",
-      value: rank ? `#${rank}` : "—",
+      value: rank ? `#${rank}` : "-",
       sub: rank ? `of ${totalPlayers}` : "",
       color: "#00FF88",
     },
@@ -48,7 +48,7 @@ export function StatCards({ rank, points, totalPlayers, exactScores }: StatCards
             textAlign: "center",
           }}
         >
-          {/* Icon — 20px, above value */}
+          {/* Icon: 20px, above value */}
           <div style={{ display: "flex", justifyContent: "center", marginBottom: 6 }}>
             <stat.Icon size={20} style={{ color: stat.color }} strokeWidth={2} />
           </div>
