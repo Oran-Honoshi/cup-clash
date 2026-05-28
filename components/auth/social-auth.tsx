@@ -21,7 +21,7 @@ export function SocialAuth({ className }: SocialAuthProps) {
     const sb = createClient();
     await sb.auth.signInWithOAuth({
       provider: "facebook",
-      options: { redirectTo: "https://cupclash.live/auth/callback", scopes: "email,public_profile" },
+      options: { redirectTo: "https://cupclash.live/auth/callback" },
     });
   };
 
