@@ -23,7 +23,7 @@ export function SocialAuth({ className }: SocialAuthProps) {
     const sb = createClient();
     await sb.auth.signInWithOAuth({
       provider: "facebook",
-      options: { redirectTo: callbackUrl },
+      options: { redirectTo: callbackUrl, scopes: "email,public_profile" },
     });
   };
 
