@@ -257,7 +257,7 @@ export function Leaderboard({ members, currentUserId, groupId, showGhost = true 
                   onKeyDown: activateOnEnterOrSpace(activate),
                 })}
                 className={cn(
-                  "flex items-center gap-3 px-5 py-3 transition-all",
+                  "flex items-center gap-2 sm:gap-3 px-5 py-3.5 transition-all",
                   !isGhost && "cursor-pointer group",
                   !isGhost && FOCUS_RING_INSET,
                   isGhost && "opacity-50",
@@ -271,7 +271,7 @@ export function Leaderboard({ members, currentUserId, groupId, showGhost = true 
                 onMouseLeave={(e: { currentTarget: HTMLElement }) => { if (!isGhost && !isCurrentUser) e.currentTarget.style.background = "transparent"; }}
               >
                 {/* Rank */}
-                <div className="w-8 text-center shrink-0">
+                <div className="w-6 sm:w-8 text-center shrink-0">
                   <span
                     className="text-xs font-bold"
                     style={{
@@ -284,7 +284,7 @@ export function Leaderboard({ members, currentUserId, groupId, showGhost = true 
                 </div>
 
                 {/* Avatar */}
-                <div className="relative w-10 shrink-0">
+                <div className="relative w-9 sm:w-10 shrink-0">
                   {isGhost ? (
                     <div
                       className="h-9 w-9 rounded-full flex items-center justify-center"
@@ -329,17 +329,17 @@ export function Leaderboard({ members, currentUserId, groupId, showGhost = true 
                 </div>
 
                 {/* Delta */}
-                <div className="w-12 flex justify-center shrink-0">
+                <div className="w-8 sm:w-12 flex justify-center shrink-0">
                   {!isGhost && <DeltaBadge delta={member.rankDelta ?? 0} />}
                 </div>
 
                 {/* Points */}
-                <div className="w-16 text-right shrink-0">
+                <div className="w-12 sm:w-16 text-right shrink-0">
                   <span
                     style={{
                       fontFamily: "var(--font-mono)",
                       fontWeight: 900,
-                      fontSize: 22,
+                      fontSize: "clamp(16px, 5vw, 22px)",
                       lineHeight: 1,
                       color: isCurrentUser ? "#00FF88" : isGhost ? "rgba(255,255,255,0.2)" : "white",
                     }}

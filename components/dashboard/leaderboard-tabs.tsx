@@ -11,11 +11,11 @@ import type { Member } from "@/lib/types";
 
 type Tab = "predictions" | "scorers" | "assisters" | "trivia";
 
-const TABS: Array<{ id: Tab; label: string; icon: typeof Trophy }> = [
-  { id: "predictions", label: "Predictions", icon: Trophy  },
-  { id: "scorers",     label: "Scorers",     icon: Star    },
-  { id: "assisters",   label: "Assisters",   icon: Users   },
-  { id: "trivia",      label: "Trivia",      icon: Brain   },
+const TABS: Array<{ id: Tab; label: string; mobileLabel: string; icon: typeof Trophy }> = [
+  { id: "predictions", label: "Predictions", mobileLabel: "Picks",   icon: Trophy  },
+  { id: "scorers",     label: "Scorers",     mobileLabel: "Goals",   icon: Star    },
+  { id: "assisters",   label: "Assisters",   mobileLabel: "Assists", icon: Users   },
+  { id: "trivia",      label: "Trivia",      mobileLabel: "Trivia",  icon: Brain   },
 ];
 
 interface LeaderboardTabsProps {
@@ -38,7 +38,7 @@ export function LeaderboardTabs({ members, currentUserId = "1" }: LeaderboardTab
             aria-selected={active === tab.id}
             onClick={() => setActive(tab.id)}
             className={cn(
-              "flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold uppercase tracking-wider transition-all duration-200",
+              "flex-1 flex items-center justify-center gap-1 sm:gap-2 px-1.5 sm:px-4 py-2.5 rounded-xl text-[10px] sm:text-sm font-bold uppercase tracking-wider transition-all duration-200",
               active === tab.id
                 ? "text-white"
                 : "text-pitch-500 hover:text-pitch-300",
@@ -50,7 +50,8 @@ export function LeaderboardTabs({ members, currentUserId = "1" }: LeaderboardTab
               boxShadow: "inset 0 0 0 1px rgb(var(--accent) / 0.2)",
             } : undefined}
           >
-            <tab.icon size={15} />
+            <tab.icon size={14} />
+            <span className="sm:hidden">{tab.mobileLabel}</span>
             <span className="hidden sm:inline">{tab.label}</span>
           </button>
         ))}

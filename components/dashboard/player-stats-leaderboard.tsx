@@ -49,7 +49,7 @@ function PlayerRow({ player, statLabel }: { player: PlayerStat; statLabel: strin
   const rankColor = RANK_COLORS[player.rank] ?? "#94a3b8";
 
   return (
-    <div className="flex items-center gap-3 px-5 py-3 border-b border-slate-50 last:border-0 hover:bg-slate-50 transition-colors">
+    <div className="flex items-center gap-3 px-5 py-3.5 border-b last:border-0 transition-colors" style={{ borderColor: "rgba(255,255,255,0.06)" }} onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.04)"; }} onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}>
       {/* Rank */}
       <div className="w-8 text-center shrink-0">
         {isTop3 ? (
