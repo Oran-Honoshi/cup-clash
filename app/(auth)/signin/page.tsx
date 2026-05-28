@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Eye, EyeOff, Lock, Mail, AlertCircle, ArrowRight, Loader2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { NeonBar } from "@/components/ui/neon-bar";
+import { SocialAuth } from "@/components/auth/social-auth";
 
 const inputStyle = {
   width: "100%",
@@ -83,6 +84,15 @@ export default function SignInPage() {
             <p style={{ fontSize: 13, color: "rgba(255,255,255,0.4)", fontFamily: "var(--font-ui)", margin: 0 }}>
               Enter your credentials to continue.
             </p>
+          </div>
+
+          <SocialAuth />
+
+          {/* Email divider */}
+          <div className="relative flex items-center gap-3">
+            <div className="flex-1 h-px" style={{ background: "rgba(255,255,255,0.08)" }} />
+            <span style={{ fontSize: 11, color: "rgba(255,255,255,0.3)", fontFamily: "var(--font-ui)", fontWeight: 600, whiteSpace: "nowrap" }}>or continue with email</span>
+            <div className="flex-1 h-px" style={{ background: "rgba(255,255,255,0.08)" }} />
           </div>
 
           {error && (
