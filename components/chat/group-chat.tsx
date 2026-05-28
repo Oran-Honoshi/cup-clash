@@ -197,9 +197,10 @@ export function GroupChat({ groupId, currentUserId, currentUserName, isPaid }: G
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className="fixed bottom-36 right-4 lg:bottom-24 lg:right-6 z-40 w-80 sm:w-96 rounded-3xl overflow-hidden flex flex-col"
+            className="fixed bottom-36 right-4 lg:bottom-24 lg:right-6 z-40 w-[calc(100vw-2rem)] sm:w-96 rounded-3xl overflow-hidden flex flex-col"
             style={{
               height: 480,
+              maxHeight: "calc(100dvh - 200px)",
               background: "rgba(8,6,20,0.95)",
               backdropFilter: "blur(24px)",
               border: "1px solid rgba(0,212,255,0.2)",
@@ -217,7 +218,8 @@ export function GroupChat({ groupId, currentUserId, currentUserName, isPaid }: G
                 </span>
                 <span className="font-display text-lg uppercase" style={{ color: "white" }}>Group Chat</span>
               </div>
-              <button onClick={() => setIsOpen(false)}>
+              <button onClick={() => setIsOpen(false)}
+                className="h-9 w-9 flex items-center justify-center rounded-lg -mr-1 transition-colors hover:bg-white/[0.08]">
                 <X size={16} style={{ color: "rgba(255,255,255,0.5)" }} />
               </button>
             </div>
@@ -280,10 +282,10 @@ export function GroupChat({ groupId, currentUserId, currentUserName, isPaid }: G
                   <input value={gifQuery} onChange={e => setGifQuery(e.target.value)}
                     onKeyDown={e => e.key === "Enter" && searchGifs(gifQuery)}
                     placeholder="Search GIFs..."
-                    className="flex-1 text-xs px-3 py-1.5 rounded-lg"
+                    className="flex-1 text-xs px-3 py-2 rounded-lg"
                     style={{ border: "1px solid rgba(255,255,255,0.12)", color: "rgba(255,255,255,0.85)", background: "rgba(255,255,255,0.06)" }} />
                   <button onClick={() => searchGifs(gifQuery)}
-                    className="px-3 py-1.5 rounded-lg text-xs font-bold"
+                    className="px-3 py-2 rounded-lg text-xs font-bold"
                     style={{ background: "rgba(0,212,255,0.1)", color: "#00D4FF" }}>
                     {gifLoading ? "..." : "Go"}
                   </button>
@@ -316,7 +318,7 @@ export function GroupChat({ groupId, currentUserId, currentUserName, isPaid }: G
                   )}
                   <div className="flex gap-2 items-center">
                     <button onClick={() => setShowGif(g => !g)}
-                      className="h-9 w-9 rounded-xl flex items-center justify-center shrink-0 transition-colors"
+                      className="h-11 w-11 rounded-xl flex items-center justify-center shrink-0 transition-colors"
                       style={{ color: showGif ? "#00D4FF" : "rgba(255,255,255,0.4)" }}>
                       <ImageIcon size={18} />
                     </button>
@@ -324,14 +326,14 @@ export function GroupChat({ groupId, currentUserId, currentUserName, isPaid }: G
                       onChange={e => setInput(e.target.value)}
                       onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(input); } }}
                       placeholder="Message..."
-                      className="flex-1 px-3 py-2 rounded-xl text-sm"
+                      className="flex-1 px-3 py-2.5 rounded-xl text-sm"
                       style={{ border: "1px solid rgba(255,255,255,0.12)", background: "rgba(255,255,255,0.06)", color: "#ffffff", outline: "none" }}
                       onFocus={e => (e.target.style.border = "1px solid #00D4FF")}
                       onBlur={e => (e.target.style.border = "1px solid rgba(255,255,255,0.12)")} />
                     <button
                       onClick={() => sendMessage(input)}
                       disabled={!input.trim() || sending}
-                      className="h-9 w-9 rounded-xl flex items-center justify-center shrink-0 transition-all disabled:opacity-40"
+                      className="h-11 w-11 rounded-xl flex items-center justify-center shrink-0 transition-all disabled:opacity-40"
                       style={{ background: "linear-gradient(135deg, #00D4FF, #00FF88)", color: "#0B141B" }}>
                       <Send size={16} />
                     </button>
