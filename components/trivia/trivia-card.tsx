@@ -127,7 +127,7 @@ export function TriviaCard({
           const isSelected = option === selected;
           const isWrong = isSelected && !isCorrect;
 
-          let bg = "bg-white border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-cyan-200";
+          let bg = "bg-white/[0.06] border-white/[0.12] text-white hover:bg-white/[0.10] hover:border-white/20";
           if (revealed && isCorrect) bg = "bg-success/20 border-success/60 text-white";
           else if (revealed && isWrong) bg = "bg-danger/20 border-danger/60 text-white";
           else if (revealed) bg = "bg-white/[0.03] border-white/[0.06] text-pitch-600";

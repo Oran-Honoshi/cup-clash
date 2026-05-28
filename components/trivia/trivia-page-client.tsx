@@ -98,10 +98,7 @@ export function TriviaPageClient({
             className="text-6xl">🧠</motion.div>
           <h1 className="font-display text-5xl sm:text-6xl uppercase text-white leading-[0.9] tracking-tight">
             Think you know<br />
-            <span style={{
-              background: "linear-gradient(135deg, #00D4FF, #00FF88)",
-              WebkitBackgroundClip: "text", backgroundClip: "text", WebkitTextFillColor: "transparent",
-            }}>
+            <span style={{ color: "#00D4FF" }}>
               everything about
             </span><br />
             the World Cup?
@@ -215,7 +212,7 @@ export function TriviaPageClient({
   // ── PLAYING ───────────────────────────────────────────────────────────────
   if (pageState === "playing" && session && currentQ) {
     return (
-      <div className="min-h-screen py-8">
+      <div className="py-2">
         <AnimatePresence mode="wait">
           <motion.div key={currentQ.id}
             initial={{ opacity: 0, x: 30 }} animate={{ opacity: 1, x: 0 }}
@@ -239,7 +236,7 @@ export function TriviaPageClient({
   // ── FREE PLAYING ──────────────────────────────────────────────────────────
   if (pageState === "free-playing" && freeSession && freeQ) {
     return (
-      <div className="min-h-screen py-8">
+      <div className="py-2">
         <div className="mb-4 flex items-center justify-between max-w-2xl mx-auto">
           <div className="text-xs uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.3)" }}>
             Free play — no points
