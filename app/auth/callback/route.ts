@@ -7,6 +7,8 @@ export async function GET(request: NextRequest) {
   const code = requestUrl.searchParams.get("code");
   const next = requestUrl.searchParams.get("next") ?? "/dashboard";
 
+  console.log("Auth callback hit:", { code: !!code, next, url: request.url });
+
   if (code) {
     const cookieStore = cookies();
     const supabase = createServerClient(
@@ -24,9 +26,11 @@ export async function GET(request: NextRequest) {
         },
       }
     );
-    await supabase.auth.exchangeCodeForSession(code);
+    const result = await supabase.auth.exchangeCodeForSession(code);
+    console.log("Exchange result:", result.error?.message ?? "success");
   }
 
+  console.log("Redirecting to:", next);
   // Always redirect to `next` — preserves join URL after email confirmation
   return NextResponse.redirect(new URL(next, requestUrl.origin));
 }
