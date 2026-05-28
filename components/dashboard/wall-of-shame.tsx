@@ -31,7 +31,7 @@ export function WallOfShame({ members, totalMatches = 20 }: WallOfShameProps) {
   ];
 
   return (
-    <div className="rounded-2xl overflow-hidden" style={{ background: "rgba(255,255,255,0.07)", backdropFilter: "blur(24px)", WebkitBackdropFilter: "blur(24px)", border: "1px solid rgba(255,255,255,0.12)", boxShadow: "0 8px 32px rgba(0,0,0,0.25)" }}>
+    <div className="rounded-2xl overflow-hidden" style={{ background: "rgba(18,14,38,0.5)", border: "1px solid rgba(255,255,255,0.1)", boxShadow: "0 8px 32px rgba(0,0,0,0.25)" }}>
       <div className="flex items-center justify-between px-5 py-4 border-b" style={{ borderColor: "rgba(255,255,255,0.07)" }}>
         <div className="flex items-center gap-2.5">
           <TrendingDown size={16} strokeWidth={1.5} style={{ color: "#f87171" }} />

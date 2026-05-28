@@ -195,8 +195,6 @@ export function Leaderboard({ members, currentUserId, groupId, showGhost = true 
         className="rounded-2xl overflow-hidden"
         style={{
           background: "rgba(12, 18, 32, 0.78)",
-          backdropFilter: "blur(20px)",
-          WebkitBackdropFilter: "blur(20px)",
           border: "1px solid rgba(255,255,255,0.08)",
           boxShadow: "0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.06)",
         }}
@@ -264,7 +262,7 @@ export function Leaderboard({ members, currentUserId, groupId, showGhost = true 
                 )}
                 style={
                   isCurrentUser
-                    ? { background: "rgba(0,255,136,0.08)", borderLeft: "2px solid #00FF88", paddingLeft: "calc(1.25rem - 2px)" }
+                    ? { background: "rgba(0,255,136,0.08)" }
                     : undefined
                 }
                 onMouseEnter={(e: { currentTarget: HTMLElement }) => { if (!isGhost && !isCurrentUser) e.currentTarget.style.background = "rgba(255,255,255,0.04)"; }}

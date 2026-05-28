@@ -19,7 +19,7 @@ export function BuyInStatus({ group, members }: BuyInStatusProps) {
   const third     = Math.round(paidPot * Number(group.payouts.third.replace("%",  "")) / 100);
 
   return (
-    <div className="rounded-2xl p-5" style={{ background: "rgba(255,255,255,0.07)", backdropFilter: "blur(24px)", WebkitBackdropFilter: "blur(24px)", border: "1px solid rgba(255,255,255,0.12)", boxShadow: "0 8px 32px rgba(0,0,0,0.25), inset 0 1px 1px rgba(255,255,255,0.06)" }}>
+    <div className="rounded-2xl p-5" style={{ background: "rgba(18,14,38,0.5)", border: "1px solid rgba(255,255,255,0.1)", boxShadow: "0 8px 32px rgba(0,0,0,0.25), inset 0 1px 1px rgba(255,255,255,0.06)" }}>
       <div className="flex items-center gap-2.5 mb-4">
         <DollarSign size={18} strokeWidth={1.5} style={{ color: "#00FF88" }} />
         <span className="font-display text-xl uppercase tracking-tight text-white">Buy-in Tracker</span>

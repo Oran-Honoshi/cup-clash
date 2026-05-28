@@ -84,8 +84,6 @@ export function NextMatchCard({ match, groupId = "" }: NextMatchCardProps) {
       className="rounded-[22px] overflow-hidden"
       style={{
         background: "rgba(18,14,38,0.32)",
-        backdropFilter: "blur(40px) saturate(180%)",
-        WebkitBackdropFilter: "blur(40px) saturate(180%)",
         border: "1px solid rgba(0,212,255,0.35)",
         boxShadow: "0 12px 40px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.18)",
       }}

@@ -179,6 +179,12 @@ export default async function DashboardPage({
       />
 
       <div className="grid gap-5 lg:grid-cols-12">
+        {/* Primary action — first on mobile, right column on desktop */}
+        <div className="lg:col-span-5 space-y-5 order-first lg:order-last">
+          {nextMatch && <NextMatchCard match={nextMatch} groupId={activeGroupId} />}
+          <BuyInStatus group={group} members={members} />
+        </div>
+        {/* Secondary — leaderboard + wall, below on mobile, left on desktop */}
         <div className="lg:col-span-7 space-y-5">
           <Leaderboard
             members={top8}
@@ -187,10 +193,6 @@ export default async function DashboardPage({
             showGhost
           />
           <WallOfShame members={members} totalMatches={48} />
-        </div>
-        <div className="lg:col-span-5 space-y-5">
-          {nextMatch && <NextMatchCard match={nextMatch} groupId={activeGroupId} />}
-          <BuyInStatus group={group} members={members} />
         </div>
       </div>
     </div>
