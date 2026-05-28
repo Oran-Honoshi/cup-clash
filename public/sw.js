@@ -1,5 +1,5 @@
 // Cup Clash Service Worker — PWA + Web Push
-const CACHE_NAME = "cupclash-v1";
+const CACHE_NAME = "cupclash-v3";
 const STATIC_ASSETS = ["/", "/dashboard", "/predictions", "/leaderboard"];
 
 // Install — cache core routes
@@ -57,7 +57,10 @@ self.addEventListener("notificationclick", (event) => {
 // Fetch — network first, cache fallback
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") return;
-  if (event.request.url.includes("/api/")) return; // Never cache API calls
+  const { url } = event.request;
+  if (!url.startsWith("http")) return; // skip chrome-extension, data URIs, etc.
+  const { pathname } = new URL(url);
+  if (pathname.startsWith("/auth") || pathname.startsWith("/api/")) return; // never cache auth or API
 
   event.respondWith(
     fetch(event.request)

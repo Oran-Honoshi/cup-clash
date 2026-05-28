@@ -15,7 +15,7 @@ export function SocialAuth({ className }: SocialAuthProps) {
     const sb = createClient();
     await sb.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: callbackUrl },
+      options: { redirectTo: `${window.location.origin}/auth/callback?next=/dashboard` },
     });
   };
 
