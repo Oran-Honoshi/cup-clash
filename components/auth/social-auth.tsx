@@ -9,13 +9,11 @@ interface SocialAuthProps {
 }
 
 export function SocialAuth({ className }: SocialAuthProps) {
-  const callbackUrl = `${typeof window !== "undefined" ? window.location.origin : ""}/auth/callback`;
-
   const handleGoogle = async () => {
     const sb = createClient();
     await sb.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: `${window.location.origin}/auth/callback?next=/dashboard` },
+      options: { redirectTo: "https://cupclash.live/auth/callback" },
     });
   };
 
@@ -23,7 +21,7 @@ export function SocialAuth({ className }: SocialAuthProps) {
     const sb = createClient();
     await sb.auth.signInWithOAuth({
       provider: "facebook",
-      options: { redirectTo: callbackUrl, scopes: "email,public_profile" },
+      options: { redirectTo: "https://cupclash.live/auth/callback", scopes: "email,public_profile" },
     });
   };
 
