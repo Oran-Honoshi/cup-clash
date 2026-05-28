@@ -42,11 +42,11 @@ export function GroupDetailClient({ group, rules, members, currentUserId, isAdmi
   const scoringRows = Object.entries(SCORING_LABELS).filter(([key]) => { const ek = ENABLE_KEYS[key]; return !ek || rules?.[ek] !== false; });
 
   return (
-    <div className="max-w-2xl mx-auto space-y-5 px-4 py-6">
-      <div className="flex items-start justify-between">
-        <div>
+    <div className="max-w-2xl mx-auto space-y-5">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0 flex-1">
           <Link href="/groups" className="text-xs font-bold uppercase tracking-widest mb-2 flex items-center gap-1 transition-opacity hover:opacity-70" style={{ color: "#00D4FF" }}>← My Groups</Link>
-          <h1 className="font-display text-4xl uppercase font-black text-white">{group.name}</h1>
+          <h1 className="font-display text-4xl uppercase font-black text-white truncate">{group.name}</h1>
           <div className="flex items-center gap-2 mt-1 flex-wrap">
             {isAdmin  && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: "rgba(251,191,36,0.12)", color: "#fbbf24", border: "1px solid rgba(251,191,36,0.2)" }}>Admin</span>}
             {isMember && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: "rgba(0,255,136,0.12)", color: "#00FF88",  border: "1px solid rgba(0,255,136,0.2)"  }}>Member</span>}
@@ -128,7 +128,7 @@ export function GroupDetailClient({ group, rules, members, currentUserId, isAdmi
               <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.35)" }}>Scoring Rules</span>
               <span className="ml-auto flex items-center gap-1 text-[10px]" style={{ color: "rgba(255,255,255,0.25)" }}><Lock size={10} /> Locks June 11</span>
             </div>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {scoringRows.map(([key, label]) => (
                 <div key={key} className="flex items-center justify-between rounded-xl px-3 py-2.5" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)" }}>
                   <span className="text-xs" style={{ color: "rgba(255,255,255,0.55)" }}>{label}</span>

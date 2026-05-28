@@ -152,7 +152,7 @@ export default async function GroupsPage() {
                       View Group <ArrowRight size={14} />
                     </button>
                   </Link>
-                  <ShareGroup groupName={g.name} adminName={userProfile.name} passkey={g.passkey} />
+                  <ShareGroup groupName={g.name} adminName={userProfile.name} passkey={g.passkey} compact />
                   {isAdmin && (
                     <Link href={`/admin/${m.group_id}`}>
                       <button className="px-3 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider"
