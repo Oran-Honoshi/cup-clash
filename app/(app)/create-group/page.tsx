@@ -248,7 +248,7 @@ function CreateGroupInner() {
   // ── Success state ──────────────────────────────────────────────────────────
   if (passkey) {
     return (
-      <div className="max-w-[480px] mx-auto space-y-4 px-4 py-6">
+      <div className="max-w-[480px] mx-auto space-y-4">
         <div style={{
           ...glassCard,
           borderRadius: 28,
@@ -338,13 +338,13 @@ function CreateGroupInner() {
   }
 
   const steps = [
-    { n: 1 as const, label: "Group Setup"     },
-    { n: 2 as const, label: isCorporate ? "Company Prizes" : "Buy-In & Prizes" },
-    { n: 3 as const, label: "Scoring Rules"   },
+    { n: 1 as const, label: "Setup"                          },
+    { n: 2 as const, label: isCorporate ? "Prizes" : "Buy-In" },
+    { n: 3 as const, label: "Scoring"                        },
   ];
 
   return (
-    <div className="max-w-[480px] mx-auto space-y-4 px-4 py-6">
+    <div className="max-w-[480px] mx-auto space-y-4">
 
       {/* Page header */}
       <div>
@@ -439,7 +439,7 @@ function CreateGroupInner() {
                   <p style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", fontFamily: "var(--font-ui)", lineHeight: 1.45, margin: 0 }}>
                     You cover the whole team with a one-time flat fee. Every employee joins for <strong style={{ color: "white" }}>$0 (zero friction)</strong>.
                   </p>
-                  <div style={{ display: "flex", gap: 6, marginTop: 10 }}>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 6, marginTop: 10 }}>
                     <span style={{ fontSize: 11, fontWeight: 700, color: "#00D4FF", background: "rgba(0,212,255,0.1)", padding: "4px 8px", borderRadius: 8, fontFamily: "var(--font-mono)" }}>
                       $75 · up to 50 members
                     </span>
@@ -593,7 +593,7 @@ function CreateGroupInner() {
                         style={{ borderColor: "rgba(255,255,255,0.07)", color: selectedMatch === m.id ? "#00D4FF" : "rgba(255,255,255,0.6)", background: "transparent" }}
                         onMouseEnter={(e: { currentTarget: HTMLElement }) => { e.currentTarget.style.background = "rgba(255,255,255,0.04)"; }}
                         onMouseLeave={(e: { currentTarget: HTMLElement }) => { e.currentTarget.style.background = "transparent"; }}>
-                        <span className="text-xs font-bold">{m.label}</span>
+                        <span className="text-xs font-bold truncate min-w-0">{m.label}</span>
                         <span style={{ fontSize: 11, color: "rgba(255,255,255,0.35)" }}>{m.detail}</span>
                       </button>
                     ))}
@@ -839,7 +839,7 @@ function CreateGroupInner() {
 export default function CreateGroupPage() {
   return (
     <Suspense fallback={
-      <div className="max-w-[480px] mx-auto px-4 py-12 text-center text-sm" style={{ color: "rgba(255,255,255,0.3)" }}>
+      <div className="max-w-[480px] mx-auto py-12 text-center text-sm" style={{ color: "rgba(255,255,255,0.3)" }}>
         Loading...
       </div>
     }>
