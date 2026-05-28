@@ -122,7 +122,7 @@ export function WelcomeEmailSender({ group, members, adminName }: WelcomeEmailSe
               {m.isManual ? (
                 <input type="text" placeholder="Name"
                   value={m.name} onChange={e => updateName(m.memberId, e.target.value)}
-                  className="w-24 shrink-0 px-2 py-1.5 rounded-lg text-xs text-white bg-white/[0.06] border border-white/[0.12] focus:outline-none focus:border-accent" />
+                  className="w-24 shrink-0 px-2 py-2 rounded-lg text-xs text-white bg-white/[0.06] border border-white/[0.12] focus:outline-none focus:border-accent" />
               ) : (
                 <span className="text-xs font-bold text-white w-24 shrink-0 truncate">{m.name}</span>
               )}
@@ -130,7 +130,7 @@ export function WelcomeEmailSender({ group, members, adminName }: WelcomeEmailSe
               {/* Email */}
               <input type="email" placeholder="email@example.com"
                 value={m.email} onChange={e => updateEmail(m.memberId, e.target.value)}
-                className="flex-1 px-3 py-1.5 rounded-lg text-xs text-white bg-white/[0.06] border border-white/[0.12] focus:outline-none focus:border-accent" />
+                className="flex-1 px-3 py-2 rounded-lg text-xs text-white bg-white/[0.06] border border-white/[0.12] focus:outline-none focus:border-accent" />
 
               {/* Remove manual */}
               {m.isManual && (

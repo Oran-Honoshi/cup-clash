@@ -186,62 +186,64 @@ export function PickOverridesPanel({ groupId, adminId }: PickOverridesPanelProps
                 const key = `${pick.userId}_${pick.predType}`;
                 return (
                   <div key={key}
-                    className="rounded-xl p-3 flex items-center gap-3"
+                    className="rounded-xl p-3 space-y-2"
                     style={{
                       background: pick.hasOverride ? "rgba(0,255,136,0.06)" : "rgba(18,14,38,0.4)",
                       border: `1px solid ${pick.hasOverride ? "rgba(0,255,136,0.2)" : "rgba(255,255,255,0.1)"}`,
                     }}>
-                    {/* Member + submission */}
-                    <div className="flex-1 min-w-0">
-                      <div className="text-sm font-bold" style={{ color: "white" }}>{pick.userName}</div>
-                      <div className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>
-                        Submitted: <span className="font-bold">{pick.submitted}</span>
+                    {/* Member info row */}
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm font-bold" style={{ color: "white" }}>{pick.userName}</div>
+                        <div className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>
+                          Submitted: <span className="font-bold">{pick.submitted}</span>
+                        </div>
+                        {pick.hasOverride && (
+                          <div className="text-xs mt-0.5 font-bold" style={{ color: "#059669" }}>
+                            Awarded {pick.overridePoints} pts
+                          </div>
+                        )}
                       </div>
                       {pick.hasOverride && (
-                        <div className="text-xs mt-0.5 font-bold" style={{ color: "#059669" }}>
-                          ✓ Awarded {pick.overridePoints} pts
-                        </div>
+                        <button
+                          onClick={() => revokePoints(pick)}
+                          disabled={saving === key}
+                          className="flex items-center gap-1 px-3 py-2 rounded-lg text-xs font-bold uppercase tracking-wider shrink-0"
+                          style={{ background: "rgba(220,38,38,0.06)", color: "#dc2626", border: "1px solid rgba(220,38,38,0.2)" }}>
+                          <X size={12} />
+                          Revoke
+                        </button>
                       )}
                     </div>
 
-                    {!pick.hasOverride ? (
-                      <div className="flex items-center gap-2 shrink-0">
-                        {/* Actual value input */}
+                    {/* Grant form — below member info so name always has full width */}
+                    {!pick.hasOverride && (
+                      <div className="flex items-center gap-2">
                         <input
                           type="text"
                           placeholder="Correct answer"
                           value={actualValues[key] ?? ""}
                           onChange={e => setActualValues(prev => ({ ...prev, [key]: e.target.value }))}
-                          className="w-28 px-2 py-1.5 rounded-lg text-xs focus:outline-none"
+                          className="flex-1 min-w-0 px-2 py-2 rounded-lg text-xs focus:outline-none"
                           style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", color: "#ffffff" }}
                         />
-                        {/* Points input */}
                         <input
                           type="number"
                           placeholder="pts"
                           value={pointValues[key] ?? ""}
                           onChange={e => setPointValues(prev => ({ ...prev, [key]: Number(e.target.value) }))}
-                          className="w-14 px-2 py-1.5 rounded-lg text-xs focus:outline-none text-center"
+                          className="w-14 shrink-0 px-2 py-2 rounded-lg text-xs focus:outline-none text-center"
                           style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", color: "#ffffff" }}
                         />
                         <button
                           onClick={() => grantPoints(pick)}
                           disabled={saving === key || !actualValues[key]}
-                          className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider disabled:opacity-40"
+                          className="flex items-center gap-1 px-3 py-2 rounded-lg text-xs font-bold uppercase tracking-wider shrink-0 disabled:opacity-40"
                           style={{ background: "rgba(0,255,136,0.1)", color: "#059669", border: "1px solid rgba(0,255,136,0.25)" }}>
                           <Check size={12} />
                           {saving === key ? "..." : "Grant"}
                         </button>
                       </div>
-                    ) : (
-                      <button
-                        onClick={() => revokePoints(pick)}
-                        disabled={saving === key}
-                        className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider"
-                        style={{ background: "rgba(220,38,38,0.06)", color: "#dc2626", border: "1px solid rgba(220,38,38,0.2)" }}>
-                        <X size={12} />
-                        Revoke
-                      </button>
                     )}
                   </div>
                 );

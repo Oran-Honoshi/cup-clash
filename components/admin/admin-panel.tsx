@@ -132,7 +132,7 @@ export function AdminPanel({ group, initialMembers }: AdminPanelProps) {
                 </span>
               )}
               <button onClick={() => togglePaid(m.id, m.paid)}
-                className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider px-2.5 py-1.5 rounded-full transition-all"
+                className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider px-2.5 py-2 rounded-full transition-all"
                 style={m.paid ? {
                   background: "rgba(0,255,136,0.12)", border: "1px solid rgba(0,255,136,0.25)", color: "#00FF88",
                 } : {
@@ -186,7 +186,7 @@ export function AdminPanel({ group, initialMembers }: AdminPanelProps) {
                   <input
                     type="number" min={0} max={100} value={payouts[key]}
                     onChange={e => { setPayouts(p => ({ ...p, [key]: Number(e.target.value) })); setPayoutSaved(false); }}
-                    className="w-full rounded-xl px-3 py-2 text-sm text-right font-bold pr-7 outline-none transition-all"
+                    className="w-full rounded-xl px-3 py-2.5 text-sm text-right font-bold pr-7 outline-none transition-all"
                     style={{
                       background: "rgba(255,255,255,0.06)",
                       border: "1px solid rgba(255,255,255,0.12)",
