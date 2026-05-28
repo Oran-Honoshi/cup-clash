@@ -93,11 +93,11 @@ export function NotificationsClient({ userId }: { userId: string }) {
             <div className="text-sm mt-0.5" style={{ color: "rgba(255,255,255,0.45)" }}>
               {pushEnabled
                 ? "You'll get notified about goals, results and leaderboard changes."
-                : "Get notified about goals, results, and when your rank changes — even when the app is closed."}
+                : "Get notified about goals, results, and when your rank changes, even when the app is closed."}
             </div>
             {!pushEnabled && (
               <button onClick={enablePush} disabled={loading}
-                className="mt-3 px-4 py-2 rounded-xl text-sm font-bold uppercase tracking-wider disabled:opacity-50 transition-all hover:-translate-y-0.5"
+                className="mt-3 px-4 py-2.5 rounded-xl text-sm font-bold uppercase tracking-wider disabled:opacity-50 transition-all hover:-translate-y-0.5"
                 style={{ background: "linear-gradient(135deg, #00D4FF, #00FF88)", color: "#0B141B" }}>
                 {loading ? "Enabling..." : "Enable notifications"}
               </button>
