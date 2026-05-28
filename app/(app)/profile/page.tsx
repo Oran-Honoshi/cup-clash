@@ -25,7 +25,7 @@ const glassCard = {
 } as const;
 
 const btnOutline = {
-  padding: "8px 16px", borderRadius: 10,
+  padding: "11px 16px", borderRadius: 10,
   background: "rgba(255,255,255,0.05)",
   border: "1px solid rgba(255,255,255,0.15)",
   color: "rgba(255,255,255,0.7)",
@@ -118,9 +118,9 @@ export default function ProfilePage() {
 
   const autoAvatarUrl = dicebearUrl(profile.name || "player", 160);
   const TABS = [
-    { id: "auto",   label: "Auto Avatar" },
-    { id: "preset", label: "Soccer Role" },
-    { id: "photo",  label: "My Photo"    },
+    { id: "auto",   label: "Auto Avatar", mobileLabel: "Auto"   },
+    { id: "preset", label: "Soccer Role", mobileLabel: "Preset" },
+    { id: "photo",  label: "My Photo",    mobileLabel: "Photo"  },
   ] as const;
 
   return (
@@ -132,7 +132,7 @@ export default function ProfilePage() {
 
       {/* Avatar section */}
       <div style={{ ...glassCard, padding: 24 }}>
-        <div className="flex items-center gap-5 mb-6">
+        <div className="flex items-center gap-4 mb-5">
           <div className="relative shrink-0">
             <div style={{ display: "inline-flex", borderRadius: "50%", boxShadow: "0 0 0 3px rgba(0,212,255,0.25)" }}>
               <MemberAvatar name={profile.name || "Player"} avatarUrl={profile.avatar_url} size="xl" />
@@ -147,8 +147,8 @@ export default function ProfilePage() {
               </button>
             )}
           </div>
-          <div>
-            <div className="font-display text-2xl uppercase text-white">{profile.name || "Your name"}</div>
+          <div className="min-w-0">
+            <div className="font-display text-2xl uppercase text-white truncate">{profile.name || "Your name"}</div>
             <div className="text-sm mt-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>{profile.country ?? "No country"}</div>
             <div className="mt-1.5" style={{ fontSize: 11, color: "rgba(255,255,255,0.3)" }}>
               {tab === "auto"   && "DiceBear auto-generated · unique to your name"}
@@ -166,7 +166,7 @@ export default function ProfilePage() {
         }}>
           {TABS.map(t => (
             <button key={t.id} onClick={() => setTab(t.id)}
-              className="flex-1 py-2 text-xs font-bold uppercase tracking-wider transition-all"
+              className="flex-1 py-2.5 text-[10px] sm:text-xs font-bold uppercase tracking-wider whitespace-nowrap overflow-hidden transition-all"
               style={{
                 borderRadius: 10,
                 background: tab === t.id ? "rgba(0,212,255,0.15)" : "transparent",
@@ -175,7 +175,8 @@ export default function ProfilePage() {
                 cursor: "pointer",
                 fontFamily: "var(--font-ui)",
               }}>
-              {t.label}
+              <span className="sm:hidden">{t.mobileLabel}</span>
+              <span className="hidden sm:inline">{t.label}</span>
             </button>
           ))}
         </div>
@@ -200,13 +201,13 @@ export default function ProfilePage() {
         {tab === "preset" && (
           <div>
             <p className="text-xs mb-3" style={{ color: "rgba(255,255,255,0.4)" }}>Pick your role on the pitch:</p>
-            <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
+            <div className="grid grid-cols-5 gap-1 sm:gap-2">
               {SOCCER_PRESETS.map(preset => {
                 const active = profile.avatar_url === `preset:${preset.id}`;
                 return (
                   <button key={preset.id}
                     onClick={() => setProfile(p => ({ ...p, avatar_url: `preset:${preset.id}` }))}
-                    className="flex flex-col items-center gap-1.5 p-2.5 rounded-xl border transition-all hover:-translate-y-0.5 relative"
+                    className="flex flex-col items-center gap-1 sm:gap-1.5 p-1.5 sm:p-2.5 rounded-xl border transition-all hover:-translate-y-0.5 relative"
                     style={active ? {
                       borderColor: `#${preset.bg}60`,
                       backgroundColor: `#${preset.bg}20`,
@@ -215,11 +216,11 @@ export default function ProfilePage() {
                       borderColor: "rgba(255,255,255,0.08)",
                       backgroundColor: "rgba(255,255,255,0.02)",
                     }}>
-                    <div className="h-10 w-10 rounded-full flex items-center justify-center text-xl"
+                    <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-full flex items-center justify-center text-base sm:text-xl"
                       style={{ backgroundColor: `#${preset.bg}` }}>
                       {preset.icon}
                     </div>
-                    <span className="text-[9px] font-bold uppercase tracking-wider"
+                    <span className="text-[9px] font-bold uppercase tracking-wider leading-tight text-center"
                       style={{ color: active ? `#${preset.bg}` : "rgba(255,255,255,0.35)" }}>
                       {preset.label}
                     </span>
@@ -277,7 +278,7 @@ export default function ProfilePage() {
           placeholder="How your friends will see you"
           className="w-full"
           style={{
-            padding: "10px 16px", borderRadius: 12,
+            padding: "12px 16px", borderRadius: 12,
             background: "rgba(255,255,255,0.06)",
             border: "1px solid rgba(255,255,255,0.12)",
             color: "#ffffff", fontSize: 14,

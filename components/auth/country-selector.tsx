@@ -56,7 +56,7 @@ export function CountrySelector({ value, onChange }: CountrySelectorProps) {
       </div>
 
       {/* Flag grid */}
-      <div className="grid grid-cols-5 sm:grid-cols-6 gap-1.5 max-h-56 overflow-y-auto pr-1
+      <div className="grid grid-cols-4 sm:grid-cols-5 gap-1.5 max-h-56 overflow-y-auto pr-1
         [&::-webkit-scrollbar]:w-1
         [&::-webkit-scrollbar-track]:bg-transparent
         [&::-webkit-scrollbar-thumb]:rounded-full
@@ -114,7 +114,7 @@ export function CountrySelector({ value, onChange }: CountrySelectorProps) {
           );
         })}
         {filtered.length === 0 && (
-          <div className="col-span-6 py-6 text-center text-pitch-500 text-sm">
+          <div className="col-span-4 sm:col-span-5 py-6 text-center text-pitch-500 text-sm">
             No countries found
           </div>
         )}
