@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Bell, BellOff, Trophy, Users, MessageCircle, Check } from "lucide-react";
+import { Bell, BellOff, Trophy, Users, MessageCircle, Check, Send, X } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { subscribeToPush } from "@/lib/pwa";
 
@@ -28,11 +28,15 @@ const glass = {
   border: "1px solid rgba(255,255,255,0.14)",
 } as const;
 
+const BOT_USERNAME = "CupClashBot";
+
 export function NotificationsClient({ userId }: { userId: string }) {
-  const [settings,    setSettings]    = useState<Record<string, boolean>>({});
-  const [pushEnabled, setPushEnabled] = useState(false);
-  const [loading,     setLoading]     = useState(false);
-  const [saved,       setSaved]       = useState(false);
+  const [settings,       setSettings]       = useState<Record<string, boolean>>({});
+  const [pushEnabled,    setPushEnabled]     = useState(false);
+  const [loading,        setLoading]         = useState(false);
+  const [saved,          setSaved]           = useState(false);
+  const [telegramChatId, setTelegramChatId]  = useState<string | null | undefined>(undefined);
+  const [tgDisconnecting, setTgDisconnecting] = useState(false);
 
   useEffect(() => {
     const stored = localStorage.getItem("cupclash_notif_settings");
@@ -46,7 +50,20 @@ export function NotificationsClient({ userId }: { userId: string }) {
     if ("Notification" in window) {
       setPushEnabled(Notification.permission === "granted");
     }
-  }, []);
+
+    // Load telegram_chat_id from profile
+    async function loadTelegram() {
+      const sb = createClient();
+      const { data } = await sb
+        .from("profiles")
+        .select("telegram_chat_id")
+        .eq("id", userId)
+        .maybeSingle();
+      const row = data as { telegram_chat_id: string | null } | null;
+      setTelegramChatId(row?.telegram_chat_id ?? null);
+    }
+    loadTelegram();
+  }, [userId]);
 
   const toggleSetting = (key: string) => {
     setSettings(prev => {
@@ -55,6 +72,19 @@ export function NotificationsClient({ userId }: { userId: string }) {
       return next;
     });
   };
+
+  const disconnectTelegram = async () => {
+    setTgDisconnecting(true);
+    const sb = createClient();
+    await sb.from("profiles").update({ telegram_chat_id: null }).eq("id", userId);
+    setTelegramChatId(null);
+    setTgDisconnecting(false);
+  };
+
+  // Detect iOS to show install-to-home-screen note
+  const isIOS = typeof navigator !== "undefined" &&
+    /iPad|iPhone|iPod/.test(navigator.userAgent) &&
+    !(window as unknown as { MSStream?: unknown }).MSStream;
 
   const enablePush = async () => {
     setLoading(true);
@@ -72,6 +102,64 @@ export function NotificationsClient({ userId }: { userId: string }) {
 
   return (
     <div className="space-y-5 max-w-lg">
+
+      {/* Telegram connection card */}
+      <div className="rounded-2xl p-5" style={glass}>
+        <div className="flex items-start gap-4">
+          <div className="h-12 w-12 rounded-2xl flex items-center justify-center shrink-0 text-xl"
+            style={telegramChatId
+              ? { background: "rgba(0,255,136,0.1)", border: "1px solid rgba(0,255,136,0.25)" }
+              : { background: "rgba(0,136,204,0.1)", border: "1px solid rgba(0,136,204,0.25)" }}>
+            ✈️
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="font-bold text-base text-white">
+              {telegramChatId ? "Telegram connected" : "Connect Telegram"}
+            </div>
+            {telegramChatId ? (
+              <>
+                <div className="text-sm mt-0.5" style={{ color: "rgba(255,255,255,0.45)" }}>
+                  You&apos;ll receive match reminders 1 hour before kickoff when you haven&apos;t predicted yet. Works on all devices.
+                </div>
+                <button onClick={disconnectTelegram} disabled={tgDisconnecting}
+                  className="mt-3 flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold uppercase tracking-wider disabled:opacity-40 transition-opacity"
+                  style={{ background: "rgba(220,38,38,0.08)", color: "#dc2626", border: "1px solid rgba(220,38,38,0.2)" }}>
+                  <X size={12} />
+                  {tgDisconnecting ? "Disconnecting..." : "Disconnect"}
+                </button>
+              </>
+            ) : (
+              <>
+                <div className="text-sm mt-0.5" style={{ color: "rgba(255,255,255,0.45)" }}>
+                  Get a Telegram message 1 hour before kickoff if you haven&apos;t predicted. Reliable on all devices — no browser install needed.
+                </div>
+                {isIOS && (
+                  <div className="mt-2 text-xs rounded-lg px-3 py-2"
+                    style={{ background: "rgba(251,191,36,0.06)", border: "1px solid rgba(251,191,36,0.2)", color: "rgba(251,191,36,0.8)" }}>
+                    ℹ️ On iOS, browser push requires &ldquo;Add to Home Screen.&rdquo; Telegram reminders work without it.
+                  </div>
+                )}
+                {telegramChatId === null && (
+                  <a
+                    href={`https://t.me/${BOT_USERNAME}?start=${userId}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-3 inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold uppercase tracking-wider transition-all hover:-translate-y-0.5"
+                    style={{ background: "linear-gradient(135deg, #229ED9, #1A86BA)", color: "#ffffff" }}>
+                    <Send size={14} />
+                    Connect Telegram
+                  </a>
+                )}
+              </>
+            )}
+          </div>
+          {telegramChatId && (
+            <div className="shrink-0">
+              <Check size={18} style={{ color: "#00FF88" }} />
+            </div>
+          )}
+        </div>
+      </div>
 
       {/* Push permission card */}
       <div className="rounded-2xl p-5" style={glass}>
