@@ -139,6 +139,7 @@ function CreateGroupInner() {
   const [payoutSecond, setPayoutSecond] = useState(30);
   const [payoutThird,  setPayoutThird]  = useState(10);
 
+  const [knockoutPolicy,   setKnockoutPolicy]   = useState<'regular_90' | 'inc_extra_time' | 'to_qualify'>('regular_90');
   const [correctOutcome,   setCorrectOutcome]   = useState(10);
   const [exactScore,       setExactScore]       = useState(25);
   const [koAdvancement,    setKoAdvancement]    = useState(20);
@@ -232,6 +233,7 @@ function CreateGroupInner() {
       enable_best_defence:   enableDefence,
       enable_best_young:     enableYoung,
       enable_golden_ball:    enableGoldenBall,
+      knockout_policy:       knockoutPolicy,
     } as Record<string, unknown>, { onConflict: "group_id" });
 
     setCreatedName(groupName.trim());
@@ -814,6 +816,34 @@ function CreateGroupInner() {
             <RuleRow label="Best Defence"          desc="Team with lowest goals conceded"               pts={bestDefence}    setPts={setBestDefence}    enabled={enableDefence}    onToggle={() => setEnableDefence(!enableDefence)}       />
             <RuleRow label="Best Young Player"     desc="Official FIFA Best Young Player award"         pts={bestYoung}      setPts={setBestYoung}      enabled={enableYoung}      onToggle={() => setEnableYoung(!enableYoung)}           />
             <RuleRow label="Golden Ball (MVP)"     desc="Tournament best player award winner"           pts={goldenBall}     setPts={setGoldenBall}     enabled={enableGoldenBall} onToggle={() => setEnableGoldenBall(!enableGoldenBall)} />
+
+            {/* Knockout score evaluation policy */}
+            <div className="pt-3 mt-1 border-t" style={{ borderColor: "rgba(255,255,255,0.08)" }}>
+              <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "0.12em", color: "rgba(255,255,255,0.5)", fontFamily: "var(--font-ui)", marginBottom: 10 }}>
+                Knockout Score Evaluation
+              </div>
+              <div className="space-y-2">
+                {([
+                  { value: "regular_90"    as const, label: "90 Minutes Only",       desc: "Regulation time result only — ET & penalties ignored" },
+                  { value: "inc_extra_time" as const, label: "Including Extra Time",  desc: "120-minute result counts — penalties still ignored"   },
+                  { value: "to_qualify"    as const, label: "Who Advances",           desc: "Advancement pick only — exact score doesn't count"    },
+                ] as const).map(({ value, label, desc }) => {
+                  const active = knockoutPolicy === value;
+                  return (
+                    <button key={value} type="button" onClick={() => setKnockoutPolicy(value)}
+                      className="w-full text-left transition-all"
+                      style={{
+                        borderRadius: 10, padding: "10px 12px", cursor: "pointer",
+                        background: active ? "rgba(251,191,36,0.08)" : "rgba(255,255,255,0.03)",
+                        border: active ? "1.5px solid rgba(251,191,36,0.4)" : "1px solid rgba(255,255,255,0.09)",
+                      }}>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: active ? "rgb(251,191,36)" : "rgba(255,255,255,0.6)", fontFamily: "var(--font-ui)" }}>{label}</div>
+                      <div style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", fontFamily: "var(--font-ui)", marginTop: 2 }}>{desc}</div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
           </div>
 
           <button type="button" onClick={handleCreate} disabled={loading}

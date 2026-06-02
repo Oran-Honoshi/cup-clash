@@ -35,6 +35,7 @@ export interface ScoringConfig {
 
   // Knockout
   koAdvancement:    number; // default 20
+  knockoutPolicy:   'regular_90' | 'inc_extra_time' | 'to_qualify';
 
   // Tournament picks
   tournamentWinner: number; // default 6
@@ -71,6 +72,7 @@ export const DEFAULT_SCORING: ScoringConfig = {
   exactDraw:        3,
   correctDraw:      1,
   koAdvancement:    20,
+  knockoutPolicy:   'regular_90',
   tournamentWinner: 6,
   second:           4,
   third:            2,
@@ -107,6 +109,7 @@ export interface ScoreResult {
   points: number;
   breakdown: string[];
   isExact: boolean;
+  policyNote?: string;
 }
 
 /**
@@ -152,7 +155,15 @@ export function scoreMatch(
     // handled at call site
   }
 
-  return { points, breakdown, isExact };
+  const policyNote = isKnockout
+    ? config.knockoutPolicy === 'inc_extra_time'
+      ? 'Score predictions are based on the result after Extra Time (120 minutes). Penalties do not count.'
+      : config.knockoutPolicy === 'to_qualify'
+      ? 'Predict which team advances. The exact score does not affect your points for this match.'
+      : 'Score predictions are based on the 90-minute result only. Extra time and penalties do not count.'
+    : undefined;
+
+  return { points, breakdown, isExact, policyNote };
 }
 
 /**

@@ -11,6 +11,8 @@ import { Flag } from "@/components/ui/flag";
 import { FOCUS_RING } from "@/lib/a11y";
 import { cn } from "@/lib/utils";
 import type { Match } from "@/lib/types";
+import { PredictionRuleBanner } from "@/components/predictions/prediction-rule-banner";
+import type { KnockoutPolicy } from "@/components/predictions/prediction-rule-banner";
 
 function getClient() {
   return createSupabaseClient(
@@ -32,6 +34,7 @@ export function KnockoutMatchCard({ match, groupId }: KnockoutMatchCardProps) {
   const [advancementPick, setAdvancementPick] = useState<string | null>(null);
   const [saveState,       setSaveState]       = useState<SaveState>("idle");
   const [errorMsg,        setErrorMsg]        = useState<string | null>(null);
+  const [knockoutPolicy,  setKnockoutPolicy]  = useState<KnockoutPolicy>('regular_90');
 
   const matchDate        = new Date(match.time);
   const formattedTime    = formatInTimeZone(matchDate, "UTC", "EEE dd MMM · HH:mm 'UTC'");
@@ -59,6 +62,19 @@ export function KnockoutMatchCard({ match, groupId }: KnockoutMatchCardProps) {
         setSaveState("saved");
       }
       if (isLocked) setSaveState("locked");
+
+      if (groupId) {
+        const { data: rules } = await sb
+          .from("scoring_rules")
+          .select("knockout_policy")
+          .eq("group_id", groupId)
+          .maybeSingle();
+        const row = rules as { knockout_policy?: string | null } | null;
+        const policy = row?.knockout_policy;
+        if (policy === 'regular_90' || policy === 'inc_extra_time' || policy === 'to_qualify') {
+          setKnockoutPolicy(policy);
+        }
+      }
     }
     load();
   }, [match.id, groupId, isLocked]);
@@ -181,9 +197,7 @@ export function KnockoutMatchCard({ match, groupId }: KnockoutMatchCardProps) {
               );
             })}
           </div>
-          <p className="text-[11px] text-pitch-500 mt-2 text-center">
-            Based on 90-min result · ET &amp; penalties don&apos;t affect your score prediction
-          </p>
+          <PredictionRuleBanner policy={knockoutPolicy} />
         </div>
 
         {/* Points hint */}
