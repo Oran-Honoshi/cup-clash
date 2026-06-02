@@ -6,30 +6,28 @@ import { ReviewTrigger } from "@/components/ui/review-modal";
 
 const FOOTER_COLS = [
   {
-    heading: "Product",
+    heading: "Play",
     links: [
-      { label: "How it works",  href: "/#how-it-works"  },
-      { label: "Features",      href: "/#features"      },
-      { label: "Pricing",       href: "/#pricing"       },
-      { label: "For Companies", href: "/#for-companies" },
-    ],
-  },
-  {
-    heading: "Resources",
-    links: [
-      { label: "FAQ",      href: "/#faq"                       },
-      { label: "Articles", href: "/articles/48-teams-strategy" },
-      { label: "Schedule", href: "/schedule"                   },
+      { label: "How it Works", href: "/how-it-works"  },
+      { label: "Pricing",      href: "/#pricing"      },
+      { label: "Schedule",     href: "/schedule"      },
+      { label: "For Teams",    href: "/#for-companies"},
     ],
   },
   {
     heading: "Company",
     links: [
+      { label: "About",    href: "/about"   },
+      { label: "Contact",  href: "/contact" },
       { label: "Sign in",  href: "/signin"  },
-      { label: "Privacy",  href: "/privacy" },
-      { label: "Terms",    href: "/terms"   },
-      { label: "Refunds",  href: "/refund"  },
-      { label: "Cookies",  href: "/cookies" },
+    ],
+  },
+  {
+    heading: "Legal",
+    links: [
+      { label: "Privacy", href: "/privacy" },
+      { label: "Terms",   href: "/terms"   },
+      { label: "Refunds", href: "/refund"  },
     ],
   },
 ];
@@ -50,7 +48,7 @@ export function CtaAndFooter() {
               <span style={{ color: "#00FF88" }}>June 11, 2026.</span>
             </h2>
             <p className="text-lg text-white/60 max-w-md mx-auto">
-              Set up your group in under a minute. Free for hosts. Players pay $2.
+              Set up your group in under a minute. Free to join, free to play.
             </p>
             <div className="flex flex-wrap gap-4 justify-center pt-2">
               <Link href="/signup">
@@ -71,7 +69,7 @@ export function CtaAndFooter() {
               <Link href="/terms" className="underline hover:opacity-70 text-white/50">Terms</Link>{" "}
               and{" "}
               <Link href="/privacy" className="underline hover:opacity-70 text-white/50">Privacy Policy</Link>.
-              We store your email and predictions only. No selling, no ads, ever.
+              We store your email and predictions only. No selling, no trackers.
             </p>
           </div>
         </div>
@@ -92,7 +90,7 @@ export function CtaAndFooter() {
                 </div>
               </div>
               <p className="text-sm leading-relaxed" style={{ color: "rgba(255,255,255,0.5)" }}>
-                The private prediction league for World Cup 2026. Built for friend circles and office pools.
+                The free social prediction game for World Cup 2026. Compete with friends and colleagues.
               </p>
               <div className="mt-4">
                 <ReviewTrigger context="general" label="Rate us ⭐" />
@@ -120,7 +118,7 @@ export function CtaAndFooter() {
               © 2026 Cup Clash. World Cup 2026 is a trademark of FIFA. Not affiliated.
             </div>
             <div className="text-xs font-bold" style={{ color: "rgba(255,255,255,0.35)" }}>
-              🟢 100% Ad-Free. Always. Forever.
+              🟢 Free to join · No subscriptions
             </div>
           </div>
         </div>

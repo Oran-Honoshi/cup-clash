@@ -3,7 +3,6 @@ export const dynamic = "force-dynamic";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { Leaderboard }     from "@/components/dashboard/leaderboard";
 import { NextMatchCard }   from "@/components/dashboard/next-match-card";
-import { BuyInStatus }     from "@/components/dashboard/buy-in-status";
 import { StatCards }       from "@/components/dashboard/stat-cards";
 import { DashboardPopups } from "@/components/dashboard/dashboard-popups";
 import { WallOfShame }     from "@/components/dashboard/wall-of-shame";
@@ -131,7 +130,6 @@ export default async function DashboardPage({
 
   const currentMember = members.find(m => m.id === userProfile.id) ?? members[0];
   const rank          = members.findIndex(m => m.id === userProfile.id) + 1;
-  const isPaid        = members.find(m => m.id === userProfile.id)?.paid ?? false;
   const isAdmin       = group.admin === userProfile.id;
 
   return (
@@ -170,9 +168,9 @@ export default async function DashboardPage({
       </div>
 
       <StatCards
-        rank={isPaid ? rank : 0}
+        rank={rank}
         points={currentMember?.points ?? 0}
-        totalPlayers={members.filter(m => m.paid).length}
+        totalPlayers={members.length}
         correctPredictions={currentMember?.correctPredictions ?? 0}
         exactScores={currentMember?.exactScores ?? 0}
       />
@@ -181,7 +179,6 @@ export default async function DashboardPage({
         {/* Primary action — first on mobile, right column on desktop */}
         <div className="lg:col-span-5 space-y-5 order-first lg:order-last">
           {nextMatch && <NextMatchCard match={nextMatch} groupId={activeGroupId} />}
-          <BuyInStatus group={group} members={members} />
         </div>
         {/* Secondary — leaderboard + wall, below on mobile, left on desktop */}
         <div className="lg:col-span-7 space-y-5">

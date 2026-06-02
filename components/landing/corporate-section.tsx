@@ -14,7 +14,7 @@ const BULLETS = [
   },
   {
     title: "Admin tools that don't suck",
-    body: "Member tracking, nudge reminders, payout management.",
+    body: "Member tracking, nudge reminders, prize management.",
   },
   {
     title: "IT-friendly invoicing",

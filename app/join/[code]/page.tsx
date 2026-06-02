@@ -190,9 +190,10 @@ export default async function JoinCodePage({
                   Your company has covered your entry!
                 </h1>
                 <p className="text-sm" style={{ color: "#64748b" }}>
+                  This is a sponsored group — your access is fully free, courtesy of your organization.
                   You&apos;ve been invited to join{" "}
-                  <strong style={{ color: "#0F172A" }}>{group.name}</strong>{" "}
-                  — fully sponsored. No payment required.
+                  <strong style={{ color: "#0F172A" }}>{group.name}</strong>.
+                  No payment screen. No ads.
                 </p>
               </div>
 

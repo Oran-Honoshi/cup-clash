@@ -1,4 +1,16 @@
+import type { Metadata } from "next";
 import { Hero }             from "@/components/landing/hero";
+
+export const metadata: Metadata = {
+  title: "Cup Clash — Free Social Prediction Game for World Cup 2026",
+  description: "Cup Clash is a free social prediction game for FIFA World Cup 2026. Create a private group with friends or colleagues, predict all 104 matches, and compete on a live leaderboard. Free to join, skill-based, no subscriptions.",
+  openGraph: {
+    title: "Cup Clash — Free Social Prediction Game for World Cup 2026",
+    description: "Predict all 104 World Cup 2026 matches. Free to join, skill-based, compete with friends and colleagues. No subscriptions.",
+    type: "website",
+  },
+  keywords: ["World Cup 2026 prediction game", "free prediction league", "social prediction game", "World Cup 2026 group", "skill-based prediction"],
+};
 import { StatsStrip }       from "@/components/landing/stats-strip";
 import { HowItWorks }       from "@/components/landing/how-it-works";
 import { Features }         from "@/components/landing/features";

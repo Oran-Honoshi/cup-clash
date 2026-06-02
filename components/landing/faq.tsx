@@ -7,8 +7,8 @@ import { ChevronDown } from "lucide-react";
 const FAQS = [
   {
     id: "faq-cost",
-    q: "How much does it cost to host a group?",
-    a: "Hosting is free for friend groups: you pay $0 to create and run a Friend Circle. Each friend pays $2 to join. For corporate groups, you pay a one-time fee of $75 (up to 50 employees) or $130 (up to 100 employees) and your entire team joins for free.",
+    q: "Is Cup Clash really free?",
+    a: "Yes. Joining any group and making predictions is completely free — no card required. You get the full leaderboard, all 104 match predictions, and every feature at no cost. The only optional paid item is a $2 one-time upgrade that removes ads for the duration of this tournament. You never have to pay to participate.",
   },
   {
     id: "faq-start",
@@ -21,9 +21,9 @@ const FAQS = [
     a: "Yes. Cup Clash ships with 9 togglable scoring rules: Match Outcome, Exact Scoreline, Knockout Advancement, Tournament Champion, Golden Boot, Top Assist, Best Defence, Best Young Player, and Golden Ball. Default values are 10/25/20/100/50/50/40/30/40 pts respectively, and every value is customisable.",
   },
   {
-    id: "faq-prizes",
-    q: "How are prizes paid out?",
-    a: "For friend groups with a buy-in pot, you set the % split between 1st/2nd/3rd (default 60/30/10) and we track payments via PayPal. For corporate groups, you can either run a cash pool or define custom company rewards (e.g. \"Extra day off + $100 Amazon Voucher\").",
+    id: "faq-skill",
+    q: "Is this skill-based or just luck?",
+    a: "It is genuinely skill-based. Correctly predicting exact scorelines (25 pts each) requires domain knowledge of teams, form, and tournament history. The final standings consistently reward members who research matches — not those who guess randomly. The Cup Clash Expert AI is your benchmark, built from crowd consensus and historical accuracy.",
   },
   {
     id: "faq-enterprise",
@@ -36,14 +36,14 @@ const FAQS = [
     a: "Cup Clash is a Progressive Web App (PWA). Install it directly from your browser to get a near-native experience on iOS and Android, with all features and no app store friction.",
   },
   {
-    id: "faq-gambling",
-    q: "Is Cup Clash gambling?",
-    a: "No. Cup Clash is a skill-based prediction league between friends or coworkers. There is no house, no odds, and no operator take. Optional cash pools are peer-to-peer and managed by the group host.",
+    id: "faq-corporate",
+    q: "How does corporate sponsorship work?",
+    a: "An admin pays a one-time flat fee — $75 for up to 50 employees or $130 for up to 100. After that, every employee joins via the invite link at no cost and sees no ads. No payment screen ever appears to your team. You can also set custom company rewards (e.g. 'Extra day off') instead of or alongside the leaderboard.",
   },
   {
     id: "faq-adfree",
-    q: "Is Cup Clash really ad-free?",
-    a: "Cup Clash is built by fans, for fans. We will never clutter your experience with ads, trackers, or corporate junk. Just 104 matches of pure competition. Your payment is the business model. That's the deal.",
+    q: "How does the ad-free upgrade work?",
+    a: "The free tier shows ads to keep the platform running. For $2, you can remove ads for the duration of this World Cup tournament — that's the full June–July 2026 competition. The upgrade is per-person, per-tournament, and optional. Corporate-sponsored groups are already ad-free for everyone.",
   },
 ];
 

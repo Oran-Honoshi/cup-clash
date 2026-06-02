@@ -16,85 +16,62 @@ export default function PrivacyPage() {
         </Link>
 
         <h1 className="font-display text-4xl uppercase font-black mb-2" style={{ color: "#0F172A" }}>
-          Privacy Policy
+          Privacy Policy for Cup Clash
         </h1>
-        <p className="text-sm mb-10" style={{ color: "#94a3b8" }}>Last updated: May 15, 2026</p>
+        <p className="text-sm mb-10" style={{ color: "#94a3b8" }}>Effective Date: June 2, 2026</p>
 
         <div className="space-y-8 text-base leading-relaxed" style={{ color: "#475569" }}>
 
           <section>
-            <h2 className="font-display text-xl uppercase font-black mb-3" style={{ color: "#0F172A" }}>1. Information We Collect</h2>
-            <p>We collect the following information when you use Cup Clash:</p>
-            <ul className="mt-3 space-y-1 list-disc list-inside">
-              <li><strong>Account information:</strong> name, email address, country</li>
-              <li><strong>Usage data:</strong> predictions submitted, groups joined, login timestamps</li>
-              <li><strong>Payment data:</strong> processed securely by Paddle — we do not store card details</li>
-              <li><strong>Device data:</strong> browser type, operating system, IP address (for security)</li>
+            <h2 className="font-display text-xl uppercase font-black mb-3" style={{ color: "#0F172A" }}>1. Introduction</h2>
+            <p>Welcome to Cup Clash (cupclash.live). This Privacy Policy explains how Oran Schreiber (&ldquo;we,&rdquo; &ldquo;our,&rdquo; or &ldquo;us&rdquo;) collects, uses, shares, and protects your personal data when you use our progressive web application. Cup Clash is operated from Israel and we are committed to protecting your privacy in accordance with applicable data protection laws, including the GDPR where applicable.</p>
+          </section>
+
+          <section>
+            <h2 className="font-display text-xl uppercase font-black mb-3" style={{ color: "#0F172A" }}>2. Information We Collect and Why</h2>
+            <p>We collect only the minimum data necessary to provide a skill-based, social sports prediction experience.</p>
+            <ul className="mt-3 space-y-2 list-disc list-inside">
+              <li><strong>Account Information:</strong> Your name and email address, used to authenticate your account and send important app updates.</li>
+              <li><strong>Game Data:</strong> Your match and tournament predictions, group memberships, and leaderboard points, used to operate the core game.</li>
+              <li><strong>Payment Information:</strong> If you purchase the optional ad-removal feature, the transaction is processed securely through PayPal. We do not store your financial or card details — we only receive confirmation from PayPal that a payment was successful.</li>
             </ul>
           </section>
 
           <section>
-            <h2 className="font-display text-xl uppercase font-black mb-3" style={{ color: "#0F172A" }}>2. How We Use Your Information</h2>
-            <p>We use your information to:</p>
-            <ul className="mt-3 space-y-1 list-disc list-inside">
-              <li>Provide and operate the Cup Clash platform</li>
-              <li>Process payments via Paddle</li>
-              <li>Send welcome emails and group invitations (when requested by group admin)</li>
-              <li>Send push notifications for match results (with your permission)</li>
-              <li>Improve the Service and fix bugs</li>
-              <li>Comply with legal obligations</li>
+            <h2 className="font-display text-xl uppercase font-black mb-3" style={{ color: "#0F172A" }}>3. Cookies and Third-Party Advertising</h2>
+            <p>We use cookies to keep you logged in, remember your preferences, and analyze traffic.</p>
+            <h3 className="font-bold mt-4 mb-2" style={{ color: "#0F172A" }}>Google AdSense and Advertising Cookies</h3>
+            <p>Cup Clash displays third-party advertisements provided by Google AdSense to users on the free tier.</p>
+            <ul className="mt-3 space-y-2 list-disc list-inside">
+              <li>Google and its partners use cookies to serve ads based on your prior visits to Cup Clash or other websites.</li>
+              <li>You may opt out of personalized advertising by visiting Google&apos;s Ads Settings at <a href="https://www.google.com/settings/ads" style={{ color: "#0891B2" }}>https://www.google.com/settings/ads</a></li>
+              <li>You may also opt out of third-party advertising cookies via <a href="https://aboutads.info" style={{ color: "#0891B2" }}>https://aboutads.info</a></li>
+              <li>For more information on how Google uses data when you use our app, visit: <a href="https://policies.google.com/technologies/partner-sites" style={{ color: "#0891B2" }}>https://policies.google.com/technologies/partner-sites</a></li>
             </ul>
           </section>
 
           <section>
-            <h2 className="font-display text-xl uppercase font-black mb-3" style={{ color: "#0F172A" }}>3. Information Sharing</h2>
-            <p>We do not sell your personal data. We share data only with:</p>
-            <ul className="mt-3 space-y-1 list-disc list-inside">
-              <li><strong>Paddle.com</strong> — payment processing (Merchant of Record)</li>
-              <li><strong>Supabase</strong> — secure database hosting</li>
-              <li><strong>Resend</strong> — transactional email delivery</li>
-              <li><strong>Vercel</strong> — hosting and infrastructure</li>
-              <li><strong>Law enforcement</strong> — when required by applicable law</li>
+            <h2 className="font-display text-xl uppercase font-black mb-3" style={{ color: "#0F172A" }}>4. Data Sharing and Transfer</h2>
+            <p>We do not sell, rent, or trade your personal data. We share data only with third-party service providers (such as our hosting provider and PayPal) to the extent necessary to operate the app. Your data may be transferred to and processed in countries outside your home jurisdiction. We ensure appropriate safeguards are in place for any such transfers.</p>
+          </section>
+
+          <section>
+            <h2 className="font-display text-xl uppercase font-black mb-3" style={{ color: "#0F172A" }}>5. Data Retention and Your Rights</h2>
+            <p>We retain your personal data only as long as necessary to fulfill the purposes outlined in this policy.</p>
+            <p className="mt-3">If you are located in the EU/EEA, you have the right to access, update, or delete your data, restrict or object to processing, and request data portability. To exercise any of these rights, contact us at <a href="mailto:hello@cupclash.live" style={{ color: "#0891B2" }}>hello@cupclash.live</a>. We will respond within the legally required timeframe.</p>
+          </section>
+
+          <section>
+            <h2 className="font-display text-xl uppercase font-black mb-3" style={{ color: "#0F172A" }}>6. Children&apos;s Privacy</h2>
+            <p>Cup Clash is intended solely for users aged 18 and over. We do not knowingly collect personal data from anyone under 18. If we become aware that a minor has provided personal information, we will delete it immediately.</p>
+          </section>
+
+          <section>
+            <h2 className="font-display text-xl uppercase font-black mb-3" style={{ color: "#0F172A" }}>7. Contact Us</h2>
+            <ul className="space-y-1 list-none">
+              <li><strong>Email:</strong> <a href="mailto:hello@cupclash.live" style={{ color: "#0891B2" }}>hello@cupclash.live</a></li>
+              <li><strong>Operator:</strong> Oran Schreiber, Israel</li>
             </ul>
-            <p className="mt-3">Your name and prediction scores are visible to other members of your group.</p>
-          </section>
-
-          <section>
-            <h2 className="font-display text-xl uppercase font-black mb-3" style={{ color: "#0F172A" }}>4. Data Retention</h2>
-            <p>We retain your account data for as long as your account is active. You may request deletion of your account and associated data at any time by emailing support@cupclash.live. Payment records may be retained for legal and accounting purposes for up to 7 years.</p>
-          </section>
-
-          <section>
-            <h2 className="font-display text-xl uppercase font-black mb-3" style={{ color: "#0F172A" }}>5. Cookies</h2>
-            <p>Cup Clash uses essential cookies for authentication and session management. We do not use advertising cookies, tracking cookies, or third-party analytics. No usage data is sent to advertising networks or analytics vendors.</p>
-          </section>
-
-          <section>
-            <h2 className="font-display text-xl uppercase font-black mb-3" style={{ color: "#0F172A" }}>6. Your Rights</h2>
-            <p>Depending on your location, you may have the right to:</p>
-            <ul className="mt-3 space-y-1 list-disc list-inside">
-              <li>Access the personal data we hold about you</li>
-              <li>Correct inaccurate data</li>
-              <li>Request deletion of your data</li>
-              <li>Object to processing of your data</li>
-              <li>Data portability</li>
-            </ul>
-            <p className="mt-3">To exercise these rights, contact us at support@cupclash.live.</p>
-          </section>
-
-          <section>
-            <h2 className="font-display text-xl uppercase font-black mb-3" style={{ color: "#0F172A" }}>7. Security</h2>
-            <p>We use industry-standard security measures including encrypted connections (HTTPS), secure authentication via Supabase, and row-level security on all database tables. No system is completely secure — please use a strong, unique password.</p>
-          </section>
-
-          <section>
-            <h2 className="font-display text-xl uppercase font-black mb-3" style={{ color: "#0F172A" }}>8. Children</h2>
-            <p>Cup Clash is not intended for users under 18. We do not knowingly collect data from minors. If you believe a minor has created an account, contact us at support@cupclash.live.</p>
-          </section>
-
-          <section>
-            <h2 className="font-display text-xl uppercase font-black mb-3" style={{ color: "#0F172A" }}>9. Contact</h2>
-            <p>For privacy questions: <a href="mailto:support@cupclash.live" style={{ color: "#0891B2" }}>support@cupclash.live</a></p>
           </section>
         </div>
       </div>

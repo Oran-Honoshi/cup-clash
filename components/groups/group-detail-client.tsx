@@ -95,10 +95,17 @@ export function GroupDetailClient({ group, rules, members, currentUserId, isAdmi
           {isAdmin && !group.is_corporate_paid ? (
             <CorporateUnlockOverlay groupId={group.id} groupName={group.name} passkey={group.passkey} />
           ) : (
-            <div className="rounded-2xl p-5 text-center" style={glass}>
-              <div className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: "#00D4FF" }}>Entry Passkey</div>
-              <div className="font-mono font-black text-4xl tracking-[0.2em] mb-1 text-white">{group.passkey}</div>
-              <div className="text-xs" style={{ color: "rgba(255,255,255,0.3)" }}>cupclash.live/join/{group.passkey}</div>
+            <div className="space-y-3">
+              {group.is_corporate_paid && !isAdmin && (
+                <div className="rounded-2xl px-4 py-3 text-sm text-center" style={{ background: "rgba(0,255,136,0.07)", border: "1px solid rgba(0,255,136,0.2)", color: "rgba(255,255,255,0.75)" }}>
+                  ✓ This is a sponsored group — your access is fully free, courtesy of your organization.
+                </div>
+              )}
+              <div className="rounded-2xl p-5 text-center" style={glass}>
+                <div className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: "#00D4FF" }}>Entry Passkey</div>
+                <div className="font-mono font-black text-4xl tracking-[0.2em] mb-1 text-white">{group.passkey}</div>
+                <div className="text-xs" style={{ color: "rgba(255,255,255,0.3)" }}>cupclash.live/join/{group.passkey}</div>
+              </div>
             </div>
           )}
 

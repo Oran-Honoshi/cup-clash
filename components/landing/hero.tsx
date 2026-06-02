@@ -150,9 +150,8 @@ export function Hero() {
 
             <motion.p initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6, delay: 0.2 }}
               className="text-lg leading-relaxed mb-8 max-w-md text-white/70">
-              A private prediction league for World Cup 2026. Built for friend circles and office pools.{" "}
-              <strong className="text-white font-semibold">Free to host. $2 per friend.</strong>{" "}
-              Sponsor your whole team for $75.
+              A free, social prediction game for World Cup 2026. Compete with friends and colleagues across all 104 matches.{" "}
+              <strong className="text-white font-semibold">Free to join. Skill-based. No subscriptions.</strong>
             </motion.p>
 
             {/* CTAs */}
@@ -205,15 +204,15 @@ export function Hero() {
               className="flex items-center gap-3 flex-wrap">
               <span className="text-xs font-bold px-3 py-1.5 rounded-full"
                 style={{ background: "rgba(0,255,136,0.1)", color: "#00FF88", border: "1px solid rgba(0,255,136,0.2)" }}>
-                ✓ Admin always free
+                ✓ Free to join
               </span>
               <span className="text-xs font-bold px-3 py-1.5 rounded-full"
                 style={{ background: "rgba(0,212,255,0.08)", color: "#00D4FF", border: "1px solid rgba(0,212,255,0.2)" }}>
-                ✓ $2 per friend
+                ✓ Skill-based
               </span>
               <span className="text-xs font-bold px-3 py-1.5 rounded-full"
                 style={{ background: "rgba(0,212,255,0.08)", color: "#00D4FF", border: "1px solid rgba(0,212,255,0.2)" }}>
-                ✓ No ads · No subscription
+                ✓ No subscription
               </span>
             </motion.div>
 

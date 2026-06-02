@@ -84,15 +84,15 @@ const STEPS = [
   {
     number: "01", color: "#00FF88", bgColor: "rgba(0,255,136,0.08)", borderColor: "rgba(0,255,136,0.25)",
     title: "Create Your Group · Free",
-    body: "Sign up, name your group, set scoring rules and prize split in under 60 seconds. Admins are always free. Zero credit card required.",
-    detail: "✓ Admin always free. No exceptions.",
+    body: "Sign up, name your group, and set scoring rules in under 60 seconds. No credit card. No commitment.",
+    detail: "✓ Free to create. No card required.",
     mockup: <GroupCreationMockup />,
   },
   {
     number: "02", color: "#00D4FF", bgColor: "rgba(0,212,255,0.08)", borderColor: "rgba(0,212,255,0.25)",
     title: "Invite Your Squad",
-    body: "Share your unique passkey via WhatsApp, Telegram, email or SMS. Friends join for $2 each. That's it. No subscription, no hidden fees.",
-    detail: "Members pay $2. You pay $0.",
+    body: "Share your unique passkey via WhatsApp, Telegram, email or SMS. Everyone joins free and starts predicting immediately. No subscription, no hidden fees.",
+    detail: "Free to join. Optional $2 to remove ads.",
     mockup: <InviteMockup />,
   },
   {
