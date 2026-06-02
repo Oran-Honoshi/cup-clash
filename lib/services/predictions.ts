@@ -101,15 +101,26 @@ export async function scoreMatchResult(params: {
   const predictions = await getMatchPredictions(params.matchId, params.groupId);
   if (!predictions.length) return;
 
+  // Check for a group-level admin override — use it instead of the global score if present
+  const { data: overrideRow } = await sb()
+    .from("match_overrides")
+    .select("home_score, away_score")
+    .eq("match_id", params.matchId)
+    .eq("group_id", params.groupId)
+    .maybeSingle();
+
+  const effectiveHome = (overrideRow as { home_score: number } | null)?.home_score ?? params.homeScore;
+  const effectiveAway = (overrideRow as { away_score: number } | null)?.away_score ?? params.awayScore;
+
   const updates = predictions.map(pred => {
     const isExact =
-      pred.home_score === params.homeScore &&
-      pred.away_score === params.awayScore;
+      pred.home_score === effectiveHome &&
+      pred.away_score === effectiveAway;
 
     const predWinner = pred.home_score > pred.away_score ? "H"
       : pred.home_score < pred.away_score ? "A" : "D";
-    const realWinner = params.homeScore > params.awayScore ? "H"
-      : params.homeScore < params.awayScore ? "A" : "D";
+    const realWinner = effectiveHome > effectiveAway ? "H"
+      : effectiveHome < effectiveAway ? "A" : "D";
     const isOutcome = !isExact && predWinner === realWinner;
 
     const pts = isExact ? params.rules.exactScore

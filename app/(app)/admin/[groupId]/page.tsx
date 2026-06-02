@@ -6,6 +6,7 @@ import { AdminPanel }          from "@/components/admin/admin-panel";
 import { ScoringRulesEditor }  from "@/components/admin/scoring-rules-editor";
 import { GroupRulesEditor }    from "@/components/admin/group-rules-editor";
 import { PickOverridesPanel }  from "@/components/admin/pick-overrides-panel";
+import { MatchOverridePanel }  from "@/components/admin/match-override-panel";
 import { WelcomeEmailSender }  from "@/components/admin/welcome-email-sender";
 import { WinnerPoster }        from "@/components/export/winner-poster";
 import { getGroup, getMembers } from "@/lib/services/groups";
@@ -91,6 +92,22 @@ export default async function AdminGroupPage({ params }: { params: { groupId: st
           </p>
         </div>
       )}
+
+      {/* Match score overrides */}
+      <div>
+        <div className="label-caps mb-3">Correct a Match Result</div>
+        <div className="rounded-2xl p-5"
+          style={{
+            background: "rgba(18,14,38,0.32)",
+            backdropFilter: "blur(40px) saturate(180%)",
+            WebkitBackdropFilter: "blur(40px) saturate(180%)",
+            border: "1px solid rgba(251,191,36,0.15)",
+            boxShadow: "0 12px 40px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.18)",
+            borderRadius: 28,
+          }}>
+          <MatchOverridePanel groupId={groupId} />
+        </div>
+      </div>
 
       {/* Tournament pick overrides */}
       <div>
