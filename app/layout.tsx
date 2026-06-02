@@ -101,6 +101,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <SoftwareAppSchema />
         <FAQSchema />
         <HowToSchema />
+        {/* Google AdSense */}
+        <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5832631613316478" crossOrigin="anonymous" />
       </head>
       <body>
         <noscript>
