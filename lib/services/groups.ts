@@ -199,8 +199,8 @@ export async function joinGroup(userId: string, groupId: string): Promise<void> 
     .upsert({
       user_id:        userId,
       group_id:       groupId,
-      payment_status: "unpaid",
-      can_predict:    false,
+      payment_status: "free",
+      can_predict:    true,
     }, { onConflict: "user_id,group_id" });
 
   if (error) throw error;

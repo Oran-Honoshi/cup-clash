@@ -40,19 +40,18 @@ async function getMemberCount(groupId: string): Promise<number> {
   const { count } = await getAdmin()
     .from("group_members")
     .select("*", { count: "exact", head: true })
-    .eq("group_id", groupId)
-    .eq("payment_status", "paid");
+    .eq("group_id", groupId);
   return count ?? 0;
 }
 
 async function isAlreadyMember(groupId: string, userId: string): Promise<boolean> {
   const { data } = await getAdmin()
     .from("group_members")
-    .select("payment_status, can_predict")
+    .select("can_predict")
     .eq("group_id", groupId)
     .eq("user_id", userId)
     .maybeSingle();
-  return data?.payment_status === "paid" || data?.can_predict === true;
+  return data?.can_predict === true;
 }
 
 async function joinCorporateFree(groupId: string, userId: string): Promise<void> {
@@ -66,15 +65,16 @@ async function joinCorporateFree(groupId: string, userId: string): Promise<void>
 
   if (existing) {
     await sb.from("group_members")
-      .update({ payment_status: "paid", can_predict: true })
+      .update({ payment_status: "free", can_predict: true, is_ad_free: true })
       .eq("group_id", groupId)
       .eq("user_id", userId);
   } else {
     await sb.from("group_members").insert({
       group_id:       groupId,
       user_id:        userId,
-      payment_status: "paid",
+      payment_status: "free",
       can_predict:    true,
+      is_ad_free:     true,
       joined_at:      new Date().toISOString(),
     });
   }

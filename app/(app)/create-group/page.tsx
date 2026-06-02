@@ -207,7 +207,7 @@ function CreateGroupInner() {
     await sb.from("group_members").upsert({
       group_id:       gId,
       user_id:        user.id,
-      payment_status: "paid",
+      payment_status: "free",
       can_predict:    true,
       joined_at:      new Date().toISOString(),
     } as Record<string, unknown>, { onConflict: "user_id,group_id" });

@@ -68,25 +68,23 @@ export default async function PredictionsPage({
   // ── SIGNED-IN: check for localStorage migration ───────────────────────────
   const shouldMigrate = searchParams.migrate === "1";
 
-  // Get all paid groups this user belongs to
+  // Get all groups this user belongs to
   const { data: memberships } = await sbAdmin()
     .from("group_members")
-    .select("group_id, payment_status, groups(id, name, passkey)")
-    .eq("user_id", user.id)
-    .eq("payment_status", "paid");
+    .select("group_id, groups(id, name, passkey)")
+    .eq("user_id", user.id);
 
   const groups = (memberships ?? [])
     .map((m: unknown) => {
       const row = m as {
         group_id: string;
-        payment_status: string;
         groups: { id: string; name: string; passkey: string } | null;
       };
       return row.groups;
     })
     .filter(Boolean) as Array<{ id: string; name: string; passkey: string }>;
 
-  // Solo user: no paid groups, allow solo predictions
+  // Solo user: no groups yet, allow solo predictions
   if (!groups.length) {
     return (
       <PredictionsClient

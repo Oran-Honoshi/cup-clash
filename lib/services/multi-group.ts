@@ -40,12 +40,11 @@ export async function getUserGroups(userId: string): Promise<UserGroupSummary[]>
 
     const g = m.groups;
 
-    // Get member count
+    // Get member count — all members are participants regardless of payment
     const { count: memberCount } = await sb()
       .from("group_members")
       .select("*", { count: "exact", head: true })
-      .eq("group_id", g.id)
-      .eq("payment_status", "paid");
+      .eq("group_id", g.id);
 
     // Get user's points in this group
     const { data: pts } = await sb()
@@ -94,7 +93,7 @@ export async function getUserGroups(userId: string): Promise<UserGroupSummary[]>
       adminFeePercent: 0,
       inviteCode:      g.passkey,
       isAdmin:         g.admin_id === userId,
-      isPaid:          m.payment_status === "paid",
+      isPaid:          true,
       nickname:        null,
     });
   }

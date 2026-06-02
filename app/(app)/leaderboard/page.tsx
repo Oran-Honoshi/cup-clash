@@ -21,7 +21,7 @@ export default async function LeaderboardPage({ searchParams }: { searchParams: 
 
   const { data: memberships } = await sbAdmin()
     .from("group_members").select("group_id, groups(id, name, passkey)")
-    .eq("user_id", userProfile.id).eq("payment_status", "paid")
+    .eq("user_id", userProfile.id)
     .order("joined_at", { ascending: false });
 
   const allGroups = (memberships ?? [])

@@ -10,7 +10,7 @@ import { MemberAvatar } from "@/components/ui/member-avatar";
 interface GroupDetailClientProps {
   group: { id: string; name: string; passkey: string; admin_id: string; buy_in_amount: number; payout_first: number; payout_second: number; payout_third: number; max_members: number; is_corporate_paid?: boolean; corporate_prize?: string | null };
   rules: Record<string, number | boolean> | null;
-  members: Array<{ user_id: string; payment_status: string; can_predict: boolean; profiles: { name: string; country: string | null; avatar_url: string | null } | null }>;
+  members: Array<{ user_id: string; payment_status: string; can_predict: boolean; paid: boolean; is_ad_free: boolean; profiles: { name: string; country: string | null; avatar_url: string | null } | null }>;
   currentUserId: string;
   isAdmin: boolean;
   isMember: boolean;
@@ -37,7 +37,7 @@ const glass = { background: "rgba(255,255,255,0.07)", backdropFilter: "blur(24px
 
 export function GroupDetailClient({ group, rules, members, currentUserId, isAdmin, isMember }: GroupDetailClientProps) {
   const [tab, setTab] = useState<"overview" | "chat">("overview");
-  const paidCount = members.filter(m => m.payment_status === "paid").length;
+  const paidCount = members.filter(m => m.paid).length;  // admin buy-in toggle
   const totalPot  = (group.buy_in_amount ?? 0) * paidCount;
   const scoringRows = Object.entries(SCORING_LABELS).filter(([key]) => { const ek = ENABLE_KEYS[key]; return !ek || rules?.[ek] !== false; });
 
@@ -157,7 +157,7 @@ export function GroupDetailClient({ group, rules, members, currentUserId, isAdmi
 
           <div className="rounded-2xl overflow-hidden" style={glass}>
             <div className="px-5 py-4 border-b flex items-center justify-between" style={{ borderColor: "rgba(255,255,255,0.07)" }}>
-              <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.35)" }}>Members ({paidCount} paid)</span>
+              <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.35)" }}>Members ({members.length})</span>
             </div>
             <div className="divide-y" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
               {members.map(m => (
@@ -171,8 +171,8 @@ export function GroupDetailClient({ group, rules, members, currentUserId, isAdmi
                     <div className="text-xs" style={{ color: "rgba(255,255,255,0.3)" }}>{m.profiles?.country ?? ""}</div>
                   </div>
                   <span className="text-[10px] font-bold px-2 py-0.5 rounded-full"
-                    style={m.payment_status === "paid" ? { background: "rgba(0,255,136,0.12)", color: "#00FF88", border: "1px solid rgba(0,255,136,0.2)" } : { background: "rgba(248,113,113,0.12)", color: "#f87171", border: "1px solid rgba(248,113,113,0.2)" }}>
-                    {m.payment_status === "paid" ? "Paid" : "Unpaid"}
+                    style={m.is_ad_free ? { background: "rgba(0,255,136,0.12)", color: "#00FF88", border: "1px solid rgba(0,255,136,0.2)" } : { background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.35)", border: "1px solid rgba(255,255,255,0.1)" }}>
+                    {m.is_ad_free ? "Ad-free" : "Free"}
                   </span>
                 </div>
               ))}

@@ -164,7 +164,7 @@ export function PredictionsClient({
 
       {/* Tab content */}
       <div style={{ display: tab === "group" ? "block" : "none" }}>
-        <GroupStagePredictions groupId={groupId} userId={userId} locked={!isPaid} />
+        <GroupStagePredictions groupId={groupId} userId={userId} locked={false} />
       </div>
       <div style={{ display: tab === "tournament" ? "block" : "none" }}>
         <TournamentPicks groupId={groupId} userId={userId} locked={false} />

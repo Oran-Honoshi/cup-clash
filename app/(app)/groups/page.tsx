@@ -54,7 +54,7 @@ export default async function GroupsPage() {
 
   const { data: memberships } = await sbAdmin()
     .from("group_members")
-    .select(`group_id, payment_status, groups ( id, name, passkey, max_members, enrollment_fee_cents, admin_id, buy_in_amount )`)
+    .select(`group_id, is_ad_free, groups ( id, name, passkey, max_members, enrollment_fee_cents, admin_id, buy_in_amount )`)
     .eq("user_id", userProfile.id)
     .order("joined_at", { ascending: false });
 
@@ -63,7 +63,7 @@ export default async function GroupsPage() {
   if (groupIds.length > 0) {
     const { data: counts } = await sbAdmin()
       .from("group_members").select("group_id")
-      .in("group_id", groupIds).eq("payment_status", "paid");
+      .in("group_id", groupIds);
     (counts ?? []).forEach((row: unknown) => {
       const r = row as { group_id: string };
       memberCounts[r.group_id] = (memberCounts[r.group_id] ?? 0) + 1;
@@ -71,7 +71,7 @@ export default async function GroupsPage() {
   }
 
   const groups = (memberships ?? []) as unknown as Array<{
-    group_id: string; payment_status: string;
+    group_id: string; is_ad_free: boolean;
     groups: { id: string; name: string; passkey: string; max_members: number; enrollment_fee_cents: number; admin_id: string; buy_in_amount: number } | null;
   }>;
 
@@ -110,8 +110,8 @@ export default async function GroupsPage() {
           {groups.map((m) => {
             const g = m.groups;
             if (!g) return null;
-            const isAdmin = g.admin_id === userProfile.id;
-            const isPaid  = m.payment_status === "paid";
+            const isAdmin   = g.admin_id === userProfile.id;
+            const isAdFree  = m.is_ad_free;
             const memberCount = memberCounts[m.group_id] ?? 0;
             return (
               <div key={m.group_id} className="rounded-2xl overflow-hidden transition-all duration-200 hover:-translate-y-0.5"
@@ -123,7 +123,7 @@ export default async function GroupsPage() {
                       <h2 className="font-display text-xl uppercase font-black truncate text-white">{g.name}</h2>
                       <div className="flex items-center gap-2 mt-1 flex-wrap">
                         {isAdmin && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: "rgba(251,191,36,0.12)", color: "#fbbf24", border: "1px solid rgba(251,191,36,0.2)" }}>Admin</span>}
-                        {isPaid  && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: "rgba(0,255,136,0.12)", color: "#00FF88",  border: "1px solid rgba(0,255,136,0.2)"  }}>✓ Enrolled</span>}
+                        {isAdFree && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: "rgba(0,255,136,0.12)", color: "#00FF88",  border: "1px solid rgba(0,255,136,0.2)"  }}>★ Ad-free</span>}
                       </div>
                     </div>
                     <div className="text-right shrink-0">

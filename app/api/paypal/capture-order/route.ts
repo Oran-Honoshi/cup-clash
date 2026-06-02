@@ -79,15 +79,17 @@ export async function POST(request: NextRequest) {
 
     if (existing) {
       await sb.from("group_members")
-        .update({ payment_status: "paid", can_predict: true, paid_at: new Date().toISOString() })
+        .update({ payment_status: "paid", can_predict: true, is_ad_free: true, paid_at: new Date().toISOString() })
         .eq("group_id", groupId)
         .eq("user_id", user.id);
     } else {
+      // Member joined free then upgraded; insert as full ad-free participant
       await sb.from("group_members").insert({
         group_id:       groupId,
         user_id:        user.id,
         payment_status: "paid",
         can_predict:    true,
+        is_ad_free:     true,
         paid_at:        new Date().toISOString(),
         joined_at:      new Date().toISOString(),
       });

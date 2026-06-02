@@ -63,7 +63,7 @@ export async function getCurrentUserGroup(): Promise<UserGroupResult> {
       .maybeSingle();
 
     const isAdmin = (group as { admin_id: string } | null)?.admin_id === user.id;
-    const isPaid  = m.payment_status === "paid";
+    const isPaid  = m.payment_status !== "unpaid";
 
     return { groupId: m.group_id, isMock: false, userId: user.id, isAdmin, isPaid };
   } catch (e) {

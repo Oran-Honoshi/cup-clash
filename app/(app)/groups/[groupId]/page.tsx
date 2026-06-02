@@ -39,10 +39,11 @@ async function getScoringRules(groupId: string) {
 async function getMembers(groupId: string) {
   const { data } = await sbAdmin()
     .from("group_members")
-    .select("user_id, payment_status, can_predict, profiles(name, country, avatar_url)")
+    .select("user_id, payment_status, can_predict, paid, is_ad_free, profiles(name, country, avatar_url)")
     .eq("group_id", groupId);
   return (data ?? []) as unknown as Array<{
     user_id: string; payment_status: string; can_predict: boolean;
+    paid: boolean; is_ad_free: boolean;
     profiles: { name: string; country: string | null; avatar_url: string | null } | null;
   }>;
 }

@@ -43,21 +43,19 @@ export async function POST(request: NextRequest) {
       .eq("user_id", user.id)
       .maybeSingle();
 
-    if (existing?.payment_status === "paid" || existing?.can_predict) {
-      return NextResponse.json({ success: true }); // Already in
+    if (existing?.can_predict) {
+      return NextResponse.json({ success: true }); // Already a participant
     }
 
     if (existing) {
-      // Update existing row
       await sb.from("group_members")
-        .update({ payment_status: "paid", can_predict: true, joined_at: new Date().toISOString() })
+        .update({ payment_status: "free", can_predict: true, joined_at: new Date().toISOString() })
         .eq("id", existing.id);
     } else {
-      // Insert new member
       await sb.from("group_members").insert({
         group_id:       groupId,
         user_id:        user.id,
-        payment_status: "paid",
+        payment_status: "free",
         can_predict:    true,
         joined_at:      new Date().toISOString(),
       });
