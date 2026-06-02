@@ -155,7 +155,7 @@ export function HowToSchema() {
               "@type": "HowToStep",
               "position": 1,
               "name": "Create your group",
-              "text": "Sign up for free on Cup Clash, name your group, set your buy-in amount and payout split. Your unique 6-letter passkey is generated automatically.",
+              "text": "Sign up for free on Cup Clash, name your group, invite your friends, and start predicting. Your unique 6-letter passkey is generated automatically.",
               "url": "https://cupclash.live/create-group"
             },
             {

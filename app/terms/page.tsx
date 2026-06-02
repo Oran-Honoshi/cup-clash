@@ -34,12 +34,12 @@ export default function TermsPage() {
 
           <section>
             <h2 className="font-display text-xl uppercase font-black mb-3" style={{ color: "#0F172A" }}>3. Description of Service</h2>
-            <p>Cup Clash is a free, social sports prediction game for the 2026 FIFA World Cup. Users join private groups, predict match scores and tournament outcomes, and compete on leaderboards for points. It is a game of prediction skill, not a gambling platform.</p>
+            <p>Cup Clash is a free, social sports prediction game for the 2026 FIFA World Cup. Users join private groups, predict match scores and tournament outcomes, and compete on leaderboards for points. It is a game of prediction skill and football knowledge.</p>
           </section>
 
           <section>
             <h2 className="font-display text-xl uppercase font-black mb-3" style={{ color: "#0F172A" }}>4. Important Disclaimer Regarding Funds and Prizes</h2>
-            <p>Cup Clash does not process, hold, escrow, or distribute any prize money or entry contributions. Any prize pool or entry amounts referenced within a private group are tracked for informational purposes only, between those group members. All financial arrangements between members take place entirely outside of the Cup Clash platform. We disclaim all liability for any disputes, losses, or unfulfilled arrangements between users regarding real-world money or prizes.</p>
+            <p>Cup Clash does not process, hold, escrow, or distribute any prize money or entry contributions. Any entry amounts or prizes referenced within a private group are tracked for informational purposes only, between those group members. All financial arrangements between members take place entirely outside of the Cup Clash platform. We disclaim all liability for any disputes, losses, or unfulfilled arrangements between users regarding real-world money or prizes.</p>
           </section>
 
           <section>

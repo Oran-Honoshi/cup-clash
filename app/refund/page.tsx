@@ -59,7 +59,7 @@ export default function RefundPage() {
               <li>Your account was suspended for violating our Terms of Service</li>
             </ul>
             <p className="mt-3 text-sm" style={{ color: "#94a3b8" }}>
-              Note: The $2 platform fee covers access to Cup Clash's technology. It is separate from any prize pool, buy-in, or funds managed between group members. Cup Clash is not responsible for and cannot refund any money exchanged directly between group members.
+              Note: The $2 platform fee covers access to Cup Clash's technology. It is separate from any entry amounts or prizes arranged between group members. Cup Clash is not responsible for and cannot refund any money exchanged directly between group members.
             </p>
           </section>
 

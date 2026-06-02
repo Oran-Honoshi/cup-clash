@@ -76,7 +76,7 @@ export function FirstPredictionPopup({
 
               <div className="space-y-3">
                 <div className="font-display text-4xl uppercase text-white">
-                  First bet locked!
+                  First prediction locked!
                 </div>
 
                 <div className="glass rounded-xl p-4">

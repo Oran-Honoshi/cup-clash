@@ -22,7 +22,7 @@ export function BuyInStatus({ group, members }: BuyInStatusProps) {
     <div className="rounded-2xl p-5" style={{ background: "rgba(18,14,38,0.5)", border: "1px solid rgba(255,255,255,0.1)", boxShadow: "0 8px 32px rgba(0,0,0,0.25), inset 0 1px 1px rgba(255,255,255,0.06)" }}>
       <div className="flex items-center gap-2.5 mb-4">
         <DollarSign size={18} strokeWidth={1.5} style={{ color: "#00FF88" }} />
-        <span className="font-display text-xl uppercase tracking-tight text-white">Buy-in Tracker</span>
+        <span className="font-display text-xl uppercase tracking-tight text-white">Prize Tracker</span>
       </div>
       <div className="text-center py-4 mb-4 rounded-xl" style={{ background: "rgba(0,255,136,0.06)", border: "1px solid rgba(0,255,136,0.15)" }}>
         <div className="font-display text-5xl font-black" style={{ color: "#00FF88" }}>${paidPot}</div>

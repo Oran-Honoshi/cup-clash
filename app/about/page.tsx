@@ -4,7 +4,7 @@ import { ArrowRight, Trophy } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "About Cup Clash — Free Social Prediction Game for World Cup 2026",
-  description: "Cup Clash is a free, skill-based social prediction game for FIFA World Cup 2026. Create a private group with friends or colleagues, predict all 104 matches, and compete on a live leaderboard. No subscriptions, no gambling.",
+  description: "Cup Clash is a free, skill-based social prediction game for FIFA World Cup 2026. Create a private group with friends or colleagues, predict all 104 matches, and compete on a live leaderboard. Free to play. Predict match scores, compete with friends, and prove your football knowledge.",
 };
 
 export default function AboutPage() {
@@ -44,8 +44,7 @@ export default function AboutPage() {
               match across all 104 games — and compete on a live leaderboard that updates in real-time.
             </p>
             <p className="mt-4 text-base leading-relaxed">
-              It is not gambling. There is no house, no odds, and no operator. It is a game of knowledge,
-              research, and football intuition.
+              It is a game of knowledge, research, and football intuition.
             </p>
           </section>
 

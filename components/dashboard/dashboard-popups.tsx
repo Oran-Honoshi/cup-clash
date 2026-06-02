@@ -87,7 +87,7 @@ export function DashboardPopups({ groupId, userId }: FirstPredictionPopupProps) 
             </div>
 
             <h2 className="font-display text-2xl uppercase font-black mb-2" style={{ color: "white" }}>
-              First Bet Locked!
+              First Prediction Locked!
             </h2>
 
             {matchInfo && (

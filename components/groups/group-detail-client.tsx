@@ -81,7 +81,7 @@ export function GroupDetailClient({ group, rules, members, currentUserId, isAdmi
           <div className="grid grid-cols-3 gap-3">
             {[
               { icon: Users,      label: "Members",   value: `${paidCount}`,                accent: "#00D4FF" },
-              { icon: DollarSign, label: "Buy-in",    value: `$${group.buy_in_amount ?? 0}`, accent: "#00FF88" },
+              { icon: DollarSign, label: "Entry",     value: `$${group.buy_in_amount ?? 0}`, accent: "#00FF88" },
               { icon: Trophy,     label: "Prize pot", value: `$${totalPot}`,                accent: "#fbbf24" },
             ].map(({ icon: Icon, label, value, accent }) => (
               <div key={label} className="rounded-2xl p-4 text-center" style={glass}>
