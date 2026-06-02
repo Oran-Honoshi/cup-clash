@@ -62,7 +62,7 @@ export async function POST(req: NextRequest) {
     } else {
       await sendMessage(
         chatId,
-        "Welcome to Cup Clash! 🏆\n\nTo connect your account, go to <b>cupclash.live/notifications</b> and tap <b>Connect Telegram</b>."
+        "👋 Welcome to CupClash Predictions Bot!\n\nTo connect your account, go to cupclash.live, open your notification settings, and click Connect Telegram."
       );
     }
 
