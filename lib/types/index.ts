@@ -22,6 +22,7 @@ export interface Group {
   maxMembers:          number;
   enrollmentFeeCents:  number;
   enrollmentDeadline:  string | null;
+  corporatePrize:      string | null;
   payouts: {
     first:  string;  // "60%"
     second: string;  // "30%"

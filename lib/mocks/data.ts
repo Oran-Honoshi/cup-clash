@@ -13,6 +13,7 @@ export const MOCK_GROUP: Group = {
   maxMembers:          100,
   enrollmentFeeCents:  200,
   enrollmentDeadline:  null,
+  corporatePrize:      null,
   payouts: { first: "60%", second: "30%", third: "10%" },
 };
 

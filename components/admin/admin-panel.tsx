@@ -217,6 +217,24 @@ export function AdminPanel({ group, initialMembers }: AdminPanelProps) {
           </Button>
         </div>
 
+        {/* ── Prizes ── */}
+        {group.corporatePrize && (
+          <div className="rounded-2xl p-5" style={glass}>
+            <div className="flex items-center gap-2.5 mb-3">
+              <Trophy size={18} strokeWidth={1.5} style={{ color: "#fbbf24" }} />
+              <span className="font-display text-xl uppercase tracking-tight text-white">Prizes</span>
+            </div>
+            <div className="space-y-2">
+              {group.corporatePrize.split("|").map(r => r.trim()).filter(Boolean).map(reward => (
+                <div key={reward} className="rounded-xl px-3 py-2.5"
+                  style={{ background: "rgba(251,191,36,0.06)", border: "1px solid rgba(251,191,36,0.15)" }}>
+                  <span className="text-sm" style={{ color: "rgba(255,255,255,0.8)" }}>{reward}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* ── Invite Link ── */}
         <div className="rounded-2xl p-5" style={glass}>
           <div className="flex items-center gap-2.5 mb-4">

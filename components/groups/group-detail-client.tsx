@@ -8,7 +8,7 @@ import { CorporateUnlockOverlay } from "@/components/groups/corporate-unlock-ove
 import { MemberAvatar } from "@/components/ui/member-avatar";
 
 interface GroupDetailClientProps {
-  group: { id: string; name: string; passkey: string; admin_id: string; buy_in_amount: number; payout_first: number; payout_second: number; payout_third: number; max_members: number; is_corporate_paid?: boolean };
+  group: { id: string; name: string; passkey: string; admin_id: string; buy_in_amount: number; payout_first: number; payout_second: number; payout_third: number; max_members: number; is_corporate_paid?: boolean; corporate_prize?: string | null };
   rules: Record<string, number | boolean> | null;
   members: Array<{ user_id: string; payment_status: string; can_predict: boolean; profiles: { name: string; country: string | null; avatar_url: string | null } | null }>;
   currentUserId: string;
@@ -121,6 +121,23 @@ export function GroupDetailClient({ group, rules, members, currentUserId, isAdmi
               ))}
             </div>
           </div>
+
+          {group.corporate_prize && (
+            <div className="rounded-2xl p-5" style={glass}>
+              <div className="flex items-center gap-2 mb-3">
+                <Trophy size={16} style={{ color: "#fbbf24" }} />
+                <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.35)" }}>Prizes</span>
+              </div>
+              <div className="space-y-2">
+                {group.corporate_prize.split("|").map(r => r.trim()).filter(Boolean).map(reward => (
+                  <div key={reward} className="flex items-start gap-2 rounded-xl px-3 py-2.5"
+                    style={{ background: "rgba(251,191,36,0.06)", border: "1px solid rgba(251,191,36,0.15)" }}>
+                    <span className="text-sm" style={{ color: "rgba(255,255,255,0.8)" }}>{reward}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div className="rounded-2xl p-5" style={glass}>
             <div className="flex items-center gap-2 mb-4">
