@@ -3,6 +3,10 @@
     {
       "path": "/api/reminders/telegram",
       "schedule": "*/15 * * * *"
+    },
+    {
+      "path": "/api/reminders/auto-fill",
+      "schedule": "*/5 * * * *"
     }
   ]
 }

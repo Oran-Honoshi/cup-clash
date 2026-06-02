@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Camera, Check, AlertCircle, Upload, RefreshCw, X } from "lucide-react";
+import { Camera, Check, AlertCircle, Upload, RefreshCw, X, Zap } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { CountrySelector } from "@/components/auth/country-selector";
 import { MemberAvatar, SOCCER_PRESETS, dicebearUrl } from "@/components/ui/member-avatar";
@@ -11,9 +11,12 @@ import type { CountryCode } from "@/lib/types";
 export const dynamic = "force-dynamic";
 
 interface ProfileData {
-  name: string;
-  country: CountryCode | null;
-  avatar_url: string | null;
+  name:              string;
+  country:           CountryCode | null;
+  avatar_url:        string | null;
+  auto_fill_enabled: boolean;
+  auto_fill_home:    number;
+  auto_fill_away:    number;
 }
 
 const glassCard = {
@@ -39,7 +42,7 @@ const btnOutline = {
 } as const;
 
 export default function ProfilePage() {
-  const [profile, setProfile]     = useState<ProfileData>({ name: "", country: null, avatar_url: null });
+  const [profile, setProfile]     = useState<ProfileData>({ name: "", country: null, avatar_url: null, auto_fill_enabled: false, auto_fill_home: 1, auto_fill_away: 0 });
   const [saving, setSaving]       = useState(false);
   const [saved,  setSaved]        = useState(false);
   const [error,  setError]        = useState<string | null>(null);
@@ -55,10 +58,17 @@ export default function ProfilePage() {
       const { data: { user } } = await sb.auth.getUser();
       if (!user) { setLoading(false); return; }
       const { data } = await sb.from("profiles")
-        .select("name, country, avatar_url").eq("id", user.id).single();
+        .select("name, country, avatar_url, auto_fill_enabled, auto_fill_home, auto_fill_away").eq("id", user.id).single();
       if (data) {
         const d = data as ProfileData;
-        setProfile({ name: d.name ?? "", country: d.country ?? null, avatar_url: d.avatar_url ?? null });
+        setProfile({
+          name:              d.name              ?? "",
+          country:           d.country           ?? null,
+          avatar_url:        d.avatar_url        ?? null,
+          auto_fill_enabled: d.auto_fill_enabled ?? false,
+          auto_fill_home:    d.auto_fill_home    ?? 1,
+          auto_fill_away:    d.auto_fill_away    ?? 0,
+        });
         if (d.country) setCountry(d.country);
         if (d.avatar_url?.startsWith("preset:")) setTab("preset");
         else if (d.avatar_url && !d.avatar_url.startsWith("dicebear:")) setTab("photo");
@@ -97,7 +107,14 @@ export default function ProfilePage() {
     if (!user) { setError("Not signed in. Please refresh and try again."); setSaving(false); return; }
 
     const { error: updateError } = await sb.from("profiles")
-      .update({ name: profile.name, country: profile.country, avatar_url: profile.avatar_url } as Record<string, unknown>)
+      .update({
+        name:              profile.name,
+        country:           profile.country,
+        avatar_url:        profile.avatar_url,
+        auto_fill_enabled: profile.auto_fill_enabled,
+        auto_fill_home:    profile.auto_fill_home,
+        auto_fill_away:    profile.auto_fill_away,
+      } as Record<string, unknown>)
       .eq("id", user.id);
 
     setSaving(false);
@@ -294,6 +311,84 @@ export default function ProfilePage() {
       <div style={{ ...glassCard, padding: 20 }}>
         <div className="label-caps mb-3">Your team</div>
         <CountrySelector value={profile.country} onChange={code => setProfile(p => ({ ...p, country: code }))} />
+      </div>
+
+      {/* Auto-fill safety net */}
+      <div style={{ ...glassCard, padding: 20 }}>
+        <div className="flex items-center gap-2 mb-1">
+          <Zap size={15} style={{ color: "#00D4FF" }} />
+          <span style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "rgba(255,255,255,0.5)", fontFamily: "var(--font-ui)" }}>
+            Auto-fill Safety Net
+          </span>
+        </div>
+        <p className="mb-4" style={{ fontSize: 12, color: "rgba(255,255,255,0.4)", lineHeight: 1.5 }}>
+          {profile.auto_fill_enabled
+            ? `If you haven't predicted 6 minutes before kickoff, we'll automatically submit ${profile.auto_fill_home}–${profile.auto_fill_away} for you so you still earn points.`
+            : "If you haven't predicted 6 minutes before kickoff, your prediction will be skipped. Enable auto-fill to always earn points."}
+        </p>
+
+        {/* Toggle row */}
+        <div className="flex items-center justify-between gap-4 mb-4">
+          <div>
+            <div className="text-sm font-bold" style={{ color: "white" }}>Auto-fill my predictions</div>
+            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", marginTop: 2 }}>
+              Submit a fallback score before the lock window
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => setProfile(p => ({ ...p, auto_fill_enabled: !p.auto_fill_enabled }))}
+            className="relative h-6 w-11 rounded-full shrink-0 transition-all"
+            style={{ background: profile.auto_fill_enabled ? "#00D4FF" : "rgba(255,255,255,0.12)" }}>
+            <div className="absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-all"
+              style={{ left: profile.auto_fill_enabled ? "22px" : "2px" }} />
+          </button>
+        </div>
+
+        {/* Score inputs — only shown when enabled */}
+        {profile.auto_fill_enabled && (
+          <div className="space-y-3">
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label style={{ display: "block", fontSize: 10, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "0.12em", color: "rgba(255,255,255,0.5)", fontFamily: "var(--font-ui)", marginBottom: 6 }}>
+                  Default home score
+                </label>
+                <input
+                  type="number" min={0} max={5}
+                  value={profile.auto_fill_home}
+                  onChange={e => setProfile(p => ({ ...p, auto_fill_home: Math.min(5, Math.max(0, Number(e.target.value))) }))}
+                  style={{
+                    width: "100%", padding: "10px 14px", borderRadius: 10,
+                    background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)",
+                    color: "#00D4FF", fontSize: 18, fontWeight: 700,
+                    fontFamily: "var(--font-display)", outline: "none", textAlign: "center",
+                  }} />
+              </div>
+              <div>
+                <label style={{ display: "block", fontSize: 10, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "0.12em", color: "rgba(255,255,255,0.5)", fontFamily: "var(--font-ui)", marginBottom: 6 }}>
+                  Default away score
+                </label>
+                <input
+                  type="number" min={0} max={5}
+                  value={profile.auto_fill_away}
+                  onChange={e => setProfile(p => ({ ...p, auto_fill_away: Math.min(5, Math.max(0, Number(e.target.value))) }))}
+                  style={{
+                    width: "100%", padding: "10px 14px", borderRadius: 10,
+                    background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)",
+                    color: "#00D4FF", fontSize: 18, fontWeight: 700,
+                    fontFamily: "var(--font-display)", outline: "none", textAlign: "center",
+                  }} />
+              </div>
+            </div>
+            <div className="rounded-lg px-3 py-2.5 flex items-center gap-2"
+              style={{ background: "rgba(0,212,255,0.06)", border: "1px solid rgba(0,212,255,0.15)" }}>
+              <Zap size={12} style={{ color: "#00D4FF", flexShrink: 0 }} />
+              <p style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", lineHeight: 1.4 }}>
+                Scores are capped at 5. Auto-fill fires 6 minutes before kickoff and won&apos;t overwrite a prediction you already submitted.
+              </p>
+            </div>
+          </div>
+        )}
       </div>
 
       {error && (
