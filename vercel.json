@@ -2,11 +2,11 @@
   "crons": [
     {
       "path": "/api/reminders/telegram",
-      "schedule": "*/15 * * * *"
+      "schedule": "0 6 * * *"
     },
     {
       "path": "/api/reminders/auto-fill",
-      "schedule": "*/5 * * * *"
+      "schedule": "0 5 * * *"
     }
   ]
 }
