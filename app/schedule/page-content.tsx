@@ -57,7 +57,7 @@ export default function SchedulePageContent() {
             </ol>
           </nav>
 
-          <h1 className="font-display text-4xl sm:text-6xl uppercase tracking-tight leading-[0.9]" style={{ color: "#0F172A" }}>
+          <h1 className="font-display text-4xl sm:text-6xl uppercase tracking-tight leading-[0.9] text-white">
             FIFA World Cup 2026
             <br />
             <span className="gradient-text">Full Schedule</span>
@@ -143,7 +143,7 @@ export default function SchedulePageContent() {
                   <div className="flex items-center gap-3 mb-3">
                     <div className="flex items-center gap-2">
                       <Calendar size={14} className="text-pitch-500" />
-                      <h2 className="font-display text-2xl uppercase tracking-tight" style={{ color: "#0F172A" }}>
+                      <h2 className="font-display text-2xl uppercase tracking-tight text-white">
                         {dayLabel}
                       </h2>
                       <span className="text-pitch-400 font-mono text-sm">
@@ -183,7 +183,7 @@ export default function SchedulePageContent() {
                                 <Image src={flagUrl(match.homeFlagCode, 20)} alt={match.home} fill className="object-cover" unoptimized />
                               </div>
                             )}
-                            <span className="font-display text-lg uppercase tracking-tight truncate keep-dark">
+                            <span className="font-display text-lg uppercase tracking-tight truncate text-white">
                               {match.home}
                             </span>
                             <span className="text-pitch-600 font-bold mx-1">vs</span>
@@ -192,7 +192,7 @@ export default function SchedulePageContent() {
                                 <Image src={flagUrl(match.awayFlagCode, 20)} alt={match.away} fill className="object-cover" unoptimized />
                               </div>
                             )}
-                            <span className="font-display text-lg uppercase tracking-tight truncate keep-dark">
+                            <span className="font-display text-lg uppercase tracking-tight truncate text-white">
                               {match.away}
                             </span>
                           </div>
