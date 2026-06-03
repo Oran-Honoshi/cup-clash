@@ -135,6 +135,7 @@ export function TournamentPicks({ groupId, userId, locked = false }: TournamentP
   // Load scoring rules and existing picks
   useEffect(() => {
     if (!groupId) return;
+    setPicks({ winner: "", topScorer: "", topAssister: "", goldenBall: "", bestThird: [] });
     const sb = createClient();
     sb.from("scoring_rules").select("*").eq("group_id", groupId).maybeSingle()
       .then(({ data }) => { if (data) setRules({ ...DEFAULT_RULES, ...data }); });

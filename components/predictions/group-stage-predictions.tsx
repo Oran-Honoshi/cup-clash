@@ -350,6 +350,8 @@ export function GroupStagePredictions({ groupId, locked = false, userId }: Group
 
   useEffect(() => {
     if (!userId) return;
+    setPredictions({});
+    setLoaded(false);
     const sb = createClient();
     sb.auth.getUser().then(({ data: { user } }) => {
       if (!user) { setLoaded(true); return; }
