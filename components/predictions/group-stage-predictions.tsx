@@ -12,6 +12,8 @@ import { Flag } from "@/components/ui/flag";
 import { ScoreInputCC } from "@/components/ui/score-input-cc";
 import { WC2026_MATCHES } from "@/lib/schedule";
 import { createClient } from "@/lib/supabase/client";
+import { useLocale } from "@/components/i18n/locale-provider";
+import { interpolate, type Translations } from "@/lib/i18n";
 
 // ── Glass tokens ──────────────────────────────────────────────────────────────
 const glassCard = {
@@ -27,13 +29,13 @@ function isMatchLocked(utcTime: string): boolean {
   return new Date() >= lockTime;
 }
 
-function getCountdown(utcTime: string): string {
+function getCountdown(utcTime: string, t: (key: keyof Translations) => string): string {
   const diff = new Date(utcTime).getTime() - 5 * 60 * 1000 - Date.now();
   if (diff <= 0) return "";
   const h = Math.floor(diff / 3600000);
   const m = Math.floor((diff % 3600000) / 60000);
-  if (h > 0) return `Locks in ${h}H ${m}M`;
-  return `Locks in ${m}M`;
+  if (h > 0) return interpolate(t("pred_locks_hm"), { h, m });
+  return interpolate(t("pred_locks_m"), { m });
 }
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -128,9 +130,10 @@ function MatchCard({ match, prediction, onChange, globalLocked }: {
   onChange: (home: string, away: string) => void;
   globalLocked: boolean;
 }) {
+  const { t } = useLocale();
   const filled      = prediction.home !== "" && prediction.away !== "";
   const matchLocked = globalLocked || isMatchLocked(match.utcTime);
-  const countdown   = !matchLocked ? getCountdown(match.utcTime) : "";
+  const countdown   = !matchLocked ? getCountdown(match.utcTime, t) : "";
   const status      = matchLocked ? "locked" : filled ? "saved" : "open";
 
   const cardStyle = {
@@ -157,13 +160,13 @@ function MatchCard({ match, prediction, onChange, globalLocked }: {
         {status === "saved" && (
           <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest px-2.5 py-0.5 rounded-full"
             style={{ background: "rgba(251,191,36,0.12)", color: "#fbbf24", border: "1px solid rgba(251,191,36,0.25)", fontFamily: "var(--font-ui)" }}>
-            <CheckCircle2 size={10} /> Saved
+            <CheckCircle2 size={10} /> {t("pred_saved")}
           </span>
         )}
         {status === "locked" && (
           <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest px-2.5 py-0.5 rounded-full"
             style={{ background: "rgba(255,255,255,0.05)", color: "rgba(255,255,255,0.3)", fontFamily: "var(--font-ui)" }}>
-            <Lock size={9} /> Locked
+            <Lock size={9} /> {t("pred_locked")}
           </span>
         )}
       </div>
@@ -238,6 +241,7 @@ function GroupTable({ standings }: { standings: TeamStanding[] }) {
 
 // ── Qualifiers Summary ────────────────────────────────────────────────────────
 function QualifiersSummary({ predictions, allComplete }: { predictions: GroupPredictions; allComplete: boolean }) {
+  const { t } = useLocale();
   const qualifiers = useMemo(() => {
     const q: { group: string; pos: 1|2|3; team: TeamStanding }[] = [];
     GROUPS.forEach(g => {
@@ -259,13 +263,13 @@ function QualifiersSummary({ predictions, allComplete }: { predictions: GroupPre
     <div className="rounded-2xl p-5 space-y-5" style={glassCard}>
       <div className="flex items-center gap-2.5">
         <Trophy size={18} strokeWidth={1.5} style={{ color: "#fbbf24" }} />
-        <span className="font-display text-xl uppercase tracking-tight text-white">Your Predicted Qualifiers</span>
-        {!allComplete && <span className="ml-auto text-[10px] font-bold" style={{ color: "rgba(255,255,255,0.3)" }}>Complete all groups for full picture</span>}
+        <span className="font-display text-xl uppercase tracking-tight text-white">{t("pred_title")} — </span>
+        {!allComplete && <span className="ml-auto text-[10px] font-bold" style={{ color: "rgba(255,255,255,0.3)" }}>{t("pred_qual_hint")}</span>}
       </div>
       {top1.length > 0 && (
         <div>
           <div className="text-[10px] font-bold uppercase tracking-widest mb-2 flex items-center gap-1.5" style={{ color: "rgba(255,255,255,0.35)" }}>
-            <Star size={10} style={{ color: "#00D4FF" }} /> Group Winners
+            <Star size={10} style={{ color: "#00D4FF" }} /> {t("pred_grp_winners")}
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
             {top1.map(({ group, team }) => (
@@ -282,7 +286,7 @@ function QualifiersSummary({ predictions, allComplete }: { predictions: GroupPre
       {top2.length > 0 && (
         <div>
           <div className="text-[10px] font-bold uppercase tracking-widest mb-2 flex items-center gap-1.5" style={{ color: "rgba(255,255,255,0.35)" }}>
-            <Medal size={10} style={{ color: "#00D4FF" }} /> Runners-up
+            <Medal size={10} style={{ color: "#00D4FF" }} /> {t("pred_runners_up")}
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
             {top2.map(({ group, team }) => (
@@ -299,7 +303,7 @@ function QualifiersSummary({ predictions, allComplete }: { predictions: GroupPre
       {best8.length > 0 && (
         <div>
           <div className="text-[10px] font-bold uppercase tracking-widest mb-2 flex items-center gap-1.5" style={{ color: "rgba(255,255,255,0.35)" }}>
-            <Users size={10} style={{ color: "#00D4FF" }} /> Best 8 Third-Place Teams
+            <Users size={10} style={{ color: "#00D4FF" }} /> {t("pred_best_third")}
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
             {best8.map(({ group, team }, i) => (
@@ -319,6 +323,7 @@ function QualifiersSummary({ predictions, allComplete }: { predictions: GroupPre
 
 // ── Save indicator ────────────────────────────────────────────────────────────
 function SaveIndicator({ status }: { status: "idle"|"saving"|"saved"|"error" }) {
+  const { t } = useLocale();
   if (status === "idle") return null;
   return (
     <span className="flex items-center gap-1.5 text-[11px] font-bold"
@@ -326,7 +331,7 @@ function SaveIndicator({ status }: { status: "idle"|"saving"|"saved"|"error" }) 
       {status === "saving" && <span className="animate-spin">⟳</span>}
       {status === "saved"  && <Check size={11} />}
       {status === "error"  && <AlertCircle size={11} />}
-      {status === "saving" ? "Saving…" : status === "saved" ? "Saved" : "Failed"}
+      {status === "saving" ? t("pred_saving") : status === "saved" ? t("pred_saved") : t("pred_failed")}
     </span>
   );
 }
@@ -339,6 +344,7 @@ interface GroupStagePredictionsProps {
 }
 
 export function GroupStagePredictions({ groupId, locked = false, userId }: GroupStagePredictionsProps) {
+  const { t } = useLocale();
   const [activeGroup, setActiveGroup] = useState("A");
   const [predictions, setPredictions] = useState<GroupPredictions>({});
   const [loaded,      setLoaded]      = useState(false);
@@ -385,7 +391,7 @@ export function GroupStagePredictions({ groupId, locked = false, userId }: Group
       {/* Progress + save status */}
       <div className="rounded-2xl px-4 py-3" style={{ ...glassCard, borderRadius: 18 }}>
         <div className="flex items-center justify-between mb-2">
-          <span className="text-sm font-bold text-white">Group Stage Progress</span>
+          <span className="text-sm font-bold text-white">{t("pred_progress")}</span>
           <div className="flex items-center gap-3">
             <SaveIndicator status={saveStatus} />
             <span className="text-sm font-black" style={{ fontFamily: "var(--font-mono)", color: "#00D4FF" }}>{completedCount} / 12</span>
@@ -396,7 +402,7 @@ export function GroupStagePredictions({ groupId, locked = false, userId }: Group
             style={{ width: `${(completedCount/12)*100}%`, background: "linear-gradient(90deg, #00D4FF, #00FF88)", borderRadius: 3 }} />
         </div>
         <p className="text-[10px] mt-1.5" style={{ color: "rgba(255,255,255,0.25)" }}>
-          Auto-saves as you type · Each match locks 5 min before kickoff
+          {t("pred_autosave_hint")}
         </p>
       </div>
 
@@ -454,7 +460,7 @@ export function GroupStagePredictions({ groupId, locked = false, userId }: Group
               {groupComplete && (
                 <span className="flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-full"
                   style={{ background: "rgba(0,255,136,0.1)", color: "#00FF88", border: "1px solid rgba(0,255,136,0.2)" }}>
-                  <CheckCircle2 size={11} /> Complete
+                  <CheckCircle2 size={11} /> {t("common_complete")}
                 </span>
               )}
             </div>
@@ -478,15 +484,15 @@ export function GroupStagePredictions({ groupId, locked = false, userId }: Group
             <div className="p-4" style={{ ...glassCard, borderRadius: 18 }}>
               <div className="flex items-center gap-2 mb-3">
                 <ArrowUpDown size={14} strokeWidth={1.5} style={{ color: "#00D4FF" }} />
-                <span className="font-display text-lg uppercase tracking-tight text-white">Predicted Table</span>
+                <span className="font-display text-lg uppercase tracking-tight text-white">{t("pred_pred_table")}</span>
               </div>
               <GroupTable standings={standings} />
               <div className="mt-3 flex gap-4">
                 <div className="flex items-center gap-1.5 text-[10px]" style={{ color: "rgba(255,255,255,0.3)" }}>
-                  <div className="w-2 h-2 rounded-sm" style={{ background: "rgba(0,255,136,0.3)" }} /> Top 2 qualify
+                  <div className="w-2 h-2 rounded-sm" style={{ background: "rgba(0,255,136,0.3)" }} /> {t("pred_top2")}
                 </div>
                 <div className="flex items-center gap-1.5 text-[10px]" style={{ color: "rgba(255,255,255,0.3)" }}>
-                  <div className="w-2 h-2 rounded-sm" style={{ background: "rgba(251,191,36,0.3)" }} /> 3rd — may qualify
+                  <div className="w-2 h-2 rounded-sm" style={{ background: "rgba(251,191,36,0.3)" }} /> {t("pred_third_may")}
                 </div>
               </div>
             </div>

@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { GroupStagePredictions } from "@/components/predictions/group-stage-predictions";
 import { TournamentPicks } from "@/components/dashboard/tournament-picks";
 import { GuestStore } from "@/components/ui/guest-signup-modal";
+import { useLocale } from "@/components/i18n/locale-provider";
 
 // ── Shared glass tokens ───────────────────────────────────────────────────────
 const glass = {
@@ -22,10 +23,6 @@ const glassActive = {
   border: "1px solid rgba(0,212,255,0.35)",
 } as const;
 
-const TABS = [
-  { id: "group"      as const, label: "Group Stage",      icon: Target, sub: "36 matches · scores & tables" },
-  { id: "tournament" as const, label: "Tournament Picks", icon: Trophy, sub: "Winner, boot, defence & more"  },
-];
 
 interface PredictionsClientProps {
   groupId:            string;
@@ -39,10 +36,16 @@ interface PredictionsClientProps {
 export function PredictionsClient({
   groupId, groupName, allGroups, userId, isPaid, migrateGuestPicks = false,
 }: PredictionsClientProps) {
+  const { t } = useLocale();
   const [tab,             setTab]             = useState<"group" | "tournament">("group");
   const [groupPickerOpen, setGroupPickerOpen] = useState(false);
   const [migrated,        setMigrated]        = useState(false);
   const router = useRouter();
+
+  const TABS = [
+    { id: "group"      as const, label: t("pred_groupStage"),  icon: Target, sub: t("pred_grp_subtitle") },
+    { id: "tournament" as const, label: t("pred_tournament"),  icon: Trophy, sub: t("pred_trn_subtitle")  },
+  ];
 
   useEffect(() => {
     if (!migrateGuestPicks || migrated) return;
@@ -71,14 +74,14 @@ export function PredictionsClient({
       {/* Page header */}
       <div className="pt-2 pb-1">
         <div className="text-[10px] font-black uppercase tracking-widest mb-1" style={{ color: "#00D4FF" }}>
-          My Bets
+          {t("nav_mybets")}
         </div>
         <h1 className="font-display text-4xl sm:text-5xl uppercase font-black text-white leading-none tracking-tight">
-          Predictions
+          {t("pred_title")}
         </h1>
         <p className="text-xs mt-2" style={{ color: "rgba(255,255,255,0.35)" }}>
           <Lock size={11} style={{ display: "inline", verticalAlign: "middle", marginRight: 4 }} />
-          Matches lock 5 min before kickoff · Tournament picks lock June 11
+          {t("pred_lock_notice")}
         </p>
       </div>
 
@@ -94,7 +97,7 @@ export function PredictionsClient({
             </div>
             <div className="flex-1 min-w-0">
               <div className="text-[10px] font-black uppercase tracking-widest mb-0.5" style={{ color: "#00D4FF" }}>
-                Predicting for
+                {t("pred_predicting_for")}
               </div>
               <div className="font-display text-lg uppercase font-black truncate text-white">{groupName}</div>
             </div>
@@ -117,7 +120,7 @@ export function PredictionsClient({
                   {g.id === groupId && (
                     <span className="text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0"
                       style={{ background: "rgba(0,212,255,0.15)", color: "#00D4FF", border: "1px solid rgba(0,212,255,0.3)" }}>
-                      Active
+                      {t("pred_active")}
                     </span>
                   )}
                 </button>
@@ -133,29 +136,29 @@ export function PredictionsClient({
           style={{ background: "rgba(0,212,255,0.08)", border: "1px solid rgba(0,212,255,0.2)" }}>
           <Users size={14} style={{ color: "#00D4FF" }} />
           <span className="text-sm font-bold" style={{ color: "rgba(255,255,255,0.7)" }}>
-            Predicting for: <span className="text-white">{groupName}</span>
+            {t("pred_predicting_for")}: <span className="text-white">{groupName}</span>
           </span>
         </div>
       )}
 
       {/* Phase tabs */}
       <div className="grid grid-cols-2 gap-2">
-        {TABS.map(t => {
-          const active = tab === t.id;
+        {TABS.map(tab_ => {
+          const active = tab === tab_.id;
           return (
-            <button key={t.id} onClick={() => setTab(t.id)}
+            <button key={tab_.id} onClick={() => setTab(tab_.id)}
               className="flex items-center gap-3 text-left transition-all"
               style={{ ...(active ? glassActive : glass), borderRadius: 18, padding: "14px 16px" }}>
               <div className="h-9 w-9 rounded-xl flex items-center justify-center shrink-0"
                 style={active
                   ? { background: "rgba(0,212,255,0.15)", border: "1px solid rgba(0,212,255,0.35)" }
                   : { background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}>
-                <t.icon size={16} strokeWidth={1.5} style={{ color: active ? "#00D4FF" : "rgba(255,255,255,0.4)" }} />
+                <tab_.icon size={16} strokeWidth={1.5} style={{ color: active ? "#00D4FF" : "rgba(255,255,255,0.4)" }} />
               </div>
               <div className="min-w-0">
                 <div className="text-sm font-bold leading-none mb-1"
-                  style={{ color: active ? "#00D4FF" : "rgba(255,255,255,0.7)" }}>{t.label}</div>
-                <div className="text-[11px]" style={{ color: "rgba(255,255,255,0.3)" }}>{t.sub}</div>
+                  style={{ color: active ? "#00D4FF" : "rgba(255,255,255,0.7)" }}>{tab_.label}</div>
+                <div className="text-[11px]" style={{ color: "rgba(255,255,255,0.3)" }}>{tab_.sub}</div>
               </div>
             </button>
           );

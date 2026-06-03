@@ -6,6 +6,7 @@ import { Eye, EyeOff, Lock, Mail, AlertCircle, ArrowRight, Loader2 } from "lucid
 import { createClient } from "@/lib/supabase/client";
 import { NeonBar } from "@/components/ui/neon-bar";
 import { SocialAuth } from "@/components/auth/social-auth";
+import { useLocale } from "@/components/i18n/locale-provider";
 
 const inputStyle = {
   width: "100%",
@@ -31,6 +32,7 @@ const labelStyle = {
 };
 
 export default function SignInPage() {
+  const { t } = useLocale();
   const [email,    setEmail]    = useState("");
   const [password, setPassword] = useState("");
   const [showPass, setShowPass] = useState(false);
@@ -79,10 +81,10 @@ export default function SignInPage() {
 
           <div>
             <h1 style={{ fontFamily: "var(--font-display)", fontSize: 26, fontWeight: 800, color: "white", textTransform: "uppercase", margin: "0 0 4px" }}>
-              Welcome back
+              {t("auth_welcome_back")}
             </h1>
             <p style={{ fontSize: 13, color: "rgba(255,255,255,0.4)", fontFamily: "var(--font-ui)", margin: 0 }}>
-              Enter your credentials to continue.
+              {t("auth_signin_sub")}
             </p>
           </div>
 
@@ -91,7 +93,7 @@ export default function SignInPage() {
           {/* Email divider */}
           <div className="relative flex items-center gap-3">
             <div className="flex-1 h-px" style={{ background: "rgba(255,255,255,0.08)" }} />
-            <span style={{ fontSize: 11, color: "rgba(255,255,255,0.3)", fontFamily: "var(--font-ui)", fontWeight: 600, whiteSpace: "nowrap" }}>or continue with email</span>
+            <span style={{ fontSize: 11, color: "rgba(255,255,255,0.3)", fontFamily: "var(--font-ui)", fontWeight: 600, whiteSpace: "nowrap" }}>{t("auth_continue_email")}</span>
             <div className="flex-1 h-px" style={{ background: "rgba(255,255,255,0.08)" }} />
           </div>
 
@@ -103,11 +105,11 @@ export default function SignInPage() {
           )}
 
           <div>
-            <label style={labelStyle}>Email</label>
+            <label style={labelStyle}>{t("auth_email")}</label>
             <div className="relative">
               <Mail size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none"
                 style={{ color: "rgba(255,255,255,0.35)" }} />
-              <input type="email" placeholder="you@example.com" value={email}
+              <input type="email" placeholder={t("auth_ph_email")} value={email}
                 onChange={e => setEmail(e.target.value)}
                 onKeyDown={e => e.key === "Enter" && handleSignIn()}
                 onFocus={(e: { target: HTMLInputElement }) => { e.target.style.borderColor = "rgba(0,255,136,0.5)"; e.target.style.boxShadow = "0 0 0 3px rgba(0,255,136,0.1)"; }}
@@ -119,8 +121,8 @@ export default function SignInPage() {
 
           <div>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
-              <label style={{ ...labelStyle, marginBottom: 0 }}>Password</label>
-              <Link href="/reset-password" style={{ fontSize: 11, color: "rgba(255,255,255,0.35)" }}>Forgot?</Link>
+              <label style={{ ...labelStyle, marginBottom: 0 }}>{t("auth_password")}</label>
+              <Link href="/reset-password" style={{ fontSize: 11, color: "rgba(255,255,255,0.35)" }}>{t("auth_forgot")}</Link>
             </div>
             <div className="relative">
               <Lock size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none"
@@ -164,8 +166,8 @@ export default function SignInPage() {
             }}
           >
             {loading
-              ? <><Loader2 size={16} className="animate-spin" /> Signing in...</>
-              : <><span>Sign in</span><ArrowRight size={16} /></>}
+              ? <><Loader2 size={16} className="animate-spin" /> {t("auth_signing_in")}</>
+              : <><span>{t("auth_signin")}</span><ArrowRight size={16} /></>}
           </button>
 
         </div>
@@ -173,8 +175,8 @@ export default function SignInPage() {
 
       {/* Footer */}
       <p style={{ textAlign: "center", fontSize: 13, color: "rgba(255,255,255,0.35)", fontFamily: "var(--font-ui)", margin: 0 }}>
-        Don&apos;t have an account?{" "}
-        <Link href="/signup" style={{ color: "#00FF88", fontWeight: 700 }}>Create one free</Link>
+        {t("auth_no_account")}{" "}
+        <Link href="/signup" style={{ color: "#00FF88", fontWeight: 700 }}>{t("auth_create_free")}</Link>
       </p>
     </>
   );

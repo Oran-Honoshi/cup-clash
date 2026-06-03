@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic";
 import { redirect } from "next/navigation";
 import { GroupStandings } from "@/components/dashboard/group-standings";
 import { getCurrentUserGroup } from "@/lib/services/user-group";
+import { serverT } from "@/lib/server-locale";
 
 export default async function StandingsPage() {
   const { groupId, userId } = await getCurrentUserGroup();

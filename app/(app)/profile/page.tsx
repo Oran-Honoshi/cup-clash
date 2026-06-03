@@ -7,6 +7,7 @@ import { CountrySelector } from "@/components/auth/country-selector";
 import { MemberAvatar, SOCCER_PRESETS, dicebearUrl } from "@/components/ui/member-avatar";
 import { useTheme } from "@/components/theme-provider";
 import type { CountryCode } from "@/lib/types";
+import { useLocale } from "@/components/i18n/locale-provider";
 
 export const dynamic = "force-dynamic";
 
@@ -42,6 +43,7 @@ const btnOutline = {
 } as const;
 
 export default function ProfilePage() {
+  const { t } = useLocale();
   const [profile, setProfile]     = useState<ProfileData>({ name: "", country: null, avatar_url: null, auto_fill_enabled: false, auto_fill_home: 1, auto_fill_away: 0 });
   const [saving, setSaving]       = useState(false);
   const [saved,  setSaved]        = useState(false);
@@ -82,7 +84,7 @@ export default function ProfilePage() {
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 2 * 1024 * 1024) { setError("Photo must be under 2MB"); return; }
+    if (file.size > 2 * 1024 * 1024) { setError(t("prof_err_size")); return; }
     setUploading(true); setError(null);
 
     const sb = createClient();
@@ -104,7 +106,7 @@ export default function ProfilePage() {
     setSaving(true); setError(null);
     const sb = createClient();
     const { data: { user } } = await sb.auth.getUser();
-    if (!user) { setError("Not signed in. Please refresh and try again."); setSaving(false); return; }
+    if (!user) { setError(t("prof_err_auth")); setSaving(false); return; }
 
     const { error: updateError } = await sb.from("profiles")
       .update({
@@ -128,23 +130,23 @@ export default function ProfilePage() {
     return (
       <div className="flex items-center justify-center py-20"
         style={{ color: "rgba(255,255,255,0.35)" }}>
-        Loading profile...
+        {t("prof_loading")}
       </div>
     );
   }
 
   const autoAvatarUrl = dicebearUrl(profile.name || "player", 160);
   const TABS = [
-    { id: "auto",   label: "Auto Avatar", mobileLabel: "Auto"   },
-    { id: "preset", label: "Soccer Role", mobileLabel: "Preset" },
-    { id: "photo",  label: "My Photo",    mobileLabel: "Photo"  },
+    { id: "auto",   label: t("prof_autoAvatar"), mobileLabel: t("prof_autoAvatar") },
+    { id: "preset", label: t("prof_soccerRole"), mobileLabel: t("prof_soccerRole") },
+    { id: "photo",  label: t("prof_photo"),      mobileLabel: t("prof_photo")      },
   ] as const;
 
   return (
     <div className="space-y-6 max-w-xl">
       <div>
         <div className="label-caps mb-1">Account</div>
-        <h1 className="font-display text-4xl sm:text-5xl uppercase text-white tracking-tight">My Profile</h1>
+        <h1 className="font-display text-4xl sm:text-5xl uppercase text-white tracking-tight">{t("prof_my_profile")}</h1>
       </div>
 
       {/* Avatar section */}
@@ -157,7 +159,7 @@ export default function ProfilePage() {
             {tab === "auto" && (
               <button
                 onClick={() => setProfile(p => ({ ...p, name: p.name + " " }))}
-                title="Regenerate"
+                title={t("prof_regenerate")}
                 className="absolute -bottom-1 -right-1 h-7 w-7 rounded-full flex items-center justify-center transition-colors hover:opacity-80"
                 style={{ background: "rgba(18,14,38,0.8)", border: "1px solid rgba(255,255,255,0.2)" }}>
                 <RefreshCw size={12} style={{ color: "rgba(255,255,255,0.6)" }} />
@@ -166,11 +168,11 @@ export default function ProfilePage() {
           </div>
           <div className="min-w-0">
             <div className="font-display text-2xl uppercase text-white truncate">{profile.name || "Your name"}</div>
-            <div className="text-sm mt-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>{profile.country ?? "No country"}</div>
+            <div className="text-sm mt-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>{profile.country ?? t("prof_no_country")}</div>
             <div className="mt-1.5" style={{ fontSize: 11, color: "rgba(255,255,255,0.3)" }}>
-              {tab === "auto"   && "DiceBear auto-generated · unique to your name"}
-              {tab === "preset" && "Soccer role avatar"}
-              {tab === "photo"  && "Your uploaded photo"}
+              {tab === "auto"   && t("prof_auto_desc")}
+              {tab === "preset" && t("prof_preset_desc")}
+              {tab === "photo"  && t("prof_photo_desc")}
             </div>
           </div>
         </div>
@@ -181,19 +183,19 @@ export default function ProfilePage() {
           border: "1px solid rgba(255,255,255,0.08)",
           borderRadius: 14,
         }}>
-          {TABS.map(t => (
-            <button key={t.id} onClick={() => setTab(t.id)}
+          {TABS.map(item => (
+            <button key={item.id} onClick={() => setTab(item.id)}
               className="flex-1 py-2.5 text-[10px] sm:text-xs font-bold uppercase tracking-wider whitespace-nowrap overflow-hidden transition-all"
               style={{
                 borderRadius: 10,
-                background: tab === t.id ? "rgba(0,212,255,0.15)" : "transparent",
-                border: tab === t.id ? "1px solid rgba(0,212,255,0.4)" : "1px solid transparent",
-                color: tab === t.id ? "#00D4FF" : "rgba(255,255,255,0.35)",
+                background: tab === item.id ? "rgba(0,212,255,0.15)" : "transparent",
+                border: tab === item.id ? "1px solid rgba(0,212,255,0.4)" : "1px solid transparent",
+                color: tab === item.id ? "#00D4FF" : "rgba(255,255,255,0.35)",
                 cursor: "pointer",
                 fontFamily: "var(--font-ui)",
               }}>
-              <span className="sm:hidden">{t.mobileLabel}</span>
-              <span className="hidden sm:inline">{t.label}</span>
+              <span className="sm:hidden">{item.mobileLabel}</span>
+              <span className="hidden sm:inline">{item.label}</span>
             </button>
           ))}
         </div>
@@ -206,10 +208,10 @@ export default function ProfilePage() {
               className="h-32 w-32 mx-auto rounded-full"
               style={{ background: "rgba(255,255,255,0.06)", boxShadow: "0 0 0 4px rgba(0,212,255,0.2)" }} />
             <p className="text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>
-              Your avatar is generated automatically from your name. Every name produces a unique, consistent illustrated face.
+              {t("prof_auto_exp")}
             </p>
             <button onClick={() => setProfile(p => ({ ...p, avatar_url: null }))} style={btnOutline}>
-              Use this avatar
+              {t("prof_use_auto")}
             </button>
           </div>
         )}
@@ -217,7 +219,7 @@ export default function ProfilePage() {
         {/* Soccer role presets */}
         {tab === "preset" && (
           <div>
-            <p className="text-xs mb-3" style={{ color: "rgba(255,255,255,0.4)" }}>Pick your role on the pitch:</p>
+            <p className="text-xs mb-3" style={{ color: "rgba(255,255,255,0.4)" }}>{t("prof_pick_role")}</p>
             <div className="grid grid-cols-5 gap-1 sm:gap-2">
               {SOCCER_PRESETS.map(preset => {
                 const active = profile.avatar_url === `preset:${preset.id}`;
@@ -264,7 +266,7 @@ export default function ProfilePage() {
                 <button
                   onClick={() => { setProfile(p => ({ ...p, avatar_url: null })); setTab("auto"); }}
                   style={btnOutline}>
-                  <X size={14} />Remove photo
+                  <X size={14} />{t("prof_remove")}
                 </button>
               </>
             ) : (
@@ -273,10 +275,10 @@ export default function ProfilePage() {
                 <Camera size={28} style={{ color: "rgba(255,255,255,0.3)" }} />
               </div>
             )}
-            <p className="text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>Upload a photo. Max 2MB, JPG or PNG.</p>
+            <p className="text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>{t("prof_upload_info")}</p>
             <button onClick={() => fileRef.current?.click()} disabled={uploading}
               style={{ ...btnOutline, opacity: uploading ? 0.6 : 1 }}>
-              <Upload size={14} />{uploading ? "Uploading..." : "Choose photo"}
+              <Upload size={14} />{uploading ? t("prof_uploading") : t("prof_choose")}
             </button>
             <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp"
               className="hidden" onChange={handlePhotoUpload} />
@@ -288,11 +290,11 @@ export default function ProfilePage() {
       <div style={{ ...glassCard, padding: 20 }}>
         <label className="block mb-2"
           style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "rgba(255,255,255,0.4)", fontFamily: "var(--font-ui)" }}>
-          Display name
+          {t("auth_displayName")}
         </label>
         <input type="text" value={profile.name}
           onChange={e => setProfile(p => ({ ...p, name: e.target.value }))}
-          placeholder="How your friends will see you"
+          placeholder={t("auth_ph_name")}
           className="w-full"
           style={{
             padding: "12px 16px", borderRadius: 12,
@@ -303,13 +305,13 @@ export default function ProfilePage() {
             transition: "all 0.15s",
           }} />
         <p className="mt-2" style={{ fontSize: 11, color: "rgba(255,255,255,0.3)" }}>
-          Your auto avatar updates live as you type.
+          {t("prof_name_hint")}
         </p>
       </div>
 
       {/* Country */}
       <div style={{ ...glassCard, padding: 20 }}>
-        <div className="label-caps mb-3">Your team</div>
+        <div className="label-caps mb-3">{t("prof_yourTeam")}</div>
         <CountrySelector value={profile.country} onChange={code => setProfile(p => ({ ...p, country: code }))} />
       </div>
 
@@ -318,7 +320,7 @@ export default function ProfilePage() {
         <div className="flex items-center gap-2 mb-1">
           <Zap size={15} style={{ color: "#00D4FF" }} />
           <span style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "rgba(255,255,255,0.5)", fontFamily: "var(--font-ui)" }}>
-            Auto-fill Safety Net
+            {t("prof_af_title")}
           </span>
         </div>
         <p className="mb-4" style={{ fontSize: 12, color: "rgba(255,255,255,0.4)", lineHeight: 1.5 }}>
@@ -330,9 +332,9 @@ export default function ProfilePage() {
         {/* Toggle row */}
         <div className="flex items-center justify-between gap-4 mb-4">
           <div>
-            <div className="text-sm font-bold" style={{ color: "white" }}>Auto-fill my predictions</div>
+            <div className="text-sm font-bold" style={{ color: "white" }}>{t("prof_af_label")}</div>
             <div style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", marginTop: 2 }}>
-              Submit a fallback score before the lock window
+              {t("prof_af_desc")}
             </div>
           </div>
           <button
@@ -351,7 +353,7 @@ export default function ProfilePage() {
             <div className="grid grid-cols-2 gap-3">
               <div>
                 <label style={{ display: "block", fontSize: 10, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "0.12em", color: "rgba(255,255,255,0.5)", fontFamily: "var(--font-ui)", marginBottom: 6 }}>
-                  Default home score
+                  {t("prof_af_home")}
                 </label>
                 <input
                   type="number" min={0} max={5}
@@ -366,7 +368,7 @@ export default function ProfilePage() {
               </div>
               <div>
                 <label style={{ display: "block", fontSize: 10, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "0.12em", color: "rgba(255,255,255,0.5)", fontFamily: "var(--font-ui)", marginBottom: 6 }}>
-                  Default away score
+                  {t("prof_af_away")}
                 </label>
                 <input
                   type="number" min={0} max={5}
@@ -414,7 +416,7 @@ export default function ProfilePage() {
           transition: "opacity 0.15s",
         }}>
         {saved && <Check size={16} />}
-        {saving ? "Saving..." : saved ? "Profile saved!" : "Save changes"}
+        {saving ? t("prof_saving") : saved ? t("prof_saved") : t("prof_saveChanges")}
       </button>
     </div>
   );

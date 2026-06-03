@@ -7,6 +7,7 @@ import { NeonBar } from "@/components/ui/neon-bar";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Trophy, Users, DollarSign, ArrowRight, Plus, LogIn, KeyRound } from "lucide-react";
 import Link from "next/link";
+import { serverT } from "@/lib/server-locale";
 
 function sbAdmin() {
   return createAdminClient(
@@ -23,12 +24,12 @@ export default async function GroupsPage() {
       <div className="space-y-6">
         <div>
           <div style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: "0.12em", color: "#00D4FF", fontFamily: "var(--font-ui)", marginBottom: 4 }}>Groups</div>
-          <h1 className="font-display text-4xl sm:text-5xl uppercase tracking-tight text-white">My Groups</h1>
+          <h1 className="font-display text-4xl sm:text-5xl uppercase tracking-tight text-white">{serverT("grp_title")}</h1>
         </div>
         <EmptyState
           icon={<Trophy size={32} style={{ color: "#00D4FF" }} />}
-          title="Join a group to compete"
-          body="Create your own prediction league or join one with a passkey."
+          title={serverT("grp_compete")}
+          body={serverT("grp_create_or")}
         />
         <div className="flex flex-col sm:flex-row gap-3">
           <Link href="/signin?next=/create-group">
@@ -36,7 +37,7 @@ export default async function GroupsPage() {
               className="flex items-center gap-2 px-5 py-3 rounded-xl font-bold text-sm uppercase tracking-wider transition-all hover:-translate-y-0.5"
               style={{ background: "linear-gradient(135deg, #00FF88, #00D4FF)", color: "#0B141B", boxShadow: "0 0 20px rgba(0,255,136,0.25)" }}
             >
-              <Plus size={16} /> Create a group
+              <Plus size={16} /> {serverT("grp_create")}
             </button>
           </Link>
           <Link href="/signin?next=/join/enter">
@@ -44,7 +45,7 @@ export default async function GroupsPage() {
               className="flex items-center gap-2 px-5 py-3 rounded-xl font-bold text-sm uppercase tracking-wider transition-all hover:-translate-y-0.5"
               style={{ background: "rgba(0,212,255,0.1)", border: "1px solid rgba(0,212,255,0.25)", color: "#00D4FF" }}
             >
-              <KeyRound size={15} /> Join with passkey
+              <KeyRound size={15} /> {serverT("grp_join_pk")}
             </button>
           </Link>
         </div>
@@ -79,7 +80,7 @@ export default async function GroupsPage() {
     <div className="space-y-6">
       <div className="flex items-end justify-between flex-wrap gap-3">
         <div>
-          <div style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: "0.12em", color: "#00D4FF", fontFamily: "var(--font-ui)", marginBottom: 4 }}>Your groups</div>
+          <div style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: "0.12em", color: "#00D4FF", fontFamily: "var(--font-ui)", marginBottom: 4 }}>{serverT("grp_your")}</div>
           <h1 className="font-display text-4xl sm:text-5xl uppercase tracking-tight text-white">My Groups</h1>
         </div>
         <div className="flex gap-2">
@@ -92,7 +93,7 @@ export default async function GroupsPage() {
           <Link href="/create-group">
             <button className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-sm uppercase tracking-wider transition-all hover:-translate-y-0.5"
               style={{ background: "linear-gradient(135deg, #00FF88, #00D4FF)", color: "#0B141B", boxShadow: "0 0 20px rgba(0,255,136,0.25)" }}>
-              <Plus size={16} /> New Group
+              <Plus size={16} /> {serverT("common_new_group")}
             </button>
           </Link>
         </div>
@@ -101,9 +102,9 @@ export default async function GroupsPage() {
       {groups.length === 0 ? (
         <EmptyState
           icon={<Trophy size={32} style={{ color: "#00D4FF" }} />}
-          title="No groups yet"
-          body="Create a group or join one with a passkey."
-          cta={{ label: "Create Group", href: "/create-group" }}
+          title={serverT("grp_none")}
+          body={serverT("grp_none_sub")}
+          cta={{ label: serverT("grp_create"), href: "/create-group" }}
         />
       ) : (
         <div className="grid gap-4 sm:grid-cols-2">
@@ -149,7 +150,7 @@ export default async function GroupsPage() {
                   <Link href={`/groups/${m.group_id}`} className="flex-1">
                     <button className="w-full py-2.5 rounded-xl font-bold text-sm uppercase tracking-wider flex items-center justify-center gap-2"
                       style={{ background: "linear-gradient(135deg, #00FF88, #00D4FF)", color: "#0B141B" }}>
-                      View Group <ArrowRight size={14} />
+                      {serverT("common_view_group")} <ArrowRight size={14} />
                     </button>
                   </Link>
                   <ShareGroup groupName={g.name} adminName={userProfile.name} passkey={g.passkey} compact />

@@ -3,6 +3,7 @@ export const dynamic = "force-dynamic";
 import { redirect } from "next/navigation";
 import { KnockoutBracket } from "@/components/dashboard/knockout-bracket";
 import { getCurrentUserGroup } from "@/lib/services/user-group";
+import { serverT } from "@/lib/server-locale";
 
 export default async function BracketPage() {
   const { groupId, userId } = await getCurrentUserGroup();

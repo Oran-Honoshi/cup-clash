@@ -25,6 +25,8 @@ export function LocaleProvider({ children }: { children: ReactNode }) {
   const setLocale = (l: Locale) => {
     setLocaleState(l);
     try { localStorage.setItem("cupclash_locale", l); } catch {}
+    // Also set a cookie so server components can read the locale
+    document.cookie = `cupclash_locale=${l};path=/;max-age=31536000;samesite=lax`;
     applyToDOM(l);
   };
 

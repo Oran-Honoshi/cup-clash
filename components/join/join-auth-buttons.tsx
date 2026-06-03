@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useLocale } from "@/components/i18n/locale-provider";
 
 interface JoinAuthButtonsProps {
   code:      string;
@@ -19,6 +20,7 @@ function storePendingJoin(passkey: string, groupId: string, groupName: string) {
 
 export function JoinAuthButtons({ code, groupId, groupName }: JoinAuthButtonsProps) {
   const router = useRouter();
+  const { t } = useLocale();
 
   return (
     <div className="space-y-2">
@@ -29,7 +31,7 @@ export function JoinAuthButtons({ code, groupId, groupName }: JoinAuthButtonsPro
         }}
         className="w-full py-3.5 rounded-xl font-bold text-sm uppercase tracking-wider flex items-center justify-center gap-2"
         style={{ background: "linear-gradient(135deg, #00FF88, #00D4FF)", color: "#0B141B" }}>
-        Create account &amp; Join
+        {t("auth_signup_join")}
       </button>
       <button
         onClick={() => {
@@ -38,7 +40,7 @@ export function JoinAuthButtons({ code, groupId, groupName }: JoinAuthButtonsPro
         }}
         className="w-full py-3 rounded-xl font-bold text-sm uppercase tracking-wider"
         style={{ border: "1px solid rgba(0,212,255,0.2)", color: "#0891B2", background: "rgba(0,212,255,0.05)" }}>
-        Already have an account? Sign in
+        {t("auth_signin_instead")}
       </button>
     </div>
   );

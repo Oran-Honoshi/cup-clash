@@ -9,6 +9,7 @@ import { MemberAvatar } from "@/components/ui/member-avatar";
 import { NudgeButton } from "@/components/admin/nudge-button";
 import { cn } from "@/lib/utils";
 import type { Group, Member } from "@/lib/types";
+import { useLocale } from "@/components/i18n/locale-provider";
 
 function getClient() {
   return createSupabaseClient(
@@ -31,6 +32,7 @@ const glass = {
 
 export function AdminPanel({ group, initialMembers }: AdminPanelProps) {
   const router = useRouter();
+  const { t } = useLocale();
   const [members,      setMembers]      = useState<Member[]>(initialMembers);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleting,          setDeleting]          = useState(false);
@@ -69,7 +71,7 @@ export function AdminPanel({ group, initialMembers }: AdminPanelProps) {
   };
 
   const savePayouts = async () => {
-    if (totalPct !== 100) { setPayoutError("Must add up to 100%"); return; }
+    if (totalPct !== 100) { setPayoutError(t("adm_payout_err")); return; }
     setPayoutSaving(true); setPayoutError(null);
     if (process.env.NEXT_PUBLIC_SUPABASE_URL) {
       const sb = getClient();
@@ -111,7 +113,7 @@ export function AdminPanel({ group, initialMembers }: AdminPanelProps) {
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2.5">
             <Users size={18} strokeWidth={1.5} style={{ color: "#00D4FF" }} />
-            <span className="font-display text-xl uppercase tracking-tight text-white">Member Payments</span>
+            <span className="font-display text-xl uppercase tracking-tight text-white">{t("adm_payments")}</span>
           </div>
           <span className="text-xs font-bold uppercase tracking-widest" style={{ color: "#00D4FF" }}>
             {paidCount}/{members.length} Paid
@@ -179,7 +181,7 @@ export function AdminPanel({ group, initialMembers }: AdminPanelProps) {
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2.5">
               <Trophy size={18} strokeWidth={1.5} style={{ color: "#fbbf24" }} />
-              <span className="font-display text-xl uppercase tracking-tight text-white">Payout Split</span>
+              <span className="font-display text-xl uppercase tracking-tight text-white">{t("adm_payout_split")}</span>
             </div>
             <span className="text-xs font-bold"
               style={{ color: totalPct === 100 ? "#00FF88" : "#f87171" }}>
@@ -224,13 +226,13 @@ export function AdminPanel({ group, initialMembers }: AdminPanelProps) {
 
           {(payoutError || totalPct !== 100) && (
             <p className="text-xs mb-3" style={{ color: "#f87171" }}>
-              {payoutError ?? "Must add up to exactly 100%"}
+              {payoutError ?? t("adm_payout_err")}
             </p>
           )}
 
           <Button onClick={savePayouts} loading={payoutSaving} disabled={totalPct !== 100} size="sm" className="w-full"
             leftIcon={payoutSaved ? <Check size={14} /> : <Trophy size={14} />}>
-            {payoutSaved ? "Saved!" : "Save Payout Split"}
+            {payoutSaved ? t("adm_saved") : t("adm_save_payouts")}
           </Button>
         </div>
 
@@ -256,7 +258,7 @@ export function AdminPanel({ group, initialMembers }: AdminPanelProps) {
         <div className="rounded-2xl p-5" style={glass}>
           <div className="flex items-center gap-2.5 mb-4">
             <Link2 size={18} strokeWidth={1.5} style={{ color: "#00D4FF" }} />
-            <span className="font-display text-xl uppercase tracking-tight text-white">Invite Link</span>
+            <span className="font-display text-xl uppercase tracking-tight text-white">{t("adm_invite")}</span>
           </div>
           <div className="rounded-xl p-3 text-xs break-all mb-3 font-mono"
             style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.55)" }}>
@@ -265,12 +267,12 @@ export function AdminPanel({ group, initialMembers }: AdminPanelProps) {
           <div className="flex gap-2">
             <Button onClick={copyInviteLink} variant="outline" size="sm" className="flex-1"
               leftIcon={copied ? <Check size={14} /> : <Copy size={14} />}>
-              {copied ? "Copied!" : "Copy Link"}
+              {copied ? t("adm_copied") : t("adm_copy")}
             </Button>
-            <Button variant="outline" size="sm" leftIcon={<RefreshCw size={14} />}>New Code</Button>
+            <Button variant="outline" size="sm" leftIcon={<RefreshCw size={14} />}>{t("adm_new_code")}</Button>
           </div>
           <p className="mt-3 text-[11px]" style={{ color: "rgba(255,255,255,0.3)" }}>
-            Share this link with your group. Anyone with it can join.
+            {t("adm_invite_hint")}
           </p>
         </div>
       </div>
@@ -280,16 +282,16 @@ export function AdminPanel({ group, initialMembers }: AdminPanelProps) {
       <div className="rounded-2xl p-5" style={{ ...glass, border: "1px solid rgba(239,68,68,0.2)" }}>
         <div className="flex items-center gap-2.5 mb-3">
           <Trash2 size={16} style={{ color: "#f87171" }} />
-          <span className="font-display text-lg uppercase tracking-tight" style={{ color: "#f87171" }}>Danger Zone</span>
+          <span className="font-display text-lg uppercase tracking-tight" style={{ color: "#f87171" }}>{t("adm_danger")}</span>
         </div>
         <p className="text-sm mb-4" style={{ color: "rgba(255,255,255,0.4)" }}>
-          Permanently delete this group and all associated data. This cannot be undone.
+          {t("adm_danger_warn")}
         </p>
         <button
           onClick={() => setShowDeleteConfirm(true)}
           className="w-full py-3 rounded-xl font-bold text-sm uppercase tracking-wider flex items-center justify-center gap-2"
           style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.25)", color: "#f87171" }}>
-          <Trash2 size={14} /> Delete Group
+          <Trash2 size={14} /> {t("grp_delete")}
         </button>
       </div>
 
@@ -301,12 +303,12 @@ export function AdminPanel({ group, initialMembers }: AdminPanelProps) {
                 <Trash2 size={18} style={{ color: "#f87171" }} />
               </div>
               <div>
-                <div className="font-display text-lg uppercase font-black text-white">Delete Group?</div>
-                <div className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>This cannot be undone</div>
+                <div className="font-display text-lg uppercase font-black text-white">{t("grp_del_title")}</div>
+                <div className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>{t("grp_del_undo")}</div>
               </div>
             </div>
             <p className="text-sm" style={{ color: "rgba(255,255,255,0.6)" }}>
-              All members, predictions, and chat history will be permanently deleted.
+              {t("adm_del_body")}
             </p>
             <div className="flex gap-3">
               <button
@@ -314,14 +316,14 @@ export function AdminPanel({ group, initialMembers }: AdminPanelProps) {
                 disabled={deleting}
                 className="flex-1 py-3 rounded-xl font-bold text-sm"
                 style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.6)" }}>
-                Cancel
+                {t("common_cancel")}
               </button>
               <button
                 onClick={handleDelete}
                 disabled={deleting}
                 className="flex-1 py-3 rounded-xl font-bold text-sm disabled:opacity-50"
                 style={{ background: "rgba(239,68,68,0.15)", border: "1px solid rgba(239,68,68,0.35)", color: "#f87171" }}>
-                {deleting ? "Deleting…" : "Delete"}
+                {deleting ? t("grp_deleting") : t("common_delete")}
               </button>
             </div>
           </div>

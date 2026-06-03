@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { X, Users, ArrowRight } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { useLocale } from "@/components/i18n/locale-provider";
 
 interface PendingJoin {
   passkey:   string;
@@ -14,6 +15,7 @@ interface PendingJoin {
 export function JoinPromptModal() {
   const router   = useRouter();
   const pathname = usePathname();
+  const { t }    = useLocale();
   const [pending, setPending] = useState<PendingJoin | null>(null);
 
   useEffect(() => {
@@ -82,7 +84,7 @@ export function JoinPromptModal() {
           <div className="flex items-start justify-between gap-3">
             <div>
               <div className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: "#00D4FF" }}>
-                You&apos;re invited to join
+                {t("grp_invited_to")}
               </div>
               <div className="font-display text-2xl uppercase font-black text-white leading-tight">
                 {pending.groupName}
@@ -102,7 +104,7 @@ export function JoinPromptModal() {
             style={{ background: "rgba(0,212,255,0.06)", border: "1px solid rgba(0,212,255,0.18)" }}>
             <div>
               <div className="text-[10px] font-bold uppercase tracking-widest mb-0.5" style={{ color: "rgba(0,212,255,0.7)" }}>
-                Passkey
+                {t("grp_passkey")}
               </div>
               <div className="font-mono font-black text-xl tracking-widest text-white">
                 {pending.passkey}
@@ -112,7 +114,7 @@ export function JoinPromptModal() {
           </div>
 
           <p className="text-sm" style={{ color: "rgba(255,255,255,0.45)" }}>
-            You created an account via an invite link. Complete the last step to join the group and start predicting.
+            {t("grp_complete_step")}
           </p>
 
           {/* Actions */}
@@ -125,13 +127,13 @@ export function JoinPromptModal() {
                 border: "1px solid rgba(255,255,255,0.1)",
                 color: "rgba(255,255,255,0.5)",
               }}>
-              Later
+              {t("common_later")}
             </button>
             <button
               onClick={goJoin}
               className="flex-1 py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 transition-all"
               style={{ background: "linear-gradient(135deg, #00FF88, #00D4FF)", color: "#0B141B" }}>
-              Join Group <ArrowRight size={14} />
+              {t("common_joinGroup")} <ArrowRight size={14} />
             </button>
           </div>
         </div>
