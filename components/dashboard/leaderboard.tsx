@@ -131,10 +131,30 @@ export function Leaderboard({ members, currentUserId, groupId, showGhost = true 
                   <MemberAvatar name={member.name} avatarUrl={member.avatarUrl} size="md" />
                 </div>
 
-                {/* Bar */}
+                {/* Name — outside the bar so it never gets clipped */}
                 <div
                   style={{
-                    marginTop: 6,
+                    marginTop: 5,
+                    marginBottom: 3,
+                    fontFamily: "var(--font-ui)",
+                    fontWeight: 800,
+                    fontSize: 10,
+                    color: isMe ? "#00FF88" : "white",
+                    textTransform: "uppercase",
+                    textAlign: "center",
+                    width: "100%",
+                    padding: "0 2px",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {member.name}
+                </div>
+
+                {/* Bar — shows only points + rank label */}
+                <div
+                  style={{
                     width: "100%",
                     height: PODIUM_BAR_HEIGHTS[pos],
                     borderRadius: "10px 10px 0 0",
@@ -142,32 +162,16 @@ export function Leaderboard({ members, currentUserId, groupId, showGhost = true 
                     flexDirection: "column",
                     alignItems: "center",
                     justifyContent: "center",
-                    gap: 2,
+                    gap: 1,
                     ...PODIUM_BAR_STYLES[pos],
                   }}
                 >
                   <div
                     style={{
-                      fontFamily: "var(--font-ui)",
-                      fontWeight: 800,
-                      fontSize: 11,
-                      color: "white",
-                      textTransform: "uppercase",
-                      textAlign: "center",
-                      padding: "0 4px",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "nowrap",
-                      maxWidth: "100%",
-                    }}
-                  >
-                    {member.name}
-                  </div>
-                  <div
-                    style={{
                       fontFamily: "var(--font-mono)",
                       fontWeight: 900,
-                      fontSize: 16,
+                      fontSize: 18,
+                      lineHeight: 1,
                       color: PODIUM_POINT_COLORS[pos],
                     }}
                   >
@@ -239,7 +243,7 @@ export function Leaderboard({ members, currentUserId, groupId, showGhost = true 
         </div>
 
         {/* Rows: 4th place onward */}
-        <div className="divide-y overflow-y-auto" style={{ borderColor: "rgba(255,255,255,0.05)", maxHeight: "min(480px, 55vh)" }}>
+        <div className="divide-y" style={{ borderColor: "rgba(255,255,255,0.05)" }}>
           {tableDisplay.map((member) => {
             const isCurrentUser = member.id === currentUserId;
             const isGhost       = member.isGhost;
