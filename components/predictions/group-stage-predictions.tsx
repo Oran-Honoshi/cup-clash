@@ -140,10 +140,10 @@ function MatchCard({ match, prediction, onChange, globalLocked }: {
   }[status];
 
   return (
-    <div style={{ ...cardStyle, borderRadius: 16, padding: "12px 14px", opacity: matchLocked ? 0.7 : 1 }}>
+    <div style={{ ...cardStyle, borderRadius: 16, padding: "8px 12px", opacity: matchLocked ? 0.7 : 1, width: "100%" }}>
 
       {/* Row 1 — meta strip */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
         <div style={{ fontSize: 10, color: "rgba(255,255,255,0.35)", fontFamily: "var(--font-ui)" }}>
           {new Date(match.utcTime).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
           {" · "}{match.time} {match.timezone}
@@ -169,10 +169,10 @@ function MatchCard({ match, prediction, onChange, globalLocked }: {
       </div>
 
       {/* Row 2 — scoreboard row: home | score : score | away */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center justify-center gap-2 w-full">
         {/* Home team — right-aligned, flag closest to the scores */}
-        <div className="flex items-center gap-1.5 flex-1 justify-end">
-          <span style={{ fontSize: 11, fontFamily: "var(--font-ui)", color: "white", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.04em" }}>
+        <div className="flex items-center gap-1.5 flex-1 justify-end min-w-0">
+          <span className="truncate" style={{ fontSize: 11, fontFamily: "var(--font-ui)", color: "white", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.04em" }}>
             {(match.home ?? "").substring(0, 3).toUpperCase()}
           </span>
           <Flag code={match.homeFlagCode ?? "un"} size="sm" />
@@ -184,9 +184,9 @@ function MatchCard({ match, prediction, onChange, globalLocked }: {
           <ScoreInputCC value={prediction.away} onChange={v => onChange(prediction.home, v)} disabled={matchLocked} />
         </div>
         {/* Away team — left-aligned, flag closest to the scores */}
-        <div className="flex items-center gap-1.5 flex-1">
+        <div className="flex items-center gap-1.5 flex-1 min-w-0">
           <Flag code={match.awayFlagCode ?? "un"} size="sm" />
-          <span style={{ fontSize: 11, fontFamily: "var(--font-ui)", color: "white", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.04em" }}>
+          <span className="truncate" style={{ fontSize: 11, fontFamily: "var(--font-ui)", color: "white", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.04em" }}>
             {(match.away ?? "").substring(0, 3).toUpperCase()}
           </span>
         </div>
@@ -404,7 +404,8 @@ export function GroupStagePredictions({ groupId, locked = false, userId }: Group
       </div>
 
       {/* Group pills — scrollable row */}
-      <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-hide">
+      <div className="flex gap-1.5 overflow-x-auto pb-1 w-full min-w-0"
+        style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
         {GROUPS.map(g => {
           const complete = isGroupComplete(g, predictions);
           const isActive = g === activeGroup;
