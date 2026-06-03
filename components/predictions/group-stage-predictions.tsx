@@ -180,7 +180,7 @@ function MatchCard({ match, prediction, onChange, globalLocked }: {
             <Flag code={match.homeFlagCode ?? "un"} size="sm" />
           </div>
           {/* Score inputs — centered */}
-          <div style={{ display: "table-cell", width: "20%", textAlign: "center", verticalAlign: "middle" }}>
+          <div style={{ display: "table-cell", width: 120, textAlign: "center", verticalAlign: "middle" }}>
             <div style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
               <ScoreInputCC value={prediction.home} onChange={v => onChange(v, prediction.away)} disabled={matchLocked} />
               <span style={{ fontFamily: "var(--font-mono)", fontSize: 16, fontWeight: 700, color: "rgba(255,255,255,0.25)" }}>:</span>
