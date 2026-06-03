@@ -80,9 +80,13 @@ export interface Translations {
   prof_displayName: string;
 
   // Dashboard
-  dash_title:      string;
-  dash_welcome:    string;
-  dash_nextMatch:  string;
+  dash_title:        string;
+  dash_welcome:      string;
+  dash_nextMatch:    string;
+  dash_guest_banner: string;
+  dash_guest_sub:    string;
+  dash_create_group: string;
+  dash_sign_in:      string;
 
   // Common
   common_save:      string;
@@ -297,9 +301,13 @@ const en: Translations = {
   prof_country:     "Country",
   prof_displayName: "Display name",
 
-  dash_title:     "Dashboard",
-  dash_welcome:   "Welcome",
-  dash_nextMatch: "Next Match",
+  dash_title:        "Dashboard",
+  dash_welcome:      "Welcome",
+  dash_nextMatch:    "Next Match",
+  dash_guest_banner: "You're exploring as a guest. No account needed yet.",
+  dash_guest_sub:    "Save predictions, create a group, or join one to get started.",
+  dash_create_group: "Create Group",
+  dash_sign_in:      "Sign in",
 
   common_save:      "Save",
   common_cancel:    "Cancel",
@@ -500,9 +508,13 @@ const fr: Translations = {
   prof_country:     "Pays",
   prof_displayName: "Nom affiché",
 
-  dash_title:     "Tableau de bord",
-  dash_welcome:   "Bienvenue",
-  dash_nextMatch: "Prochain match",
+  dash_title:        "Tableau de bord",
+  dash_welcome:      "Bienvenue",
+  dash_nextMatch:    "Prochain match",
+  dash_guest_banner: "Vous explorez en tant qu'invité. Pas besoin de compte.",
+  dash_guest_sub:    "Sauvegardez vos pronostics, créez ou rejoignez un groupe.",
+  dash_create_group: "Créer un groupe",
+  dash_sign_in:      "Se connecter",
 
   common_save:      "Enregistrer",
   common_cancel:    "Annuler",
@@ -703,9 +715,13 @@ const de: Translations = {
   prof_country:     "Land",
   prof_displayName: "Anzeigename",
 
-  dash_title:     "Übersicht",
-  dash_welcome:   "Willkommen",
-  dash_nextMatch: "Nächstes Spiel",
+  dash_title:        "Übersicht",
+  dash_welcome:      "Willkommen",
+  dash_nextMatch:    "Nächstes Spiel",
+  dash_guest_banner: "Du erkundest als Gast. Noch kein Konto nötig.",
+  dash_guest_sub:    "Speichere Tipps, erstelle oder tritt einer Gruppe bei.",
+  dash_create_group: "Gruppe erstellen",
+  dash_sign_in:      "Anmelden",
 
   common_save:      "Speichern",
   common_cancel:    "Abbrechen",
@@ -906,9 +922,13 @@ const nl: Translations = {
   prof_country:     "Land",
   prof_displayName: "Weergavenaam",
 
-  dash_title:     "Dashboard",
-  dash_welcome:   "Welkom",
-  dash_nextMatch: "Volgende wedstrijd",
+  dash_title:        "Dashboard",
+  dash_welcome:      "Welkom",
+  dash_nextMatch:    "Volgende wedstrijd",
+  dash_guest_banner: "Je verkent als gast. Nog geen account nodig.",
+  dash_guest_sub:    "Sla voorspellingen op, maak een groep of sluit je aan.",
+  dash_create_group: "Groep aanmaken",
+  dash_sign_in:      "Inloggen",
 
   common_save:      "Opslaan",
   common_cancel:    "Annuleren",
@@ -1109,9 +1129,13 @@ const es: Translations = {
   prof_country:     "País",
   prof_displayName: "Nombre visible",
 
-  dash_title:     "Panel",
-  dash_welcome:   "Bienvenido",
-  dash_nextMatch: "Próximo partido",
+  dash_title:        "Panel",
+  dash_welcome:      "Bienvenido",
+  dash_nextMatch:    "Próximo partido",
+  dash_guest_banner: "Estás explorando como invitado. Aún no necesitas cuenta.",
+  dash_guest_sub:    "Guarda pronósticos, crea un grupo o únete a uno.",
+  dash_create_group: "Crear grupo",
+  dash_sign_in:      "Iniciar sesión",
 
   common_save:      "Guardar",
   common_cancel:    "Cancelar",
@@ -1312,9 +1336,13 @@ const pt: Translations = {
   prof_country:     "País",
   prof_displayName: "Nome de exibição",
 
-  dash_title:     "Painel",
-  dash_welcome:   "Bem-vindo",
-  dash_nextMatch: "Próximo jogo",
+  dash_title:        "Painel",
+  dash_welcome:      "Bem-vindo",
+  dash_nextMatch:    "Próximo jogo",
+  dash_guest_banner: "Você está explorando como visitante. Sem conta por enquanto.",
+  dash_guest_sub:    "Salve palpites, crie um grupo ou entre em um.",
+  dash_create_group: "Criar grupo",
+  dash_sign_in:      "Entrar",
 
   common_save:      "Salvar",
   common_cancel:    "Cancelar",
@@ -1515,9 +1543,13 @@ const he: Translations = {
   prof_country:     "מדינה",
   prof_displayName: "שם תצוגה",
 
-  dash_title:     "לוח בקרה",
-  dash_welcome:   "ברוך הבא",
-  dash_nextMatch: "המשחק הבא",
+  dash_title:        "לוח בקרה",
+  dash_welcome:      "ברוך הבא",
+  dash_nextMatch:    "המשחק הבא",
+  dash_guest_banner: "אתה גולש כאורח. עדיין לא צריך חשבון.",
+  dash_guest_sub:    "שמור ניחושים, צור קבוצה או הצטרף לאחת.",
+  dash_create_group: "יצירת קבוצה",
+  dash_sign_in:      "כניסה",
 
   common_save:      "שמירה",
   common_cancel:    "ביטול",
@@ -1718,9 +1750,13 @@ const ar: Translations = {
   prof_country:     "البلد",
   prof_displayName: "الاسم المعروض",
 
-  dash_title:     "لوحة القيادة",
-  dash_welcome:   "مرحباً",
-  dash_nextMatch: "المباراة القادمة",
+  dash_title:        "لوحة القيادة",
+  dash_welcome:      "مرحباً",
+  dash_nextMatch:    "المباراة القادمة",
+  dash_guest_banner: "أنت تستكشف كضيف. لا حاجة لحساب بعد.",
+  dash_guest_sub:    "احفظ التنبؤات أو أنشئ مجموعة أو انضم إليها.",
+  dash_create_group: "إنشاء مجموعة",
+  dash_sign_in:      "تسجيل الدخول",
 
   common_save:      "حفظ",
   common_cancel:    "إلغاء",

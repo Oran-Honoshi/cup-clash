@@ -409,30 +409,8 @@ h1, h2, h3, h4 {
 @keyframes shimmer    { 0% { background-position:-200% 0; } 100% { background-position:200% 0; } }
 @keyframes slideDown  { from { opacity:0; transform:translateY(-12px); } to { opacity:1; transform:translateY(0); } }
 /* ── RTL support ──────────────────────────────────────────────────────────── */
-[dir="rtl"] {
-  /* Flip inline-flex row items */
-  .flex-row-reverse-rtl { flex-direction: row-reverse; }
-
-  /* Sidebar is left-anchored on desktop — flip to right in RTL */
-  aside.fixed.left-0 {
-    left: auto;
-    right: 0;
-    border-right: none;
-    border-left: 1px solid rgba(255, 255, 255, 0.07);
-  }
-
-  /* Push main content left margin to right margin on desktop */
-  main.lg\:ml-60 {
-    margin-left: 0;
-    margin-right: 15rem; /* lg:mr-60 */
-  }
-
-  /* Text alignment for common containers */
-  .text-left  { text-align: right; }
-
-  /* Navigation pills — reverse scroll direction feel */
-  [dir="rtl"] .flex.gap-1\.5.overflow-x-auto { direction: rtl; }
-}
+/* Layout RTL is handled via Tailwind rtl: variants in components (sidebar, main). */
+/* Only font overrides live here to avoid conflicts with responsive classes.       */
 
 /* RTL font improvements for Hebrew & Arabic */
 :lang(he), :lang(ar) {

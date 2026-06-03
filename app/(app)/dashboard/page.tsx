@@ -1,3 +1,4 @@
+import { serverT } from "@/lib/server-locale";
 export const dynamic = "force-dynamic";
 
 import { createClient as createAdminClient } from "@supabase/supabase-js";
@@ -35,10 +36,10 @@ function GuestBanner() {
     >
       <div>
         <div className="text-sm" style={{ color: "rgba(255,255,255,0.8)" }}>
-          👋 You&apos;re exploring as a guest. No account needed yet.
+          👋 {serverT("dash_guest_banner")}
         </div>
         <div className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.45)" }}>
-          Save predictions, create a group, or join one to get started.
+          {serverT("dash_guest_sub")}
         </div>
       </div>
       <div className="flex items-center gap-2 shrink-0">

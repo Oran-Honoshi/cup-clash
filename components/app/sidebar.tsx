@@ -89,7 +89,7 @@ export function AppSidebar() {
 
   return (
     <aside
-      className="hidden lg:flex fixed left-0 top-0 bottom-0 w-60 flex-col z-40 border-r"
+      className="hidden lg:flex fixed ltr:left-0 rtl:right-0 top-0 bottom-0 w-60 flex-col z-40 ltr:border-r rtl:border-l"
       style={{
         background: "rgba(8, 12, 22, 0.85)",
         backdropFilter: "blur(24px)",
