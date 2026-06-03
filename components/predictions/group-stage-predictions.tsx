@@ -380,7 +380,7 @@ export function GroupStagePredictions({ groupId, locked = false, userId }: Group
   const activeIdx      = GROUPS.indexOf(activeGroup);
 
   return (
-    <div className="space-y-4 overflow-x-hidden">
+    <div className="w-full max-w-full space-y-4 overflow-x-hidden">
 
       {/* Progress + save status */}
       <div className="rounded-2xl px-4 py-3" style={{ ...glassCard, borderRadius: 18 }}>
@@ -401,7 +401,7 @@ export function GroupStagePredictions({ groupId, locked = false, userId }: Group
       </div>
 
       {/* Group pills — scrollable row */}
-      <div className="flex gap-1.5 overflow-x-auto pb-1 w-full min-w-0"
+      <div className="flex gap-1.5 overflow-x-auto pb-1 w-full max-w-full min-w-0"
         style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
         {GROUPS.map(g => {
           const complete = isGroupComplete(g, predictions);
@@ -442,7 +442,7 @@ export function GroupStagePredictions({ groupId, locked = false, userId }: Group
         <motion.div key={activeGroup}
           initial={{ opacity: 0 }} animate={{ opacity: 1 }}
           exit={{ opacity: 0 }} transition={{ duration: 0.15 }}
-          className="space-y-4" style={{ overflow: "visible" }}>
+          className="w-full max-w-full space-y-4" style={{ overflow: "visible" }}>
 
           {/* Group header */}
           <div className="flex items-center justify-between px-1 overflow-hidden">
@@ -461,7 +461,7 @@ export function GroupStagePredictions({ groupId, locked = false, userId }: Group
           </div>
 
           {/* Match cards — single column stack */}
-          <div className="flex flex-col" style={{ gap: 6, overflow: "visible" }}>
+          <div className="flex flex-col w-full max-w-full" style={{ gap: 6, overflow: "visible" }}>
             {groupMatches.map(match => (
               <MatchCard
                 key={match.id}
