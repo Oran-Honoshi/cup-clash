@@ -11,7 +11,22 @@ import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 import { flagUrl } from "@/lib/countries";
 import { cn } from "@/lib/utils";
+import { useTheme } from "@/components/theme-provider";
+import type { CountryCode } from "@/lib/types";
+import { useLocale } from "@/components/i18n/locale-provider";
+import { LanguageSelector } from "@/components/i18n/language-selector";
 import { ReviewTrigger } from "@/components/ui/review-modal";
+import { SOCCER_PRESETS } from "@/components/ui/member-avatar";
+
+function SidebarPresetAvatar({ presetId }: { presetId: string }) {
+  const preset = SOCCER_PRESETS.find(p => p.id === presetId);
+  return (
+    <div className="h-full w-full flex items-center justify-center text-base"
+      style={{ background: preset ? `#${preset.bg}30` : "rgba(0,212,255,0.15)" }}>
+      {preset?.icon ?? "⚽"}
+    </div>
+  );
+}
 
 interface UserProfile {
   name:       string;
@@ -19,22 +34,24 @@ interface UserProfile {
   avatar_url: string | null;
 }
 
-const NAV = [
-  { href: "/dashboard",    label: "Dashboard",      icon: LayoutDashboard },
-  { href: "/groups",       label: "My Groups",      icon: Users           },
-  { href: "/leaderboard",  label: "Leaderboard",    icon: Trophy          },
-  { href: "/predictions",  label: "My Predictions", icon: Target          },
-  { href: "/standings",    label: "Standings",      icon: BarChart2       },
-  { href: "/bracket",      label: "Bracket",        icon: GitBranch       },
-  { href: "/trivia",       label: "Trivia",         icon: Brain           },
-  { href: "/notifications",label: "Notifications",  icon: Bell            },
-  { href: "/admin",        label: "Admin",          icon: Shield          },
+const NAV_ITEMS = [
+  { href: "/dashboard",    key: "nav_dashboard"     as const, icon: LayoutDashboard },
+  { href: "/groups",       key: "nav_groups"        as const, icon: Users           },
+  { href: "/leaderboard",  key: "nav_leaderboard"   as const, icon: Trophy          },
+  { href: "/predictions",  key: "nav_predictions"   as const, icon: Target          },
+  { href: "/standings",    key: "nav_standings"     as const, icon: BarChart2       },
+  { href: "/bracket",      key: "nav_bracket"       as const, icon: GitBranch       },
+  { href: "/trivia",       key: "nav_trivia"        as const, icon: Brain           },
+  { href: "/notifications",key: "nav_notifications" as const, icon: Bell            },
+  { href: "/admin",        key: "common_admin"      as const, icon: Shield          },
 ];
 
 const CHAT_HREF = "/groups";
 
 export function AppSidebar() {
   const pathname  = usePathname();
+  const { setCountry } = useTheme();
+  const { t } = useLocale();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
 
@@ -52,7 +69,10 @@ export function AppSidebar() {
       .select("name, country, avatar_url")
       .eq("id", user.id)
       .single();
-    if (data) setProfile(data as UserProfile);
+    if (data) {
+      setProfile(data as UserProfile);
+      if ((data as UserProfile).country) setCountry((data as UserProfile).country as CountryCode);
+    }
     setAuthLoaded(true);
   }, []);
 
@@ -95,7 +115,7 @@ export function AppSidebar() {
 
       {/* Nav */}
       <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-0.5">
-        {NAV.map(({ href, label, icon: Icon }) => {
+        {NAV_ITEMS.map(({ href, key, icon: Icon }) => {
           const active = pathname === href || (href !== "/dashboard" && pathname.startsWith(href));
           return (
             <Link key={href} href={href}
@@ -114,7 +134,7 @@ export function AppSidebar() {
               onMouseLeave={e => { if (!active) { (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.55)"; (e.currentTarget as HTMLElement).style.background = "transparent"; } }}
             >
               <Icon size={17} strokeWidth={active ? 2.5 : 1.75} />
-              {label}
+              {t(key)}
             </Link>
           );
         })}
@@ -127,7 +147,7 @@ export function AppSidebar() {
           onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.55)"; (e.currentTarget as HTMLElement).style.background = "transparent"; }}
         >
           <MessageCircle size={17} strokeWidth={1.75} />
-          Group Chat
+          {t("nav_chat")}
         </Link>
 
         {/* Testing — admin only */}
@@ -146,6 +166,10 @@ export function AppSidebar() {
       </nav>
 
       {/* User footer */}
+      <div className="px-3 py-2 border-t" style={{ borderColor: "rgba(255,255,255,0.07)" }}>
+        <LanguageSelector />
+      </div>
+
       <div className="px-3 py-4 border-t space-y-1" style={{ borderColor: "rgba(255,255,255,0.07)" }}>
 
         {authLoaded && !profile ? (
@@ -192,10 +216,14 @@ export function AppSidebar() {
               onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.07)"; }}
               onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}
             >
-              <div className="h-8 w-8 rounded-full overflow-hidden shrink-0"
+              <div className="h-8 w-8 rounded-full overflow-hidden shrink-0 flex items-center justify-center"
                 style={{ border: "2px solid rgba(0,255,136,0.3)" }}>
-                {profile?.avatar_url ? (
-                  <Image src={profile.avatar_url} alt={displayName} width={32} height={32} className="object-cover" />
+                {profile?.avatar_url?.startsWith("preset:") ? (
+                  <SidebarPresetAvatar presetId={profile.avatar_url.slice(7)} />
+                ) : profile?.avatar_url ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={profile.avatar_url} alt={displayName} width={32} height={32} className="object-cover w-full h-full"
+                    onError={e => { (e.target as HTMLImageElement).style.display = "none"; }} />
                 ) : flagCode ? (
                   <Image src={flagCode} alt={profile?.country ?? ""} width={32} height={32} className="object-cover w-full h-full" unoptimized />
                 ) : (
@@ -218,7 +246,7 @@ export function AppSidebar() {
               onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}
             >
               <LogOut size={16} />
-              Sign out
+              {t("nav_signout")}
             </button>
           </>
         ) : null}

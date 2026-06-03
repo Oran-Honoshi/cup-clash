@@ -37,7 +37,22 @@ function getDiceBearUrl(name: string) {
 
 export function MemberAvatar({ name, avatarUrl, size = "md", className, ring }: MemberAvatarProps) {
   const sizeClass = SIZE_MAP[size];
-  const src = avatarUrl || getDiceBearUrl(name);
+
+  // Handle preset:* avatar IDs
+  if (avatarUrl?.startsWith("preset:")) {
+    const presetId = avatarUrl.slice(7);
+    const preset   = SOCCER_PRESETS.find(p => p.id === presetId);
+    return (
+      <div className={cn("rounded-full shrink-0 flex items-center justify-center font-bold", sizeClass, className)}
+        style={{ background: preset ? `#${preset.bg}30` : "rgba(0,212,255,0.15)", border: ring ? "2px solid #00D4FF" : `1px solid #${preset?.bg ?? "00D4FF"}60` }}>
+        <span style={{ fontSize: size === "xs" ? 10 : size === "sm" ? 14 : size === "md" ? 18 : size === "lg" ? 22 : 28 }}>
+          {preset?.icon ?? "⚽"}
+        </span>
+      </div>
+    );
+  }
+
+  const src = avatarUrl && !avatarUrl.startsWith("dicebear:") ? avatarUrl : getDiceBearUrl(name);
 
   return (
     <div className={cn("rounded-full overflow-hidden shrink-0 flex items-center justify-center", sizeClass, className)}
@@ -48,7 +63,6 @@ export function MemberAvatar({ name, avatarUrl, size = "md", className, ring }: 
         alt={name}
         className="w-full h-full object-cover"
         onError={e => {
-          // On error show initials fallback
           const target = e.target as HTMLImageElement;
           target.style.display = "none";
           const parent = target.parentElement;

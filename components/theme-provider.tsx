@@ -15,9 +15,20 @@ const ThemeContext = createContext<ThemeContextValue | null>(null);
 const BRAND_ACCENT      = "0 255 136";    // #00FF88
 const BRAND_ACCENT_GLOW = "0 212 255";    // #00D4FF
 
-export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [country, setCountry] = useState<CountryCode | null>(null);
+const STORAGE_KEY = "cupclash_country";
 
+export function ThemeProvider({ children }: { children: ReactNode }) {
+  const [country, setCountryState] = useState<CountryCode | null>(null);
+
+  // Load persisted country on mount
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY) as CountryCode | null;
+      if (saved && COUNTRIES[saved]) setCountryState(saved);
+    } catch {}
+  }, []);
+
+  // Apply CSS vars + persist whenever country changes
   useEffect(() => {
     const root = document.documentElement;
     if (country === null) {
@@ -29,8 +40,14 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
         root.style.setProperty("--accent",      theme.accent);
         root.style.setProperty("--accent-glow", theme.accentGlow);
       }
+      try { localStorage.setItem(STORAGE_KEY, country); } catch {}
     }
   }, [country]);
+
+  const setCountry = (code: CountryCode | null) => {
+    setCountryState(code);
+    if (!code) { try { localStorage.removeItem(STORAGE_KEY); } catch {} }
+  };
 
   return (
     <ThemeContext.Provider value={{ country, setCountry }}>

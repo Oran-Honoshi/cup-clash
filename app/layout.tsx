@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Bricolage_Grotesque, Outfit, JetBrains_Mono } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
+import { LocaleProvider } from "@/components/i18n/locale-provider";
 import { PWAInit } from "@/components/pwa-init";
 import { PWAInstallBanner } from "@/components/ui/pwa-install-banner";
 import { SoftwareAppSchema, FAQSchema, HowToSchema } from "@/components/seo/schemas";
@@ -120,11 +121,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             Predictions, the live leaderboard, and the countdown clock all run in your browser. Enable JavaScript to play.
           </div>
         </noscript>
+        <LocaleProvider>
         <ThemeProvider>
           {/* PayPal SDK preloaded globally so checkout components mount instantly */}
           <PayPalScriptLoader />
           {children}
         </ThemeProvider>
+        </LocaleProvider>
         <PWAInit />
         <PWAInstallBanner />
       </body>

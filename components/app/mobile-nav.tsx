@@ -5,18 +5,20 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { LayoutDashboard, Users, Target, Trophy, User } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useLocale } from "@/components/i18n/locale-provider";
 
-const NAV = [
-  { href: "/dashboard",   label: "Home",    icon: LayoutDashboard },
-  { href: "/groups",      label: "Groups",  icon: Users           },
-  { href: "/predictions", label: "My Bets", icon: Target          },
-  { href: "/leaderboard", label: "Table",   icon: Trophy          },
-  { href: "/profile",     label: "Profile", icon: User            },
+const NAV_ITEMS = [
+  { href: "/dashboard",   key: "nav_home"        as const, icon: LayoutDashboard },
+  { href: "/groups",      key: "nav_groups"      as const, icon: Users           },
+  { href: "/predictions", key: "nav_mybets"      as const, icon: Target          },
+  { href: "/leaderboard", key: "nav_table"       as const, icon: Trophy          },
+  { href: "/profile",     key: "nav_profile"     as const, icon: User            },
 ];
 
 export function MobileNav() {
   const pathname = usePathname();
   const navRef   = useRef<HTMLElement>(null);
+  const { t } = useLocale();
 
   useEffect(() => {
     const vv = window.visualViewport;
@@ -61,7 +63,7 @@ export function MobileNav() {
         className="flex items-center justify-around px-2 py-2"
         style={{ paddingBottom: "max(8px, env(safe-area-inset-bottom))" }}
       >
-        {NAV.map(({ href, label, icon: Icon }) => {
+        {NAV_ITEMS.map(({ href, key, icon: Icon }) => {
           const active = pathname === href || (href !== "/dashboard" && pathname.startsWith(href));
           return (
             <Link
@@ -79,7 +81,7 @@ export function MobileNav() {
                 className="text-[10px] font-bold uppercase tracking-wider"
                 style={{ color: active ? "#00FF88" : "rgba(255,255,255,0.4)" }}
               >
-                {label}
+                {t(key)}
               </span>
               {active && (
                 <div className="w-4 h-0.5 rounded-full" style={{ background: "#00FF88" }} />
