@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Users, Trophy, Copy, Check, RefreshCw, CheckCircle, XCircle, Link2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Users, Trophy, Copy, Check, RefreshCw, CheckCircle, XCircle, Link2, Trash2 } from "lucide-react";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { Button } from "@/components/ui/button";
 import { MemberAvatar } from "@/components/ui/member-avatar";
@@ -29,7 +30,10 @@ const glass = {
 } as const;
 
 export function AdminPanel({ group, initialMembers }: AdminPanelProps) {
+  const router = useRouter();
   const [members,      setMembers]      = useState<Member[]>(initialMembers);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleting,          setDeleting]          = useState(false);
   const [payouts,      setPayouts]      = useState({
     first:  Number(group.payouts.first.replace("%",  "")),
     second: Number(group.payouts.second.replace("%", "")),
@@ -86,7 +90,20 @@ export function AdminPanel({ group, initialMembers }: AdminPanelProps) {
     setCopied(true); setTimeout(() => setCopied(false), 2000);
   };
 
+  const handleDelete = async () => {
+    setDeleting(true);
+    try {
+      const res = await fetch(`/api/groups/${group.id}`, { method: "DELETE" });
+      if (!res.ok) throw new Error("Failed");
+      router.push("/groups");
+    } catch {
+      setDeleting(false);
+      setShowDeleteConfirm(false);
+    }
+  };
+
   return (
+    <div className="space-y-5">
     <div className="grid gap-5 lg:grid-cols-2">
 
       {/* ── Member Payments ── */}
@@ -257,6 +274,59 @@ export function AdminPanel({ group, initialMembers }: AdminPanelProps) {
           </p>
         </div>
       </div>
+    </div>
+
+      {/* Danger zone */}
+      <div className="rounded-2xl p-5" style={{ ...glass, border: "1px solid rgba(239,68,68,0.2)" }}>
+        <div className="flex items-center gap-2.5 mb-3">
+          <Trash2 size={16} style={{ color: "#f87171" }} />
+          <span className="font-display text-lg uppercase tracking-tight" style={{ color: "#f87171" }}>Danger Zone</span>
+        </div>
+        <p className="text-sm mb-4" style={{ color: "rgba(255,255,255,0.4)" }}>
+          Permanently delete this group and all associated data. This cannot be undone.
+        </p>
+        <button
+          onClick={() => setShowDeleteConfirm(true)}
+          className="w-full py-3 rounded-xl font-bold text-sm uppercase tracking-wider flex items-center justify-center gap-2"
+          style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.25)", color: "#f87171" }}>
+          <Trash2 size={14} /> Delete Group
+        </button>
+      </div>
+
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.7)", backdropFilter: "blur(4px)" }}>
+          <div className="w-full max-w-sm rounded-2xl p-6 space-y-4" style={{ background: "rgba(18,14,38,0.98)", border: "1px solid rgba(239,68,68,0.3)" }}>
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-full flex items-center justify-center shrink-0" style={{ background: "rgba(239,68,68,0.12)" }}>
+                <Trash2 size={18} style={{ color: "#f87171" }} />
+              </div>
+              <div>
+                <div className="font-display text-lg uppercase font-black text-white">Delete Group?</div>
+                <div className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>This cannot be undone</div>
+              </div>
+            </div>
+            <p className="text-sm" style={{ color: "rgba(255,255,255,0.6)" }}>
+              All members, predictions, and chat history will be permanently deleted.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowDeleteConfirm(false)}
+                disabled={deleting}
+                className="flex-1 py-3 rounded-xl font-bold text-sm"
+                style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.6)" }}>
+                Cancel
+              </button>
+              <button
+                onClick={handleDelete}
+                disabled={deleting}
+                className="flex-1 py-3 rounded-xl font-bold text-sm disabled:opacity-50"
+                style={{ background: "rgba(239,68,68,0.15)", border: "1px solid rgba(239,68,68,0.35)", color: "#f87171" }}>
+                {deleting ? "Deleting…" : "Delete"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

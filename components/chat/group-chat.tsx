@@ -53,9 +53,10 @@ interface GroupChatProps {
   currentUserId:   string;
   currentUserName: string;
   isPaid:          boolean;
+  inline?:         boolean;
 }
 
-export function GroupChat({ groupId, currentUserId, currentUserName, isPaid }: GroupChatProps) {
+export function GroupChat({ groupId, currentUserId, currentUserName, isPaid, inline = false }: GroupChatProps) {
   const [messages,   setMessages]   = useState<ChatMessage[]>([]);
   const [input,      setInput]      = useState("");
   const [sending,    setSending]    = useState(false);
@@ -176,6 +177,131 @@ export function GroupChat({ groupId, currentUserId, currentUserName, isPaid }: G
 
   const formatTime = (ts: string) =>
     new Date(ts).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
+
+  if (inline) {
+    return (
+      <div className="flex flex-col w-full" style={{ height: 480 }}>
+        {/* Messages */}
+        <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
+          {messages.length === 0 && (
+            <div className="h-full flex items-center justify-center text-center">
+              <div>
+                <MessageCircle size={32} className="mx-auto mb-2" style={{ color: "rgba(255,255,255,0.2)" }} />
+                <p className="text-sm" style={{ color: "rgba(255,255,255,0.35)" }}>No messages yet. Say hi! 👋</p>
+              </div>
+            </div>
+          )}
+          {messages.map((msg, i) => {
+            const isOwn      = msg.user_id === currentUserId;
+            const profile    = msg.profiles;
+            const showAvatar = !isOwn && (i === 0 || messages[i-1].user_id !== msg.user_id);
+            return (
+              <div key={msg.id} className={cn("flex gap-2", isOwn && "flex-row-reverse")}>
+                {!isOwn && (
+                  <div className="w-8 shrink-0">
+                    {showAvatar && profile && (
+                      <Avatar name={profile.name} country={profile.country} avatarUrl={profile.avatar_url} />
+                    )}
+                  </div>
+                )}
+                <div className={cn("max-w-[75%] space-y-0.5", isOwn && "items-end flex flex-col")}>
+                  {showAvatar && !isOwn && profile && (
+                    <div className="text-[10px] font-bold px-1" style={{ color: "rgba(255,255,255,0.45)" }}>{profile.name}</div>
+                  )}
+                  {msg.type === "gif" && msg.gif_url ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={msg.gif_url} alt="GIF" className="rounded-2xl max-w-full" style={{ maxHeight: 160 }} />
+                  ) : (
+                    <div className="px-3 py-2 rounded-2xl text-sm"
+                      style={isOwn ? {
+                        background: "linear-gradient(135deg, #00D4FF, #00FF88)",
+                        color: "#0B141B", borderBottomRightRadius: 4,
+                      } : {
+                        background: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.85)", borderBottomLeftRadius: 4,
+                      }}>
+                      {msg.content}
+                    </div>
+                  )}
+                  <div className="text-[9px] px-1" style={{ color: "rgba(255,255,255,0.25)" }}>
+                    {formatTime(msg.created_at)}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+          <div ref={bottomRef} />
+        </div>
+
+        {/* GIF picker */}
+        {showGif && (
+          <div className="px-3 py-2 border-t shrink-0" style={{ borderColor: "rgba(0,212,255,0.1)" }}>
+            <div className="flex gap-2 mb-2">
+              <input value={gifQuery} onChange={e => setGifQuery(e.target.value)}
+                onKeyDown={e => e.key === "Enter" && searchGifs(gifQuery)}
+                placeholder="Search GIFs..."
+                className="flex-1 text-xs px-3 py-2 rounded-lg"
+                style={{ border: "1px solid rgba(255,255,255,0.12)", color: "rgba(255,255,255,0.85)", background: "rgba(255,255,255,0.06)" }} />
+              <button onClick={() => searchGifs(gifQuery)}
+                className="px-3 py-2 rounded-lg text-xs font-bold"
+                style={{ background: "rgba(0,212,255,0.1)", color: "#00D4FF" }}>
+                {gifLoading ? "..." : "Go"}
+              </button>
+            </div>
+            <div className="grid grid-cols-3 gap-1 max-h-36 overflow-y-auto">
+              {gifs.map(gif => (
+                <button key={gif.id} onClick={() => sendMessage("", "gif", gif.url)}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={gif.preview} alt={gif.title} className="w-full h-16 object-cover rounded-lg" />
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Input */}
+        <div className="px-3 py-3 border-t shrink-0" style={{ borderColor: "rgba(0,212,255,0.12)" }}>
+          {!isPaid ? (
+            <div className="text-center text-sm py-2" style={{ color: "rgba(255,255,255,0.4)" }}>
+              Join the group to chat
+            </div>
+          ) : (
+            <>
+              {sendError && (
+                <div className="text-xs text-center mb-2 rounded-lg px-3 py-1"
+                  style={{ background: "rgba(220,38,38,0.06)", color: "#dc2626" }}>
+                  {sendError}
+                </div>
+              )}
+              <div className="flex gap-2 items-center">
+                {giphyKey && (
+                  <button onClick={() => setShowGif(g => !g)}
+                    className="h-11 w-11 rounded-xl flex items-center justify-center shrink-0 transition-colors"
+                    style={{ color: showGif ? "#00D4FF" : "rgba(255,255,255,0.4)" }}>
+                    <ImageIcon size={18} />
+                  </button>
+                )}
+                <input ref={inputRef} value={input}
+                  onChange={e => setInput(e.target.value)}
+                  onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(input); } }}
+                  placeholder="Message..."
+                  className="flex-1 px-3 py-2.5 rounded-xl text-sm"
+                  style={{ border: "1px solid rgba(255,255,255,0.12)", background: "rgba(255,255,255,0.06)", color: "#ffffff", outline: "none" }}
+                  onFocus={e => (e.target.style.border = "1px solid #00D4FF")}
+                  onBlur={e => (e.target.style.border = "1px solid rgba(255,255,255,0.12)")} />
+                <button
+                  onClick={() => sendMessage(input)}
+                  disabled={!input.trim() || sending}
+                  className="h-11 w-11 rounded-xl flex items-center justify-center shrink-0 transition-all disabled:opacity-40"
+                  style={{ background: "linear-gradient(135deg, #00D4FF, #00FF88)", color: "#0B141B" }}>
+                  <Send size={16} />
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>

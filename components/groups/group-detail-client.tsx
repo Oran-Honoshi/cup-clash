@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Trophy, Users, DollarSign, Target, Lock, Shield, ArrowRight, MessageCircle, Info } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { Trophy, Users, DollarSign, Target, Lock, Shield, ArrowRight, MessageCircle, Info, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { GroupChat } from "@/components/chat/group-chat";
 import { CorporateUnlockOverlay } from "@/components/groups/corporate-unlock-overlay";
@@ -36,8 +37,23 @@ const ENABLE_KEYS: Record<string, string> = {
 const glass = { background: "rgba(255,255,255,0.07)", backdropFilter: "blur(24px)", WebkitBackdropFilter: "blur(24px)", border: "1px solid rgba(255,255,255,0.12)", boxShadow: "0 8px 32px rgba(0,0,0,0.25), inset 0 1px 1px rgba(255,255,255,0.06)" } as const;
 
 export function GroupDetailClient({ group, rules, members, currentUserId, isAdmin, isMember }: GroupDetailClientProps) {
+  const router = useRouter();
   const [tab, setTab] = useState<"overview" | "chat">("overview");
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const paidCount = members.filter(m => m.paid).length;  // admin buy-in toggle
+
+  const handleDelete = async () => {
+    setDeleting(true);
+    try {
+      const res = await fetch(`/api/groups/${group.id}`, { method: "DELETE" });
+      if (!res.ok) throw new Error("Failed");
+      router.push("/groups");
+    } catch {
+      setDeleting(false);
+      setShowDeleteConfirm(false);
+    }
+  };
   const totalPot  = (group.buy_in_amount ?? 0) * paidCount;
   const scoringRows = Object.entries(SCORING_LABELS).filter(([key]) => { const ek = ENABLE_KEYS[key]; return !ek || rules?.[ek] !== false; });
 
@@ -201,12 +217,56 @@ export function GroupDetailClient({ group, rules, members, currentUserId, isAdmi
               </Link>
             )}
           </div>
+
+          {isAdmin && (
+            <button
+              onClick={() => setShowDeleteConfirm(true)}
+              className="w-full py-3 rounded-xl font-bold text-sm uppercase tracking-wider flex items-center justify-center gap-2 transition-all"
+              style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.2)", color: "#f87171" }}>
+              <Trash2 size={14} /> Delete Group
+            </button>
+          )}
         </div>
       )}
 
       {tab === "chat" && (
         <div className="rounded-2xl overflow-hidden" style={glass}>
-          <GroupChat groupId={group.id} currentUserId={currentUserId} currentUserName="" isPaid={isMember} />
+          <GroupChat groupId={group.id} currentUserId={currentUserId} currentUserName="" isPaid={isMember} inline />
+        </div>
+      )}
+
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.7)", backdropFilter: "blur(4px)" }}>
+          <div className="w-full max-w-sm rounded-2xl p-6 space-y-4" style={{ background: "rgba(18,14,38,0.98)", border: "1px solid rgba(239,68,68,0.3)" }}>
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-full flex items-center justify-center shrink-0" style={{ background: "rgba(239,68,68,0.12)" }}>
+                <Trash2 size={18} style={{ color: "#f87171" }} />
+              </div>
+              <div>
+                <div className="font-display text-lg uppercase font-black text-white">Delete Group?</div>
+                <div className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>This cannot be undone</div>
+              </div>
+            </div>
+            <p className="text-sm" style={{ color: "rgba(255,255,255,0.6)" }}>
+              <span className="font-bold text-white">{group.name}</span> and all its members, predictions, and chat history will be permanently deleted.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowDeleteConfirm(false)}
+                disabled={deleting}
+                className="flex-1 py-3 rounded-xl font-bold text-sm"
+                style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.6)" }}>
+                Cancel
+              </button>
+              <button
+                onClick={handleDelete}
+                disabled={deleting}
+                className="flex-1 py-3 rounded-xl font-bold text-sm transition-all disabled:opacity-50"
+                style={{ background: "rgba(239,68,68,0.15)", border: "1px solid rgba(239,68,68,0.35)", color: "#f87171" }}>
+                {deleting ? "Deleting…" : "Delete"}
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>
