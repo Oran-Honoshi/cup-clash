@@ -18,7 +18,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
       {/* ── App shell (sits above the background) ── */}
       <AppSidebar />
-      <main className="relative z-10 flex-1 lg:ml-60 pb-20 lg:pb-0 flex flex-col">
+      <main className="relative z-10 flex-1 min-w-0 lg:ml-60 pb-20 lg:pb-0 flex flex-col">
         <AppInstallBanner />
         <AppHeader />
         <div className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-6">
