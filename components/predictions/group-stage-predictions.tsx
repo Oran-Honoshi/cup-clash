@@ -443,9 +443,9 @@ export function GroupStagePredictions({ groupId, locked = false, userId }: Group
       {/* Active group section */}
       <AnimatePresence mode="wait">
         <motion.div key={activeGroup}
-          initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.15 }}
-          className="space-y-4">
+          initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }} transition={{ duration: 0.15 }}
+          className="space-y-4" style={{ overflow: "visible" }}>
 
           {/* Group header */}
           <div className="flex items-center justify-between px-1">
@@ -464,7 +464,7 @@ export function GroupStagePredictions({ groupId, locked = false, userId }: Group
           </div>
 
           {/* Match cards — single column stack */}
-          <div className="flex flex-col" style={{ gap: 6 }}>
+          <div className="flex flex-col" style={{ gap: 6, overflow: "visible" }}>
             {groupMatches.map(match => (
               <MatchCard
                 key={match.id}
