@@ -6,7 +6,7 @@ import { AppInstallBanner } from "@/components/app/install-banner";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="relative min-h-screen flex overflow-x-hidden">
+    <div className="relative min-h-screen flex">{/* overflow-x-hidden temporarily removed */}
 
       {/* ── Stadium background ── */}
       <div

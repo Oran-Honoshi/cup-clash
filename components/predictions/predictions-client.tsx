@@ -76,8 +76,8 @@ export function PredictionsClient({
         <h1 className="font-display text-4xl sm:text-5xl uppercase font-black text-white leading-none tracking-tight">
           Predictions
         </h1>
-        <p className="text-xs mt-2 flex items-center gap-1.5" style={{ color: "rgba(255,255,255,0.35)" }}>
-          <Lock size={11} />
+        <p className="text-xs mt-2" style={{ color: "rgba(255,255,255,0.35)" }}>
+          <Lock size={11} style={{ display: "inline", verticalAlign: "middle", marginRight: 4 }} />
           Matches lock 5 min before kickoff · Tournament picks lock June 11
         </p>
       </div>
