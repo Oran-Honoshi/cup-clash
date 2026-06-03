@@ -168,16 +168,24 @@ function MatchCard({ match, prediction, onChange, globalLocked }: {
         )}
       </div>
 
-      {/* DEBUG TEST — plain divs only, no custom components */}
-      <div style={{ display: "flex", width: "100%", background: "red" }}>
-        <div style={{ flex: 1, background: "blue", color: "white", textAlign: "center" }}>
-          HOME
+      {/* Score row — same layout as NextMatchCard */}
+      <div className="flex items-center gap-3">
+        <div className="flex-1 flex flex-col items-center gap-1">
+          <Flag code={match.homeFlagCode ?? "un"} size="sm" />
+          <span className="font-display text-xs uppercase font-black text-center text-white">
+            {(match.home ?? "").substring(0, 3).toUpperCase()}
+          </span>
         </div>
-        <div style={{ width: 120, background: "green", color: "white", textAlign: "center" }}>
-          SCORE
+        <div className="flex items-center gap-1.5 shrink-0">
+          <ScoreInputCC value={prediction.home} onChange={v => onChange(v, prediction.away)} disabled={matchLocked} />
+          <span style={{ fontFamily: "var(--font-mono)", fontSize: 16, fontWeight: 700, color: "rgba(255,255,255,0.25)" }}>:</span>
+          <ScoreInputCC value={prediction.away} onChange={v => onChange(prediction.home, v)} disabled={matchLocked} />
         </div>
-        <div style={{ flex: 1, background: "blue", color: "white", textAlign: "center" }}>
-          AWAY
+        <div className="flex-1 flex flex-col items-center gap-1">
+          <Flag code={match.awayFlagCode ?? "un"} size="sm" />
+          <span className="font-display text-xs uppercase font-black text-center text-white">
+            {(match.away ?? "").substring(0, 3).toUpperCase()}
+          </span>
         </div>
       </div>
     </div>
@@ -437,12 +445,12 @@ export function GroupStagePredictions({ groupId, locked = false, userId }: Group
           className="space-y-4" style={{ overflow: "visible" }}>
 
           {/* Group header */}
-          <div className="flex items-center justify-between px-1">
-            <div>
+          <div className="flex items-center justify-between px-1 overflow-hidden">
+            <div className="min-w-0 flex-1">
               <h2 className="font-display text-2xl uppercase tracking-tight text-white font-black">Group {activeGroup}</h2>
-              <p className="text-[10px]" style={{ color: "rgba(255,255,255,0.3)" }}>{groupTeams.map(t => t.name).join(" · ")}</p>
+              <p className="text-[10px] truncate" style={{ color: "rgba(255,255,255,0.3)" }}>{groupTeams.map(t => t.name).join(" · ")}</p>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 shrink-0 ml-2">
               {groupComplete && (
                 <span className="flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-full"
                   style={{ background: "rgba(0,255,136,0.1)", color: "#00FF88", border: "1px solid rgba(0,255,136,0.2)" }}>
