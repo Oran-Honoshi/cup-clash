@@ -110,7 +110,7 @@ export function GroupChat({ groupId, currentUserId, currentUserName, isPaid }: G
       .subscribe();
 
     return () => { sb.removeChannel(channel); };
-  }, [groupId, scrollToBottom, isOpen]);
+  }, [groupId, scrollToBottom]);
 
   useEffect(() => {
     if (isOpen) {
@@ -154,13 +154,14 @@ export function GroupChat({ groupId, currentUserId, currentUserName, isPaid }: G
     setSending(false);
   };
 
+  const giphyKey = process.env.NEXT_PUBLIC_GIPHY_API_KEY;
+
   const searchGifs = async (query: string) => {
-    if (!query.trim()) return;
+    if (!query.trim() || !giphyKey) return;
     setGifLoading(true);
     try {
-      const key = "dc6zaTOxFJmzC";
       const res = await fetch(
-        `https://api.giphy.com/v1/gifs/search?api_key=${key}&q=${encodeURIComponent(query)}&limit=12&rating=g`
+        `https://api.giphy.com/v1/gifs/search?api_key=${giphyKey}&q=${encodeURIComponent(query)}&limit=12&rating=g`
       );
       const data = await res.json() as {
         data: Array<{ id: string; title: string; images: { fixed_height: { url: string }; fixed_height_small: { url: string } } }>
@@ -317,11 +318,13 @@ export function GroupChat({ groupId, currentUserId, currentUserName, isPaid }: G
                     </div>
                   )}
                   <div className="flex gap-2 items-center">
-                    <button onClick={() => setShowGif(g => !g)}
-                      className="h-11 w-11 rounded-xl flex items-center justify-center shrink-0 transition-colors"
-                      style={{ color: showGif ? "#00D4FF" : "rgba(255,255,255,0.4)" }}>
-                      <ImageIcon size={18} />
-                    </button>
+                    {giphyKey && (
+                      <button onClick={() => setShowGif(g => !g)}
+                        className="h-11 w-11 rounded-xl flex items-center justify-center shrink-0 transition-colors"
+                        style={{ color: showGif ? "#00D4FF" : "rgba(255,255,255,0.4)" }}>
+                        <ImageIcon size={18} />
+                      </button>
+                    )}
                     <input ref={inputRef} value={input}
                       onChange={e => setInput(e.target.value)}
                       onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(input); } }}
