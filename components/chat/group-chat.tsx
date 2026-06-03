@@ -66,6 +66,7 @@ export function GroupChat({ groupId, currentUserId, currentUserName, isPaid, inl
   const [gifQuery,   setGifQuery]   = useState("");
   const [gifs,       setGifs]       = useState<GifResult[]>([]);
   const [gifLoading, setGifLoading] = useState(false);
+  const [gifError,   setGifError]   = useState<string | null>(null);
   const [isOpen,     setIsOpen]     = useState(false);
   const [unread,     setUnread]     = useState(0);
   const [sendError,  setSendError]  = useState<string | null>(null);
@@ -160,20 +161,28 @@ export function GroupChat({ groupId, currentUserId, currentUserName, isPaid, inl
   const giphyKey = process.env.NEXT_PUBLIC_GIPHY_API_KEY;
 
   const searchGifs = async (query: string) => {
-    if (!query.trim() || !giphyKey) return;
+    if (!query.trim()) return;
+    if (!giphyKey) { setGifError("GIF search is not configured."); return; }
     setGifLoading(true);
+    setGifError(null);
+    setGifs([]);
     try {
       const res = await fetch(
         `https://api.giphy.com/v1/gifs/search?api_key=${giphyKey}&q=${encodeURIComponent(query)}&limit=12&rating=g`
       );
+      if (!res.ok) throw new Error(`Giphy error ${res.status}`);
       const data = await res.json() as {
         data: Array<{ id: string; title: string; images: { fixed_height: { url: string }; fixed_height_small: { url: string } } }>
       };
-      setGifs(data.data.map(g => ({
+      const results = data.data.map(g => ({
         id: g.id, url: g.images.fixed_height.url,
         preview: g.images.fixed_height_small.url, title: g.title,
-      })));
-    } catch { /* ignore */ }
+      }));
+      setGifs(results);
+      if (results.length === 0) setGifError("No GIFs found. Try a different search.");
+    } catch {
+      setGifError("Couldn't load GIFs. Check your connection and try again.");
+    }
     setGifLoading(false);
   };
 
@@ -249,6 +258,9 @@ export function GroupChat({ groupId, currentUserId, currentUserName, isPaid, inl
                 {gifLoading ? "..." : t("chat_gif_go")}
               </button>
             </div>
+            {gifError && (
+              <div className="text-[11px] py-1 text-center" style={{ color: "#f87171" }}>{gifError}</div>
+            )}
             <div className="grid grid-cols-3 gap-1 max-h-36 overflow-y-auto">
               {gifs.map(gif => (
                 <button key={gif.id} onClick={() => sendMessage("", "gif", gif.url)}>

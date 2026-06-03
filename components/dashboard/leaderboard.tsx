@@ -3,7 +3,7 @@
 import { useState, type KeyboardEvent } from "react";
 import { Crown, Trophy, TrendingUp, TrendingDown, Minus, ChevronRight, Ghost } from "lucide-react";
 import { PlayerDrawer } from "@/components/dashboard/player-drawer";
-import { AvatarCC } from "@/components/ui/avatar-cc";
+import { MemberAvatar } from "@/components/ui/member-avatar";
 import { FOCUS_RING, FOCUS_RING_INSET } from "@/lib/a11y";
 import { cn } from "@/lib/utils";
 import type { Member } from "@/lib/types";
@@ -122,12 +122,14 @@ export function Leaderboard({ members, currentUserId, groupId, showGhost = true 
                 )}
 
                 {/* Avatar */}
-                <AvatarCC
-                  name={member.name}
-                  size={44}
-                  you={isMe}
-                  ring={rank === 1 ? "#fbbf24" : undefined}
-                />
+                <div style={{
+                  borderRadius: "50%",
+                  boxShadow: rank === 1
+                    ? "0 0 0 2px #fbbf24, 0 0 12px rgba(251,191,36,0.4)"
+                    : isMe ? "0 0 0 2px #00FF88" : "none",
+                }}>
+                  <MemberAvatar name={member.name} avatarUrl={member.avatarUrl} size="md" />
+                </div>
 
                 {/* Bar */}
                 <div
@@ -237,7 +239,7 @@ export function Leaderboard({ members, currentUserId, groupId, showGhost = true 
         </div>
 
         {/* Rows: 4th place onward */}
-        <div className="divide-y" style={{ borderColor: "rgba(255,255,255,0.05)" }}>
+        <div className="divide-y overflow-y-auto" style={{ borderColor: "rgba(255,255,255,0.05)", maxHeight: "min(480px, 55vh)" }}>
           {tableDisplay.map((member) => {
             const isCurrentUser = member.id === currentUserId;
             const isGhost       = member.isGhost;
@@ -291,7 +293,7 @@ export function Leaderboard({ members, currentUserId, groupId, showGhost = true 
                       <Ghost size={15} style={{ color: "rgba(255,255,255,0.2)" }} />
                     </div>
                   ) : (
-                    <AvatarCC name={member.name} size={36} you={isCurrentUser} />
+                    <MemberAvatar name={member.name} avatarUrl={member.avatarUrl} size="sm" ring={isCurrentUser} />
                   )}
                 </div>
 

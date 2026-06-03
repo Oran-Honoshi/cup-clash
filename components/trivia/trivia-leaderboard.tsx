@@ -16,12 +16,6 @@ export interface TriviaScore {
   isChampion: boolean;
 }
 
-const MOCK_TRIVIA_SCORES: TriviaScore[] = [
-  { userId: "1", name: "Amit",  country: "Argentina", correct: 18, total: 20, totalTimeMs: 62000, isChampion: true,  avatarUrl: null },
-  { userId: "2", name: "Sarah", country: "Brazil",    correct: 15, total: 20, totalTimeMs: 78000, isChampion: false, avatarUrl: null },
-  { userId: "3", name: "John",  country: "England",   correct: 14, total: 20, totalTimeMs: 95000, isChampion: false, avatarUrl: null },
-  { userId: "4", name: "Lior",  country: "Israel",    correct: 12, total: 20, totalTimeMs: 71000, isChampion: false, avatarUrl: null },
-];
 
 export function ChampionBadge({ size = "sm" }: { size?: "sm" | "md" }) {
   return (
@@ -41,7 +35,7 @@ interface TriviaLeaderboardProps {
   currentUserId?: string;
 }
 
-export function TriviaLeaderboard({ scores = MOCK_TRIVIA_SCORES, currentUserId }: TriviaLeaderboardProps) {
+export function TriviaLeaderboard({ scores = [], currentUserId }: TriviaLeaderboardProps) {
   const sorted   = [...scores].sort((a, b) => b.correct - a.correct || a.totalTimeMs - b.totalTimeMs);
   const allPlayed = scores.length > 0 && scores.every(s => s.total > 0);
 
