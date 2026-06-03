@@ -168,33 +168,27 @@ function MatchCard({ match, prediction, onChange, globalLocked }: {
         )}
       </div>
 
-      {/* Row 2 — table layout: [home 40%] [inputs 20%] [away 40%] */}
-      <div style={{ width: "100%", display: "table", tableLayout: "fixed", padding: "8px 0" }}>
-        <div style={{ display: "table-row" }}>
-          {/* Home team — right-aligned */}
-          <div style={{ display: "table-cell", width: "40%", textAlign: "right", verticalAlign: "middle", paddingRight: 8 }}>
-            <span style={{ fontSize: 13, fontWeight: 600, fontFamily: "var(--font-ui)", color: "white", textTransform: "uppercase", letterSpacing: "0.04em" }}>
-              {(match.home ?? "").substring(0, 3).toUpperCase()}
-            </span>
-            {" "}
-            <Flag code={match.homeFlagCode ?? "un"} size="sm" />
-          </div>
-          {/* Score inputs — centered */}
-          <div style={{ display: "table-cell", width: 120, textAlign: "center", verticalAlign: "middle" }}>
-            <div style={{ display: "inline-flex", alignItems: "center", gap: 6 }}>
-              <ScoreInputCC value={prediction.home} onChange={v => onChange(v, prediction.away)} disabled={matchLocked} />
-              <span style={{ fontFamily: "var(--font-mono)", fontSize: 16, fontWeight: 700, color: "rgba(255,255,255,0.25)" }}>:</span>
-              <ScoreInputCC value={prediction.away} onChange={v => onChange(prediction.home, v)} disabled={matchLocked} />
-            </div>
-          </div>
-          {/* Away team — left-aligned */}
-          <div style={{ display: "table-cell", width: "40%", textAlign: "left", verticalAlign: "middle", paddingLeft: 8 }}>
-            <Flag code={match.awayFlagCode ?? "un"} size="sm" />
-            {" "}
-            <span style={{ fontSize: 13, fontWeight: 600, fontFamily: "var(--font-ui)", color: "white", textTransform: "uppercase", letterSpacing: "0.04em" }}>
-              {(match.away ?? "").substring(0, 3).toUpperCase()}
-            </span>
-          </div>
+      {/* Row 2 — same layout as NextMatchCard: flex-1 team cols + shrink-0 inputs */}
+      <div className="flex items-center gap-3">
+        {/* Home team — flag above name (vertical), takes equal flex space */}
+        <div className="flex-1 flex flex-col items-center gap-1">
+          <Flag code={match.homeFlagCode ?? "un"} size="sm" />
+          <span className="font-display text-xs uppercase font-black text-center text-white">
+            {(match.home ?? "").substring(0, 3).toUpperCase()}
+          </span>
+        </div>
+        {/* Score inputs — fixed width, never shrinks */}
+        <div className="flex items-center gap-1.5 shrink-0">
+          <ScoreInputCC value={prediction.home} onChange={v => onChange(v, prediction.away)} disabled={matchLocked} />
+          <span style={{ fontFamily: "var(--font-mono)", fontSize: 16, fontWeight: 700, color: "rgba(255,255,255,0.25)" }}>:</span>
+          <ScoreInputCC value={prediction.away} onChange={v => onChange(prediction.home, v)} disabled={matchLocked} />
+        </div>
+        {/* Away team — flag above name (vertical), takes equal flex space */}
+        <div className="flex-1 flex flex-col items-center gap-1">
+          <Flag code={match.awayFlagCode ?? "un"} size="sm" />
+          <span className="font-display text-xs uppercase font-black text-center text-white">
+            {(match.away ?? "").substring(0, 3).toUpperCase()}
+          </span>
         </div>
       </div>
     </div>
