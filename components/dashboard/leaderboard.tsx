@@ -24,6 +24,7 @@ interface LeaderboardProps {
   currentUserId?: string;
   groupId?:       string;
   showGhost?:     boolean;
+  scrollable?:    boolean; // inner scroll for embedded tiles (dashboard); false = page scrolls
 }
 
 const RANK_LABELS = ["1st", "2nd", "3rd"];
@@ -63,7 +64,7 @@ const PODIUM_BAR_HEIGHTS = [64, 80, 50]; // 2nd, 1st, 3rd
 const PODIUM_ACTUAL_RANKS = [2, 1, 3];
 const PODIUM_POINT_COLORS = ["rgba(255,255,255,0.7)", "#fbbf24", "#f97316"];
 
-export function Leaderboard({ members, currentUserId, groupId, showGhost = true }: LeaderboardProps) {
+export function Leaderboard({ members, currentUserId, groupId, showGhost = true, scrollable = false }: LeaderboardProps) {
   const [selected, setSelected] = useState<Member | null>(null);
 
   const sorted = [...members].sort((a, b) => b.points - a.points);
@@ -243,7 +244,13 @@ export function Leaderboard({ members, currentUserId, groupId, showGhost = true 
         </div>
 
         {/* Rows: 4th place onward */}
-        <div className="divide-y" style={{ borderColor: "rgba(255,255,255,0.05)" }}>
+        <div
+          className="divide-y"
+          style={{
+            borderColor: "rgba(255,255,255,0.05)",
+            ...(scrollable && { overflowY: "auto", maxHeight: 340 }),
+          }}
+        >
           {tableDisplay.map((member) => {
             const isCurrentUser = member.id === currentUserId;
             const isGhost       = member.isGhost;

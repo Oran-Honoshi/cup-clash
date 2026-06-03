@@ -10,7 +10,7 @@ import { WallOfShame }     from "@/components/dashboard/wall-of-shame";
 import { DashboardGroupPicker } from "@/components/dashboard/dashboard-group-picker";
 import { WelcomeModal }    from "@/components/ui/welcome-modal";
 import { DashboardEmptyState } from "@/components/dashboard/empty-state";
-import { getLeaderboard, getMembers, getGroup } from "@/lib/services/groups";
+import { getMembers, getGroup } from "@/lib/services/groups";
 import { getNextMatch }    from "@/lib/services/matches";
 import { getCurrentUserProfile } from "@/lib/services/user-group";
 import Link from "next/link";
@@ -122,9 +122,8 @@ export default async function DashboardPage({
 
   const activeGroup = allGroups.find(g => g.id === activeGroupId)!;
 
-  const [members, top8, group, nextMatch] = await Promise.all([
+  const [members, group, nextMatch] = await Promise.all([
     getMembers(activeGroupId),
-    getLeaderboard(activeGroupId, 8),
     getGroup(activeGroupId),
     getNextMatch(),
   ]);
@@ -184,10 +183,11 @@ export default async function DashboardPage({
         {/* Secondary — leaderboard + wall, below on mobile, left on desktop */}
         <div className="lg:col-span-7 space-y-5">
           <Leaderboard
-            members={top8}
+            members={members}
             currentUserId={userProfile.id}
             groupId={activeGroupId}
             showGhost
+            scrollable
           />
           <WallOfShame members={members} totalMatches={48} />
         </div>
