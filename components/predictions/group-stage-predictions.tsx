@@ -168,25 +168,25 @@ function MatchCard({ match, prediction, onChange, globalLocked }: {
         )}
       </div>
 
-      {/* Row 2 — scoreboard row: home | score : score | away */}
-      <div className="flex items-center justify-center gap-2 w-full">
-        {/* Home team — right-aligned, flag closest to the scores */}
-        <div className="flex items-center gap-1.5 flex-1 justify-end min-w-0">
-          <span className="truncate" style={{ fontSize: 11, fontFamily: "var(--font-ui)", color: "white", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.04em" }}>
+      {/* Row 2 — grid: [home 1fr] [inputs auto] [away 1fr] */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr auto 1fr", alignItems: "center", width: "100%" }}>
+        {/* Home team — right-aligned */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end", gap: 6 }}>
+          <span style={{ fontSize: 11, fontFamily: "var(--font-ui)", color: "white", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.04em" }}>
             {(match.home ?? "").substring(0, 3).toUpperCase()}
           </span>
           <Flag code={match.homeFlagCode ?? "un"} size="sm" />
         </div>
-        {/* Score inputs */}
-        <div className="flex items-center gap-1.5 shrink-0">
+        {/* Score inputs — centered */}
+        <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "0 10px" }}>
           <ScoreInputCC value={prediction.home} onChange={v => onChange(v, prediction.away)} disabled={matchLocked} />
           <span style={{ fontFamily: "var(--font-mono)", fontSize: 16, fontWeight: 700, color: "rgba(255,255,255,0.25)" }}>:</span>
           <ScoreInputCC value={prediction.away} onChange={v => onChange(prediction.home, v)} disabled={matchLocked} />
         </div>
-        {/* Away team — left-aligned, flag closest to the scores */}
-        <div className="flex items-center gap-1.5 flex-1 min-w-0">
+        {/* Away team — left-aligned */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-start", gap: 6 }}>
           <Flag code={match.awayFlagCode ?? "un"} size="sm" />
-          <span className="truncate" style={{ fontSize: 11, fontFamily: "var(--font-ui)", color: "white", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.04em" }}>
+          <span style={{ fontSize: 11, fontFamily: "var(--font-ui)", color: "white", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.04em" }}>
             {(match.away ?? "").substring(0, 3).toUpperCase()}
           </span>
         </div>

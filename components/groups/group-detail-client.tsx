@@ -42,11 +42,11 @@ export function GroupDetailClient({ group, rules, members, currentUserId, isAdmi
   const scoringRows = Object.entries(SCORING_LABELS).filter(([key]) => { const ek = ENABLE_KEYS[key]; return !ek || rules?.[ek] !== false; });
 
   return (
-    <div className="max-w-2xl mx-auto space-y-5">
+    <div className="max-w-2xl mx-auto space-y-5 overflow-x-hidden">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
           <Link href="/groups" className="text-xs font-bold uppercase tracking-widest mb-2 flex items-center gap-1 transition-opacity hover:opacity-70" style={{ color: "#00D4FF" }}>← My Groups</Link>
-          <h1 className="font-display text-4xl uppercase font-black text-white truncate">{group.name}</h1>
+          <h1 className="font-display text-2xl sm:text-4xl uppercase font-black text-white break-words">{group.name}</h1>
           <div className="flex items-center gap-2 mt-1 flex-wrap">
             {isAdmin  && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: "rgba(251,191,36,0.12)", color: "#fbbf24", border: "1px solid rgba(251,191,36,0.2)" }}>Admin</span>}
             {isMember && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: "rgba(0,255,136,0.12)", color: "#00FF88",  border: "1px solid rgba(0,255,136,0.2)"  }}>Member</span>}
@@ -78,16 +78,16 @@ export function GroupDetailClient({ group, rules, members, currentUserId, isAdmi
 
       {tab === "overview" && (
         <div className="space-y-4">
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-3 gap-2">
             {[
               { icon: Users,      label: "Members",   value: `${paidCount}`,                accent: "#00D4FF" },
               { icon: DollarSign, label: "Entry",     value: `$${group.buy_in_amount ?? 0}`, accent: "#00FF88" },
               { icon: Trophy,     label: "Prize pot", value: `$${totalPot}`,                accent: "#fbbf24" },
             ].map(({ icon: Icon, label, value, accent }) => (
-              <div key={label} className="rounded-2xl p-4 text-center" style={glass}>
-                <Icon size={18} className="mx-auto mb-2" style={{ color: accent }} />
-                <div className="font-display text-2xl font-black text-white">{value}</div>
-                <div className="text-[10px] uppercase tracking-widest mt-0.5" style={{ color: "rgba(255,255,255,0.3)" }}>{label}</div>
+              <div key={label} className="rounded-2xl p-3 text-center overflow-hidden w-full" style={glass}>
+                <Icon size={16} className="mx-auto mb-1.5" style={{ color: accent }} />
+                <div className="font-display text-lg sm:text-2xl font-black text-white truncate">{value}</div>
+                <div className="text-[9px] uppercase tracking-widest mt-0.5" style={{ color: "rgba(255,255,255,0.3)" }}>{label}</div>
               </div>
             ))}
           </div>
@@ -103,8 +103,8 @@ export function GroupDetailClient({ group, rules, members, currentUserId, isAdmi
               )}
               <div className="rounded-2xl p-5 text-center" style={glass}>
                 <div className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: "#00D4FF" }}>Entry Passkey</div>
-                <div className="font-mono font-black text-4xl tracking-[0.2em] mb-1 text-white">{group.passkey}</div>
-                <div className="text-xs" style={{ color: "rgba(255,255,255,0.3)" }}>cupclash.live/join/{group.passkey}</div>
+                <div className="font-mono font-black text-3xl sm:text-4xl tracking-[0.1em] sm:tracking-[0.2em] mb-1 text-white overflow-hidden">{group.passkey}</div>
+                <div className="text-xs overflow-hidden" style={{ color: "rgba(255,255,255,0.3)", wordBreak: "break-all" }}>cupclash.live/join/{group.passkey}</div>
               </div>
             </div>
           )}
@@ -117,13 +117,13 @@ export function GroupDetailClient({ group, rules, members, currentUserId, isAdmi
                 { label: "🥈 2nd", pct: group.payout_second ?? 30, color: "#94a3b8" },
                 { label: "🥉 3rd", pct: group.payout_third  ?? 10, color: "#f97316" },
               ].map(({ label, pct, color }) => (
-                <div key={label} className="flex items-center gap-3">
-                  <span className="text-sm w-12" style={{ color: "rgba(255,255,255,0.6)" }}>{label}</span>
-                  <div className="flex-1 h-1.5 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.08)" }}>
+                <div key={label} className="flex items-center gap-2 w-full">
+                  <span className="text-sm w-10 shrink-0" style={{ color: "rgba(255,255,255,0.6)" }}>{label}</span>
+                  <div className="flex-1 min-w-0 h-1.5 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.08)" }}>
                     <div className="h-full rounded-full" style={{ width: `${pct}%`, background: color, opacity: 0.8 }} />
                   </div>
-                  <span className="text-sm font-black w-10 text-right" style={{ color }}>{pct}%</span>
-                  {totalPot > 0 && <span className="text-xs w-12 text-right" style={{ color: "rgba(255,255,255,0.3)" }}>${Math.round(totalPot * pct / 100)}</span>}
+                  <span className="text-sm font-black w-9 text-right shrink-0" style={{ color }}>{pct}%</span>
+                  {totalPot > 0 && <span className="text-xs w-10 text-right shrink-0" style={{ color: "rgba(255,255,255,0.3)" }}>${Math.round(totalPot * pct / 100)}</span>}
                 </div>
               ))}
             </div>
