@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Bell, LogOut, Globe, X, Check } from "lucide-react";
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { createClient } from "@/lib/supabase/client";
 import { LOCALES, LOCALE_KEYS, type Locale } from "@/lib/i18n";
 import { useLocale } from "@/components/i18n/locale-provider";
@@ -18,7 +19,87 @@ function useUnreadCount() {
 
 function MobileLanguagePicker() {
   const { locale, setLocale } = useLocale();
-  const [open, setOpen] = useState(false);
+  const [open,    setOpen]    = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  // Need mounted flag so createPortal only runs client-side
+  useEffect(() => { setMounted(true); }, []);
+
+  const sheet = open && (
+    <div
+      className="fixed inset-0 flex flex-col justify-end"
+      style={{ zIndex: 9999, background: "rgba(0,0,0,0.65)", backdropFilter: "blur(6px)" }}
+      onClick={() => setOpen(false)}>
+      <div
+        className="flex flex-col rounded-t-3xl"
+        style={{
+          background: "rgba(10,8,24,0.98)",
+          border: "1px solid rgba(255,255,255,0.12)",
+          boxShadow: "0 -8px 40px rgba(0,0,0,0.5)",
+          maxHeight: "72dvh",
+          // Always LTR — language list should read L→R regardless of app locale
+          direction: "ltr",
+        }}
+        onClick={e => e.stopPropagation()}>
+
+        {/* Handle */}
+        <div className="flex justify-center pt-3 pb-1 shrink-0">
+          <div className="w-10 h-1 rounded-full" style={{ background: "rgba(255,255,255,0.2)" }} />
+        </div>
+
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 py-3 shrink-0 border-b"
+          style={{ borderColor: "rgba(255,255,255,0.1)" }}>
+          <span className="font-display text-lg uppercase font-black text-white">Language</span>
+          <button
+            onClick={() => setOpen(false)}
+            className="h-9 w-9 flex items-center justify-center rounded-xl"
+            style={{ background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.5)" }}>
+            <X size={16} />
+          </button>
+        </div>
+
+        {/* Scrollable options — takes remaining height */}
+        <div className="overflow-y-auto flex-1">
+          {LOCALE_KEYS.map(l => {
+            const active = l === locale;
+            return (
+              <button
+                key={l}
+                onClick={() => { setLocale(l as Locale); setOpen(false); }}
+                className="w-full flex items-center gap-3 px-5 py-4 text-left transition-colors"
+                style={{
+                  background: active ? "rgba(0,212,255,0.1)" : "transparent",
+                  borderBottom: "1px solid rgba(255,255,255,0.06)",
+                  minHeight: 56,
+                }}>
+                <span className="text-2xl leading-none shrink-0">{LOCALES[l].flag}</span>
+                <span className="font-bold text-base" style={{ color: active ? "#00D4FF" : "#ffffff" }}>
+                  {LOCALES[l].nativeName}
+                </span>
+                <span className="text-xs" style={{ color: "rgba(255,255,255,0.35)" }}>
+                  {LOCALES[l].name}
+                </span>
+                {(l === "he" || l === "ar") && (
+                  <span className="text-[10px] px-1.5 py-0.5 rounded shrink-0"
+                    style={{ background: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.4)" }}>
+                    RTL
+                  </span>
+                )}
+                {active && (
+                  <span className="ms-auto shrink-0">
+                    <Check size={16} style={{ color: "#00D4FF" }} />
+                  </span>
+                )}
+              </button>
+            );
+          })}
+          {/* Bottom safe-area padding */}
+          <div style={{ height: "env(safe-area-inset-bottom, 0px)" }} />
+        </div>
+      </div>
+    </div>
+  );
 
   return (
     <>
@@ -30,57 +111,8 @@ function MobileLanguagePicker() {
         <Globe size={16} style={{ color: "rgba(255,255,255,0.7)" }} />
       </button>
 
-      {open && (
-        <div className="fixed inset-0 z-50 flex flex-col justify-end" style={{ background: "rgba(0,0,0,0.6)", backdropFilter: "blur(4px)" }}
-          onClick={() => setOpen(false)}>
-          <div
-            className="rounded-t-3xl overflow-hidden"
-            style={{ background: "rgba(10,8,24,0.98)", border: "1px solid rgba(255,255,255,0.1)", maxHeight: "70vh" }}
-            onClick={e => e.stopPropagation()}>
-            {/* Handle */}
-            <div className="flex justify-center pt-3 pb-1">
-              <div className="w-10 h-1 rounded-full" style={{ background: "rgba(255,255,255,0.15)" }} />
-            </div>
-            {/* Header */}
-            <div className="flex items-center justify-between px-5 py-3 border-b" style={{ borderColor: "rgba(255,255,255,0.08)" }}>
-              <span className="font-display text-lg uppercase font-black text-white">Language</span>
-              <button onClick={() => setOpen(false)} className="h-8 w-8 flex items-center justify-center rounded-lg" style={{ color: "rgba(255,255,255,0.5)" }}>
-                <X size={16} />
-              </button>
-            </div>
-            {/* Options */}
-            <div className="overflow-y-auto" style={{ maxHeight: "55vh" }}>
-              {LOCALE_KEYS.map(l => {
-                const active = l === locale;
-                return (
-                  <button
-                    key={l}
-                    onClick={() => { setLocale(l as Locale); setOpen(false); }}
-                    className="w-full flex items-center gap-3 px-5 py-3.5 transition-all"
-                    style={{
-                      background: active ? "rgba(0,212,255,0.08)" : "transparent",
-                      borderBottom: "1px solid rgba(255,255,255,0.05)",
-                      // Always LTR so flag+name reads left-to-right regardless of app language
-                      direction: "ltr",
-                    }}>
-                    <span className="text-xl">{LOCALES[l].flag}</span>
-                    <span className="font-bold text-sm" style={{ color: active ? "#00D4FF" : "rgba(255,255,255,0.7)" }}>
-                      {LOCALES[l].nativeName}
-                    </span>
-                    <span className="text-xs" style={{ color: "rgba(255,255,255,0.3)" }}>
-                      {LOCALES[l].name}
-                    </span>
-                    {(l === "he" || l === "ar") && (
-                      <span className="text-[10px] px-1.5 py-0.5 rounded" style={{ background: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.4)" }}>RTL</span>
-                    )}
-                    {active && <Check size={15} className="ms-auto shrink-0" style={{ color: "#00D4FF" }} />}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Portal to <body> — escapes header's z-index stacking context */}
+      {mounted && sheet && createPortal(sheet, document.body)}
     </>
   );
 }
