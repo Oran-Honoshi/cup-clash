@@ -24,7 +24,7 @@ export function AppInstallBanner() {
   return (
     <div className="flex items-center justify-between gap-3 px-4 py-2.5 text-xs"
       style={{ background: "rgba(0,212,255,0.08)", borderBottom: "1px solid rgba(0,212,255,0.15)" }}>
-      <span style={{ color: "rgba(255,255,255,0.7)" }}>
+      <span className="min-w-0 overflow-hidden" style={{ color: "rgba(255,255,255,0.7)" }}>
         📱 Install Cup Clash for the best experience →{" "}
         <Link href="/install" className="font-bold underline" style={{ color: "#00D4FF" }}>
           How to install

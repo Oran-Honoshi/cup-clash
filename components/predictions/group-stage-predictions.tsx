@@ -380,7 +380,7 @@ export function GroupStagePredictions({ groupId, locked = false, userId }: Group
   const activeIdx      = GROUPS.indexOf(activeGroup);
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 overflow-x-hidden">
 
       {/* Progress + save status */}
       <div className="rounded-2xl px-4 py-3" style={{ ...glassCard, borderRadius: 18 }}>
