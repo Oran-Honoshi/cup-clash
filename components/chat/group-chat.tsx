@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Send, Image as ImageIcon, X, MessageCircle } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { useLocale } from "@/components/i18n/locale-provider";
 import { cn } from "@/lib/utils";
 import { flagUrl } from "@/lib/countries";
 import NextImage from "next/image";
@@ -57,6 +58,7 @@ interface GroupChatProps {
 }
 
 export function GroupChat({ groupId, currentUserId, currentUserName, isPaid, inline = false }: GroupChatProps) {
+  const { t } = useLocale();
   const [messages,   setMessages]   = useState<ChatMessage[]>([]);
   const [input,      setInput]      = useState("");
   const [sending,    setSending]    = useState(false);
@@ -132,7 +134,7 @@ export function GroupChat({ groupId, currentUserId, currentUserName, isPaid, inl
     // Verify session first
     const { data: { user } } = await sb.auth.getUser();
     if (!user) {
-      setSendError("Not signed in — please refresh");
+      setSendError(t("chat_not_signed"));
       setSending(false);
       return;
     }
@@ -147,7 +149,7 @@ export function GroupChat({ groupId, currentUserId, currentUserName, isPaid, inl
 
     if (error) {
       console.error("Chat send error:", error.message);
-      setSendError("Failed to send. Try again.");
+      setSendError(t("chat_send_failed"));
     } else {
       setInput("");
       setShowGif(false);
@@ -187,7 +189,7 @@ export function GroupChat({ groupId, currentUserId, currentUserName, isPaid, inl
             <div className="h-full flex items-center justify-center text-center">
               <div>
                 <MessageCircle size={32} className="mx-auto mb-2" style={{ color: "rgba(255,255,255,0.2)" }} />
-                <p className="text-sm" style={{ color: "rgba(255,255,255,0.35)" }}>No messages yet. Say hi! 👋</p>
+                <p className="text-sm" style={{ color: "rgba(255,255,255,0.35)" }}>{t("chat_no_messages")}</p>
               </div>
             </div>
           )}
@@ -238,13 +240,13 @@ export function GroupChat({ groupId, currentUserId, currentUserName, isPaid, inl
             <div className="flex gap-2 mb-2">
               <input value={gifQuery} onChange={e => setGifQuery(e.target.value)}
                 onKeyDown={e => e.key === "Enter" && searchGifs(gifQuery)}
-                placeholder="Search GIFs..."
+                placeholder={t("chat_search_gifs")}
                 className="flex-1 text-xs px-3 py-2 rounded-lg"
                 style={{ border: "1px solid rgba(255,255,255,0.12)", color: "rgba(255,255,255,0.85)", background: "rgba(255,255,255,0.06)" }} />
               <button onClick={() => searchGifs(gifQuery)}
                 className="px-3 py-2 rounded-lg text-xs font-bold"
                 style={{ background: "rgba(0,212,255,0.1)", color: "#00D4FF" }}>
-                {gifLoading ? "..." : "Go"}
+                {gifLoading ? "..." : t("chat_gif_go")}
               </button>
             </div>
             <div className="grid grid-cols-3 gap-1 max-h-36 overflow-y-auto">
@@ -262,7 +264,7 @@ export function GroupChat({ groupId, currentUserId, currentUserName, isPaid, inl
         <div className="px-3 py-3 border-t shrink-0" style={{ borderColor: "rgba(0,212,255,0.12)" }}>
           {!isPaid ? (
             <div className="text-center text-sm py-2" style={{ color: "rgba(255,255,255,0.4)" }}>
-              Join the group to chat
+              {t("chat_join")}
             </div>
           ) : (
             <>
@@ -283,7 +285,7 @@ export function GroupChat({ groupId, currentUserId, currentUserName, isPaid, inl
                 <input ref={inputRef} value={input}
                   onChange={e => setInput(e.target.value)}
                   onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(input); } }}
-                  placeholder="Message..."
+                  placeholder={t("chat_placeholder")}
                   className="flex-1 px-3 py-2.5 rounded-xl text-sm"
                   style={{ border: "1px solid rgba(255,255,255,0.12)", background: "rgba(255,255,255,0.06)", color: "#ffffff", outline: "none" }}
                   onFocus={e => (e.target.style.border = "1px solid #00D4FF")}
@@ -343,7 +345,7 @@ export function GroupChat({ groupId, currentUserId, currentUserName, isPaid, inl
                     style={{ backgroundColor: "#00FF88" }} />
                   <span className="relative inline-flex h-2 w-2 rounded-full" style={{ backgroundColor: "#00FF88" }} />
                 </span>
-                <span className="font-display text-lg uppercase" style={{ color: "white" }}>Group Chat</span>
+                <span className="font-display text-lg uppercase" style={{ color: "white" }}>{t("chat_title")}</span>
               </div>
               <button onClick={() => setIsOpen(false)}
                 className="h-9 w-9 flex items-center justify-center rounded-lg -mr-1 transition-colors hover:bg-white/[0.08]">
@@ -357,7 +359,7 @@ export function GroupChat({ groupId, currentUserId, currentUserName, isPaid, inl
                 <div className="h-full flex items-center justify-center text-center">
                   <div>
                     <MessageCircle size={32} className="mx-auto mb-2" style={{ color: "rgba(255,255,255,0.2)" }} />
-                    <p className="text-sm" style={{ color: "rgba(255,255,255,0.35)" }}>No messages yet. Say hi! 👋</p>
+                    <p className="text-sm" style={{ color: "rgba(255,255,255,0.35)" }}>{t("chat_no_messages")}</p>
                   </div>
                 </div>
               )}
@@ -408,13 +410,13 @@ export function GroupChat({ groupId, currentUserId, currentUserName, isPaid, inl
                 <div className="flex gap-2 mb-2">
                   <input value={gifQuery} onChange={e => setGifQuery(e.target.value)}
                     onKeyDown={e => e.key === "Enter" && searchGifs(gifQuery)}
-                    placeholder="Search GIFs..."
+                    placeholder={t("chat_search_gifs")}
                     className="flex-1 text-xs px-3 py-2 rounded-lg"
                     style={{ border: "1px solid rgba(255,255,255,0.12)", color: "rgba(255,255,255,0.85)", background: "rgba(255,255,255,0.06)" }} />
                   <button onClick={() => searchGifs(gifQuery)}
                     className="px-3 py-2 rounded-lg text-xs font-bold"
                     style={{ background: "rgba(0,212,255,0.1)", color: "#00D4FF" }}>
-                    {gifLoading ? "..." : "Go"}
+                    {gifLoading ? "..." : t("chat_gif_go")}
                   </button>
                 </div>
                 <div className="grid grid-cols-3 gap-1 max-h-36 overflow-y-auto">
@@ -433,7 +435,7 @@ export function GroupChat({ groupId, currentUserId, currentUserName, isPaid, inl
               style={{ borderColor: "rgba(0,212,255,0.12)", background: "rgba(18,14,38,0.6)" }}>
               {!isPaid ? (
                 <div className="text-center text-sm py-2" style={{ color: "rgba(255,255,255,0.4)" }}>
-                  Join the group to chat
+                  {t("chat_join")}
                 </div>
               ) : (
                 <>
@@ -454,7 +456,7 @@ export function GroupChat({ groupId, currentUserId, currentUserName, isPaid, inl
                     <input ref={inputRef} value={input}
                       onChange={e => setInput(e.target.value)}
                       onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(input); } }}
-                      placeholder="Message..."
+                      placeholder={t("chat_placeholder")}
                       className="flex-1 px-3 py-2.5 rounded-xl text-sm"
                       style={{ border: "1px solid rgba(255,255,255,0.12)", background: "rgba(255,255,255,0.06)", color: "#ffffff", outline: "none" }}
                       onFocus={e => (e.target.style.border = "1px solid #00D4FF")}

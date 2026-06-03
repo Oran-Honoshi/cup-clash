@@ -1,4 +1,5 @@
 "use client";
+import { useLocale } from "@/components/i18n/locale-provider";
 
 import { useState, useEffect } from "react";
 import { Bell, BellOff, Trophy, Users, MessageCircle, Check, Send, X } from "lucide-react";
@@ -31,6 +32,14 @@ const glass = {
 const BOT_USERNAME = "CupClashBot";
 
 export function NotificationsClient({ userId }: { userId: string }) {
+  const { t } = useLocale();
+  const SETTING_LABELS: Record<string, string> = {
+    goals:       t("notif_goal"),
+    results:     t("notif_result"),
+    leaderboard: t("notif_leaderboard"),
+    chat:        t("notif_chat"),
+    newmember:   t("notif_new_member"),
+  };
   const [settings,       setSettings]       = useState<Record<string, boolean>>({});
   const [pushEnabled,    setPushEnabled]     = useState(false);
   const [loading,        setLoading]         = useState(false);
@@ -114,7 +123,7 @@ export function NotificationsClient({ userId }: { userId: string }) {
           </div>
           <div className="flex-1 min-w-0">
             <div className="font-bold text-base text-white">
-              {telegramChatId ? "Telegram connected" : "Connect Telegram"}
+              {telegramChatId ? t("notif_tg_connected") : t("notif_tg_connect")}
             </div>
             {telegramChatId ? (
               <>
@@ -125,7 +134,7 @@ export function NotificationsClient({ userId }: { userId: string }) {
                   className="mt-3 flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold uppercase tracking-wider disabled:opacity-40 transition-opacity"
                   style={{ background: "rgba(220,38,38,0.08)", color: "#dc2626", border: "1px solid rgba(220,38,38,0.2)" }}>
                   <X size={12} />
-                  {tgDisconnecting ? "Disconnecting..." : "Disconnect"}
+                  {tgDisconnecting ? t("notif_disconnecting") : "Disconnect"}
                 </button>
               </>
             ) : (
@@ -176,18 +185,18 @@ export function NotificationsClient({ userId }: { userId: string }) {
           </div>
           <div className="flex-1 min-w-0">
             <div className="font-bold text-base text-white">
-              {pushEnabled ? "Push notifications enabled" : "Enable push notifications"}
+              {pushEnabled ? t("notif_push_on") : t("notif_push_off")}
             </div>
             <div className="text-sm mt-0.5" style={{ color: "rgba(255,255,255,0.45)" }}>
               {pushEnabled
-                ? "You'll get notified about goals, results and leaderboard changes."
-                : "Get notified about goals, results, and when your rank changes, even when the app is closed."}
+                ? t("notif_push_on_desc")
+                : t("notif_push_off_desc")}
             </div>
             {!pushEnabled && (
               <button onClick={enablePush} disabled={loading}
                 className="mt-3 px-4 py-2.5 rounded-xl text-sm font-bold uppercase tracking-wider disabled:opacity-50 transition-all hover:-translate-y-0.5"
                 style={{ background: "linear-gradient(135deg, #00D4FF, #00FF88)", color: "#0B141B" }}>
-                {loading ? "Enabling..." : "Enable notifications"}
+                {loading ? t("notif_enabling") : "Enable notifications"}
               </button>
             )}
           </div>
@@ -207,7 +216,7 @@ export function NotificationsClient({ userId }: { userId: string }) {
             style={{ borderColor: "rgba(255,255,255,0.06)" }}>
             <div className="shrink-0 w-7 flex items-center justify-center">{s.icon}</div>
             <div className="flex-1 min-w-0">
-              <div className="text-sm font-bold text-white">{s.label}</div>
+              <div className="text-sm font-bold text-white">{SETTING_LABELS[s.key] ?? s.label}</div>
               <div className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.35)" }}>{s.desc}</div>
             </div>
             {/* Toggle */}
@@ -230,7 +239,7 @@ export function NotificationsClient({ userId }: { userId: string }) {
           background: "linear-gradient(135deg, #00FF88, #00D4FF)", color: "#0B141B",
           boxShadow: "0 0 20px rgba(0,255,136,0.25)",
         }}>
-        {saved ? <><Check size={16} /> Saved!</> : "Save preferences"}
+        {saved ? <><Check size={16} /> {t("notif_saved")}</> : t("notif_save")}
       </button>
     </div>
   );
