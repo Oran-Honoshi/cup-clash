@@ -10,18 +10,20 @@ interface SocialAuthProps {
 
 export function SocialAuth({ className }: SocialAuthProps) {
   const handleGoogle = async () => {
-    const sb = createClient();
+    const sb   = createClient();
+    const next = new URLSearchParams(window.location.search).get("next") ?? "/dashboard";
     await sb.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: "https://cupclash.live/auth/callback" },
+      options: { redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}` },
     });
   };
 
   const handleFacebook = async () => {
-    const sb = createClient();
+    const sb   = createClient();
+    const next = new URLSearchParams(window.location.search).get("next") ?? "/dashboard";
     await sb.auth.signInWithOAuth({
       provider: "facebook",
-      options: { redirectTo: "https://cupclash.live/auth/callback" },
+      options: { redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}` },
     });
   };
 

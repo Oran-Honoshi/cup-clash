@@ -6,6 +6,7 @@ import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { Logo } from "@/components/logo";
 import { XCircle, Users, Sparkles } from "lucide-react";
 import { JoinButton } from "@/components/join/join-button";
+import { JoinAuthButtons } from "@/components/join/join-auth-buttons";
 import Link from "next/link";
 
 interface GroupRow {
@@ -281,20 +282,7 @@ export default async function JoinCodePage({
             ) : user ? (
               <JoinButton groupId={group.id} groupName={group.name} enrollmentFee={enrollmentFee} demoMode={demoMode} />
             ) : (
-              <div className="space-y-2">
-                <Link href={`/signup?next=/join/${code}`}>
-                  <button className="w-full py-3.5 rounded-xl font-bold text-sm uppercase tracking-wider flex items-center justify-center gap-2"
-                    style={{ background: "linear-gradient(135deg, #00FF88, #00D4FF)", color: "#0B141B" }}>
-                    Create account &amp; Join
-                  </button>
-                </Link>
-                <Link href={`/signin?next=/join/${code}`}>
-                  <button className="w-full py-3 rounded-xl font-bold text-sm uppercase tracking-wider"
-                    style={{ border: "1px solid rgba(0,212,255,0.2)", color: "#0891B2", background: "rgba(0,212,255,0.05)" }}>
-                    Already have an account? Sign in
-                  </button>
-                </Link>
-              </div>
+              <JoinAuthButtons code={code} groupId={group.id} groupName={group.name} />
             )}
 
             <p className="text-center text-xs" style={{ color: "#94a3b8" }}>

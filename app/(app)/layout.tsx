@@ -3,6 +3,7 @@ import { MobileNav } from "@/components/app/mobile-nav";
 import { AppHeader } from "@/components/app/app-header";
 import { PageTransition } from "@/components/app/page-transition";
 import { AppInstallBanner } from "@/components/app/install-banner";
+import { JoinPromptModal } from "@/components/join/join-prompt-modal";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -26,6 +27,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         </div>
       </main>
       <MobileNav />
+      <JoinPromptModal />
     </div>
   );
 }
