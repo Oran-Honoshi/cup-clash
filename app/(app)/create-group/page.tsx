@@ -396,7 +396,7 @@ function CreateGroupInner() {
                     <Chip label="Free for you" color="#00FF88" />
                   </div>
                   <p style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", fontFamily: "var(--font-ui)", lineHeight: 1.45, margin: 0 }}>
-                    You create the group for free. Each friend pays a flat <strong style={{ color: "white" }}>$2 entry fee</strong> individually when they join.
+                    Free to join. Predict, compete, and win. Play with ads, or remove them for a one-time <strong style={{ color: "white" }}>$2 upgrade</strong>.
                   </p>
                   <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginTop: 10 }}>
                     {["Fantasy leagues", "Friend groups", "Bar buddies", "Family"].map(t => (
