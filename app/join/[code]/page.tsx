@@ -8,6 +8,7 @@ import { XCircle, Users, Sparkles } from "lucide-react";
 import { JoinButton } from "@/components/join/join-button";
 import { JoinAuthButtons } from "@/components/join/join-auth-buttons";
 import Link from "next/link";
+import { BackButton } from "@/components/ui/back-button";
 
 interface GroupRow {
   id:                   string;
@@ -94,7 +95,7 @@ export default async function JoinCodePage({
 
   if (!group) {
     return (
-      <div className="min-h-screen flex items-center justify-center px-4" style={{ background: "#F8FAFC" }}>
+      <div className="min-h-screen flex items-center justify-center px-4 page-safe-top" style={{ background: "#F8FAFC" }}>
         <div className="w-full max-w-sm text-center space-y-5">
           <Logo size="lg" className="justify-center" />
           <div className="rounded-2xl p-8 space-y-4"
@@ -141,7 +142,7 @@ export default async function JoinCodePage({
 
     if (memberCount >= capacity) {
       return (
-        <div className="min-h-screen flex items-center justify-center px-4" style={{ background: "#F8FAFC" }}>
+        <div className="min-h-screen flex items-center justify-center px-4 page-safe-top" style={{ background: "#F8FAFC" }}>
           <div className="w-full max-w-sm text-center space-y-5">
             <Logo size="lg" className="justify-center" />
             <div className="rounded-2xl p-8"
@@ -166,9 +167,13 @@ export default async function JoinCodePage({
 
     // Show sponsored access splash screen
     return (
-      <div className="min-h-screen flex items-center justify-center px-4" style={{ background: "#F8FAFC" }}>
+      <div className="min-h-screen flex items-center justify-center px-4 page-safe-top" style={{ background: "#F8FAFC" }}>
         <div className="w-full max-w-sm space-y-5">
-          <Logo size="lg" className="justify-center" />
+          <div className="flex items-center">
+            <BackButton fallback="/join/enter" />
+            <Logo size="lg" className="flex-1 justify-center" />
+            <div className="w-8" />
+          </div>
 
           <div className="rounded-2xl overflow-hidden"
             style={{ background: "rgba(255,255,255,0.95)", border: "2px solid rgba(0,212,255,0.3)", boxShadow: "0 8px 32px rgba(0,212,255,0.12)" }}>
@@ -240,9 +245,13 @@ export default async function JoinCodePage({
     : false;
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4" style={{ background: "#F8FAFC" }}>
+    <div className="min-h-screen flex items-center justify-center px-4 page-safe-top" style={{ background: "#F8FAFC" }}>
       <div className="w-full max-w-sm space-y-5">
-        <Logo size="lg" className="justify-center" />
+        <div className="flex items-center">
+          <BackButton fallback="/join/enter" />
+          <Logo size="lg" className="flex-1 justify-center" />
+          <div className="w-8" />
+        </div>
 
         <div className="rounded-2xl overflow-hidden"
           style={{ background: "rgba(255,255,255,0.92)", border: "1px solid rgba(0,212,255,0.2)", boxShadow: "0 8px 32px rgba(0,212,255,0.08)" }}>

@@ -22,7 +22,7 @@ export default function JoinEnterPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4"
+    <div className="min-h-screen flex items-center justify-center px-4 page-safe-top"
       style={{ background: "#F8FAFC" }}>
       <div className="w-full max-w-sm space-y-6">
         <div className="flex flex-col items-center">

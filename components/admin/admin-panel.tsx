@@ -133,31 +133,35 @@ export function AdminPanel({ group, initialMembers }: AdminPanelProps) {
         {/* Member list */}
         <div className="space-y-1">
           {members.map(m => (
-            <div key={m.id} className="flex items-center gap-3 py-2.5 border-b last:border-0"
+            <div key={m.id} className="flex items-center gap-2 sm:gap-3 py-2.5 border-b last:border-0"
               style={{ borderColor: "rgba(255,255,255,0.06)" }}>
               <MemberAvatar name={m.name} avatarUrl={m.avatarUrl} size="sm" />
               <div className="flex-1 min-w-0">
                 <div className="text-sm font-bold truncate text-white">{m.name}</div>
                 <div className="text-[11px]" style={{ color: "rgba(255,255,255,0.3)" }}>{m.country}</div>
               </div>
-              <NudgeButton
-                memberName={m.name} matchLabel="Next match"
-                groupName={group.name} minutesToKickoff={90}
-                hasPredicted={false} size="sm"
-              />
+              <div className="hidden sm:block">
+                <NudgeButton
+                  memberName={m.name} matchLabel="Next match"
+                  groupName={group.name} minutesToKickoff={90}
+                  hasPredicted={false} size="sm"
+                />
+              </div>
               {group.buyInAmount > 0 && (
-                <span className="text-sm font-bold shrink-0" style={{ color: "rgba(255,255,255,0.6)" }}>
+                <span className="hidden sm:inline text-sm font-bold shrink-0" style={{ color: "rgba(255,255,255,0.6)" }}>
                   ${group.buyInAmount}
                 </span>
               )}
               <button onClick={() => togglePaid(m.id, m.paid)}
-                className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider px-2.5 py-2 rounded-full transition-all"
+                className="flex items-center gap-1 sm:gap-1.5 text-xs font-bold uppercase tracking-wider px-2 sm:px-2.5 py-2 rounded-full transition-all shrink-0"
                 style={m.paid ? {
                   background: "rgba(0,255,136,0.12)", border: "1px solid rgba(0,255,136,0.25)", color: "#00FF88",
                 } : {
                   background: "rgba(248,113,113,0.1)", border: "1px solid rgba(248,113,113,0.2)", color: "#f87171",
                 }}>
-                {m.paid ? <><CheckCircle size={12} /> Paid</> : <><XCircle size={12} /> Pending</>}
+                {m.paid
+                  ? <><CheckCircle size={12} /><span className="hidden sm:inline">Paid</span></>
+                  : <><XCircle size={12} /><span className="hidden sm:inline">Unpaid</span></>}
               </button>
             </div>
           ))}

@@ -78,6 +78,18 @@ h1, h2, h3, h4 {
 
 .font-mono { font-family: var(--font-mono); }
 
+/* ── iOS safe-area: bottom padding clears the mobile nav + home indicator ── */
+@media (max-width: 1023px) {
+  .app-safe-bottom {
+    padding-bottom: calc(5rem + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+/* ── Standalone pages (join, auth) need top safe-area for notch/Dynamic Island ── */
+.page-safe-top {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
 /* ── Label caps ── */
 .label-caps {
   font-size: 0.65rem;
