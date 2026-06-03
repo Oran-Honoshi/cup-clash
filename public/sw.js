@@ -28,7 +28,7 @@ self.addEventListener("push", (event) => {
   const options = {
     body:    data.body    ?? "Something happened in Cup Clash!",
     icon:    data.icon    ?? "/icons/icon-192.png",
-    badge:   "/icons/badge-96.png",
+    badge:   "/icon-192.png",
     vibrate: [200, 100, 200],
     tag:     data.tag     ?? "cupclash",
     data:    { url: data.url ?? "/dashboard" },

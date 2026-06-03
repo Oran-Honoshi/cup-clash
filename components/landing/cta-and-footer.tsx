@@ -25,9 +25,10 @@ const FOOTER_COLS = [
   {
     heading: "Legal",
     links: [
-      { label: "Privacy", href: "/privacy" },
-      { label: "Terms",   href: "/terms"   },
-      { label: "Refunds", href: "/refund"  },
+      { label: "Privacy",      href: "/privacy"  },
+      { label: "Terms",        href: "/terms"    },
+      { label: "Refunds",      href: "/refund"   },
+      { label: "Install App",  href: "/install"  },
     ],
   },
 ];
