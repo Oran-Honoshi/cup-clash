@@ -165,7 +165,7 @@ export default function SchedulePageContent() {
                           "glass rounded-xl px-4 py-3 transition-all hover:-translate-y-0.5 hover:shadow-card"
                         )}
                       >
-                        <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-2 sm:gap-4">
                           {/* Stage badge */}
                           <span
                             className={cn(
@@ -183,22 +183,22 @@ export default function SchedulePageContent() {
                                 <Image src={flagUrl(match.homeFlagCode, 20)} alt={match.home} fill className="object-cover" unoptimized />
                               </div>
                             )}
-                            <span className="font-display text-lg uppercase tracking-tight truncate text-white">
+                            <span className="font-display text-sm sm:text-lg uppercase tracking-tight truncate min-w-0 text-white">
                               {match.home}
                             </span>
-                            <span className="text-pitch-600 font-bold mx-1">vs</span>
+                            <span className="text-pitch-600 font-bold shrink-0">vs</span>
                             {match.awayFlagCode && (
                               <div className="relative w-6 h-4 rounded-sm overflow-hidden shrink-0">
                                 <Image src={flagUrl(match.awayFlagCode, 20)} alt={match.away} fill className="object-cover" unoptimized />
                               </div>
                             )}
-                            <span className="font-display text-lg uppercase tracking-tight truncate text-white">
+                            <span className="font-display text-sm sm:text-lg uppercase tracking-tight truncate min-w-0 text-white">
                               {match.away}
                             </span>
                           </div>
 
                           {/* Time + venue */}
-                          <div className="shrink-0 flex items-center gap-4 text-right">
+                          <div className="flex items-center gap-2 sm:gap-4 text-right shrink-0">
                             <div className="hidden md:flex flex-col items-end">
                               <div className="flex items-center gap-1 text-xs text-pitch-400">
                                 <MapPin size={10} />
@@ -206,16 +206,16 @@ export default function SchedulePageContent() {
                               </div>
                               <div className="text-[11px] text-pitch-500">{match.city}</div>
                             </div>
-                            <div className="flex items-center gap-1.5">
-                              <Clock size={11} className="text-pitch-500" />
-                              <span className="font-mono text-sm font-bold" style={{ color: "#0891B2" }}>
+                            <div className="flex items-center gap-1">
+                              <Clock size={11} className="text-pitch-500 shrink-0" />
+                              <span className="font-mono text-xs sm:text-sm font-bold" style={{ color: "#0891B2" }}>
                                 {match.time}
                               </span>
-                              <span className="text-[10px] text-pitch-500">
+                              <span className="text-[10px] text-pitch-500 hidden sm:inline">
                                 {match.timezone}
                               </span>
                               {/* Host country flag */}
-                              <div className="relative w-4 h-3 rounded-sm overflow-hidden ml-1">
+                              <div className="relative w-4 h-3 rounded-sm overflow-hidden ml-1 shrink-0">
                                 <Image src={flagUrl(HOST_CITY_FLAGS[match.country], 20)} alt={match.country} fill className="object-cover" unoptimized />
                               </div>
                             </div>

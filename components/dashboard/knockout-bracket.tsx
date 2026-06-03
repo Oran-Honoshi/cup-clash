@@ -243,11 +243,11 @@ export function KnockoutBracket({ groupId: _groupId }: { groupId?: string }) {
       </div>
 
       {/* Scrollable bracket: horizontal scroll on mobile */}
-      <div className="relative">
+      <div className="relative w-full max-w-full">
         {/* Right-edge fade signals more content to the right */}
         <div className="pointer-events-none absolute right-0 top-0 bottom-4 w-14 z-10 sm:hidden"
           style={{ background: "linear-gradient(to left, rgba(8,12,22,0.95) 0%, transparent 100%)" }} />
-        <div ref={scrollRef} className="overflow-x-auto pb-4" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
+        <div ref={scrollRef} className="overflow-x-auto w-full pb-4" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
           <div className="flex gap-4 min-w-max">
             <StageColumn id="round-r32" title="Round of 32" matches={R32_MATCHES} color="#8B5CF6" />
             <div className="flex flex-col justify-center">
