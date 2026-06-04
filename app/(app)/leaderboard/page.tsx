@@ -44,6 +44,7 @@ export default async function LeaderboardPage({ searchParams }: { searchParams: 
             Find a group
           </Link>
         </div>
+        <AdBanner isAdFree={false} isCorporate={false} />
       </div>
     );
   }
