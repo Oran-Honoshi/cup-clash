@@ -64,18 +64,18 @@ export const metadata: Metadata = {
     alternateLocale: ["he_IL"],
     images: [
       {
-        url:    "https://cupclash.live/opengraph-image",
-        width:  1200,
-        height: 630,
+        url:    "https://cupclash.live/icon-512.png",
+        width:  512,
+        height: 512,
         alt:    "Cup Clash: World Cup 2026 Prediction League",
       },
     ],
   },
   twitter: {
-    card:        "summary_large_image",
+    card:        "summary",
     title:       "CupClash 2026: The Social Prediction Arena",
     description: "104 matches, 3 countries, and your football IQ against friends. Join the ultimate 2026 World Cup prediction group.",
-    images:      ["https://cupclash.live/opengraph-image"],
+    images:      ["https://cupclash.live/icon-512.png"],
   },
   alternates: {
     canonical: "https://cupclash.live",
