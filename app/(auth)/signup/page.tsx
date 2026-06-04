@@ -102,7 +102,7 @@ export default function SignUpPage() {
     <>
       {/* Logo block */}
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6, textAlign: "center" }}>
-        <img src="/icon-192.png" width={52} height={52} alt="CupClash"
+        <img src="/icons/icon-192.png" width={52} height={52} alt="CupClash"
           style={{ borderRadius: 16, boxShadow: "0 0 24px rgba(0,255,136,0.3)", display: "block" }} />
         <div style={{ fontFamily: "var(--font-display)", fontSize: 28, fontWeight: 800, color: "white", lineHeight: 1 }}>
           Cup<span style={{ background: "linear-gradient(135deg, #00FF88, #00D4FF)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>Clash</span>

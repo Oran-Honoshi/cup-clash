@@ -101,7 +101,7 @@ export function AppSidebar() {
       <div className="px-5 py-5 border-b" style={{ borderColor: "rgba(255,255,255,0.07)" }}>
         <Link href="/dashboard" className="flex items-center gap-2.5">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/icon-192.png" alt="Cup Clash" className="h-8 w-8 rounded-xl object-cover" />
+          <img src="/icons/icon-192.png" alt="Cup Clash" className="h-8 w-8 rounded-xl object-cover" />
           <div>
             <div className="font-display text-lg font-black uppercase leading-none text-white">
               Cup<span style={{ background: "linear-gradient(135deg,#00FF88,#00D4FF)", WebkitBackgroundClip: "text", backgroundClip: "text", WebkitTextFillColor: "transparent" }}>Clash</span>

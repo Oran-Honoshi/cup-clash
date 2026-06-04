@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cup Clash — Icon System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#06120a; --bg2:#0a1b0e; --panel:#0e2113; --panel2:#102817;
+  --line:rgba(214,176,90,.16); --line-soft:rgba(214,176,90,.10);
+  --gold:#e7c46a; --gold2:#d6a93f; --gold-soft:#cfb375;
+  --ink:#eaf1e6; --mut:#9fb29a; --mut2:#71856d;
+  --grass:#173a17;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  background:
+    radial-gradient(120% 80% at 50% -10%, #11331a 0%, transparent 55%),
+    radial-gradient(100% 60% at 90% 110%, #0d2613 0%, transparent 60%),
+    var(--bg);
+  color:var(--ink); font-family:'Barlow',system-ui,sans-serif;
+  -webkit-font-smoothing:antialiased; line-height:1.5;
+}
+.wrap{max-width:1180px;margin:0 auto;padding:0 28px}
+.mono{font-family:ui-monospace,'SF Mono',Menlo,monospace}
+.gold{color:var(--gold)}
+.eyebrow{font-family:'Barlow Condensed',sans-serif;font-weight:600;letter-spacing:.34em;text-transform:uppercase;font-size:13px;color:var(--gold);display:flex;align-items:center;gap:12px}
+.eyebrow::before{content:"";width:26px;height:2px;background:var(--gold);opacity:.7}
+h2.section{font-family:'Anton',sans-serif;font-weight:400;font-size:clamp(30px,4vw,46px);letter-spacing:.01em;text-transform:uppercase;line-height:.95;margin:14px 0 6px}
+.lead{color:var(--mut);font-size:17px;max-width:62ch}
+
+/* ---------- HERO ---------- */
+header.hero{position:relative;overflow:hidden;border-bottom:1px solid var(--line)}
+.hero-inner{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:40px;align-items:center;padding:70px 0 64px}
+.hero h1{font-family:'Anton',sans-serif;font-weight:400;text-transform:uppercase;font-size:clamp(54px,8vw,104px);line-height:.84;letter-spacing:.005em;
+  background:linear-gradient(176deg,#fff4d6 2%,#f0d385 30%,#d6a93f 64%,#b9852b 100%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 3px 0 rgba(0,0,0,.3))}
+.hero p.tag{margin-top:18px;font-size:19px;color:var(--mut);max-width:48ch}
+.hero .meta{margin-top:26px;display:flex;gap:10px;flex-wrap:wrap}
+.chip{font-family:'Barlow Condensed',sans-serif;font-weight:600;letter-spacing:.06em;text-transform:uppercase;font-size:13px;
+  border:1px solid var(--line);background:rgba(231,196,106,.05);color:var(--gold-soft);padding:7px 13px;border-radius:100px}
+.hero-icon{width:230px;height:230px;border-radius:51px;overflow:hidden;position:relative;flex:0 0 auto;
+  box-shadow:0 30px 70px rgba(0,0,0,.55),0 0 0 1px rgba(231,196,106,.25),inset 0 0 0 1px rgba(255,255,255,.04);
+  background:#0c1a0e}
+.hero-icon img{width:100%;height:100%;object-fit:cover;display:block}
+.hero-icon::after{content:"";position:absolute;inset:0;border-radius:inherit;background:linear-gradient(140deg,rgba(255,255,255,.16),transparent 40%);mix-blend-mode:screen}
+
+/* ---------- SECTION SHELL ---------- */
+section{padding:66px 0;border-bottom:1px solid var(--line-soft)}
+.head{margin-bottom:38px}
+
+/* ---------- OPTIONS ---------- */
+.opt-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+.opt{background:linear-gradient(180deg,var(--panel),var(--bg2));border:1px solid var(--line);border-radius:18px;padding:20px;position:relative}
+.opt.rec{border-color:rgba(231,196,106,.55);box-shadow:0 0 0 1px rgba(231,196,106,.25),0 18px 50px rgba(0,0,0,.4)}
+.opt .badge{position:absolute;top:-11px;left:20px;font-family:'Barlow Condensed',sans-serif;font-weight:700;letter-spacing:.12em;text-transform:uppercase;font-size:11px;background:var(--gold);color:#22160a;padding:4px 11px;border-radius:100px}
+.opt .art{width:100%;aspect-ratio:1;border-radius:24px;overflow:hidden;background:#0c1a0e;box-shadow:inset 0 0 0 1px rgba(255,255,255,.05)}
+.opt .art img{width:100%;height:100%;object-fit:cover;display:block}
+.opt h3{font-family:'Barlow Condensed',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:.04em;font-size:21px;margin:16px 0 4px}
+.opt .k{font-size:14px;color:var(--mut);min-height:42px}
+.opt .use{margin-top:12px;font-family:ui-monospace,monospace;font-size:11.5px;color:var(--gold-soft);border-top:1px solid var(--line-soft);padding-top:11px}
+
+/* ---------- MOCKS ---------- */
+.mock-grid{display:grid;grid-template-columns:repeat(12,1fr);gap:22px}
+.card{background:linear-gradient(180deg,var(--panel),var(--bg2));border:1px solid var(--line);border-radius:18px;padding:22px;position:relative;overflow:hidden}
+.card .cap{position:absolute;top:16px;left:18px;font-family:'Barlow Condensed',sans-serif;font-weight:600;letter-spacing:.12em;text-transform:uppercase;font-size:11.5px;color:var(--mut2);z-index:3}
+.card .sub{font-size:13.5px;color:var(--mut);margin-top:4px}
+.span6{grid-column:span 6}.span4{grid-column:span 4}.span12{grid-column:span 12}.span8{grid-column:span 8}
+
+/* iOS springboard */
+.ios{background:radial-gradient(130% 100% at 30% 0%,#1f4d2a,#0a1c10 70%);min-height:330px;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;padding-bottom:26px;gap:22px}
+.ios .row{display:flex;gap:26px}
+.appicon{display:flex;flex-direction:column;align-items:center;gap:9px;width:78px}
+.appicon .sq{width:66px;height:66px;border-radius:15px;overflow:hidden;box-shadow:0 8px 18px rgba(0,0,0,.45),inset 0 0 0 .5px rgba(255,255,255,.12)}
+.appicon .sq img{width:100%;height:100%;object-fit:cover;display:block}
+.appicon .sq.ph{background:linear-gradient(135deg,#2b6cff,#7aa6ff)}
+.appicon .sq.ph2{background:linear-gradient(135deg,#ff5e7a,#ffb15e)}
+.appicon span{font-size:11.5px;color:#dfeada;text-shadow:0 1px 2px rgba(0,0,0,.6);font-weight:500}
+.ios .dock{display:flex;gap:24px;background:rgba(255,255,255,.10);backdrop-filter:blur(8px);padding:13px 22px;border-radius:26px;border:1px solid rgba(255,255,255,.10)}
+
+/* Android masks */
+.andro{display:flex;gap:26px;justify-content:center;align-items:flex-end;flex-wrap:wrap;padding-top:34px}
+.amask{display:flex;flex-direction:column;align-items:center;gap:10px}
+.amask .m{width:104px;height:104px;overflow:hidden;position:relative;box-shadow:0 10px 24px rgba(0,0,0,.45)}
+.amask .m img{width:100%;height:100%;object-fit:cover;display:block}
+.amask .m.circle{border-radius:50%}
+.amask .m.squircle{border-radius:30px}
+.amask .m.rsquare{border-radius:22px}
+.amask .m.teardrop{border-radius:50% 50% 50% 8px}
+.amask span{font-family:'Barlow Condensed',sans-serif;letter-spacing:.08em;text-transform:uppercase;font-size:11px;color:var(--mut)}
+.safezone{position:relative}
+.safezone::after{content:"";position:absolute;inset:10%;border:1.5px dashed rgba(231,196,106,.7);border-radius:50%;pointer-events:none}
+
+/* browser tab */
+.browser{background:#0b1a10;border-radius:12px;overflow:hidden;border:1px solid rgba(255,255,255,.06);margin-top:30px}
+.tabbar{display:flex;align-items:flex-end;gap:0;background:#06100a;padding:9px 10px 0}
+.tab{display:flex;align-items:center;gap:9px;background:#13261a;padding:9px 15px;border-radius:9px 9px 0 0;font-size:13px;color:#dbe7d6;max-width:230px;border:1px solid rgba(255,255,255,.05);border-bottom:none}
+.tab img{width:17px;height:17px;border-radius:4px}
+.tab.inactive{background:transparent;color:var(--mut2);border-color:transparent}
+.tab .x{margin-left:6px;color:var(--mut2);font-size:14px}
+.urlbar{display:flex;align-items:center;gap:10px;background:#0e2014;padding:10px 14px;border-top:1px solid rgba(255,255,255,.05)}
+.urlbar .u{background:#06120b;border:1px solid rgba(255,255,255,.06);border-radius:100px;padding:7px 14px;font-size:13px;color:#bcccb6;flex:1;display:flex;align-items:center;gap:9px}
+.urlbar .u img{width:15px;height:15px;border-radius:3px}
+
+/* social card */
+.social{background:#0b141b;border:1px solid rgba(255,255,255,.08);border-radius:16px;overflow:hidden;max-width:540px}
+.social .imgwrap{aspect-ratio:1200/630;background:#000}
+.social .imgwrap img{width:100%;height:100%;object-fit:cover;display:block}
+.social .body{padding:15px 18px}
+.social .dom{font-size:12.5px;color:#8aa0b0;text-transform:lowercase;letter-spacing:.02em}
+.social .ttl{font-size:16px;color:#e8eef2;font-weight:600;margin:3px 0}
+.social .desc{font-size:13.5px;color:#9fb1bd}
+.imsg{display:flex;justify-content:flex-end}
+.bubble{background:#1c8adb;border-radius:20px;padding:5px;max-width:340px}
+.bubble .social{max-width:330px;border:none}
+.bubble .link{color:#dbeeff;font-size:13px;padding:7px 12px 9px;word-break:break-all}
+
+/* pwa splash */
+.splash{background:radial-gradient(120% 90% at 50% 35%,#1c4226,#081a0d 72%);min-height:330px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:26px}
+.splash .si{width:120px;height:120px;border-radius:28px;overflow:hidden;box-shadow:0 22px 50px rgba(0,0,0,.5),0 0 0 1px rgba(231,196,106,.2)}
+.splash .si img{width:100%;height:100%;object-fit:cover}
+.splash .wm{font-family:'Anton',sans-serif;text-transform:uppercase;font-size:30px;letter-spacing:.02em;background:linear-gradient(180deg,#fff4d6,#d6a93f);-webkit-background-clip:text;background-clip:text;color:transparent}
+.splash .bar{width:120px;height:4px;border-radius:3px;background:rgba(255,255,255,.12);overflow:hidden}
+.splash .bar i{display:block;width:42%;height:100%;background:var(--gold);border-radius:3px}
+
+/* landing nav */
+.landing{background:linear-gradient(180deg,#0c2214,#081a0d);min-height:300px;display:flex;flex-direction:column}
+.lnav{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid rgba(255,255,255,.06)}
+.brand{display:flex;align-items:center;gap:11px}
+.brand img{width:34px;height:34px;border-radius:9px}
+.brand b{font-family:'Anton',sans-serif;font-weight:400;text-transform:uppercase;letter-spacing:.03em;font-size:19px;background:linear-gradient(180deg,#fff4d6,#d6a93f);-webkit-background-clip:text;background-clip:text;color:transparent}
+.lnav .links{display:flex;gap:20px;font-size:13.5px;color:var(--mut)}
+.lnav .cta{font-family:'Barlow Condensed',sans-serif;font-weight:700;text-transform:uppercase;letter-spacing:.06em;font-size:13px;background:var(--gold);color:#22160a;padding:8px 16px;border-radius:100px}
+.lhero{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:14px;padding:30px}
+.lhero h4{font-family:'Anton',sans-serif;text-transform:uppercase;font-size:34px;line-height:.95;color:var(--ink)}
+.lhero p{color:var(--mut);font-size:15px;max-width:40ch}
+
+/* size matrix */
+.matrix{display:grid;grid-template-columns:repeat(auto-fill,minmax(108px,1fr));gap:18px}
+.swatch{text-align:center}
+.swatch .sw{margin:0 auto;border-radius:18px;overflow:hidden;background:#0c1a0e;box-shadow:inset 0 0 0 1px rgba(255,255,255,.05),0 6px 16px rgba(0,0,0,.35)}
+.swatch .sw img{width:100%;height:100%;object-fit:cover;display:block;image-rendering:auto}
+.swatch .nm{font-family:ui-monospace,monospace;font-size:11px;color:var(--gold-soft);margin-top:9px}
+.swatch .px{font-size:11px;color:var(--mut2)}
+
+/* file table */
+.files{width:100%;border-collapse:collapse;font-size:14px}
+.files th,.files td{text-align:left;padding:12px 14px;border-bottom:1px solid var(--line-soft)}
+.files th{font-family:'Barlow Condensed',sans-serif;letter-spacing:.1em;text-transform:uppercase;font-size:12px;color:var(--mut2);font-weight:600}
+.files td.f{font-family:ui-monospace,monospace;color:var(--gold-soft);font-size:13px;white-space:nowrap}
+.files td .p{font-size:12.5px;color:var(--mut)}
+.files tr:hover td{background:rgba(231,196,106,.03)}
+
+/* notes */
+.notes{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.note{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:20px}
+.note .ic{width:34px;height:34px;border-radius:9px;background:rgba(231,196,106,.12);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;color:var(--gold);font-weight:700;margin-bottom:13px;font-family:'Barlow Condensed',sans-serif}
+.note h5{font-family:'Barlow Condensed',sans-serif;text-transform:uppercase;letter-spacing:.04em;font-size:16px;margin-bottom:6px}
+.note p{font-size:13.5px;color:var(--mut)}
+
+footer{padding:46px 0 70px;color:var(--mut2);font-size:13px;text-align:center}
+.callout{background:rgba(231,196,106,.06);border:1px solid var(--line);border-left:3px solid var(--gold);border-radius:10px;padding:14px 18px;font-size:14px;color:var(--mut);margin-top:26px}
+.callout b{color:var(--gold-soft)}
+@media(max-width:880px){
+  .hero-inner{grid-template-columns:1fr;text-align:left}
+  .opt-grid,.notes{grid-template-columns:1fr}
+  .mock-grid>*{grid-column:1/-1!important}
+}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap hero-inner">
+    <div>
+      <div class="eyebrow">Brand Asset Kit · v1</div>
+      <h1>Cup Clash<br>Icon System</h1>
+      <p class="tag">One golden trophy, deployed everywhere — app stores, home screens, browser tabs and shared links — perfectly framed, edge-to-edge, never clipped, never a white border.</p>
+      <div class="meta">
+        <span class="chip">PWA / iOS / Android</span>
+        <span class="chip">Favicon + .ico</span>
+        <span class="chip">Open Graph 1200×630</span>
+        <span class="chip">Maskable safe-zone</span>
+      </div>
+    </div>
+    <div class="hero-icon"><img src="icons/icon-512.png" alt="Cup Clash icon"></div>
+  </div>
+</header>
+
+<!-- OPTIONS -->
+<section id="options">
+  <div class="wrap">
+    <div class="head">
+      <div class="eyebrow">Your chosen direction</div>
+      <h2 class="section">Three treatments — B is the master</h2>
+      <p class="lead">All three keep your full green pitch bleeding to every edge, so the OS rounding never reveals a white corner. You picked <b style="color:var(--gold)">B · Centered</b> — the whole icon set (iOS, Android, PWA, maskable) is now standardised to it. A and C remain on hand for large art and tiny marks.</p>
+    </div>
+    <div class="opt-grid">
+      <div class="opt">
+        <div class="art"><img src="previews/scene-512.png" alt=""></div>
+        <h3>A · Full Scene</h3>
+        <div class="k">Your artwork untouched. Richest detail — kept for the store listing &amp; large art.</div>
+        <div class="use">store listing · marketing · large art</div>
+      </div>
+      <div class="opt rec">
+        <div class="badge">✓ Adopted master</div>
+        <div class="art"><img src="icons/maskable-512.png" alt=""></div>
+        <h3>B · Centered (Safe)</h3>
+        <div class="k">Trophy eased in ~14% with a soft vignette. Survives every Android mask + iOS squircle with breathing room.</div>
+        <div class="use">maskable · home screen · adaptive</div>
+      </div>
+      <div class="opt">
+        <div class="art"><img src="icons/clean-512.png" alt=""></div>
+        <h3>C · Bold Crop</h3>
+        <div class="k">Zoomed onto the cup so the gold reads even at thumbnail scale. Most punchy.</div>
+        <div class="use">favicon source · avatars · small UI</div>
+      </div>
+    </div>
+    <div class="callout"><b>Now shipping:</b> every PWA, iOS, Android and maskable file uses treatment <span class="mono">B</span>. <span class="mono">C</span> (bold crop) feeds the favicons &amp; nav mark; <span class="mono">A</span> (full scene) is reserved for store art.</div>
+  </div>
+</section>
+
+<!-- REAL CONTEXT -->
+<section id="context">
+  <div class="wrap">
+    <div class="head">
+      <div class="eyebrow">Proof in situ</div>
+      <h2 class="section">Every surface, mocked up</h2>
+      <p class="lead">Exactly how the generated files render where users actually meet them.</p>
+    </div>
+    <div class="mock-grid">
+
+      <!-- iOS -->
+      <div class="card span6">
+        <div class="cap">iOS · Home screen &amp; dock</div>
+        <div class="ios">
+          <div class="row">
+            <div class="appicon"><div class="sq ph"></div><span>Messages</span></div>
+            <div class="appicon"><div class="sq"><img src="icons/apple-touch-icon.png" alt=""></div><span>Cup Clash</span></div>
+            <div class="appicon"><div class="sq ph2"></div><span>Photos</span></div>
+          </div>
+          <div class="dock">
+            <div class="appicon" style="width:66px"><div class="sq"><img src="icons/apple-touch-icon.png" alt=""></div></div>
+            <div class="appicon" style="width:66px"><div class="sq ph"></div></div>
+            <div class="appicon" style="width:66px"><div class="sq ph2"></div></div>
+          </div>
+        </div>
+        <div class="sub"><span class="mono">apple-touch-icon.png</span> · 180×180 · iOS applies its own squircle</div>
+      </div>
+
+      <!-- Android adaptive -->
+      <div class="card span6">
+        <div class="cap">Android · Adaptive masks</div>
+        <div class="andro">
+          <div class="amask"><div class="m circle safezone"><img src="icons/maskable-512.png" alt=""></div><span>Circle</span></div>
+          <div class="amask"><div class="m squircle"><img src="icons/maskable-512.png" alt=""></div><span>Squircle</span></div>
+          <div class="amask"><div class="m rsquare"><img src="icons/maskable-512.png" alt=""></div><span>Rounded</span></div>
+          <div class="amask"><div class="m teardrop"><img src="icons/maskable-512.png" alt=""></div><span>Teardrop</span></div>
+        </div>
+        <div class="sub"><span class="mono">maskable-512.png</span> · trophy stays inside the dashed 80% safe-zone on every mask</div>
+      </div>
+
+      <!-- Browser tab -->
+      <div class="card span12">
+        <div class="cap">Desktop browser · Tab &amp; address bar</div>
+        <div class="browser">
+          <div class="tabbar">
+            <div class="tab"><img src="icons/favicon-32.png" alt=""><span>Cup Clash — Predict. Compete. Clash.</span><span class="x">×</span></div>
+            <div class="tab inactive"><span style="width:17px;height:17px;display:inline-block;border-radius:4px;background:#2c3d33"></span><span>New Tab</span></div>
+          </div>
+          <div class="urlbar"><div class="u"><img src="icons/favicon-16.png" alt="">cupclash.live</div></div>
+        </div>
+        <div class="sub"><span class="mono">favicon.ico</span> (16/32/48) + <span class="mono">favicon-32.png</span> — bowl crop stays legible at 16px</div>
+      </div>
+
+      <!-- Social / OG -->
+      <div class="card span8">
+        <div class="cap">Shared link · Open Graph card</div>
+        <div style="margin-top:34px" class="imsg">
+          <div class="bubble">
+            <div class="social">
+              <div class="imgwrap"><img src="icons/og-image.png" alt=""></div>
+            </div>
+            <div class="link">https://cupclash.live</div>
+          </div>
+        </div>
+        <div style="margin-top:18px" class="social">
+          <div class="imgwrap"><img src="icons/og-image.png" alt=""></div>
+          <div class="body">
+            <div class="dom">cupclash.live</div>
+            <div class="ttl">Cup Clash — Football Tournaments</div>
+            <div class="desc">Predict. Compete. Clash.</div>
+          </div>
+        </div>
+        <div class="sub"><span class="mono">og-image.png</span> · 1200×630 · iMessage bubble + Facebook/LinkedIn/Slack card</div>
+      </div>
+
+      <!-- PWA splash -->
+      <div class="card span4">
+        <div class="cap">PWA · Install splash</div>
+        <div class="splash">
+          <div class="si"><img src="icons/icon-512.png" alt=""></div>
+          <div class="wm">Cup Clash</div>
+          <div class="bar"><i></i></div>
+        </div>
+        <div class="sub"><span class="mono">icon-512</span> + theme color <span class="mono">#0a1b0e</span></div>
+      </div>
+
+      <!-- Landing nav -->
+      <div class="card span12">
+        <div class="cap">Web · Landing &amp; app header</div>
+        <div class="landing">
+          <div class="lnav">
+            <div class="brand"><img src="icons/clean-512.png" alt=""><b>Cup Clash</b></div>
+            <div class="links"><span>Fixtures</span><span>Bracket</span><span>Leaderboard</span><span>Prizes</span></div>
+            <div class="cta">Join a cup</div>
+          </div>
+          <div class="lhero">
+            <h4>The bracket is set.<br>Where's your squad?</h4>
+            <p>The same mark scales from a 16px tab to a hero lockup without losing the gold.</p>
+          </div>
+        </div>
+        <div class="sub">Use crop <span class="mono">C</span> for compact nav marks · full lockup pairs the icon with the Anton wordmark</div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- SIZE MATRIX -->
+<section id="sizes">
+  <div class="wrap">
+    <div class="head">
+      <div class="eyebrow">Generated at native resolution</div>
+      <h2 class="section">The full size ladder</h2>
+      <p class="lead">Each PNG is rendered crisply from the 1024px master — no upscaling, no soft edges.</p>
+    </div>
+    <div class="matrix">
+      <div class="swatch"><div class="sw" style="width:104px;height:104px"><img src="icons/icon-512.png"></div><div class="nm">icon-512</div><div class="px">512×512</div></div>
+      <div class="swatch"><div class="sw" style="width:92px;height:92px"><img src="icons/icon-192.png"></div><div class="nm">icon-192</div><div class="px">192×192</div></div>
+      <div class="swatch"><div class="sw" style="width:104px;height:104px"><img src="icons/maskable-512.png"></div><div class="nm">maskable-512</div><div class="px">512 · safe</div></div>
+      <div class="swatch"><div class="sw" style="width:80px;height:80px"><img src="icons/apple-touch-icon.png"></div><div class="nm">apple-touch</div><div class="px">180×180</div></div>
+      <div class="swatch"><div class="sw" style="width:48px;height:48px"><img src="icons/favicon-48.png"></div><div class="nm">favicon-48</div><div class="px">48×48</div></div>
+      <div class="swatch"><div class="sw" style="width:32px;height:32px"><img src="icons/favicon-32.png"></div><div class="nm">favicon-32</div><div class="px">32×32</div></div>
+      <div class="swatch"><div class="sw" style="width:16px;height:16px"><img src="icons/favicon-16.png"></div><div class="nm">favicon-16</div><div class="px">16×16</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- FILES -->
+<section id="files">
+  <div class="wrap">
+    <div class="head">
+      <div class="eyebrow">The deliverable</div>
+      <h2 class="section">Files in <span class="mono" style="font-size:.6em;-webkit-text-fill-color:var(--gold)">/icons</span></h2>
+    </div>
+    <table class="files">
+      <thead><tr><th>File</th><th>Size</th><th>Where it's used</th></tr></thead>
+      <tbody>
+        <tr><td class="f">icon-512.png</td><td>512×512</td><td class="p">PWA manifest · install tile · splash</td></tr>
+        <tr><td class="f">icon-192.png</td><td>192×192</td><td class="p">PWA manifest · Android home screen (any)</td></tr>
+        <tr><td class="f">maskable-512.png</td><td>512×512</td><td class="p">Manifest <span class="mono">purpose:"maskable"</span> · Android adaptive</td></tr>
+        <tr><td class="f">maskable-192.png</td><td>192×192</td><td class="p">Maskable fallback size</td></tr>
+        <tr><td class="f">apple-touch-icon.png</td><td>180×180</td><td class="p">iOS home screen (Add to Home Screen)</td></tr>
+        <tr><td class="f">favicon.ico</td><td>16·32·48</td><td class="p">Legacy browser tabs &amp; bookmarks</td></tr>
+        <tr><td class="f">favicon-32.png / -16.png</td><td>32 · 16</td><td class="p">Modern browser tabs (<span class="mono">rel="icon"</span>)</td></tr>
+        <tr><td class="f">og-image.png</td><td>1200×630</td><td class="p">Open Graph + Twitter shared-link card</td></tr>
+        <tr><td class="f">clean-512.png</td><td>512×512</td><td class="p">Bold crop · nav marks · avatars (optional)</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- NOTES -->
+<section id="notes" style="border-bottom:none">
+  <div class="wrap">
+    <div class="head">
+      <div class="eyebrow">What's handled for you</div>
+      <h2 class="section">Why these won't break</h2>
+    </div>
+    <div class="notes">
+      <div class="note"><div class="ic">⌀</div><h5>No white edges</h5><p>The green pitch bleeds fully to all four corners. When iOS/Android round the icon, there's never a pale gap — the crop reveals more green, not white.</p></div>
+      <div class="note"><div class="ic">80</div><h5>Maskable safe-zone</h5><p>On the maskable file the trophy lives inside the inner 80% circle Android guarantees, so circle, squircle, teardrop and rounded-square masks all keep the cup intact.</p></div>
+      <div class="note"><div class="ic">16</div><h5>Legible when tiny</h5><p>The favicon zooms to the cup bowl instead of shrinking the whole scene, so the gold still reads as a trophy at 16px in a crowded tab strip.</p></div>
+      <div class="note"><div class="ic">✓</div><h5>Right file, right slot</h5><p>Standard names and sizes (<span class="mono">apple-touch-icon</span>, <span class="mono">maskable</span>, <span class="mono">og-image</span>) map 1:1 to what the manifest and meta tags expect.</p></div>
+      <div class="note"><div class="ic">★</div><h5>Theme-matched chrome</h5><p>Manifest <span class="mono">theme_color</span> / <span class="mono">background_color</span> sampled from the artwork (<span class="mono">#0a1b0e</span>) so the splash and status bar blend in.</p></div>
+      <div class="note"><div class="ic">⤓</div><h5>Drop-in for Claude Code</h5><p>A ready manifest, full <span class="mono">&lt;head&gt;</span> block and a step-by-step guide ship alongside — paste and go.</p></div>
+    </div>
+    <div class="callout"><b>Locked in:</b> tagline “Predict. Compete. Clash.” and domain <span class="mono">cupclash.live</span> are baked into the social card and meta tags. Treatment <span class="mono">B · Centered</span> is the standard master across iOS, Android &amp; PWA.</div>
+  </div>
+</section>
+
+<footer>
+  Cup Clash Icon System · generated from your 1024px master · pair with <span class="mono gold">Cup Clash — Claude Code Guide.md</span>
+</footer>
+
+</body>
+</html>

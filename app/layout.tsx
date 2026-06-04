@@ -16,7 +16,7 @@ const jetbrains = JetBrains_Mono({     subsets: ["latin"], variable: "--font-mon
   weight: ["400", "600", "700"] });
 
 export const viewport: Viewport = {
-  themeColor: "#00D4FF",
+  themeColor: "#0a1b0e",
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
@@ -64,7 +64,7 @@ export const metadata: Metadata = {
     alternateLocale: ["he_IL"],
     images: [
       {
-        url:    "https://cupclash.live/og-image.png",
+        url:    "https://cupclash.live/icons/og-image.png",
         width:  1200,
         height: 630,
         alt:    "Cup Clash: World Cup 2026 Prediction League",
@@ -75,21 +75,18 @@ export const metadata: Metadata = {
     card:        "summary_large_image",
     title:       "CupClash 2026: The Social Prediction Arena",
     description: "104 matches, 3 countries, and your football IQ against friends. Join the ultimate 2026 World Cup prediction group.",
-    images:      ["https://cupclash.live/og-image.png"],
+    images:      ["https://cupclash.live/icons/og-image.png"],
   },
   alternates: {
     canonical: "https://cupclash.live",
   },
   icons: {
     icon: [
-      { url: "/favicon.ico",       sizes: "any"      },
-      { url: "/favicon-16x16.png", sizes: "16x16",   type: "image/png" },
-      { url: "/favicon-32x32.png", sizes: "32x32",   type: "image/png" },
-      { url: "/icon-192.png",      sizes: "192x192", type: "image/png" },
-      { url: "/icon-512.png",      sizes: "512x512", type: "image/png" },
+      { url: "/icons/favicon-16.png", sizes: "16x16", type: "image/png" },
+      { url: "/icons/favicon-32.png", sizes: "32x32", type: "image/png" },
     ],
-    apple:    { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
     shortcut: "/favicon.ico",
+    apple: "/apple-touch-icon.png",
   },
   manifest: "/manifest.webmanifest",
   robots: { index: true, follow: true },

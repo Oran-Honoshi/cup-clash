@@ -18,7 +18,7 @@ export function Logo({ size = "md", className, showWordmark = true }: LogoProps)
     <div className={cn("flex items-center gap-2.5", className)}>
       {/* Use the 192px version for crisp rendering at all sizes */}
       <Image
-        src="/icon-192.png"
+        src="/icons/icon-192.png"
         alt="Cup Clash"
         width={dims.px}
         height={dims.px}

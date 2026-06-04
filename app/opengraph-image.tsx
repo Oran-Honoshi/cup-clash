@@ -90,7 +90,7 @@ export default function OGImage() {
           }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src="https://cupclash.live/icon-512.png"
+              src="https://cupclash.live/icons/icon-512.png"
               width={180}
               height={180}
               style={{ objectFit: "contain" }}
