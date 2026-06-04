@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
 
 interface AdBannerProps {
   isAdFree: boolean;
@@ -9,7 +10,7 @@ interface AdBannerProps {
 
 const ENABLED = process.env.NEXT_PUBLIC_ADSTERRA_ENABLED === "true";
 
-export function AdBanner({ isAdFree, isCorporate }: AdBannerProps) {
+function AdBannerInner({ isAdFree, isCorporate }: AdBannerProps) {
   const [isMobile, setIsMobile] = useState<boolean | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -26,19 +27,23 @@ export function AdBanner({ isAdFree, isCorporate }: AdBannerProps) {
     const container = containerRef.current;
     container.innerHTML = "";
 
-    const key = isMobile
+    const adKey = isMobile
       ? "e7dac21808e8fea6ad1628edbcdb0f12"
       : "57581e9e0d27e8594e8853097933815b";
     const w = isMobile ? 300 : 728;
     const h = isMobile ? 250 : 90;
 
     const s1 = document.createElement("script");
-    s1.innerHTML = `atOptions={'key':'${key}','format':'iframe','height':${h},'width':${w},'params':{}};`;
+    s1.innerHTML = `atOptions={'key':'${adKey}','format':'iframe','height':${h},'width':${w},'params':{}};`;
     const s2 = document.createElement("script");
-    s2.src = `https://www.highperformanceformat.com/${key}/invoke.js`;
+    s2.src = `https://www.highperformanceformat.com/${adKey}/invoke.js`;
     s2.async = true;
     container.appendChild(s1);
     container.appendChild(s2);
+
+    return () => {
+      container.innerHTML = "";
+    };
   }, [isMobile, isAdFree, isCorporate]);
 
   if (!ENABLED || isAdFree || isCorporate || isMobile === null) return null;
@@ -51,4 +56,9 @@ export function AdBanner({ isAdFree, isCorporate }: AdBannerProps) {
       <div ref={containerRef} style={{ width: w, height: h }} />
     </div>
   );
+}
+
+export function AdBanner(props: AdBannerProps) {
+  const pathname = usePathname();
+  return <AdBannerInner key={pathname} {...props} />;
 }
