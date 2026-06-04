@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
   if (!webPush) return NextResponse.json({ error: "npm install web-push" }, { status: 503 });
 
   webPush.setVapidDetails(vapidEmail, vapidPublic, vapidPrivate);
-  const payload = JSON.stringify({ title, body, url: url ?? "/dashboard", tag: tag ?? "cupclash", icon: "/icons/icon-192.png" });
+  const payload = JSON.stringify({ title, body, url: url ?? "/dashboard", tag: tag ?? "cupclash", icon: "/icon-192.png" });
 
   let sent = 0;
   await Promise.allSettled(subs.map(async sub => {

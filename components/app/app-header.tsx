@@ -128,13 +128,15 @@ export function AppHeader({ title }: { title?: string }) {
 
   return (
     <header
-      className="lg:hidden sticky top-0 z-30 flex items-center justify-between px-4 py-3 border-b"
+      className="lg:hidden sticky top-0 z-30 flex items-center justify-between px-4 border-b"
       style={{
         background: "rgba(8, 12, 22, 0.85)",
         backdropFilter: "blur(24px)",
         WebkitBackdropFilter: "blur(24px)",
         borderColor: "rgba(255,255,255,0.07)",
         boxShadow: "0 2px 16px rgba(0,0,0,0.4)",
+        paddingTop: "calc(12px + env(safe-area-inset-top))",
+        paddingBottom: "12px",
       }}
     >
       <div className="font-display text-lg uppercase font-bold text-white">
