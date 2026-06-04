@@ -4,6 +4,7 @@ import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { createClient }          from "@/lib/supabase/server";
 import { PredictionsClient }     from "@/components/predictions/predictions-client";
 import { GuestPredictionsShell } from "@/components/predictions/guest-predictions-shell";
+import { AdBanner } from "@/components/ads/ad-banner";
 import Link from "next/link";
 
 function sbAdmin() {
@@ -61,6 +62,7 @@ export default async function PredictionsPage({
       <div>
         <GuestPredictionsBanner />
         <GuestPredictionsShell />
+        <AdBanner isAdFree={false} isCorporate={false} />
       </div>
     );
   }
@@ -87,14 +89,17 @@ export default async function PredictionsPage({
   // Solo user: no groups yet, allow solo predictions
   if (!groups.length) {
     return (
-      <PredictionsClient
-        groupId="00000000-0000-0000-0000-000000000001"
-        groupName="My Predictions"
-        allGroups={[]}
-        userId={user.id}
-        isPaid={true}
-        migrateGuestPicks={shouldMigrate}
-      />
+      <>
+        <PredictionsClient
+          groupId="00000000-0000-0000-0000-000000000001"
+          groupName="My Predictions"
+          allGroups={[]}
+          userId={user.id}
+          isPaid={true}
+          migrateGuestPicks={shouldMigrate}
+        />
+        <AdBanner isAdFree={false} isCorporate={false} />
+      </>
     );
   }
 
@@ -106,14 +111,28 @@ export default async function PredictionsPage({
 
   const activeGroup = groups.find((g) => g.id === activeGroupId)!;
 
+  type AdStatus = { is_ad_free: boolean; groups: { is_corporate_paid: boolean } | null } | null;
+  const { data: adStatusRaw } = await sbAdmin()
+    .from("group_members")
+    .select("is_ad_free, groups(is_corporate_paid)")
+    .eq("user_id", user.id)
+    .eq("group_id", activeGroupId)
+    .maybeSingle();
+  const adStatus = adStatusRaw as AdStatus;
+  const isAdFree    = adStatus?.is_ad_free ?? false;
+  const isCorporate = adStatus?.groups?.is_corporate_paid ?? false;
+
   return (
-    <PredictionsClient
-      groupId={activeGroupId}
-      groupName={activeGroup.name}
-      allGroups={groups}
-      userId={user.id}
-      isPaid={true}
-      migrateGuestPicks={shouldMigrate}
-    />
+    <>
+      <PredictionsClient
+        groupId={activeGroupId}
+        groupName={activeGroup.name}
+        allGroups={groups}
+        userId={user.id}
+        isPaid={true}
+        migrateGuestPicks={shouldMigrate}
+      />
+      <AdBanner isAdFree={isAdFree} isCorporate={isCorporate} />
+    </>
   );
 }

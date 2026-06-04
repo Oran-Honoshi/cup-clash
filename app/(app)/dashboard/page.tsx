@@ -10,6 +10,7 @@ import { WallOfShame }     from "@/components/dashboard/wall-of-shame";
 import { DashboardGroupPicker } from "@/components/dashboard/dashboard-group-picker";
 import { WelcomeModal }    from "@/components/ui/welcome-modal";
 import { DashboardEmptyState } from "@/components/dashboard/empty-state";
+import { AdBanner } from "@/components/ads/ad-banner";
 import { getMembers, getGroup } from "@/lib/services/groups";
 import { getNextMatch }    from "@/lib/services/matches";
 import { getCurrentUserProfile } from "@/lib/services/user-group";
@@ -122,11 +123,21 @@ export default async function DashboardPage({
 
   const activeGroup = allGroups.find(g => g.id === activeGroupId)!;
 
-  const [members, group, nextMatch] = await Promise.all([
+  type AdStatus = { is_ad_free: boolean; groups: { is_corporate_paid: boolean } | null } | null;
+  const [members, group, nextMatch, adStatusResult] = await Promise.all([
     getMembers(activeGroupId),
     getGroup(activeGroupId),
     getNextMatch(),
+    sbAdmin()
+      .from("group_members")
+      .select("is_ad_free, groups(is_corporate_paid)")
+      .eq("user_id", userProfile.id)
+      .eq("group_id", activeGroupId)
+      .maybeSingle(),
   ]);
+  const adStatus = adStatusResult.data as AdStatus;
+  const isAdFree    = adStatus?.is_ad_free ?? false;
+  const isCorporate = adStatus?.groups?.is_corporate_paid ?? false;
 
   const currentMember = members.find(m => m.id === userProfile.id) ?? members[0];
   const rank          = members.findIndex(m => m.id === userProfile.id) + 1;
@@ -174,6 +185,8 @@ export default async function DashboardPage({
         correctPredictions={currentMember?.correctPredictions ?? 0}
         exactScores={currentMember?.exactScores ?? 0}
       />
+
+      <AdBanner isAdFree={isAdFree} isCorporate={isCorporate} />
 
       <div className="grid gap-5 lg:grid-cols-12">
         {/* Primary action — first on mobile, right column on desktop */}

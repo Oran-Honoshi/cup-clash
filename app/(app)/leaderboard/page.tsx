@@ -6,6 +6,7 @@ import { LeaderboardTabs } from "@/components/dashboard/leaderboard-tabs";
 import { getMembers, getGroup } from "@/lib/services/groups";
 import { getCurrentUserProfile } from "@/lib/services/user-group";
 import { DashboardGroupPicker } from "@/components/dashboard/dashboard-group-picker";
+import { AdBanner } from "@/components/ads/ad-banner";
 import Link from "next/link";
 
 function sbAdmin() {
@@ -48,7 +49,21 @@ export default async function LeaderboardPage({ searchParams }: { searchParams: 
   }
 
   const activeGroupId = searchParams.group && allGroups.find(g => g.id === searchParams.group) ? searchParams.group : allGroups[0].id;
-  const [members, group] = await Promise.all([getMembers(activeGroupId), getGroup(activeGroupId)]);
+
+  type AdStatus = { is_ad_free: boolean; groups: { is_corporate_paid: boolean } | null } | null;
+  const [members, group, adStatusResult] = await Promise.all([
+    getMembers(activeGroupId),
+    getGroup(activeGroupId),
+    sbAdmin()
+      .from("group_members")
+      .select("is_ad_free, groups(is_corporate_paid)")
+      .eq("user_id", userProfile.id)
+      .eq("group_id", activeGroupId)
+      .maybeSingle(),
+  ]);
+  const adStatus = adStatusResult.data as AdStatus;
+  const isAdFree   = adStatus?.is_ad_free ?? false;
+  const isCorporate = adStatus?.groups?.is_corporate_paid ?? false;
 
   return (
     <div className="space-y-6">
@@ -60,6 +75,7 @@ export default async function LeaderboardPage({ searchParams }: { searchParams: 
         {allGroups.length > 1 && <DashboardGroupPicker groups={allGroups} activeGroupId={activeGroupId} basePath="/leaderboard" />}
       </div>
       <LeaderboardTabs members={members} currentUserId={userProfile.id} />
+      <AdBanner isAdFree={isAdFree} isCorporate={isCorporate} />
     </div>
   );
 }
