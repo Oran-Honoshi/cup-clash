@@ -85,7 +85,7 @@ export function DashboardEmptyState({ highlight }: DashboardEmptyStateProps = {}
                   Friend Circle
                 </div>
                 <p className="text-sm leading-relaxed mb-5" style={{ color: "rgba(255,255,255,0.55)" }}>
-                  Free to join. Play with ads, or go ad-free for just{" "}
+                  Free for everyone. Predict, compete, and climb the leaderboard. Want an ad-free experience? Upgrade for just{" "}
                   <strong style={{ color: "#00FF88" }}>$2</strong>.
                 </p>
                 <div className="flex flex-wrap gap-2 mb-6">
@@ -146,20 +146,6 @@ export function DashboardEmptyState({ highlight }: DashboardEmptyStateProps = {}
                   Everyone you invite joins for{" "}
                   <strong style={{ color: "#00FF88" }}>$0, zero friction</strong>.
                 </p>
-                <div className="flex gap-3 mb-6">
-                  <span
-                    className="text-xs font-bold px-3 py-1.5 rounded-lg"
-                    style={{ background: "rgba(0,212,255,0.1)", color: "#00D4FF", border: "1px solid rgba(0,212,255,0.2)" }}
-                  >
-                    $75 · 50 members
-                  </span>
-                  <span
-                    className="text-xs font-bold px-3 py-1.5 rounded-lg"
-                    style={{ background: "rgba(251,191,36,0.1)", color: "#fbbf24", border: "1px solid rgba(251,191,36,0.2)" }}
-                  >
-                    $130 · 100 members
-                  </span>
-                </div>
                 <div className="flex items-center gap-2 font-bold text-sm" style={{ color: "#00D4FF" }}>
                   Set Up Corporate Group <ArrowRight size={15} />
                 </div>

@@ -136,8 +136,8 @@ export default async function GroupsPage() {
                 <div className="grid grid-cols-3 divide-x" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
                   {[
                     { icon: Users,      label: "Members", value: `${memberCount}` },
-                    { icon: DollarSign, label: "Entry",   value: `$${(g.enrollment_fee_cents / 100).toFixed(0)}` },
-                    { icon: Trophy,     label: "Type",    value: "Cup" },
+                    { icon: DollarSign, label: "Entry",   value: "Free · $2 removes ads" },
+                    { icon: Trophy,     label: "Type",    value: "2026 World Cup" },
                   ].map(({ icon: Icon, label, value }) => (
                     <div key={label} className="px-4 py-3 text-center" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
                       <Icon size={15} className="mx-auto mb-1" style={{ color: "#00D4FF" }} />

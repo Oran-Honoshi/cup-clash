@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { Trophy, Users, DollarSign, Target, Lock, Shield, ArrowRight, MessageCircle, Info, Trash2 } from "lucide-react";
 import Link from "next/link";
 import { GroupChat } from "@/components/chat/group-chat";
-import { CorporateUnlockOverlay } from "@/components/groups/corporate-unlock-overlay";
 import { MemberAvatar } from "@/components/ui/member-avatar";
 import { useLocale } from "@/components/i18n/locale-provider";
 import { interpolate } from "@/lib/i18n";
@@ -118,22 +117,18 @@ export function GroupDetailClient({ group, rules, members, currentUserId, isAdmi
             ))}
           </div>
 
-          {isAdmin && !group.is_corporate_paid ? (
-            <CorporateUnlockOverlay groupId={group.id} groupName={group.name} passkey={group.passkey} />
-          ) : (
-            <div className="space-y-3">
-              {group.is_corporate_paid && !isAdmin && (
-                <div className="rounded-2xl px-4 py-3 text-sm text-center" style={{ background: "rgba(0,255,136,0.07)", border: "1px solid rgba(0,255,136,0.2)", color: "rgba(255,255,255,0.75)" }}>
-                  ✓ This is a sponsored group — your access is fully free, courtesy of your organization.
-                </div>
-              )}
-              <div className="rounded-2xl p-5 text-center" style={glass}>
-                <div className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: "#00D4FF" }}>{t("grp_passkey")}</div>
-                <div className="font-mono font-black text-3xl sm:text-4xl tracking-[0.1em] sm:tracking-[0.2em] mb-1 text-white overflow-hidden">{group.passkey}</div>
-                <div className="text-xs overflow-hidden" style={{ color: "rgba(255,255,255,0.3)", wordBreak: "break-all" }}>cupclash.live/join/{group.passkey}</div>
+          <div className="space-y-3">
+            {group.is_corporate_paid && !isAdmin && (
+              <div className="rounded-2xl px-4 py-3 text-sm text-center" style={{ background: "rgba(0,255,136,0.07)", border: "1px solid rgba(0,255,136,0.2)", color: "rgba(255,255,255,0.75)" }}>
+                ✓ This is a sponsored group — your access is fully free, courtesy of your organization.
               </div>
+            )}
+            <div className="rounded-2xl p-5 text-center" style={glass}>
+              <div className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: "#00D4FF" }}>{t("grp_passkey")}</div>
+              <div className="font-mono font-black text-3xl sm:text-4xl tracking-[0.1em] sm:tracking-[0.2em] mb-1 text-white overflow-hidden">{group.passkey}</div>
+              <div className="text-xs overflow-hidden" style={{ color: "rgba(255,255,255,0.3)", wordBreak: "break-all" }}>cupclash.live/join/{group.passkey}</div>
             </div>
-          )}
+          </div>
 
           <div className="rounded-2xl p-5" style={glass}>
             <div className="text-[10px] font-bold uppercase tracking-widest mb-4" style={{ color: "rgba(255,255,255,0.35)" }}>{t("grp_prize_split")}</div>
