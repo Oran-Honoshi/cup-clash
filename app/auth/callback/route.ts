@@ -9,6 +9,9 @@ export async function GET(request: NextRequest) {
   const error = requestUrl.searchParams.get("error");
   const errorDescription = requestUrl.searchParams.get("error_description") ?? "";
 
+  console.log("[callback] URL:", request.url);
+  console.log("[callback] code:", !!code, "next:", next);
+
   // OAuth provider returned an error (e.g. user denied, or email conflict)
   if (error) {
     const desc = errorDescription.toLowerCase();
@@ -36,6 +39,8 @@ export async function GET(request: NextRequest) {
       }
     );
     const result = await supabase.auth.exchangeCodeForSession(code);
+    console.log("[callback] exchange result:", result.error?.message ?? "ok");
+    console.log("[callback] redirecting to:", next);
 
     // Code exchange failed — check if it's an email-conflict error
     if (result.error) {
