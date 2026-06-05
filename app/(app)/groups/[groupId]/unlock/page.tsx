@@ -20,7 +20,7 @@ export default async function CorporateUnlockPage({
   params,
 }: { params: { groupId: string } }) {
   const userProfile = await getCurrentUserProfile();
-  if (!userProfile) redirect("/signin");
+  if (!userProfile) redirect("/signup");
 
   const { data: group } = await sbAdmin()
     .from("groups")

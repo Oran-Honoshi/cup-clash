@@ -15,7 +15,7 @@ function sbAdmin() {
 
 export default async function AdminPage() {
   const userProfile = await getCurrentUserProfile();
-  if (!userProfile) redirect("/signin");
+  if (!userProfile) redirect("/signup");
 
   // Get all groups where this user is admin
   const { data: adminGroups } = await sbAdmin()

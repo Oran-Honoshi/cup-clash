@@ -18,7 +18,7 @@ function sbAdmin() {
 
 export default async function LeaderboardPage({ searchParams }: { searchParams: { group?: string } }) {
   const userProfile = await getCurrentUserProfile();
-  if (!userProfile) redirect("/signin");
+  if (!userProfile) redirect("/signup");
 
   const { data: memberships } = await sbAdmin()
     .from("group_members").select("group_id, groups(id, name, passkey)")

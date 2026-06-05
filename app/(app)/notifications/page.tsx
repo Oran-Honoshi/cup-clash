@@ -6,7 +6,7 @@ import { getCurrentUserProfile } from "@/lib/services/user-group";
 
 export default async function NotificationsPage() {
   const userProfile = await getCurrentUserProfile();
-  if (!userProfile) redirect("/signin");
+  if (!userProfile) redirect("/signup");
 
   return (
     <div className="space-y-6">

@@ -56,7 +56,7 @@ export async function middleware(request: NextRequest) {
   // Block access to protected routes for unauthenticated users
   const isProtected = PROTECTED_PREFIXES.some((p) => pathname.startsWith(p));
   if (isProtected && !user) {
-    const url = new URL("/signin", request.url);
+    const url = new URL("/signup", request.url);
     url.searchParams.set("next", pathname);
     return NextResponse.redirect(url);
   }

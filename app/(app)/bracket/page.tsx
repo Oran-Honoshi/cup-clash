@@ -7,7 +7,7 @@ import { serverT } from "@/lib/server-locale";
 
 export default async function BracketPage() {
   const { groupId, userId } = await getCurrentUserGroup();
-  if (!userId) redirect("/signin");
+  if (!userId) redirect("/signup");
 
   return (
     <div className="space-y-6">

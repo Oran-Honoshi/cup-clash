@@ -14,6 +14,7 @@ export const MOCK_GROUP: Group = {
   enrollmentFeeCents:  200,
   enrollmentDeadline:  null,
   corporatePrize:      null,
+  isCorporatePaid:     false,
   payouts: { first: "60%", second: "30%", third: "10%" },
 };
 

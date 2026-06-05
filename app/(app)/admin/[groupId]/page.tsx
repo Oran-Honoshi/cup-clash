@@ -22,7 +22,7 @@ function sbAdmin() {
 
 export default async function AdminGroupPage({ params }: { params: { groupId: string } }) {
   const userProfile = await getCurrentUserProfile();
-  if (!userProfile) redirect("/signin");
+  if (!userProfile) redirect("/signup");
 
   // Verify this user is actually admin of this group
   const { data: groupCheck } = await sbAdmin()

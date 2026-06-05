@@ -32,7 +32,7 @@ export default async function GroupsPage() {
           body={serverT("grp_create_or")}
         />
         <div className="flex flex-col sm:flex-row gap-3">
-          <Link href="/signin?next=/create-group">
+          <Link href="/signup?next=/create-group">
             <button
               className="flex items-center gap-2 px-5 py-3 rounded-xl font-bold text-sm uppercase tracking-wider transition-all hover:-translate-y-0.5"
               style={{ background: "linear-gradient(135deg, #00FF88, #00D4FF)", color: "#0B141B", boxShadow: "0 0 20px rgba(0,255,136,0.25)" }}
@@ -40,7 +40,7 @@ export default async function GroupsPage() {
               <Plus size={16} /> {serverT("grp_create")}
             </button>
           </Link>
-          <Link href="/signin?next=/join/enter">
+          <Link href="/signup?next=/join/enter">
             <button
               className="flex items-center gap-2 px-5 py-3 rounded-xl font-bold text-sm uppercase tracking-wider transition-all hover:-translate-y-0.5"
               style={{ background: "rgba(0,212,255,0.1)", border: "1px solid rgba(0,212,255,0.25)", color: "#00D4FF" }}

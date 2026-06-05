@@ -50,7 +50,7 @@ async function getMembers(groupId: string) {
 
 export default async function GroupDetailPage({ params }: { params: { groupId: string } }) {
   const userProfile = await getCurrentUserProfile();
-  if (!userProfile) redirect("/signin");
+  if (!userProfile) redirect("/signup");
 
   const [group, rules, members] = await Promise.all([
     getGroupDetail(params.groupId),

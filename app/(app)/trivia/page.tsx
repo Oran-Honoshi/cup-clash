@@ -12,7 +12,7 @@ export default async function TriviaPage() {
     getCurrentUserProfile(),
   ]);
 
-  if (!userProfile) redirect("/signin");
+  if (!userProfile) redirect("/signup");
   if (!userGroup.groupId) return <NoGroupScreen name={userProfile?.name ?? ""} />;
 
   const group = await getGroup(userGroup.groupId);

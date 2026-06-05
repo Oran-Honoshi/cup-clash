@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Eye, EyeOff, Lock, Mail, AlertCircle, ArrowRight, Loader2 } from "lucide-react";
+import { Eye, EyeOff, Lock, Mail, AlertCircle, ArrowRight, Loader2, Sparkles } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { NeonBar } from "@/components/ui/neon-bar";
 import { SocialAuth } from "@/components/auth/social-auth";
@@ -33,11 +33,20 @@ const labelStyle = {
 
 export default function SignInPage() {
   const { t } = useLocale();
-  const [email,    setEmail]    = useState("");
-  const [password, setPassword] = useState("");
-  const [showPass, setShowPass] = useState(false);
-  const [loading,  setLoading]  = useState(false);
-  const [error,    setError]    = useState<string | null>(null);
+  const [email,          setEmail]         = useState("");
+  const [password,       setPassword]      = useState("");
+  const [showPass,       setShowPass]      = useState(false);
+  const [loading,        setLoading]       = useState(false);
+  const [error,          setError]         = useState<string | null>(null);
+  const [googleConflict, setGoogleConflict] = useState(false);
+  const [oauthFailed,    setOauthFailed]   = useState(false);
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const err = params.get("error");
+    if (err === "google_conflict") setGoogleConflict(true);
+    else if (err === "oauth_failed") setOauthFailed(true);
+  }, []);
 
   const handleSignIn = async () => {
     if (!email || !password) return;
@@ -65,6 +74,36 @@ export default function SignInPage() {
           World Cup 2026
         </div>
       </div>
+
+      {/* Prominent sign-up banner */}
+      <Link href="/signup" style={{ textDecoration: "none" }}>
+        <div style={{
+          background: "linear-gradient(135deg, rgba(0,255,136,0.12), rgba(0,212,255,0.12))",
+          border: "1px solid rgba(0,255,136,0.35)",
+          borderRadius: 16,
+          padding: "14px 18px",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 12,
+          cursor: "pointer",
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <Sparkles size={18} style={{ color: "#00FF88", flexShrink: 0 }} />
+            <div>
+              <div style={{ fontFamily: "var(--font-ui)", fontWeight: 700, fontSize: 13, color: "white" }}>
+                New to Cup Clash?
+              </div>
+              <div style={{ fontFamily: "var(--font-ui)", fontSize: 11, color: "rgba(255,255,255,0.55)", marginTop: 1 }}>
+                Create your free account — takes 30 seconds
+              </div>
+            </div>
+          </div>
+          <div style={{ fontFamily: "var(--font-ui)", fontWeight: 700, fontSize: 12, color: "#00FF88", whiteSpace: "nowrap", display: "flex", alignItems: "center", gap: 4 }}>
+            Sign up free <ArrowRight size={13} />
+          </div>
+        </div>
+      </Link>
 
       {/* Glass card */}
       <div style={{
@@ -96,6 +135,22 @@ export default function SignInPage() {
             <span style={{ fontSize: 11, color: "rgba(255,255,255,0.3)", fontFamily: "var(--font-ui)", fontWeight: 600, whiteSpace: "nowrap" }}>{t("auth_continue_email")}</span>
             <div className="flex-1 h-px" style={{ background: "rgba(255,255,255,0.08)" }} />
           </div>
+
+          {googleConflict && (
+            <div className="flex items-start gap-2.5 rounded-xl px-4 py-3 text-sm"
+              style={{ background: "rgba(251,191,36,0.08)", border: "1px solid rgba(251,191,36,0.3)", color: "#fbbf24" }}>
+              <AlertCircle size={16} className="shrink-0 mt-0.5" />
+              <span>An account with this email already exists. Please sign in with your email and password instead.</span>
+            </div>
+          )}
+
+          {oauthFailed && (
+            <div className="flex items-start gap-2.5 rounded-xl px-4 py-3 text-sm"
+              style={{ background: "rgba(248,113,113,0.08)", border: "1px solid rgba(248,113,113,0.25)", color: "#f87171" }}>
+              <AlertCircle size={16} className="shrink-0 mt-0.5" />
+              <span>Google sign-in failed. Please try again or sign in with email below.</span>
+            </div>
+          )}
 
           {error && (
             <div className="flex items-start gap-2.5 rounded-xl px-4 py-3 text-sm"
