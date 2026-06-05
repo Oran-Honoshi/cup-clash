@@ -38,6 +38,7 @@ export default function SignInPage() {
   const [showPass,       setShowPass]      = useState(false);
   const [loading,        setLoading]       = useState(false);
   const [error,          setError]         = useState<string | null>(null);
+  const [wrongProvider,  setWrongProvider] = useState(false);
   const [googleConflict, setGoogleConflict] = useState(false);
   const [oauthFailed,    setOauthFailed]   = useState(false);
 
@@ -50,10 +51,18 @@ export default function SignInPage() {
 
   const handleSignIn = async () => {
     if (!email || !password) return;
-    setLoading(true); setError(null);
+    setLoading(true); setError(null); setWrongProvider(false);
     const sb = createClient();
     const { data, error: signInError } = await sb.auth.signInWithPassword({ email, password });
-    if (signInError) { setLoading(false); setError(signInError.message); return; }
+    if (signInError) {
+      setLoading(false);
+      if (signInError.message.toLowerCase().includes("invalid login credentials")) {
+        setWrongProvider(true);
+      } else {
+        setError(signInError.message);
+      }
+      return;
+    }
     if (!data.session) { setError("Sign in succeeded but no session was created."); setLoading(false); return; }
     const next = new URLSearchParams(window.location.search).get("next") ?? "/dashboard";
     window.location.replace(next);
@@ -149,6 +158,20 @@ export default function SignInPage() {
               style={{ background: "rgba(248,113,113,0.08)", border: "1px solid rgba(248,113,113,0.25)", color: "#f87171" }}>
               <AlertCircle size={16} className="shrink-0 mt-0.5" />
               <span>Google sign-in failed. Please try again or sign in with email below.</span>
+            </div>
+          )}
+
+          {wrongProvider && (
+            <div className="flex items-start gap-2.5 rounded-xl px-4 py-3 text-sm"
+              style={{ background: "rgba(251,191,36,0.08)", border: "1px solid rgba(251,191,36,0.3)", color: "#fbbf24" }}>
+              <AlertCircle size={16} className="shrink-0 mt-0.5" />
+              <span>
+                Wrong password? If you signed up with Google, use the{" "}
+                <strong style={{ color: "#fde68a" }}>Continue with Google</strong> button above.
+                Or click{" "}
+                <a href="/reset-password" style={{ color: "#fde68a", fontWeight: 700, textDecoration: "underline" }}>Forgot password</a>
+                {" "}to set up email login.
+              </span>
             </div>
           )}
 
