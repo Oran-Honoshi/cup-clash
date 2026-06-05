@@ -169,7 +169,7 @@ export function HowToSchema() {
               "@type": "HowToStep",
               "position": 3,
               "name": "Members join and predict",
-              "text": "Each member pays $2 to unlock all 104 match predictions, the live leaderboard, group chat, and knockout bracket. Predictions lock 5 minutes before each kickoff.",
+              "text": "Members join free and get access to all 104 match predictions, the live leaderboard, group chat, and knockout bracket. Go ad-free for just $2 one-time. Predictions lock 5 minutes before each kickoff.",
               "url": "https://cupclash.live/join"
             }
           ]

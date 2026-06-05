@@ -13,11 +13,11 @@ interface ShareGroupProps {
 
 const FUNNY_MESSAGES = [
   (group: string, admin: string, passkey: string, url: string) =>
-    `⚽ ${admin} dares you to join *${group}* on Cup Clash!\n\nThink you know football? Prove it. $2 for the entire World Cup 2026. 🏆\n\nPasskey: *${passkey}*\nJoin here: ${url}\n\n(Losers buy the first round 😏)`,
+    `⚽ ${admin} dares you to join *${group}* on Cup Clash!\n\nThink you know football? Prove it. Join free and compete for the entire World Cup 2026. 🏆\n\nPasskey: *${passkey}*\nJoin here: ${url}\n\n(Losers buy the first round 😏)`,
   (group: string, admin: string, passkey: string, url: string) =>
-    `🚨 URGENT: ${admin} has invited you to *${group}*\n\nThe World Cup starts June 11. You have no excuse not to join. $2. One tournament. Eternal bragging rights.\n\nCode: *${passkey}*\n${url}`,
+    `🚨 URGENT: ${admin} has invited you to *${group}*\n\nThe World Cup starts June 11. You have no excuse not to join. Free entry. One tournament. Eternal bragging rights.\n\nCode: *${passkey}*\n${url}`,
   (group: string, admin: string, passkey: string, url: string) =>
-    `Hey! ${admin} here — I set up *${group}* on Cup Clash for World Cup 2026 🌍\n\nIt's $2 to play for the whole tournament. Yes, two dollars. Less than your coffee.\n\nPasskey: *${passkey}*\nLink: ${url}`,
+    `Hey! ${admin} here — I set up *${group}* on Cup Clash for World Cup 2026 🌍\n\nJoin free and predict all 104 matches for the whole tournament.\n\nPasskey: *${passkey}*\nLink: ${url}`,
 ];
 
 export function ShareGroup({ groupName, adminName, passkey, compact = false }: ShareGroupProps) {

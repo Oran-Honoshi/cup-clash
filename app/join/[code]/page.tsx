@@ -206,7 +206,7 @@ export default async function JoinCodePage({
               <div className="rounded-xl p-4"
                 style={{ background: "rgba(0,255,136,0.05)", border: "1px solid rgba(0,255,136,0.15)" }}>
                 <div className="flex items-center justify-between text-sm mb-2">
-                  <span style={{ color: "#64748b" }}>Your entry fee</span>
+                  <span style={{ color: "#64748b" }}>Ad-free access</span>
                   <span className="font-black line-through" style={{ color: "#94a3b8" }}>$2.00</span>
                 </div>
                 <div className="flex items-center justify-between text-sm">
@@ -280,8 +280,9 @@ export default async function JoinCodePage({
 
             <div className="rounded-xl p-4 text-center"
               style={{ background: "rgba(0,255,136,0.06)", border: "1px solid rgba(0,255,136,0.2)" }}>
-              <div className="font-display text-4xl font-black" style={{ color: "#0F172A" }}>${enrollmentFee}</div>
-              <div className="text-sm mt-1" style={{ color: "#64748b" }}>One-time · Full tournament · All 104 matches</div>
+              <div className="text-[10px] font-bold uppercase tracking-widest mb-1" style={{ color: "#059669" }}>✨ Optional Upgrade</div>
+              <div className="font-display text-2xl font-black" style={{ color: "#0F172A" }}>Go Ad-Free — ${enrollmentFee} one-time</div>
+              <div className="text-xs mt-1" style={{ color: "#64748b" }}>Full tournament · All 104 matches · Remove all ads</div>
             </div>
 
             {isDeadlinePassed ? (

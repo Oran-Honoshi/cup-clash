@@ -85,8 +85,8 @@ export function DashboardEmptyState({ highlight }: DashboardEmptyStateProps = {}
                   Friend Circle
                 </div>
                 <p className="text-sm leading-relaxed mb-5" style={{ color: "rgba(255,255,255,0.55)" }}>
-                  Free for you to create. Every member pays a flat{" "}
-                  <strong style={{ color: "#00FF88" }}>$2 entry fee</strong> individually when joining.
+                  Free to join. Play with ads, or go ad-free for just{" "}
+                  <strong style={{ color: "#00FF88" }}>$2</strong>.
                 </p>
                 <div className="flex flex-wrap gap-2 mb-6">
                   {["Fantasy leagues", "Friend groups", "Family", "Bar buddies"].map(t => (
