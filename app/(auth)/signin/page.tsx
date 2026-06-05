@@ -162,16 +162,17 @@ export default function SignInPage() {
           )}
 
           {wrongProvider && (
-            <div className="flex items-start gap-2.5 rounded-xl px-4 py-3 text-sm"
+            <div className="rounded-xl px-4 py-3 text-sm"
               style={{ background: "rgba(251,191,36,0.08)", border: "1px solid rgba(251,191,36,0.3)", color: "#fbbf24" }}>
-              <AlertCircle size={16} className="shrink-0 mt-0.5" />
-              <span>
-                Wrong password? If you signed up with Google, use the{" "}
-                <strong style={{ color: "#fde68a" }}>Continue with Google</strong> button above.
-                Or click{" "}
-                <a href="/reset-password" style={{ color: "#fde68a", fontWeight: 700, textDecoration: "underline" }}>Forgot password</a>
-                {" "}to set up email login.
-              </span>
+              <div className="flex items-center gap-2 mb-2">
+                <AlertCircle size={16} className="shrink-0" />
+                <span style={{ fontWeight: 700 }}>Can&apos;t sign in? Try these options:</span>
+              </div>
+              <ul className="space-y-1" style={{ paddingLeft: 22, listStyleType: "disc" }}>
+                <li>Signed up with Google? Use <strong style={{ color: "#fde68a" }}>Continue with Google</strong> above</li>
+                <li>Forgot your password? <a href="https://cupclash.live/reset-password" style={{ color: "#fde68a", fontWeight: 700, textDecoration: "underline" }}>Click here to reset it</a></li>
+                <li>No account yet? <a href="https://cupclash.live/signup" style={{ color: "#fde68a", fontWeight: 700, textDecoration: "underline" }}>Sign up free</a></li>
+              </ul>
             </div>
           )}
 
@@ -200,7 +201,7 @@ export default function SignInPage() {
           <div>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
               <label style={{ ...labelStyle, marginBottom: 0 }}>{t("auth_password")}</label>
-              <Link href="/reset-password" style={{ fontSize: 11, color: "rgba(255,255,255,0.35)" }}>{t("auth_forgot")}</Link>
+              <a href="https://cupclash.live/reset-password" style={{ fontSize: 11, color: "rgba(255,255,255,0.35)" }}>{t("auth_forgot")}</a>
             </div>
             <div className="relative">
               <Lock size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none"
