@@ -14,7 +14,7 @@ export function SocialAuth({ className }: SocialAuthProps) {
     const next = new URLSearchParams(window.location.search).get("next") ?? "/dashboard";
     await sb.auth.signInWithOAuth({
       provider: "google",
-      options: { redirectTo: 'https://cupclash.live/auth/callback' },
+      options: { redirectTo: `https://cupclash.live/auth/callback?next=${encodeURIComponent(next)}` },
     });
   };
 

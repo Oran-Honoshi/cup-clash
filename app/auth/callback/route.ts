@@ -18,8 +18,13 @@ export async function GET(request: NextRequest) {
     if (desc.includes("already") || desc.includes("exists") || desc.includes("registered")) {
       return NextResponse.redirect(new URL("/signin?error=google_conflict", requestUrl.origin));
     }
-    return NextResponse.redirect(new URL(`/signin?error=oauth_failed`, requestUrl.origin));
+    return NextResponse.redirect(new URL("/signin?error=oauth_failed", requestUrl.origin));
   }
+
+  // Build the response first so we can write session cookies onto it before returning.
+  // Writing to cookieStore (the request store) does NOT forward cookies to a separately
+  // constructed NextResponse — this was causing the "guest" dashboard after OAuth.
+  const response = NextResponse.redirect(new URL(next, requestUrl.origin));
 
   if (code) {
     const cookieStore = cookies();
@@ -30,14 +35,15 @@ export async function GET(request: NextRequest) {
         cookies: {
           get(name: string) { return cookieStore.get(name)?.value; },
           set(name: string, value: string, options: object) {
-            cookieStore.set({ name, value, ...options });
+            response.cookies.set({ name, value, ...options } as Parameters<typeof response.cookies.set>[0]);
           },
           remove(name: string, options: object) {
-            cookieStore.set({ name, value: "", ...options });
+            response.cookies.set({ name, value: "", ...options } as Parameters<typeof response.cookies.set>[0]);
           },
         },
       }
     );
+
     const result = await supabase.auth.exchangeCodeForSession(code);
     console.log("[callback] exchange result:", result.error?.message ?? "ok");
     console.log("[callback] redirecting to:", next);
@@ -51,6 +57,5 @@ export async function GET(request: NextRequest) {
     }
   }
 
-  // Always redirect to `next` — preserves join URL after email confirmation
-  return NextResponse.redirect(new URL(next, requestUrl.origin));
+  return response;
 }
