@@ -29,7 +29,7 @@ export default function ResetPasswordPage() {
     setLoading(true); setError(null);
     const sb = createClient();
     const { error: resetError } = await sb.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/auth/callback?next=/update-password`,
+      redirectTo: 'https://cupclash.live/auth/callback?next=/update-password',
     });
     setLoading(false);
     if (resetError) { setError(resetError.message); return; }
