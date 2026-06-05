@@ -5,15 +5,17 @@ import { cookies } from "next/headers";
 export async function GET(request: NextRequest) {
   const requestUrl = new URL(request.url);
   const code  = requestUrl.searchParams.get("code");
+  const type  = requestUrl.searchParams.get("type");
   const next  = requestUrl.searchParams.get("next") ?? "/dashboard";
   const error = requestUrl.searchParams.get("error");
   const errorDescription = requestUrl.searchParams.get("error_description") ?? "";
 
   console.log("[callback] URL:", request.url);
-  console.log("[callback] code:", !!code, "next:", next);
+  console.log("[callback] code:", !!code, "type:", type, "next:", next);
 
-  // OAuth provider returned an error (e.g. user denied, or email conflict)
-  if (error) {
+  // OAuth provider returned an error — only treat as OAuth failure if this
+  // isn't a recovery flow (password reset errors have their own path)
+  if (error && type !== "recovery") {
     const desc = errorDescription.toLowerCase();
     if (desc.includes("already") || desc.includes("exists") || desc.includes("registered")) {
       return NextResponse.redirect(new URL("/signin?error=google_conflict", requestUrl.origin));
@@ -21,9 +23,12 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(new URL("/signin?error=oauth_failed", requestUrl.origin));
   }
 
+  // Password reset: exchange code then send to update-password page
+  const destination = type === "recovery" ? "/update-password" : next;
+
   // Build the response first — @supabase/ssr v0.3+ uses setAll which writes
   // cookies directly onto this response object before it is returned.
-  const response = NextResponse.redirect(new URL(next, requestUrl.origin));
+  const response = NextResponse.redirect(new URL(destination, requestUrl.origin));
 
   if (code) {
     const cookieStore = cookies();
