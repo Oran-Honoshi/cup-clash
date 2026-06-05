@@ -23,6 +23,7 @@ export interface Group {
   enrollmentFeeCents:  number;
   enrollmentDeadline:  string | null;
   corporatePrize:      string | null;
+  isCorporatePaid:     boolean;
   payouts: {
     first:  string;  // "60%"
     second: string;  // "30%"

@@ -118,9 +118,9 @@ export function GroupDetailClient({ group, rules, members, currentUserId, isAdmi
           </div>
 
           <div className="space-y-3">
-            {group.is_corporate_paid && !isAdmin && (
+            {group.is_corporate_paid && (
               <div className="rounded-2xl px-4 py-3 text-sm text-center" style={{ background: "rgba(0,255,136,0.07)", border: "1px solid rgba(0,255,136,0.2)", color: "rgba(255,255,255,0.75)" }}>
-                ✓ This is a sponsored group — your access is fully free, courtesy of your organization.
+                🏢 Sponsored Group — Free access, no ads, courtesy of your organization
               </div>
             )}
             <div className="rounded-2xl p-5 text-center" style={glass}>

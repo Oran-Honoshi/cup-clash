@@ -120,7 +120,7 @@ export function WinnerPoster({ group, members }: WinnerPosterProps) {
 
         {/* Bottom bar */}
         <div style={{ padding: "12px 32px", borderTop: "1px solid rgba(255,255,255,0.06)", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <div style={{ color: "#475569", fontSize: 11 }}>cupclash.com</div>
+          <div style={{ color: "#475569", fontSize: 11 }}>cupclash.live</div>
           <div style={{ color: "#475569", fontSize: 11 }}>FIFA World Cup 2026</div>
         </div>
       </div>

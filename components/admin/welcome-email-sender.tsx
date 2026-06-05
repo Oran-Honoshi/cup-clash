@@ -2,10 +2,16 @@
 
 import { useState } from "react";
 import { Mail, Send, Check, AlertCircle, Info, UserPlus, X } from "lucide-react";
-import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { Member, Group } from "@/lib/types";
+
+const glass = {
+  background: "rgba(18,14,38,0.32)",
+  backdropFilter: "blur(40px) saturate(180%)",
+  WebkitBackdropFilter: "blur(40px) saturate(180%)",
+  border: "1px solid rgba(255,255,255,0.14)",
+} as const;
 
 interface WelcomeEmailSenderProps {
   group:     Group;
@@ -87,22 +93,22 @@ export function WelcomeEmailSender({ group, members, adminName }: WelcomeEmailSe
   const enteredCount  = memberEmails.filter(m => m.email.includes("@")).length;
 
   return (
-    <Card variant="glass" className="p-5">
+    <div className="rounded-2xl p-5" style={glass}>
       <div className="flex items-center gap-2.5 mb-2">
-        <Mail size={18} style={{ color: "rgb(var(--accent-glow))" }} />
+        <Mail size={18} style={{ color: "#00D4FF" }} />
         <span className="font-display text-xl uppercase text-white tracking-tight">
           Welcome Emails
         </span>
       </div>
-      <p className="text-xs text-pitch-500 mb-5">
+      <p className="text-xs mb-5" style={{ color: "rgba(255,255,255,0.4)" }}>
         Send personalized invites to your group members with rules, buy-in info, and a join link.
       </p>
 
       {/* Member email rows — always expanded */}
       <div className="mb-2">
         <div className="flex items-center justify-between mb-3">
-          <span className="label-caps">Member emails</span>
-          <span className="text-[10px] text-pitch-500 uppercase tracking-widest">
+          <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "#00D4FF" }}>Member emails</span>
+          <span className="text-[10px] uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.3)" }}>
             {enteredCount} of {memberEmails.length} emails entered · {selected.length} selected
           </span>
         </div>
@@ -146,12 +152,13 @@ export function WelcomeEmailSender({ group, members, adminName }: WelcomeEmailSe
 
       {/* Add member manually */}
       <button onClick={addManual}
-        className="flex items-center gap-1.5 text-xs text-pitch-500 hover:text-white transition-colors mt-3 mb-5">
+        className="flex items-center gap-1.5 text-xs hover:text-white transition-colors mt-3 mb-5"
+        style={{ color: "rgba(255,255,255,0.4)" }}>
         <UserPlus size={13} /> Add member manually
       </button>
 
       {/* Legal */}
-      <div className="flex items-start gap-2 text-[10px] text-pitch-600 mb-4">
+      <div className="flex items-start gap-2 text-[10px] mb-4" style={{ color: "rgba(255,255,255,0.3)" }}>
         <Info size={11} className="shrink-0 mt-0.5" />
         <span>
           Each email includes an unsubscribe link and is sent from your group admin account.
@@ -177,6 +184,6 @@ export function WelcomeEmailSender({ group, members, adminName }: WelcomeEmailSe
           ? "Emails sent!"
           : `Send invite to ${selected.length} member${selected.length !== 1 ? "s" : ""}`}
       </Button>
-    </Card>
+    </div>
   );
 }

@@ -109,6 +109,15 @@ export function AdminPanel({ group, initialMembers }: AdminPanelProps) {
     <div className="grid gap-5 lg:grid-cols-2">
 
       {/* ── Member Payments ── */}
+      {group.isCorporatePaid ? (
+        <div className="rounded-2xl p-5 flex items-center gap-3" style={{ ...glass, border: "1px solid rgba(0,255,136,0.2)" }}>
+          <span style={{ fontSize: 22 }}>✅</span>
+          <div>
+            <div className="font-display text-base uppercase tracking-tight text-white mb-0.5">Corporate Group</div>
+            <div className="text-sm" style={{ color: "rgba(255,255,255,0.55)" }}>All members join free and ad-free</div>
+          </div>
+        </div>
+      ) : (
       <div className="rounded-2xl p-5" style={glass}>
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2.5">
@@ -177,6 +186,7 @@ export function AdminPanel({ group, initialMembers }: AdminPanelProps) {
           </div>
         </div>
       </div>
+      )}
 
       <div className="space-y-5">
 

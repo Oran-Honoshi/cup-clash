@@ -135,13 +135,14 @@ export default async function GroupsPage() {
                 </div>
                 <div className="grid grid-cols-3 divide-x" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
                   {[
-                    { icon: Users,      label: "Members", value: `${memberCount}` },
-                    { icon: DollarSign, label: "Entry",   value: "Free · $2 removes ads" },
-                    { icon: Trophy,     label: "Type",    value: "2026 World Cup" },
-                  ].map(({ icon: Icon, label, value }) => (
+                    { icon: Users,      label: "Members", value: `${memberCount}`, sub: "" },
+                    { icon: DollarSign, label: "Entry",   value: "Free",           sub: "$2 removes ads" },
+                    { icon: Trophy,     label: "Type",    value: "2026 WC",        sub: "" },
+                  ].map(({ icon: Icon, label, value, sub }) => (
                     <div key={label} className="px-4 py-3 text-center" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
                       <Icon size={15} className="mx-auto mb-1" style={{ color: "#00D4FF" }} />
-                      <div className="font-display text-lg font-black text-white">{value}</div>
+                      <div className="font-display text-lg font-black text-white leading-tight">{value}</div>
+                      {sub && <div className="text-[9px] font-bold uppercase tracking-wide mt-0.5" style={{ color: "rgba(255,255,255,0.35)" }}>{sub}</div>}
                       <div className="text-[10px] uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.3)" }}>{label}</div>
                     </div>
                   ))}
