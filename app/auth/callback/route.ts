@@ -21,9 +21,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(new URL("/signin?error=oauth_failed", requestUrl.origin));
   }
 
-  // Build the response first so we can write session cookies onto it before returning.
-  // Writing to cookieStore (the request store) does NOT forward cookies to a separately
-  // constructed NextResponse — this was causing the "guest" dashboard after OAuth.
+  // Build the response first — @supabase/ssr v0.3+ uses setAll which writes
+  // cookies directly onto this response object before it is returned.
   const response = NextResponse.redirect(new URL(next, requestUrl.origin));
 
   if (code) {
@@ -33,12 +32,13 @@ export async function GET(request: NextRequest) {
       process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
       {
         cookies: {
-          get(name: string) { return cookieStore.get(name)?.value; },
-          set(name: string, value: string, options: object) {
-            response.cookies.set({ name, value, ...options } as Parameters<typeof response.cookies.set>[0]);
+          getAll() {
+            return cookieStore.getAll();
           },
-          remove(name: string, options: object) {
-            response.cookies.set({ name, value: "", ...options } as Parameters<typeof response.cookies.set>[0]);
+          setAll(cookiesToSet) {
+            cookiesToSet.forEach(({ name, value, options }) => {
+              response.cookies.set(name, value, options);
+            });
           },
         },
       }
@@ -48,7 +48,6 @@ export async function GET(request: NextRequest) {
     console.log("[callback] exchange result:", result.error?.message ?? "ok");
     console.log("[callback] redirecting to:", next);
 
-    // Code exchange failed — check if it's an email-conflict error
     if (result.error) {
       const msg = result.error.message?.toLowerCase() ?? "";
       if (msg.includes("already") || msg.includes("exists") || msg.includes("registered")) {
