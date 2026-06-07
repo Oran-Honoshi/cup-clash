@@ -303,6 +303,13 @@ export interface Translations {
   cg_inc_et:          string;
   cg_who_advances:    string;
   cg_member_count:    string;
+
+  // Share / invite message
+  share_invite:       string;
+  share_passkey:      string;
+  share_scoring:      string;
+  share_join_free:    string;
+  share_tagline:      string;
 }
 
 // ── English (base) ─────────────────────────────────────────────────────────────
@@ -566,6 +573,11 @@ const en: Translations = {
   cg_inc_et:          "Including Extra Time",
   cg_who_advances:    "Who Advances",
   cg_member_count:    "Max Members",
+  share_invite:       "wants you to join their Cup Clash group!",
+  share_passkey:      "Passkey",
+  share_scoring:      "Scoring",
+  share_join_free:    "Join free",
+  share_tagline:      "Predict every match. Beat your friends. 🎯",
 
 };
 
@@ -830,6 +842,11 @@ const fr: Translations = {
   cg_inc_et:          "Including Extra Time",
   cg_who_advances:    "Who Advances",
   cg_member_count:    "Max Members",
+  share_invite:       "wants you to join their Cup Clash group!",
+  share_passkey:      "Passkey",
+  share_scoring:      "Scoring",
+  share_join_free:    "Join free",
+  share_tagline:      "Predict every match. Beat your friends. 🎯",
 
 };
 
@@ -1094,6 +1111,11 @@ const de: Translations = {
   cg_inc_et:          "Including Extra Time",
   cg_who_advances:    "Who Advances",
   cg_member_count:    "Max Members",
+  share_invite:       "wants you to join their Cup Clash group!",
+  share_passkey:      "Passkey",
+  share_scoring:      "Scoring",
+  share_join_free:    "Join free",
+  share_tagline:      "Predict every match. Beat your friends. 🎯",
 
 };
 
@@ -1358,6 +1380,11 @@ const nl: Translations = {
   cg_inc_et:          "Including Extra Time",
   cg_who_advances:    "Who Advances",
   cg_member_count:    "Max Members",
+  share_invite:       "wants you to join their Cup Clash group!",
+  share_passkey:      "Passkey",
+  share_scoring:      "Scoring",
+  share_join_free:    "Join free",
+  share_tagline:      "Predict every match. Beat your friends. 🎯",
 
 };
 
@@ -1622,6 +1649,11 @@ const es: Translations = {
   cg_inc_et:          "Including Extra Time",
   cg_who_advances:    "Who Advances",
   cg_member_count:    "Max Members",
+  share_invite:       "wants you to join their Cup Clash group!",
+  share_passkey:      "Passkey",
+  share_scoring:      "Scoring",
+  share_join_free:    "Join free",
+  share_tagline:      "Predict every match. Beat your friends. 🎯",
 
 };
 
@@ -1886,6 +1918,11 @@ const pt: Translations = {
   cg_inc_et:          "Including Extra Time",
   cg_who_advances:    "Who Advances",
   cg_member_count:    "Max Members",
+  share_invite:       "wants you to join their Cup Clash group!",
+  share_passkey:      "Passkey",
+  share_scoring:      "Scoring",
+  share_join_free:    "Join free",
+  share_tagline:      "Predict every match. Beat your friends. 🎯",
 
 };
 
@@ -2150,6 +2187,11 @@ const he: Translations = {
   cg_inc_et:          "כולל הארכות",
   cg_who_advances:    "מי עולה",
   cg_member_count:    "מקסימום חברים",
+  share_invite:       "מזמין אותך להצטרף לקבוצת Cup Clash",
+  share_passkey:      "קוד כניסה",
+  share_scoring:      "ניקוד",
+  share_join_free:    "הצטרף חינם",
+  share_tagline:      "נבא כל משחק. תנצח את החברים. 🎯",
 
 };
 
@@ -2414,6 +2456,11 @@ const ar: Translations = {
   cg_inc_et:          "Including Extra Time",
   cg_who_advances:    "Who Advances",
   cg_member_count:    "Max Members",
+  share_invite:       "wants you to join their Cup Clash group!",
+  share_passkey:      "Passkey",
+  share_scoring:      "Scoring",
+  share_join_free:    "Join free",
+  share_tagline:      "Predict every match. Beat your friends. 🎯",
 
 };
 
