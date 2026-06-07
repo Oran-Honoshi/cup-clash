@@ -9,6 +9,7 @@ import { createClient } from "@/lib/supabase/client";
 import { useSearchParams } from "next/navigation";
 import { NeonBar } from "@/components/ui/neon-bar";
 import { Chip } from "@/components/ui/chip";
+import { useLocale } from "@/components/i18n/locale-provider";
 
 const inputStyle = {
   width: "100%",
@@ -101,6 +102,7 @@ function RuleRow({ label, desc, pts, setPts, enabled, onToggle }: {
 type PaymentModel = "pay_per_member" | "corporate_sponsored";
 
 function CreateGroupInner() {
+  const { t } = useLocale();
   const [step,         setStep]        = useState<0|1|2|3>(0);
   const [paymentModel, setPaymentModel] = useState<PaymentModel>("pay_per_member");
   const [loading,      setLoading]     = useState(false);
@@ -340,9 +342,9 @@ function CreateGroupInner() {
   }
 
   const steps = [
-    { n: 1 as const, label: "Setup"                          },
-    { n: 2 as const, label: isCorporate ? "Prizes" : "Buy-In" },
-    { n: 3 as const, label: "Scoring"                        },
+    { n: 1 as const, label: t("cg_step_setup")   },
+    { n: 2 as const, label: t("cg_step_prizes")  },
+    { n: 3 as const, label: t("cg_step_scoring") },
   ];
 
   return (
@@ -353,9 +355,9 @@ function CreateGroupInner() {
         <div style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: "0.12em", color: "#00D4FF", fontFamily: "var(--font-ui)", fontWeight: 700, marginBottom: 4 }}>
           New Group
         </div>
-        <h1 className="font-display text-4xl uppercase" style={{ color: "white" }}>Create your league</h1>
+        <h1 className="font-display text-4xl uppercase" style={{ color: "white" }}>{t("cg_title")}</h1>
         <p style={{ fontSize: 13, color: "rgba(255,255,255,0.4)", fontFamily: "var(--font-ui)", marginTop: 4 }}>
-          Free to create · Choose how members join
+          {t("cg_subtitle")}
         </p>
       </div>
 
@@ -391,7 +393,7 @@ function CreateGroupInner() {
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6, flexWrap: "wrap" }}>
                     <span style={{ fontFamily: "var(--font-display)", fontWeight: 800, fontSize: 18, color: "white", textTransform: "uppercase" }}>
-                      Friend Circle
+                      {t("cg_friend_mode")}
                     </span>
                     <Chip label="Free for you" color="#00FF88" />
                   </div>
@@ -434,7 +436,7 @@ function CreateGroupInner() {
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6, flexWrap: "wrap" }}>
                     <span style={{ fontFamily: "var(--font-display)", fontWeight: 800, fontSize: 18, color: "white", textTransform: "uppercase" }}>
-                      Corporate Sponsor
+                      {t("cg_corporate_mode")}
                     </span>
                     <Chip label="Team pays $0" color="#00D4FF" />
                   </div>
@@ -467,7 +469,7 @@ function CreateGroupInner() {
         <div className="space-y-3">
           <button onClick={() => setStep(0)}
             style={{ fontSize: 11, fontWeight: 700, color: "#00D4FF", background: "none", border: "none", cursor: "pointer", fontFamily: "var(--font-ui)", padding: 0 }}>
-            ← Change Mode
+            ← {t("cg_change_mode")}
           </button>
 
           <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "center" }}>
@@ -537,7 +539,7 @@ function CreateGroupInner() {
         <div className="space-y-4">
           <div style={{ ...glassCard, padding: 20 }} className="space-y-4">
             <div>
-              <label style={labelStyle}>{isCorporate ? "Company Group Name *" : "Group Name *"}</label>
+              <label style={labelStyle}>{isCorporate ? t("cg_company_name") : t("cg_group_name")} *</label>
               <div className="relative">
                 {isCorporate
                   ? <Building2 size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: "rgba(255,255,255,0.35)" }} />
@@ -553,11 +555,11 @@ function CreateGroupInner() {
             </div>
 
             <div>
-              <label style={labelStyle}>Group Type</label>
+              <label style={labelStyle}>{t("cg_group_type")}</label>
               <div className="grid grid-cols-2 gap-2">
                 {[
-                  { type: "tournament" as const, icon: Trophy, label: "Full Tournament", desc: "All 104 matches" },
-                  { type: "single_match" as const, icon: Zap,  label: "Single Match",   desc: "One specific match" },
+                  { type: "tournament" as const, icon: Trophy, label: t("cg_full_tournament"), desc: "All 104 matches" },
+                  { type: "single_match" as const, icon: Zap,  label: t("cg_single_match"),   desc: "One specific match" },
                 ].map(({ type, icon: Icon, label, desc }) => (
                   <button key={type} type="button" onClick={() => setGroupType(type)}
                     className="p-3 text-left transition-all"
@@ -616,7 +618,7 @@ function CreateGroupInner() {
               textTransform: "uppercase", letterSpacing: "0.06em", cursor: "pointer",
               boxShadow: "0 0 20px rgba(0,255,136,0.25)",
             }}>
-            Next: {isCorporate ? "Company Prizes" : "Buy-In & Prizes"} <ArrowRight size={16} />
+            {t("cg_next_prizes")} <ArrowRight size={16} />
           </button>
         </div>
       )}
@@ -657,26 +659,26 @@ function CreateGroupInner() {
                   <div className="space-y-3">
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label style={labelStyle}>Buy-in ($)</label>
+                        <label style={labelStyle}>{t("cg_buy_in")}</label>
                         <input type="number" min={0} value={buyIn} onChange={(e: { target: HTMLInputElement }) => setBuyIn(Number(e.target.value))}
                           style={{ ...inputStyle, padding: "12px 16px", color: "#00D4FF" }} />
                       </div>
                       <div>
-                        <label style={labelStyle}>Expected members</label>
+                        <label style={labelStyle}>{t("cg_member_count")}</label>
                         <input type="number" min={2} value={memberCount} onChange={(e: { target: HTMLInputElement }) => setMemberCount(Number(e.target.value))}
                           style={{ ...inputStyle, padding: "12px 16px" }} />
                       </div>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span style={{ ...labelStyle, marginBottom: 0 }}>Payout split</span>
+                      <span style={{ ...labelStyle, marginBottom: 0 }}>{t("cg_payout_split")}</span>
                       <span style={{ fontSize: 11, fontWeight: 700, fontFamily: "var(--font-ui)", color: totalPct === 100 ? "#00FF88" : "#f87171" }}>
                         {totalPct === 100 ? "✓ 100% allocated" : `${totalPct}% · Must equal 100%`}
                       </span>
                     </div>
                     {([
-                      { label: "🥇 1st", val: payoutFirst,  set: setPayoutFirst  },
-                      { label: "🥈 2nd", val: payoutSecond, set: setPayoutSecond },
-                      { label: "🥉 3rd", val: payoutThird,  set: setPayoutThird  },
+                      { label: `🥇 ${t("cg_prize_1st")}`, val: payoutFirst,  set: setPayoutFirst  },
+                      { label: `🥈 ${t("cg_prize_2nd")}`, val: payoutSecond, set: setPayoutSecond },
+                      { label: `🥉 ${t("cg_prize_3rd")}`, val: payoutThird,  set: setPayoutThird  },
                     ] as const).map(({ label, val, set }) => (
                       <div key={label} className="flex items-center gap-3">
                         <span className="text-sm w-16 shrink-0" style={{ color: "rgba(255,255,255,0.5)" }}>{label}</span>
@@ -712,9 +714,9 @@ function CreateGroupInner() {
                     </div>
                     <div className="space-y-3">
                       {([
-                        { place: 1, label: "🥇 1st Place Reward", key: "reward1" as const, ph: "e.g. Extra day off + $100 Amazon Voucher" },
-                        { place: 2, label: "🥈 2nd Place Reward", key: "reward2" as const, ph: "e.g. Free company swag or free lunch"     },
-                        { place: 3, label: "🥉 3rd Place Reward", key: "reward3" as const, ph: "e.g. Special desk trophy & bragging rights" },
+                        { place: 1, label: `🥇 ${t("cg_prize_1st")}`, key: "reward1" as const, ph: "e.g. Extra day off + $100 Amazon Voucher" },
+                        { place: 2, label: `🥈 ${t("cg_prize_2nd")}`, key: "reward2" as const, ph: "e.g. Free company swag or free lunch"     },
+                        { place: 3, label: `🥉 ${t("cg_prize_3rd")}`, key: "reward3" as const, ph: "e.g. Special desk trophy & bragging rights" },
                       ] as const).filter(r => r.place <= rewardPlaces).map(({ label, key, ph }) => (
                         <div key={key}>
                           <label style={labelStyle}>{label}</label>
@@ -734,7 +736,7 @@ function CreateGroupInner() {
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label style={labelStyle}>Buy-In Amount ($)</label>
+                    <label style={labelStyle}>{t("cg_buy_in")}</label>
                     <div className="relative">
                       <DollarSign size={14} className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: "rgba(255,255,255,0.35)" }} />
                       <input type="number" min={0} value={buyIn} onChange={(e: { target: HTMLInputElement }) => setBuyIn(Number(e.target.value))}
@@ -742,7 +744,7 @@ function CreateGroupInner() {
                     </div>
                   </div>
                   <div>
-                    <label style={labelStyle}>Target Members</label>
+                    <label style={labelStyle}>{t("cg_member_count")}</label>
                     <input type="number" min={2} value={memberCount} onChange={(e: { target: HTMLInputElement }) => setMemberCount(Number(e.target.value))}
                       style={{ ...inputStyle, padding: "12px 16px" }} />
                   </div>
@@ -756,15 +758,15 @@ function CreateGroupInner() {
 
                 <div className="space-y-3">
                   <div className="flex justify-between items-center">
-                    <label style={{ ...labelStyle, marginBottom: 0 }}>Prize Pool Split</label>
+                    <label style={{ ...labelStyle, marginBottom: 0 }}>{t("cg_payout_split")}</label>
                     <span style={{ fontSize: 11, fontWeight: 700, fontFamily: "var(--font-ui)", color: totalPct === 100 ? "#00FF88" : "#f87171" }}>
                       {totalPct === 100 ? "✓ 100% allocated" : `${totalPct}% · Must equal 100%`}
                     </span>
                   </div>
                   {[
-                    { label: "🥇 1st Place", val: payoutFirst,  set: setPayoutFirst,  split: Math.round(totalPot * payoutFirst  / 100) },
-                    { label: "🥈 2nd Place", val: payoutSecond, set: setPayoutSecond, split: Math.round(totalPot * payoutSecond / 100) },
-                    { label: "🥉 3rd Place", val: payoutThird,  set: setPayoutThird,  split: Math.round(totalPot * payoutThird  / 100) },
+                    { label: `🥇 ${t("cg_prize_1st")}`, val: payoutFirst,  set: setPayoutFirst,  split: Math.round(totalPot * payoutFirst  / 100) },
+                    { label: `🥈 ${t("cg_prize_2nd")}`, val: payoutSecond, set: setPayoutSecond, split: Math.round(totalPot * payoutSecond / 100) },
+                    { label: `🥉 ${t("cg_prize_3rd")}`, val: payoutThird,  set: setPayoutThird,  split: Math.round(totalPot * payoutThird  / 100) },
                   ].map(({ label, val, set, split }) => (
                     <div key={label} className="flex items-center gap-3">
                       <span className="text-sm w-20 font-medium shrink-0" style={{ color: "rgba(255,255,255,0.5)" }}>{label}</span>
@@ -792,7 +794,7 @@ function CreateGroupInner() {
               textTransform: "uppercase", letterSpacing: "0.06em", cursor: "pointer",
               boxShadow: "0 0 20px rgba(0,255,136,0.25)",
             }}>
-            Next: Scoring Rules <ArrowRight size={16} />
+            {t("cg_next_scoring")} <ArrowRight size={16} />
           </button>
         </div>
       )}
@@ -804,7 +806,7 @@ function CreateGroupInner() {
             <div className="flex items-center gap-2 mb-4">
               <Settings size={14} style={{ color: "#00D4FF" }} />
               <span style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "rgba(255,255,255,0.5)", fontFamily: "var(--font-ui)" }}>
-                Configure point weights
+                {t("cg_scoring_rules")}
               </span>
             </div>
             <RuleRow label="Match Outcome"        desc="Correctly predicting W/D/L result"             pts={correctOutcome} setPts={setCorrectOutcome} enabled={enableOutcome}    onToggle={() => setEnableOutcome(!enableOutcome)}       />
@@ -820,13 +822,13 @@ function CreateGroupInner() {
             {/* Knockout score evaluation policy */}
             <div className="pt-3 mt-1 border-t" style={{ borderColor: "rgba(255,255,255,0.08)" }}>
               <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase" as const, letterSpacing: "0.12em", color: "rgba(255,255,255,0.5)", fontFamily: "var(--font-ui)", marginBottom: 10 }}>
-                Knockout Score Evaluation
+                {t("cg_knockout_eval")}
               </div>
               <div className="space-y-2">
                 {([
-                  { value: "regular_90"    as const, label: "90 Minutes Only",       desc: "Regulation time result only — ET & penalties ignored" },
-                  { value: "inc_extra_time" as const, label: "Including Extra Time",  desc: "120-minute result counts — penalties still ignored"   },
-                  { value: "to_qualify"    as const, label: "Who Advances",           desc: "Advancement pick only — exact score doesn't count"    },
+                  { value: "regular_90"    as const, label: t("cg_90_mins"),      desc: "Regulation time result only — ET & penalties ignored" },
+                  { value: "inc_extra_time" as const, label: t("cg_inc_et"),      desc: "120-minute result counts — penalties still ignored"   },
+                  { value: "to_qualify"    as const, label: t("cg_who_advances"), desc: "Advancement pick only — exact score doesn't count"    },
                 ] as const).map(({ value, label, desc }) => {
                   const active = knockoutPolicy === value;
                   return (
@@ -858,7 +860,7 @@ function CreateGroupInner() {
             }}>
             {loading
               ? <><Loader2 size={16} className="animate-spin" /> Creating your league...</>
-              : <><Trophy size={16} /> Complete &amp; Launch Group</>}
+              : <><Trophy size={16} /> {t("cg_complete")}</>}
           </button>
         </div>
       )}

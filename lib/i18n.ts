@@ -274,6 +274,35 @@ export interface Translations {
   tp_best_defence:    string;
   tp_best_young:      string;
   tp_pick_hint:       string;
+
+  // Create Group funnel
+  cg_title:           string;
+  cg_subtitle:        string;
+  cg_step_setup:      string;
+  cg_step_prizes:     string;
+  cg_step_scoring:    string;
+  cg_group_name:      string;
+  cg_company_name:    string;
+  cg_group_type:      string;
+  cg_full_tournament: string;
+  cg_single_match:    string;
+  cg_next_prizes:     string;
+  cg_next_scoring:    string;
+  cg_complete:        string;
+  cg_friend_mode:     string;
+  cg_corporate_mode:  string;
+  cg_change_mode:     string;
+  cg_buy_in:          string;
+  cg_payout_split:    string;
+  cg_prize_1st:       string;
+  cg_prize_2nd:       string;
+  cg_prize_3rd:       string;
+  cg_scoring_rules:   string;
+  cg_knockout_eval:   string;
+  cg_90_mins:         string;
+  cg_inc_et:          string;
+  cg_who_advances:    string;
+  cg_member_count:    string;
 }
 
 // ── English (base) ─────────────────────────────────────────────────────────────
@@ -509,6 +538,34 @@ const en: Translations = {
   tp_best_defence:  "Best Defence",
   tp_best_young:  "Best Young Player",
   tp_pick_hint:  "Tournament picks lock June 11",
+
+  cg_title:           "Create Your League",
+  cg_subtitle:        "Free to create · Choose how members join",
+  cg_step_setup:      "Setup",
+  cg_step_prizes:     "Prizes",
+  cg_step_scoring:    "Scoring",
+  cg_group_name:      "Group Name",
+  cg_company_name:    "Company Group Name",
+  cg_group_type:      "Group Type",
+  cg_full_tournament: "Full Tournament",
+  cg_single_match:    "Single Match",
+  cg_next_prizes:     "Next: Company Prizes",
+  cg_next_scoring:    "Next: Scoring Rules",
+  cg_complete:        "Complete & Launch Group",
+  cg_friend_mode:     "Friend Circle mode",
+  cg_corporate_mode:  "Corporate mode",
+  cg_change_mode:     "Change Mode",
+  cg_buy_in:          "Buy-in Amount",
+  cg_payout_split:    "Payout Split",
+  cg_prize_1st:       "1st Place Prize",
+  cg_prize_2nd:       "2nd Place Prize",
+  cg_prize_3rd:       "3rd Place Prize",
+  cg_scoring_rules:   "Scoring Rules",
+  cg_knockout_eval:   "Knockout Score Evaluation",
+  cg_90_mins:         "90 Minutes Only",
+  cg_inc_et:          "Including Extra Time",
+  cg_who_advances:    "Who Advances",
+  cg_member_count:    "Max Members",
 
 };
 
@@ -746,6 +803,34 @@ const fr: Translations = {
   tp_best_young:  "Meilleur jeune joueur",
   tp_pick_hint:  "Les pronos tournoi se verrouillent le 11 juin",
 
+  cg_title:           "Create Your League",
+  cg_subtitle:        "Free to create · Choose how members join",
+  cg_step_setup:      "Setup",
+  cg_step_prizes:     "Prizes",
+  cg_step_scoring:    "Scoring",
+  cg_group_name:      "Group Name",
+  cg_company_name:    "Company Group Name",
+  cg_group_type:      "Group Type",
+  cg_full_tournament: "Full Tournament",
+  cg_single_match:    "Single Match",
+  cg_next_prizes:     "Next: Company Prizes",
+  cg_next_scoring:    "Next: Scoring Rules",
+  cg_complete:        "Complete & Launch Group",
+  cg_friend_mode:     "Friend Circle mode",
+  cg_corporate_mode:  "Corporate mode",
+  cg_change_mode:     "Change Mode",
+  cg_buy_in:          "Buy-in Amount",
+  cg_payout_split:    "Payout Split",
+  cg_prize_1st:       "1st Place Prize",
+  cg_prize_2nd:       "2nd Place Prize",
+  cg_prize_3rd:       "3rd Place Prize",
+  cg_scoring_rules:   "Scoring Rules",
+  cg_knockout_eval:   "Knockout Score Evaluation",
+  cg_90_mins:         "90 Minutes Only",
+  cg_inc_et:          "Including Extra Time",
+  cg_who_advances:    "Who Advances",
+  cg_member_count:    "Max Members",
+
 };
 
 // ── German ─────────────────────────────────────────────────────────────────────
@@ -981,6 +1066,34 @@ const de: Translations = {
   tp_best_defence:  "Beste Abwehr",
   tp_best_young:  "Bester Jungspieler",
   tp_pick_hint:  "Turnier-Tipps sperren am 11. Juni",
+
+  cg_title:           "Create Your League",
+  cg_subtitle:        "Free to create · Choose how members join",
+  cg_step_setup:      "Setup",
+  cg_step_prizes:     "Prizes",
+  cg_step_scoring:    "Scoring",
+  cg_group_name:      "Group Name",
+  cg_company_name:    "Company Group Name",
+  cg_group_type:      "Group Type",
+  cg_full_tournament: "Full Tournament",
+  cg_single_match:    "Single Match",
+  cg_next_prizes:     "Next: Company Prizes",
+  cg_next_scoring:    "Next: Scoring Rules",
+  cg_complete:        "Complete & Launch Group",
+  cg_friend_mode:     "Friend Circle mode",
+  cg_corporate_mode:  "Corporate mode",
+  cg_change_mode:     "Change Mode",
+  cg_buy_in:          "Buy-in Amount",
+  cg_payout_split:    "Payout Split",
+  cg_prize_1st:       "1st Place Prize",
+  cg_prize_2nd:       "2nd Place Prize",
+  cg_prize_3rd:       "3rd Place Prize",
+  cg_scoring_rules:   "Scoring Rules",
+  cg_knockout_eval:   "Knockout Score Evaluation",
+  cg_90_mins:         "90 Minutes Only",
+  cg_inc_et:          "Including Extra Time",
+  cg_who_advances:    "Who Advances",
+  cg_member_count:    "Max Members",
 
 };
 
@@ -1218,6 +1331,34 @@ const nl: Translations = {
   tp_best_young:  "Beste jonge speler",
   tp_pick_hint:  "Toernooitips vergrendelen op 11 juni",
 
+  cg_title:           "Create Your League",
+  cg_subtitle:        "Free to create · Choose how members join",
+  cg_step_setup:      "Setup",
+  cg_step_prizes:     "Prizes",
+  cg_step_scoring:    "Scoring",
+  cg_group_name:      "Group Name",
+  cg_company_name:    "Company Group Name",
+  cg_group_type:      "Group Type",
+  cg_full_tournament: "Full Tournament",
+  cg_single_match:    "Single Match",
+  cg_next_prizes:     "Next: Company Prizes",
+  cg_next_scoring:    "Next: Scoring Rules",
+  cg_complete:        "Complete & Launch Group",
+  cg_friend_mode:     "Friend Circle mode",
+  cg_corporate_mode:  "Corporate mode",
+  cg_change_mode:     "Change Mode",
+  cg_buy_in:          "Buy-in Amount",
+  cg_payout_split:    "Payout Split",
+  cg_prize_1st:       "1st Place Prize",
+  cg_prize_2nd:       "2nd Place Prize",
+  cg_prize_3rd:       "3rd Place Prize",
+  cg_scoring_rules:   "Scoring Rules",
+  cg_knockout_eval:   "Knockout Score Evaluation",
+  cg_90_mins:         "90 Minutes Only",
+  cg_inc_et:          "Including Extra Time",
+  cg_who_advances:    "Who Advances",
+  cg_member_count:    "Max Members",
+
 };
 
 // ── Spanish ────────────────────────────────────────────────────────────────────
@@ -1453,6 +1594,34 @@ const es: Translations = {
   tp_best_defence:  "Mejor defensa",
   tp_best_young:  "Mejor jugador joven",
   tp_pick_hint:  "Los picks del torneo se bloquean el 11 de junio",
+
+  cg_title:           "Create Your League",
+  cg_subtitle:        "Free to create · Choose how members join",
+  cg_step_setup:      "Setup",
+  cg_step_prizes:     "Prizes",
+  cg_step_scoring:    "Scoring",
+  cg_group_name:      "Group Name",
+  cg_company_name:    "Company Group Name",
+  cg_group_type:      "Group Type",
+  cg_full_tournament: "Full Tournament",
+  cg_single_match:    "Single Match",
+  cg_next_prizes:     "Next: Company Prizes",
+  cg_next_scoring:    "Next: Scoring Rules",
+  cg_complete:        "Complete & Launch Group",
+  cg_friend_mode:     "Friend Circle mode",
+  cg_corporate_mode:  "Corporate mode",
+  cg_change_mode:     "Change Mode",
+  cg_buy_in:          "Buy-in Amount",
+  cg_payout_split:    "Payout Split",
+  cg_prize_1st:       "1st Place Prize",
+  cg_prize_2nd:       "2nd Place Prize",
+  cg_prize_3rd:       "3rd Place Prize",
+  cg_scoring_rules:   "Scoring Rules",
+  cg_knockout_eval:   "Knockout Score Evaluation",
+  cg_90_mins:         "90 Minutes Only",
+  cg_inc_et:          "Including Extra Time",
+  cg_who_advances:    "Who Advances",
+  cg_member_count:    "Max Members",
 
 };
 
@@ -1690,6 +1859,34 @@ const pt: Translations = {
   tp_best_young:  "Melhor jovem jogador",
   tp_pick_hint:  "Os palpites do torneio bloqueiam a 11 de junho",
 
+  cg_title:           "Create Your League",
+  cg_subtitle:        "Free to create · Choose how members join",
+  cg_step_setup:      "Setup",
+  cg_step_prizes:     "Prizes",
+  cg_step_scoring:    "Scoring",
+  cg_group_name:      "Group Name",
+  cg_company_name:    "Company Group Name",
+  cg_group_type:      "Group Type",
+  cg_full_tournament: "Full Tournament",
+  cg_single_match:    "Single Match",
+  cg_next_prizes:     "Next: Company Prizes",
+  cg_next_scoring:    "Next: Scoring Rules",
+  cg_complete:        "Complete & Launch Group",
+  cg_friend_mode:     "Friend Circle mode",
+  cg_corporate_mode:  "Corporate mode",
+  cg_change_mode:     "Change Mode",
+  cg_buy_in:          "Buy-in Amount",
+  cg_payout_split:    "Payout Split",
+  cg_prize_1st:       "1st Place Prize",
+  cg_prize_2nd:       "2nd Place Prize",
+  cg_prize_3rd:       "3rd Place Prize",
+  cg_scoring_rules:   "Scoring Rules",
+  cg_knockout_eval:   "Knockout Score Evaluation",
+  cg_90_mins:         "90 Minutes Only",
+  cg_inc_et:          "Including Extra Time",
+  cg_who_advances:    "Who Advances",
+  cg_member_count:    "Max Members",
+
 };
 
 // ── Hebrew ─────────────────────────────────────────────────────────────────────
@@ -1926,6 +2123,34 @@ const he: Translations = {
   tp_best_young:  "השחקן הצעיר הטוב ביותר",
   tp_pick_hint:  "בחירות הטורניר ננעלות ב-11 ביוני",
 
+  cg_title:           "צור את הליגה שלך",
+  cg_subtitle:        "חינם ליצירה · בחר איך חברים מצטרפים",
+  cg_step_setup:      "הגדרה",
+  cg_step_prizes:     "פרסים",
+  cg_step_scoring:    "ניקוד",
+  cg_group_name:      "שם הקבוצה",
+  cg_company_name:    "שם קבוצת החברה",
+  cg_group_type:      "סוג הקבוצה",
+  cg_full_tournament: "טורניר מלא",
+  cg_single_match:    "משחק בודד",
+  cg_next_prizes:     "הבא: פרסי חברה",
+  cg_next_scoring:    "הבא: כללי ניקוד",
+  cg_complete:        "השלם והשק קבוצה",
+  cg_friend_mode:     "מצב חוג חברים",
+  cg_corporate_mode:  "מצב ארגוני",
+  cg_change_mode:     "שנה מצב",
+  cg_buy_in:          "סכום כניסה",
+  cg_payout_split:    "חלוקת פרסים",
+  cg_prize_1st:       "פרס מקום ראשון",
+  cg_prize_2nd:       "פרס מקום שני",
+  cg_prize_3rd:       "פרס מקום שלישי",
+  cg_scoring_rules:   "כללי ניקוד",
+  cg_knockout_eval:   "הערכת תוצאת נוקאאוט",
+  cg_90_mins:         "90 דקות בלבד",
+  cg_inc_et:          "כולל הארכות",
+  cg_who_advances:    "מי עולה",
+  cg_member_count:    "מקסימום חברים",
+
 };
 
 // ── Arabic ─────────────────────────────────────────────────────────────────────
@@ -2161,6 +2386,34 @@ const ar: Translations = {
   tp_best_defence:  "أفضل دفاع",
   tp_best_young:  "أفضل لاعب شاب",
   tp_pick_hint:  "توقعات البطولة تقفل 11 يونيو",
+
+  cg_title:           "Create Your League",
+  cg_subtitle:        "Free to create · Choose how members join",
+  cg_step_setup:      "Setup",
+  cg_step_prizes:     "Prizes",
+  cg_step_scoring:    "Scoring",
+  cg_group_name:      "Group Name",
+  cg_company_name:    "Company Group Name",
+  cg_group_type:      "Group Type",
+  cg_full_tournament: "Full Tournament",
+  cg_single_match:    "Single Match",
+  cg_next_prizes:     "Next: Company Prizes",
+  cg_next_scoring:    "Next: Scoring Rules",
+  cg_complete:        "Complete & Launch Group",
+  cg_friend_mode:     "Friend Circle mode",
+  cg_corporate_mode:  "Corporate mode",
+  cg_change_mode:     "Change Mode",
+  cg_buy_in:          "Buy-in Amount",
+  cg_payout_split:    "Payout Split",
+  cg_prize_1st:       "1st Place Prize",
+  cg_prize_2nd:       "2nd Place Prize",
+  cg_prize_3rd:       "3rd Place Prize",
+  cg_scoring_rules:   "Scoring Rules",
+  cg_knockout_eval:   "Knockout Score Evaluation",
+  cg_90_mins:         "90 Minutes Only",
+  cg_inc_et:          "Including Extra Time",
+  cg_who_advances:    "Who Advances",
+  cg_member_count:    "Max Members",
 
 };
 
