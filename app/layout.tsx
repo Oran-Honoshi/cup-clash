@@ -6,6 +6,8 @@ import { PWAInit } from "@/components/pwa-init";
 import { PWAInstallBanner } from "@/components/ui/pwa-install-banner";
 import { SoftwareAppSchema, FAQSchema, HowToSchema } from "@/components/seo/schemas";
 import { PayPalScriptLoader } from "@/components/payments/paypal-script-loader";
+import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
 
 const bricolage = Bricolage_Grotesque({ subsets: ["latin"], variable: "--font-display", display: "swap",
@@ -127,6 +129,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </LocaleProvider>
         <PWAInit />
         <PWAInstallBanner />
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );
