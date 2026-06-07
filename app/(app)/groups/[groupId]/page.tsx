@@ -15,7 +15,7 @@ function sbAdmin() {
 async function getGroupDetail(groupId: string) {
   const { data } = await sbAdmin()
     .from("groups")
-    .select("id, name, passkey, admin_id, buy_in_amount, payout_first, payout_second, payout_third, max_members, enrollment_fee_cents, is_corporate_paid, max_group_capacity, payment_model, corporate_prize")
+    .select("id, name, passkey, admin_id, buy_in_amount, payout_first, payout_second, payout_third, max_members, enrollment_fee_cents, is_corporate_paid, max_group_capacity, payment_model, corporate_prize, currency_symbol, payment_link")
     .eq("id", groupId)
     .single();
   return data as {
@@ -24,6 +24,7 @@ async function getGroupDetail(groupId: string) {
     payout_third: number; max_members: number; enrollment_fee_cents: number;
     is_corporate_paid: boolean; max_group_capacity: number;
     payment_model: string; corporate_prize: string | null;
+    currency_symbol: string | null; payment_link: string | null;
   } | null;
 }
 

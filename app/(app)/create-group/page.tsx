@@ -2,7 +2,7 @@
 
 import { useState, useEffect, Suspense } from "react";
 import {
-  Users, DollarSign, Trophy, AlertCircle, Copy, Check,
+  Users, Trophy, AlertCircle, Copy, Check,
   ArrowRight, Zap, ChevronDown, Settings, Building2, UserCheck, Loader2,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
@@ -50,6 +50,14 @@ const neutralTagStyle = {
   border: "1px solid rgba(255,255,255,0.08)",
   fontFamily: "var(--font-ui)",
 };
+
+const CURRENCIES = [
+  { code: "USD", symbol: "$" },
+  { code: "EUR", symbol: "€" },
+  { code: "ILS", symbol: "₪" },
+  { code: "GBP", symbol: "£" },
+  { code: "Other", symbol: "" },
+];
 
 const FEATURED_MATCHES = [
   { id: "final", label: "Final, MetLife Stadium",           detail: "Jul 19" },
@@ -140,6 +148,9 @@ function CreateGroupInner() {
   const [payoutFirst,  setPayoutFirst]  = useState(60);
   const [payoutSecond, setPayoutSecond] = useState(30);
   const [payoutThird,  setPayoutThird]  = useState(10);
+  const [currency,     setCurrency]     = useState("USD");
+  const [otherSymbol,  setOtherSymbol]  = useState("");
+  const [paymentLink,  setPaymentLink]  = useState("");
 
   const [knockoutPolicy,   setKnockoutPolicy]   = useState<'regular_90' | 'inc_extra_time' | 'to_qualify'>('regular_90');
   const [correctOutcome,   setCorrectOutcome]   = useState(10);
@@ -163,7 +174,8 @@ function CreateGroupInner() {
 
   const totalPct    = payoutFirst + payoutSecond + payoutThird;
   const totalPot    = buyIn * memberCount;
-  const isCorporate = paymentModel === "corporate_sponsored";
+  const isCorporate    = paymentModel === "corporate_sponsored";
+  const currencySymbol = currency === "Other" ? (otherSymbol.trim() || "$") : CURRENCIES.find(c => c.code === currency)?.symbol ?? "$";
 
   const handleCreate = async () => {
     setLoading(true); setError(null);
@@ -196,6 +208,9 @@ function CreateGroupInner() {
         payment_model:        paymentModel,
         is_corporate_paid:    false,
         corporate_prize:      finalCorporatePrize || null,
+        currency:             currency,
+        currency_symbol:      currencySymbol,
+        payment_link:         paymentLink.trim() || null,
       } as Record<string, unknown>)
       .select("id, passkey")
       .single();
@@ -627,6 +642,35 @@ function CreateGroupInner() {
       {step === 2 && (
         <div className="space-y-4">
           <div style={{ ...glassCard, padding: 20 }} className="space-y-4">
+            {/* Currency */}
+            <div>
+              <label style={labelStyle}>Currency</label>
+              <div className="grid grid-cols-5 gap-1.5">
+                {CURRENCIES.map(c => (
+                  <button key={c.code} type="button" onClick={() => setCurrency(c.code)}
+                    className="py-2 text-center transition-all"
+                    style={{
+                      borderRadius: 10, cursor: "pointer", fontSize: 12, fontWeight: 700,
+                      border: currency === c.code ? "1.5px solid rgba(0,212,255,0.5)" : "1px solid rgba(255,255,255,0.1)",
+                      background: currency === c.code ? "rgba(0,212,255,0.1)" : "rgba(255,255,255,0.04)",
+                      color: currency === c.code ? "#00D4FF" : "rgba(255,255,255,0.5)",
+                      fontFamily: "var(--font-ui)",
+                    }}>
+                    {c.code === "Other" ? "Other" : `${c.symbol} ${c.code}`}
+                  </button>
+                ))}
+              </div>
+              {currency === "Other" && (
+                <div className="mt-2">
+                  <input
+                    type="text" maxLength={5} value={otherSymbol}
+                    onChange={(e: { target: HTMLInputElement }) => setOtherSymbol(e.target.value)}
+                    placeholder="e.g. ₽"
+                    className="placeholder:text-[rgba(255,255,255,0.3)]"
+                    style={{ ...inputStyle, padding: "8px 12px", width: 120 }} />
+                </div>
+              )}
+            </div>
             {isCorporate ? (
               <div className="space-y-4">
                 <div>
@@ -738,7 +782,7 @@ function CreateGroupInner() {
                   <div>
                     <label style={labelStyle}>{t("cg_buy_in")}</label>
                     <div className="relative">
-                      <DollarSign size={14} className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: "rgba(255,255,255,0.35)" }} />
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none text-sm font-bold" style={{ color: "rgba(255,255,255,0.35)" }}>{currencySymbol}</span>
                       <input type="number" min={0} value={buyIn} onChange={(e: { target: HTMLInputElement }) => setBuyIn(Number(e.target.value))}
                         style={{ ...inputStyle, padding: "12px 16px 12px 36px", color: "#00D4FF" }} />
                     </div>
@@ -753,7 +797,7 @@ function CreateGroupInner() {
                 <div className="px-4 py-3 rounded-xl flex justify-between items-center"
                   style={{ background: "rgba(0,255,136,0.04)", border: "1px solid rgba(0,255,136,0.12)" }}>
                   <span style={{ fontSize: 13, color: "rgba(255,255,255,0.4)", fontFamily: "var(--font-ui)" }}>Projected Cash Pool:</span>
-                  <span className="font-bold" style={{ color: "#00FF88" }}>${totalPot}</span>
+                  <span className="font-bold" style={{ color: "#00FF88" }}>{currencySymbol}{totalPot}</span>
                 </div>
 
                 <div className="space-y-3">
@@ -774,12 +818,28 @@ function CreateGroupInner() {
                         className="text-center"
                         style={{ width: 64, borderRadius: 10, padding: "6px 8px", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", color: "#00D4FF", fontSize: 13, fontFamily: "var(--font-ui)", outline: "none" }} />
                       <span style={{ color: "rgba(255,255,255,0.35)", fontSize: 13, width: 20 }}>%</span>
-                      <span className="text-xs ml-auto font-mono" style={{ color: "rgba(255,255,255,0.35)" }}>${split} prize</span>
+                      <span className="text-xs ml-auto font-mono" style={{ color: "rgba(255,255,255,0.35)" }}>{currencySymbol}{split} prize</span>
                     </div>
                   ))}
                 </div>
               </div>
             )}
+
+            {/* Payment Link */}
+            <div>
+              <label style={labelStyle}>Payment collection link (optional)</label>
+              <input
+                type="url" value={paymentLink}
+                onChange={(e: { target: HTMLInputElement }) => setPaymentLink(e.target.value)}
+                placeholder="https://bit.ly/your-paybox-link"
+                onFocus={(e: { target: HTMLInputElement }) => { e.target.style.borderColor = "rgba(0,212,255,0.5)"; e.target.style.boxShadow = "0 0 0 3px rgba(0,212,255,0.1)"; }}
+                onBlur={(e: { target: HTMLInputElement }) => { e.target.style.borderColor = "rgba(255,255,255,0.12)"; e.target.style.boxShadow = "none"; }}
+                className="placeholder:text-[rgba(255,255,255,0.3)]"
+                style={{ ...inputStyle, padding: "12px 16px" }} />
+              <p style={{ fontSize: 11, color: "rgba(255,255,255,0.3)", fontFamily: "var(--font-ui)", marginTop: 4 }}>
+                Share a link where members can send their buy-in (PayBox, Paypal, Venmo, etc.)
+              </p>
+            </div>
           </div>
 
           <button type="button" onClick={() => {

@@ -25,9 +25,9 @@ export function BuyInStatus({ group, members }: BuyInStatusProps) {
         <span className="font-display text-xl uppercase tracking-tight text-white">Prize Tracker</span>
       </div>
       <div className="text-center py-4 mb-4 rounded-xl" style={{ background: "rgba(0,255,136,0.06)", border: "1px solid rgba(0,255,136,0.15)" }}>
-        <div className="font-display text-5xl font-black" style={{ color: "#00FF88" }}>${paidPot}</div>
+        <div className="font-display text-5xl font-black" style={{ color: "#00FF88" }}>{group.currencySymbol}{paidPot}</div>
         <div className="text-[10px] uppercase tracking-widest mt-1" style={{ color: "rgba(255,255,255,0.35)" }}>Total Pot</div>
-        <div className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>{paidCount}/{members.length} paid · ${group.buyInAmount}/player</div>
+        <div className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>{paidCount}/{members.length} paid · {group.currencySymbol}{group.buyInAmount}/player</div>
       </div>
       <div className="h-1.5 rounded-full overflow-hidden mb-3" style={{ background: "rgba(255,255,255,0.08)" }}>
         <div className="h-full rounded-full transition-all" style={{ width: `${paidPct}%`, background: "linear-gradient(90deg, #00D4FF, #00FF88)" }} />
@@ -46,7 +46,7 @@ export function BuyInStatus({ group, members }: BuyInStatusProps) {
             <span className="text-sm" style={{ color: "rgba(255,255,255,0.6)" }}>{label}</span>
             <div className="flex items-center gap-3">
               <span className="text-xs" style={{ color: "rgba(255,255,255,0.3)" }}>{pct}</span>
-              <span className="font-black text-base" style={{ color }}>${amount}</span>
+              <span className="font-black text-base" style={{ color }}>{group.currencySymbol}{amount}</span>
             </div>
           </div>
         ))}

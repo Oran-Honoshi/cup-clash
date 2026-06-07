@@ -44,8 +44,12 @@ export function AdminPanel({ group, initialMembers }: AdminPanelProps) {
   const [payoutSaving, setPayoutSaving] = useState(false);
   const [payoutSaved,  setPayoutSaved]  = useState(false);
   const [payoutError,  setPayoutError]  = useState<string | null>(null);
-  const [copied,       setCopied]       = useState(false);
-  const [inviteUrl,    setInviteUrl]    = useState("");
+  const [copied,          setCopied]          = useState(false);
+  const [inviteUrl,       setInviteUrl]       = useState("");
+  const [paymentLinkEdit, setPaymentLinkEdit] = useState(group.paymentLink ?? "");
+  const [editingLink,     setEditingLink]     = useState(false);
+  const [savingLink,      setSavingLink]      = useState(false);
+  const [linkSaved,       setLinkSaved]       = useState(false);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -90,6 +94,16 @@ export function AdminPanel({ group, initialMembers }: AdminPanelProps) {
   const copyInviteLink = () => {
     navigator.clipboard.writeText(inviteUrl);
     setCopied(true); setTimeout(() => setCopied(false), 2000);
+  };
+
+  const savePaymentLink = async () => {
+    setSavingLink(true);
+    if (process.env.NEXT_PUBLIC_SUPABASE_URL) {
+      const sb = getClient();
+      await sb.from("groups").update({ payment_link: paymentLinkEdit.trim() || null } as Record<string, string | null>).eq("id", group.id);
+    }
+    setSavingLink(false); setLinkSaved(true); setEditingLink(false);
+    setTimeout(() => setLinkSaved(false), 2500);
   };
 
   const handleDelete = async () => {
@@ -158,7 +172,7 @@ export function AdminPanel({ group, initialMembers }: AdminPanelProps) {
               </div>
               {group.buyInAmount > 0 && (
                 <span className="hidden sm:inline text-sm font-bold shrink-0" style={{ color: "rgba(255,255,255,0.6)" }}>
-                  ${group.buyInAmount}
+                  {group.currencySymbol}{group.buyInAmount}
                 </span>
               )}
               <button onClick={() => togglePaid(m.id, m.paid)}
@@ -181,8 +195,8 @@ export function AdminPanel({ group, initialMembers }: AdminPanelProps) {
           style={{ borderColor: "rgba(255,255,255,0.07)" }}>
           <div className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.35)" }}>Total pot collected</div>
           <div className="flex items-baseline gap-1">
-            <span className="font-display font-extrabold" style={{ fontSize: 40, lineHeight: 1, color: "#00FF88" }}>${paidAmount}</span>
-            <span className="text-sm" style={{ color: "rgba(255,255,255,0.3)" }}>/ ${totalPot}</span>
+            <span className="font-display font-extrabold" style={{ fontSize: 40, lineHeight: 1, color: "#00FF88" }}>{group.currencySymbol}{paidAmount}</span>
+            <span className="text-sm" style={{ color: "rgba(255,255,255,0.3)" }}>/ {group.currencySymbol}{totalPot}</span>
           </div>
         </div>
       </div>
@@ -232,7 +246,7 @@ export function AdminPanel({ group, initialMembers }: AdminPanelProps) {
                     style={{ color: "rgba(255,255,255,0.3)" }}>%</span>
                 </div>
                 {group.buyInAmount > 0 && (
-                  <span className="text-sm font-bold w-12 text-right" style={{ color: "#00D4FF" }}>${amount}</span>
+                  <span className="text-sm font-bold w-12 text-right" style={{ color: "#00D4FF" }}>{group.currencySymbol}{amount}</span>
                 )}
               </div>
             ))}
@@ -288,6 +302,56 @@ export function AdminPanel({ group, initialMembers }: AdminPanelProps) {
           <p className="mt-3 text-[11px]" style={{ color: "rgba(255,255,255,0.3)" }}>
             {t("adm_invite_hint")}
           </p>
+        </div>
+
+        {/* ── Payment Collection ── */}
+        <div className="rounded-2xl p-5" style={glass}>
+          <div className="flex items-center gap-2.5 mb-4">
+            <span style={{ fontSize: 18 }}>💳</span>
+            <span className="font-display text-xl uppercase tracking-tight text-white">Payment Collection</span>
+          </div>
+
+          {editingLink ? (
+            <div className="space-y-3">
+              <input
+                type="url" value={paymentLinkEdit}
+                onChange={e => setPaymentLinkEdit(e.target.value)}
+                placeholder="https://bit.ly/your-paybox-link"
+                className="w-full rounded-xl px-4 py-3 text-sm outline-none"
+                style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", color: "#fff", fontFamily: "var(--font-ui)" }}
+                onFocus={e => { e.target.style.borderColor = "rgba(0,212,255,0.5)"; e.target.style.boxShadow = "0 0 0 3px rgba(0,212,255,0.1)"; }}
+                onBlur={e => { e.target.style.borderColor = "rgba(255,255,255,0.12)"; e.target.style.boxShadow = "none"; }}
+              />
+              <div className="flex gap-2">
+                <Button onClick={savePaymentLink} loading={savingLink} size="sm" className="flex-1"
+                  leftIcon={linkSaved ? <Check size={14} /> : undefined}>
+                  {linkSaved ? "Saved!" : "Save Link"}
+                </Button>
+                <Button onClick={() => { setEditingLink(false); setPaymentLinkEdit(group.paymentLink ?? ""); }} variant="outline" size="sm">
+                  Cancel
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {group.paymentLink ? (
+                <a href={group.paymentLink} target="_blank" rel="noopener noreferrer"
+                  className="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-sm uppercase tracking-wider transition-all hover:-translate-y-0.5"
+                  style={{ background: "linear-gradient(135deg, #00FF88, #00D4FF)", color: "#0B141B" }}>
+                  💳 Open Payment Link
+                </a>
+              ) : (
+                <div className="rounded-xl px-4 py-3 text-xs text-center"
+                  style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.35)" }}>
+                  No payment link set — add one below
+                </div>
+              )}
+              <Button onClick={() => setEditingLink(true)} variant="outline" size="sm" className="w-full"
+                leftIcon={<Link2 size={14} />}>
+                {group.paymentLink ? "Edit Link" : "Add Link"}
+              </Button>
+            </div>
+          )}
         </div>
       </div>
     </div>

@@ -15,6 +15,9 @@ export const MOCK_GROUP: Group = {
   enrollmentDeadline:  null,
   corporatePrize:      null,
   isCorporatePaid:     false,
+  currency:            "USD",
+  currencySymbol:      "$",
+  paymentLink:         null,
   payouts: { first: "60%", second: "30%", third: "10%" },
 };
 

@@ -25,6 +25,9 @@ function mapGroup(d: {
   max_members: number; enrollment_deadline: string | null;
   corporate_prize: string | null;
   is_corporate_paid: boolean | null;
+  currency?: string | null;
+  currency_symbol?: string | null;
+  payment_link?: string | null;
 }): Group {
   return {
     id:                  d.id,
@@ -37,6 +40,9 @@ function mapGroup(d: {
     enrollmentDeadline:  d.enrollment_deadline ?? null,
     corporatePrize:      d.corporate_prize ?? null,
     isCorporatePaid:     d.is_corporate_paid ?? false,
+    currency:            d.currency ?? "USD",
+    currencySymbol:      d.currency_symbol ?? "$",
+    paymentLink:         d.payment_link ?? null,
     payouts: {
       first:  `${d.payout_first  ?? 60}%`,
       second: `${d.payout_second ?? 30}%`,
@@ -49,7 +55,8 @@ const GROUP_SELECT = `
   id, name, admin_id,
   buy_in_amount, payout_first, payout_second, payout_third,
   enrollment_fee_cents, passkey, max_members, enrollment_deadline,
-  corporate_prize, is_corporate_paid
+  corporate_prize, is_corporate_paid,
+  currency, currency_symbol, payment_link
 `;
 
 // ── Get group by ID ──────────────────────────────────────────────────────────

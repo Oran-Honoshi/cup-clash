@@ -24,6 +24,9 @@ export interface Group {
   enrollmentDeadline:  string | null;
   corporatePrize:      string | null;
   isCorporatePaid:     boolean;
+  currency:            string;
+  currencySymbol:      string;
+  paymentLink:         string | null;
   payouts: {
     first:  string;  // "60%"
     second: string;  // "30%"

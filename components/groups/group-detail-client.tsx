@@ -10,7 +10,7 @@ import { useLocale } from "@/components/i18n/locale-provider";
 import { interpolate } from "@/lib/i18n";
 
 interface GroupDetailClientProps {
-  group: { id: string; name: string; passkey: string; admin_id: string; buy_in_amount: number; payout_first: number; payout_second: number; payout_third: number; max_members: number; is_corporate_paid?: boolean; corporate_prize?: string | null };
+  group: { id: string; name: string; passkey: string; admin_id: string; buy_in_amount: number; payout_first: number; payout_second: number; payout_third: number; max_members: number; is_corporate_paid?: boolean; corporate_prize?: string | null; currency_symbol?: string | null; payment_link?: string | null };
   rules: Record<string, number | boolean> | null;
   members: Array<{ user_id: string; payment_status: string; can_predict: boolean; paid: boolean; is_ad_free: boolean; profiles: { name: string; country: string | null; avatar_url: string | null } | null }>;
   currentUserId: string;
@@ -106,8 +106,8 @@ export function GroupDetailClient({ group, rules, members, currentUserId, isAdmi
           <div className="grid grid-cols-3 gap-2">
             {[
               { icon: Users,      label: t("grp_members"),   value: `${paidCount}`,                accent: "#00D4FF" },
-              { icon: DollarSign, label: t("grp_entry"),     value: `$${group.buy_in_amount ?? 0}`, accent: "#00FF88" },
-              { icon: Trophy,     label: t("grp_prize_pot"), value: `$${totalPot}`,                 accent: "#fbbf24" },
+              { icon: DollarSign, label: t("grp_entry"),     value: `${group.currency_symbol ?? "$"}${group.buy_in_amount ?? 0}`, accent: "#00FF88" },
+              { icon: Trophy,     label: t("grp_prize_pot"), value: `${group.currency_symbol ?? "$"}${totalPot}`,                 accent: "#fbbf24" },
             ].map(({ icon: Icon, label, value, accent }) => (
               <div key={label} className="rounded-2xl p-3 text-center overflow-hidden w-full" style={glass}>
                 <Icon size={16} className="mx-auto mb-1.5" style={{ color: accent }} />
@@ -128,6 +128,13 @@ export function GroupDetailClient({ group, rules, members, currentUserId, isAdmi
               <div className="font-mono font-black text-3xl sm:text-4xl tracking-[0.1em] sm:tracking-[0.2em] mb-1 text-white overflow-hidden">{group.passkey}</div>
               <div className="text-xs overflow-hidden" style={{ color: "rgba(255,255,255,0.3)", wordBreak: "break-all" }}>cupclash.live/join/{group.passkey}</div>
             </div>
+            {group.payment_link && (
+              <a href={group.payment_link} target="_blank" rel="noopener noreferrer"
+                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-sm uppercase tracking-wider transition-all hover:-translate-y-0.5"
+                style={{ background: "rgba(0,212,255,0.08)", border: "1px solid rgba(0,212,255,0.25)", color: "#00D4FF" }}>
+                💳 Send Buy-in
+              </a>
+            )}
           </div>
 
           <div className="rounded-2xl p-5" style={glass}>
@@ -144,7 +151,7 @@ export function GroupDetailClient({ group, rules, members, currentUserId, isAdmi
                     <div className="h-full rounded-full" style={{ width: `${pct}%`, background: color, opacity: 0.8 }} />
                   </div>
                   <span className="text-sm font-black w-9 text-right shrink-0" style={{ color }}>{pct}%</span>
-                  {totalPot > 0 && <span className="text-xs w-10 text-right shrink-0" style={{ color: "rgba(255,255,255,0.3)" }}>${Math.round(totalPot * pct / 100)}</span>}
+                  {totalPot > 0 && <span className="text-xs w-10 text-right shrink-0" style={{ color: "rgba(255,255,255,0.3)" }}>{group.currency_symbol ?? "$"}{Math.round(totalPot * pct / 100)}</span>}
                 </div>
               ))}
             </div>
