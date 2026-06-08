@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { ALL_COUNTRIES } from "@/lib/countries";
 
-type QuestionType = "open_text" | "player_pick" | "team_pick";
+type QuestionType = "open_text" | "player_pick" | "team_pick" | "number";
 
 interface BonusQuestion {
   id: string;
@@ -19,6 +19,69 @@ interface BonusQuestion {
   display_order: number;
   answer_count?: number;
 }
+
+interface SuggestedQuestion {
+  question: string;
+  question_type: QuestionType;
+  points_awarded: number;
+}
+
+const SUGGESTIONS: { category: string; icon: string; color: string; questions: SuggestedQuestion[] }[] = [
+  {
+    category: "Team Questions",
+    icon: "🌍",
+    color: "#00FF88",
+    questions: [
+      { question: "Which team will reach the Final without winning their group?", question_type: "team_pick", points_awarded: 8 },
+      { question: "Which team will be the biggest upset winner?",                 question_type: "team_pick", points_awarded: 6 },
+      { question: "Which team will have the best defense (fewest goals conceded)?", question_type: "team_pick", points_awarded: 6 },
+      { question: "Which team will score the most goals in the group stage?",     question_type: "team_pick", points_awarded: 6 },
+      { question: "Which team will receive the most red cards?",                  question_type: "team_pick", points_awarded: 5 },
+      { question: "Which team will win the most corners overall?",                question_type: "team_pick", points_awarded: 4 },
+      { question: "Which team will be eliminated earliest as a favorite?",        question_type: "team_pick", points_awarded: 5 },
+    ],
+  },
+  {
+    category: "Player Questions",
+    icon: "👤",
+    color: "#fbbf24",
+    questions: [
+      { question: "Who will score the first goal of the tournament?",   question_type: "player_pick", points_awarded: 8 },
+      { question: "Who will score in the Final?",                       question_type: "player_pick", points_awarded: 8 },
+      { question: "Who will win the Golden Glove (best goalkeeper)?",   question_type: "player_pick", points_awarded: 8 },
+      { question: "Who will be the Best Young Player?",                 question_type: "player_pick", points_awarded: 6 },
+      { question: "Who will score the first own goal?",                 question_type: "player_pick", points_awarded: 4 },
+      { question: "Who will be sent off first in the tournament?",      question_type: "player_pick", points_awarded: 5 },
+      { question: "Who will score a hat-trick first?",                  question_type: "player_pick", points_awarded: 7 },
+    ],
+  },
+  {
+    category: "Number Questions",
+    icon: "🔢",
+    color: "#f59e0b",
+    questions: [
+      { question: "How many total goals will be scored in the tournament?", question_type: "number", points_awarded: 6 },
+      { question: "How many penalty shootouts will there be?",              question_type: "number", points_awarded: 5 },
+      { question: "How many red cards will be shown in total?",             question_type: "number", points_awarded: 4 },
+      { question: "How many own goals will there be?",                      question_type: "number", points_awarded: 4 },
+      { question: "How many hat-tricks will there be?",                     question_type: "number", points_awarded: 4 },
+      { question: "How many different players will score?",                 question_type: "number", points_awarded: 5 },
+      { question: "How many matches will end 0-0?",                         question_type: "number", points_awarded: 4 },
+      { question: "How many goals will be scored in the Final?",            question_type: "number", points_awarded: 5 },
+    ],
+  },
+  {
+    category: "Open Questions",
+    icon: "💬",
+    color: "#00D4FF",
+    questions: [
+      { question: "Which match will have the most goals?",                               question_type: "open_text", points_awarded: 5 },
+      { question: "Which group will produce the most total goals?",                       question_type: "open_text", points_awarded: 4 },
+      { question: "Will the defending champion (Argentina) reach the Final? (Yes/No)",    question_type: "open_text", points_awarded: 5 },
+      { question: "Which continent will have the most teams in the Quarter Finals?",      question_type: "open_text", points_awarded: 4 },
+    ],
+  },
+];
 
 const glass = {
   background: "rgba(18,14,38,0.32)",
@@ -34,20 +97,34 @@ const KNOWN_PLAYERS = [
   "Bernardo Silva", "Federico Valverde", "Bukayo Saka", "Jude Bellingham",
 ];
 
+const TYPE_LABELS: Record<QuestionType, string> = {
+  open_text:   "Open text",
+  player_pick: "Player",
+  team_pick:   "Team",
+  number:      "Number",
+};
+
+const TYPE_COLORS: Record<QuestionType, string> = {
+  open_text:   "#00D4FF",
+  player_pick: "#fbbf24",
+  team_pick:   "#00FF88",
+  number:      "#f59e0b",
+};
+
 interface BonusQuestionsAdminProps {
   groupId: string;
 }
 
 export function BonusQuestionsAdmin({ groupId }: BonusQuestionsAdminProps) {
-  const [questions,    setQuestions]    = useState<BonusQuestion[]>([]);
-  const [loading,      setLoading]      = useState(true);
-  const [adding,       setAdding]       = useState(false);
-  const [resolveId,    setResolveId]    = useState<string | null>(null);
+  const [questions,     setQuestions]     = useState<BonusQuestion[]>([]);
+  const [loading,       setLoading]       = useState(true);
+  const [adding,        setAdding]        = useState(false);
+  const [resolveId,     setResolveId]     = useState<string | null>(null);
   const [resolveAnswer, setResolveAnswer] = useState("");
-  const [resolving,    setResolving]    = useState(false);
+  const [resolving,     setResolving]     = useState(false);
   const [resolveResult, setResolveResult] = useState<{ correctCount: number; totalAnswers: number; pointsAwarded: number } | null>(null);
-  const [savedConfirm, setSavedConfirm] = useState(false);
-  const [saveError,    setSaveError]    = useState<string | null>(null);
+  const [savedConfirm,  setSavedConfirm]  = useState(false);
+  const [saveError,     setSaveError]     = useState<string | null>(null);
   const [newQ, setNewQ] = useState({
     question:       "",
     question_type:  "open_text" as QuestionType,
@@ -67,7 +144,6 @@ export function BonusQuestionsAdmin({ groupId }: BonusQuestionsAdminProps) {
 
     if (!data) { setLoading(false); return; }
 
-    // Get answer counts
     const ids = (data as BonusQuestion[]).map(q => q.id);
     let counts: Record<string, number> = {};
     if (ids.length > 0) {
@@ -90,8 +166,6 @@ export function BonusQuestionsAdmin({ groupId }: BonusQuestionsAdminProps) {
 
   const addQuestion = async () => {
     if (!newQ.question.trim()) return;
-    console.log("Saving question:", { question: newQ.question, type: newQ.question_type, points: newQ.points_awarded });
-    console.log("Group ID:", groupId);
     setAdding(true);
     setSaveError(null);
     const sb = createClient();
@@ -104,8 +178,6 @@ export function BonusQuestionsAdmin({ groupId }: BonusQuestionsAdminProps) {
       display_order:  questions.length,
     } as Record<string, unknown>);
 
-    console.log("Save result:", { error: error?.message ?? "ok" });
-
     if (error) {
       setSaveError(error.message);
     } else {
@@ -115,6 +187,11 @@ export function BonusQuestionsAdmin({ groupId }: BonusQuestionsAdminProps) {
       await loadQuestions();
     }
     setAdding(false);
+  };
+
+  const applySuggestion = (s: SuggestedQuestion) => {
+    setNewQ(q => ({ ...q, question: s.question, question_type: s.question_type, points_awarded: s.points_awarded }));
+    document.getElementById("bq-form")?.scrollIntoView({ behavior: "smooth", block: "nearest" });
   };
 
   const deleteQuestion = async (id: string) => {
@@ -149,18 +226,6 @@ export function BonusQuestionsAdmin({ groupId }: BonusQuestionsAdminProps) {
     setResolving(false);
   };
 
-  const TYPE_LABELS: Record<QuestionType, string> = {
-    open_text:   "Open text",
-    player_pick: "Player pick",
-    team_pick:   "Team pick",
-  };
-
-  const TYPE_COLORS: Record<QuestionType, string> = {
-    open_text:   "#00D4FF",
-    player_pick: "#fbbf24",
-    team_pick:   "#00FF88",
-  };
-
   const resolveQuestion = questions.find(q => q.id === resolveId);
 
   return (
@@ -170,8 +235,55 @@ export function BonusQuestionsAdmin({ groupId }: BonusQuestionsAdminProps) {
         <span className="font-display text-xl uppercase tracking-tight text-white">Bonus Questions</span>
       </div>
 
-      {/* Create form */}
-      <div className="rounded-xl p-4 mb-5 space-y-3" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
+      {/* ── Suggestions library ── */}
+      <div className="mb-4 space-y-4">
+        {SUGGESTIONS.map(cat => (
+          <div key={cat.category}>
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-base leading-none">{cat.icon}</span>
+              <span className="text-[11px] font-black uppercase tracking-widest" style={{ color: cat.color }}>
+                {cat.category}
+              </span>
+            </div>
+            <div className="flex flex-col gap-1.5">
+              {cat.questions.map(s => (
+                <button
+                  key={s.question}
+                  type="button"
+                  onClick={() => applySuggestion(s)}
+                  className="w-full text-left rounded-xl px-3.5 py-2.5 transition-all group"
+                  style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = `${cat.color}08`; (e.currentTarget as HTMLElement).style.borderColor = `${cat.color}30`; }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.03)"; (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.07)"; }}
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-sm text-white leading-snug">{s.question}</span>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <span className="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded-full"
+                        style={{ background: `${TYPE_COLORS[s.question_type]}12`, color: TYPE_COLORS[s.question_type], border: `1px solid ${TYPE_COLORS[s.question_type]}25` }}>
+                        {TYPE_LABELS[s.question_type]}
+                      </span>
+                      <span className="text-[10px] font-bold" style={{ color: "#00D4FF" }}>{s.points_awarded}pt</span>
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* ── Divider ── */}
+      <div className="flex items-center gap-3 mb-4">
+        <div className="flex-1 h-px" style={{ background: "rgba(255,255,255,0.08)" }} />
+        <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.25)" }}>
+          Or write your own question ↓
+        </span>
+        <div className="flex-1 h-px" style={{ background: "rgba(255,255,255,0.08)" }} />
+      </div>
+
+      {/* ── Create form ── */}
+      <div id="bq-form" className="rounded-xl p-4 mb-5 space-y-3" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
         <div className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.35)" }}>
           Add Question
         </div>
@@ -187,11 +299,11 @@ export function BonusQuestionsAdmin({ groupId }: BonusQuestionsAdminProps) {
           onBlur={e => { e.target.style.borderColor = "rgba(255,255,255,0.12)"; }}
         />
 
-        <div className="grid grid-cols-3 gap-2">
-          {(["open_text", "player_pick", "team_pick"] as QuestionType[]).map(t => (
+        <div className="grid grid-cols-4 gap-2">
+          {(["open_text", "player_pick", "team_pick", "number"] as QuestionType[]).map(t => (
             <button key={t} type="button"
               onClick={() => setNewQ(q => ({ ...q, question_type: t }))}
-              className="py-2 px-3 rounded-xl text-xs font-bold transition-all"
+              className="py-2 px-2 rounded-xl text-[11px] font-bold transition-all"
               style={newQ.question_type === t
                 ? { background: `${TYPE_COLORS[t]}18`, border: `1px solid ${TYPE_COLORS[t]}40`, color: TYPE_COLORS[t] }
                 : { background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.4)" }}>
@@ -251,12 +363,12 @@ export function BonusQuestionsAdmin({ groupId }: BonusQuestionsAdminProps) {
             className="w-full"
             leftIcon={<Plus size={14} />}
           >
-            Add Another
+            Add Question
           </Button>
         )}
       </div>
 
-      {/* Question list */}
+      {/* ── Question list ── */}
       {loading ? (
         <div className="text-sm text-center py-4" style={{ color: "rgba(255,255,255,0.3)" }}>Loading…</div>
       ) : questions.length === 0 ? (
@@ -311,7 +423,7 @@ export function BonusQuestionsAdmin({ groupId }: BonusQuestionsAdminProps) {
         </div>
       )}
 
-      {/* Resolve modal */}
+      {/* ── Resolve modal ── */}
       {resolveId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4"
           style={{ background: "rgba(0,0,0,0.7)", backdropFilter: "blur(4px)" }}>
@@ -342,6 +454,17 @@ export function BonusQuestionsAdmin({ groupId }: BonusQuestionsAdminProps) {
                   <TeamSelect value={resolveAnswer} onChange={setResolveAnswer} />
                 ) : resolveQuestion?.question_type === "player_pick" ? (
                   <PlayerSelect value={resolveAnswer} onChange={setResolveAnswer} />
+                ) : resolveQuestion?.question_type === "number" ? (
+                  <input
+                    type="number" min={0} max={9999}
+                    value={resolveAnswer}
+                    onChange={e => setResolveAnswer(e.target.value)}
+                    placeholder="Enter correct number…"
+                    className="w-full rounded-xl px-4 py-3 text-sm outline-none"
+                    style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", color: "#fff" }}
+                    onFocus={e => { e.target.style.borderColor = "rgba(245,158,11,0.5)"; }}
+                    onBlur={e => { e.target.style.borderColor = "rgba(255,255,255,0.12)"; }}
+                  />
                 ) : (
                   <input
                     type="text"

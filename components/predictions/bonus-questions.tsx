@@ -7,7 +7,7 @@ import { ALL_COUNTRIES } from "@/lib/countries";
 import { cn } from "@/lib/utils";
 import { FOCUS_RING } from "@/lib/a11y";
 
-type QuestionType = "open_text" | "player_pick" | "team_pick";
+type QuestionType = "open_text" | "player_pick" | "team_pick" | "number";
 
 interface BonusQuestion {
   id: string;
@@ -311,6 +311,19 @@ export function BonusQuestions({ groupId, userId }: BonusQuestionsProps) {
                 )}
                 {q.question_type === "player_pick" && (
                   <BonusPlayerPicker value={currentAnswer} onSelect={v => updateAnswer(q.id, v)} isLocked={isLocked} />
+                )}
+                {q.question_type === "number" && (
+                  <input
+                    type="number" min={0} max={999}
+                    value={currentAnswer}
+                    onChange={e => updateAnswer(q.id, e.target.value)}
+                    placeholder="Enter a number…"
+                    disabled={isLocked}
+                    className="w-full rounded-xl px-4 py-3 text-sm outline-none disabled:opacity-40"
+                    style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", color: "#fff" }}
+                    onFocus={e => { e.target.style.borderColor = "rgba(245,158,11,0.5)"; }}
+                    onBlur={e => { e.target.style.borderColor = "rgba(255,255,255,0.12)"; }}
+                  />
                 )}
                 {q.question_type === "open_text" && (
                   <input
