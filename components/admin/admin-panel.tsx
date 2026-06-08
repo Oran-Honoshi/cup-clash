@@ -208,6 +208,10 @@ export function AdminPanel({ group, initialMembers, isOwner, currentUserId }: Ad
         </div>
 
         {/* Member list */}
+        {/* DEBUG */ }
+        <div className="text-[10px] font-mono mb-2 px-1" style={{ color: "#f59e0b" }}>
+          DEBUG — isOwner: {String(isOwner)} | currentUserId: {currentUserId.slice(0, 8)}… | members: {members.length}
+        </div>
         <div className="space-y-1">
           {members.map(m => {
             const memberRole: MemberRole = m.role ?? 'member';
@@ -221,6 +225,10 @@ export function AdminPanel({ group, initialMembers, isOwner, currentUserId }: Ad
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-1.5 min-w-0">
                   <span className="text-sm font-bold truncate text-white">{m.name}</span>
+                  {/* DEBUG */}
+                  <span className="text-[10px] font-mono shrink-0" style={{ color: "#f59e0b" }}>
+                    [{m.role ?? "undefined"} | sameUser:{String(m.id === currentUserId)} | canManage:{String(canManageRole)}]
+                  </span>
                   {isThisOwner && (
                     <span className="flex items-center gap-0.5 text-[10px] font-black uppercase px-1.5 py-0.5 rounded-full shrink-0"
                       style={{ background: "rgba(251,191,36,0.12)", color: "#fbbf24", border: "1px solid rgba(251,191,36,0.25)" }}>
