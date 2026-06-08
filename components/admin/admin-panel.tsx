@@ -55,6 +55,7 @@ export function AdminPanel({ group, initialMembers }: AdminPanelProps) {
   const [showTransferConfirm, setShowTransferConfirm] = useState(false);
   const [transferring,    setTransferring]    = useState(false);
   const [transferError,   setTransferError]   = useState<string | null>(null);
+  const [copiedTransfer,  setCopiedTransfer]  = useState(false);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -393,9 +394,22 @@ export function AdminPanel({ group, initialMembers }: AdminPanelProps) {
           <UserCog size={16} style={{ color: "#fbbf24" }} />
           <span className="font-display text-lg uppercase tracking-tight" style={{ color: "#fbbf24" }}>Transfer Admin Role</span>
         </div>
-        <p className="text-sm mb-4" style={{ color: "rgba(255,255,255,0.4)" }}>
+        <p className="text-sm mb-3" style={{ color: "rgba(255,255,255,0.4)" }}>
           This will make another member the admin. You will become a regular member.
         </p>
+
+        <div className="rounded-xl px-4 py-3 mb-4" style={{ background: "rgba(251,191,36,0.06)", border: "1px solid rgba(251,191,36,0.15)" }}>
+          <p className="text-xs mb-2" style={{ color: "rgba(255,255,255,0.5)" }}>
+            To transfer admin role, the new admin must first join the group using the invite link.
+          </p>
+          <button
+            onClick={() => { navigator.clipboard.writeText(inviteUrl); setCopiedTransfer(true); setTimeout(() => setCopiedTransfer(false), 2000); }}
+            className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider transition-all"
+            style={{ color: "#fbbf24", background: "none", border: "none", cursor: "pointer", padding: 0 }}>
+            {copiedTransfer ? <Check size={12} /> : <Copy size={12} />}
+            {copiedTransfer ? "Copied!" : "Copy Invite Link"}
+          </button>
+        </div>
 
         {members.filter(m => m.id !== group.admin).length === 0 ? (
           <div className="text-sm" style={{ color: "rgba(255,255,255,0.3)" }}>No other members yet. Invite members to join first, then you can transfer admin role.</div>

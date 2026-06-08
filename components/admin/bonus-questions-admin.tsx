@@ -1,17 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { HelpCircle, Plus, Trash2, CheckCircle, Clock, Search, ChevronDown, ChevronUp } from "lucide-react";
-import { createClient as createSupabaseClient } from "@supabase/supabase-js";
+import { HelpCircle, Plus, Trash2, CheckCircle, Clock, Search } from "lucide-react";
+import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { ALL_COUNTRIES } from "@/lib/countries";
-
-function getClient() {
-  return createSupabaseClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
-}
 
 type QuestionType = "open_text" | "player_pick" | "team_pick";
 
@@ -54,6 +47,7 @@ export function BonusQuestionsAdmin({ groupId }: BonusQuestionsAdminProps) {
   const [resolving,    setResolving]    = useState(false);
   const [resolveResult, setResolveResult] = useState<{ correctCount: number; totalAnswers: number; pointsAwarded: number } | null>(null);
   const [savedConfirm, setSavedConfirm] = useState(false);
+  const [saveError,    setSaveError]    = useState<string | null>(null);
   const [newQ, setNewQ] = useState({
     question:       "",
     question_type:  "open_text" as QuestionType,
@@ -63,7 +57,7 @@ export function BonusQuestionsAdmin({ groupId }: BonusQuestionsAdminProps) {
 
   const loadQuestions = async () => {
     setLoading(true);
-    const sb = getClient();
+    const sb = createClient();
     const { data } = await sb
       .from("bonus_questions")
       .select("id, question, question_type, points_awarded, correct_answer, is_resolved, lock_at, display_order")
@@ -96,8 +90,11 @@ export function BonusQuestionsAdmin({ groupId }: BonusQuestionsAdminProps) {
 
   const addQuestion = async () => {
     if (!newQ.question.trim()) return;
+    console.log("Saving question:", { question: newQ.question, type: newQ.question_type, points: newQ.points_awarded });
+    console.log("Group ID:", groupId);
     setAdding(true);
-    const sb = getClient();
+    setSaveError(null);
+    const sb = createClient();
     const { error } = await sb.from("bonus_questions").insert({
       group_id:       groupId,
       question:       newQ.question.trim(),
@@ -107,7 +104,11 @@ export function BonusQuestionsAdmin({ groupId }: BonusQuestionsAdminProps) {
       display_order:  questions.length,
     } as Record<string, unknown>);
 
-    if (!error) {
+    console.log("Save result:", { error: error?.message ?? "ok" });
+
+    if (error) {
+      setSaveError(error.message);
+    } else {
       setNewQ({ question: "", question_type: "open_text", points_awarded: 10, lock_at: "" });
       setSavedConfirm(true);
       setTimeout(() => setSavedConfirm(false), 1500);
@@ -117,7 +118,7 @@ export function BonusQuestionsAdmin({ groupId }: BonusQuestionsAdminProps) {
   };
 
   const deleteQuestion = async (id: string) => {
-    const sb = getClient();
+    const sb = createClient();
     await sb.from("bonus_questions").delete().eq("id", id);
     setQuestions(prev => prev.filter(q => q.id !== id));
   };
@@ -131,7 +132,7 @@ export function BonusQuestionsAdmin({ groupId }: BonusQuestionsAdminProps) {
   const submitResolve = async () => {
     if (!resolveId || !resolveAnswer.trim()) return;
     setResolving(true);
-    const sb = getClient();
+    const sb = createClient();
     const { data: { session } } = await sb.auth.getSession();
     const token = session?.access_token ?? "";
 
@@ -225,6 +226,12 @@ export function BonusQuestionsAdmin({ groupId }: BonusQuestionsAdminProps) {
             />
           </div>
         </div>
+
+        {saveError && (
+          <div className="w-full py-2 rounded-xl text-xs font-bold text-center" style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.25)", color: "#f87171" }}>
+            ❌ {saveError}
+          </div>
+        )}
 
         {savedConfirm ? (
           <div className="w-full py-2.5 rounded-xl text-sm font-bold text-center" style={{ background: "rgba(0,255,136,0.08)", border: "1px solid rgba(0,255,136,0.25)", color: "#00FF88" }}>
