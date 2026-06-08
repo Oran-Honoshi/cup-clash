@@ -4,7 +4,6 @@ export async function registerServiceWorker() {
   if (typeof window === "undefined" || !("serviceWorker" in navigator)) return null;
   try {
     const reg = await navigator.serviceWorker.register("/sw.js", { scope: "/" });
-    console.log("SW registered:", reg.scope);
     return reg;
   } catch (e) {
     console.warn("SW registration failed:", e);

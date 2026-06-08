@@ -39,7 +39,7 @@ export function NudgeButton({
     `${urgency} ${memberName}!\n\n` +
     `You haven't predicted the score for *${matchLabel}* yet.\n\n` +
     `Predictions lock in *${timeLeft}* — don't miss out on points!\n\n` +
-    `👉 Open Cup Clash now: ${typeof window !== "undefined" ? window.location.origin : "https://cupclash.com"}/predictions\n\n` +
+    `👉 Open Cup Clash now: ${typeof window !== "undefined" ? window.location.origin : "https://cupclash.live"}/predictions\n\n` +
     `— Your ${groupName} admin`
   );
 

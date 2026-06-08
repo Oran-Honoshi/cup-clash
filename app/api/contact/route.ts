@@ -16,7 +16,6 @@ export async function POST(request: NextRequest) {
     }
 
     if (!process.env.RESEND_API_KEY) {
-      console.log("Enterprise contact:", body);
       return NextResponse.json({ success: true });
     }
 

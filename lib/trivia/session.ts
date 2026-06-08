@@ -130,6 +130,6 @@ export function generateShareText(session: TriviaSession, groupName: string): st
     `🏆 Cup Clash Trivia — ${groupName}`,
     `${session.correctCount}/${session.questions.length} correct`,
     emojis,
-    `cupclash.com`,
+    `cupclash.live`,
   ].join("\n");
 }

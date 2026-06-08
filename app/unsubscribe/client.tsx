@@ -39,7 +39,7 @@ export function UnsubscribeClient() {
               You can still sign in and use Cup Clash — this only stops group invite emails from admins.
             </p>
             <a href="/" className="inline-block text-xs text-pitch-500 hover:text-white transition-colors">
-              Back to cupclash.com →
+              Back to cupclash.live →
             </a>
           </>
         )}
