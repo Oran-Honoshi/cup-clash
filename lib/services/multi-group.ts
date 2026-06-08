@@ -46,26 +46,41 @@ export async function getUserGroups(userId: string): Promise<UserGroupSummary[]>
       .select("*", { count: "exact", head: true })
       .eq("group_id", g.id);
 
-    // Get user's points in this group
+    // Get user's prediction points in this group
     const { data: pts } = await sb()
       .from("group_predictions")
       .select("points_earned")
       .eq("group_id", g.id)
       .eq("user_id", userId);
 
-    const userPoints = (pts ?? []).reduce(
-      (s: number, p: { points_earned: number }) => s + (p.points_earned ?? 0), 0
-    );
+    // Get user's bonus question points
+    const { data: bonusPts } = await sb()
+      .from("bonus_answers")
+      .select("points_earned")
+      .eq("group_id", g.id)
+      .eq("user_id", userId);
 
-    // Get all members' points to calculate rank
+    const userPoints =
+      (pts ?? []).reduce((s: number, p: { points_earned: number }) => s + (p.points_earned ?? 0), 0) +
+      (bonusPts ?? []).reduce((s: number, b: { points_earned: number }) => s + (b.points_earned ?? 0), 0);
+
+    // Get all members' points (predictions + bonus) to calculate rank
     const { data: allPts } = await sb()
       .from("group_predictions")
+      .select("user_id, points_earned")
+      .eq("group_id", g.id);
+
+    const { data: allBonusPts } = await sb()
+      .from("bonus_answers")
       .select("user_id, points_earned")
       .eq("group_id", g.id);
 
     const totals: Record<string, number> = {};
     (allPts ?? []).forEach((p: { user_id: string; points_earned: number }) => {
       totals[p.user_id] = (totals[p.user_id] ?? 0) + (p.points_earned ?? 0);
+    });
+    (allBonusPts ?? []).forEach((b: { user_id: string; points_earned: number }) => {
+      totals[b.user_id] = (totals[b.user_id] ?? 0) + (b.points_earned ?? 0);
     });
     const sorted = Object.values(totals).sort((a, b) => b - a);
     const rank   = sorted.findIndex(p => p <= userPoints) + 1;

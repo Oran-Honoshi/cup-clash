@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { HelpCircle, Plus, Trash2, CheckCircle, Clock, Search } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { HelpCircle, Plus, Trash2, CheckCircle, Clock, Search, Users, User, Hash, MessageSquare, ChevronDown } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { ALL_COUNTRIES } from "@/lib/countries";
@@ -26,10 +26,9 @@ interface SuggestedQuestion {
   points_awarded: number;
 }
 
-const SUGGESTIONS: { category: string; icon: string; color: string; questions: SuggestedQuestion[] }[] = [
+const SUGGESTIONS: { category: string; color: string; questions: SuggestedQuestion[] }[] = [
   {
     category: "Team Questions",
-    icon: "🌍",
     color: "#00FF88",
     questions: [
       { question: "Which team will reach the Final without winning their group?", question_type: "team_pick", points_awarded: 8 },
@@ -43,7 +42,6 @@ const SUGGESTIONS: { category: string; icon: string; color: string; questions: S
   },
   {
     category: "Player Questions",
-    icon: "👤",
     color: "#fbbf24",
     questions: [
       { question: "Who will score the first goal of the tournament?",   question_type: "player_pick", points_awarded: 8 },
@@ -57,7 +55,6 @@ const SUGGESTIONS: { category: string; icon: string; color: string; questions: S
   },
   {
     category: "Number Questions",
-    icon: "🔢",
     color: "#f59e0b",
     questions: [
       { question: "How many total goals will be scored in the tournament?", question_type: "number", points_awarded: 6 },
@@ -72,7 +69,6 @@ const SUGGESTIONS: { category: string; icon: string; color: string; questions: S
   },
   {
     category: "Open Questions",
-    icon: "💬",
     color: "#00D4FF",
     questions: [
       { question: "Which match will have the most goals?",                               question_type: "open_text", points_awarded: 5 },
@@ -115,6 +111,13 @@ interface BonusQuestionsAdminProps {
   groupId: string;
 }
 
+const CATEGORY_ICONS: Record<string, React.ReactNode> = {
+  "Team Questions":   <Users size={13} />,
+  "Player Questions": <User size={13} />,
+  "Number Questions": <Hash size={13} />,
+  "Open Questions":   <MessageSquare size={13} />,
+};
+
 export function BonusQuestionsAdmin({ groupId }: BonusQuestionsAdminProps) {
   const [questions,     setQuestions]     = useState<BonusQuestion[]>([]);
   const [loading,       setLoading]       = useState(true);
@@ -125,6 +128,7 @@ export function BonusQuestionsAdmin({ groupId }: BonusQuestionsAdminProps) {
   const [resolveResult, setResolveResult] = useState<{ correctCount: number; totalAnswers: number; pointsAwarded: number } | null>(null);
   const [savedConfirm,  setSavedConfirm]  = useState(false);
   const [saveError,     setSaveError]     = useState<string | null>(null);
+  const [suggOpen,      setSuggOpen]      = useState(false);
   const [newQ, setNewQ] = useState({
     question:       "",
     question_type:  "open_text" as QuestionType,
@@ -235,42 +239,52 @@ export function BonusQuestionsAdmin({ groupId }: BonusQuestionsAdminProps) {
         <span className="font-display text-xl uppercase tracking-tight text-white">Bonus Questions</span>
       </div>
 
-      {/* ── Suggestions library ── */}
-      <div className="mb-4 space-y-4">
-        {SUGGESTIONS.map(cat => (
-          <div key={cat.category}>
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-base leading-none">{cat.icon}</span>
-              <span className="text-[11px] font-black uppercase tracking-widest" style={{ color: cat.color }}>
-                {cat.category}
-              </span>
-            </div>
-            <div className="flex flex-col gap-1.5">
-              {cat.questions.map(s => (
-                <button
-                  key={s.question}
-                  type="button"
-                  onClick={() => applySuggestion(s)}
-                  className="w-full text-left rounded-xl px-3.5 py-2.5 transition-all group"
-                  style={{ background: "rgba(255,255,255,0.03)", border: "1px solid rgba(255,255,255,0.07)" }}
-                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = `${cat.color}08`; (e.currentTarget as HTMLElement).style.borderColor = `${cat.color}30`; }}
-                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.03)"; (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.07)"; }}
-                >
-                  <div className="flex items-center justify-between gap-3">
-                    <span className="text-sm text-white leading-snug">{s.question}</span>
-                    <div className="flex items-center gap-1.5 shrink-0">
-                      <span className="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded-full"
-                        style={{ background: `${TYPE_COLORS[s.question_type]}12`, color: TYPE_COLORS[s.question_type], border: `1px solid ${TYPE_COLORS[s.question_type]}25` }}>
-                        {TYPE_LABELS[s.question_type]}
-                      </span>
-                      <span className="text-[10px] font-bold" style={{ color: "#00D4FF" }}>{s.points_awarded}pt</span>
+      {/* ── Suggestions dropdown ── */}
+      <div className="mb-4 relative">
+        <button
+          type="button"
+          onClick={() => setSuggOpen(o => !o)}
+          className="w-full flex items-center justify-between px-4 py-3 rounded-xl text-sm transition-all"
+          style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.6)" }}>
+          <span className="font-bold">Pick from suggested questions…</span>
+          <ChevronDown size={14} style={{ transform: suggOpen ? "rotate(180deg)" : "none", transition: "transform 0.15s" }} />
+        </button>
+
+        {suggOpen && (
+          <div className="mt-1 rounded-xl overflow-hidden"
+            style={{ background: "rgba(11,20,27,0.98)", border: "1px solid rgba(255,255,255,0.1)", boxShadow: "0 8px 32px rgba(0,0,0,0.5)" }}>
+            {SUGGESTIONS.map(cat => (
+              <div key={cat.category}>
+                <div className="flex items-center gap-2 px-4 py-2 sticky top-0"
+                  style={{ background: "rgba(11,20,27,0.95)", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+                  <span style={{ color: cat.color }}>{CATEGORY_ICONS[cat.category]}</span>
+                  <span className="text-[10px] font-black uppercase tracking-widest" style={{ color: cat.color }}>
+                    {cat.category}
+                  </span>
+                </div>
+                {cat.questions.map(s => (
+                  <button
+                    key={s.question}
+                    type="button"
+                    onClick={() => { applySuggestion(s); setSuggOpen(false); }}
+                    className="w-full text-left px-4 py-2.5 transition-colors hover:bg-white/5 border-b last:border-0"
+                    style={{ borderColor: "rgba(255,255,255,0.04)" }}>
+                    <div className="flex items-center justify-between gap-3">
+                      <span className="text-sm leading-snug" style={{ color: "rgba(255,255,255,0.85)" }}>{s.question}</span>
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <span className="text-[10px] font-bold uppercase px-1.5 py-0.5 rounded-full"
+                          style={{ background: `${TYPE_COLORS[s.question_type]}12`, color: TYPE_COLORS[s.question_type], border: `1px solid ${TYPE_COLORS[s.question_type]}25` }}>
+                          {TYPE_LABELS[s.question_type]}
+                        </span>
+                        <span className="text-[10px] font-bold" style={{ color: "#00D4FF" }}>{s.points_awarded}pt</span>
+                      </div>
                     </div>
-                  </div>
-                </button>
-              ))}
-            </div>
+                  </button>
+                ))}
+              </div>
+            ))}
           </div>
-        ))}
+        )}
       </div>
 
       {/* ── Divider ── */}

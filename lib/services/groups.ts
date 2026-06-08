@@ -111,7 +111,17 @@ export async function getMembers(groupId: string): Promise<Member[]> {
 
   const pointsMap: Record<string, number> = {};
   (pts ?? []).forEach((p: { user_id: string; points_earned: number }) => {
-    pointsMap[p.user_id] = (pointsMap[p.user_id] ?? 0) + p.points_earned;
+    pointsMap[p.user_id] = (pointsMap[p.user_id] ?? 0) + (p.points_earned ?? 0);
+  });
+
+  // Add bonus question points
+  const { data: bonusPts } = await sbAdmin()
+    .from("bonus_answers")
+    .select("user_id, points_earned")
+    .eq("group_id", groupId);
+
+  (bonusPts ?? []).forEach((b: { user_id: string; points_earned: number }) => {
+    pointsMap[b.user_id] = (pointsMap[b.user_id] ?? 0) + (b.points_earned ?? 0);
   });
 
   return (data as unknown as Array<{

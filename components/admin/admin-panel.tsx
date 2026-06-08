@@ -125,10 +125,14 @@ export function AdminPanel({ group, initialMembers, isOwner, currentUserId }: Ad
 
   const savePaymentLink = async () => {
     setSavingLink(true);
-    if (process.env.NEXT_PUBLIC_SUPABASE_URL) {
-      const sb = createClient();
-      await sb.from("groups").update({ payment_link: paymentLinkEdit.trim() || null } as Record<string, string | null>).eq("id", group.id);
-    }
+    const sb = createClient();
+    const { data: { session } } = await sb.auth.getSession();
+    const token = session?.access_token ?? "";
+    await fetch("/api/admin/save-group-setting", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+      body: JSON.stringify({ groupId: group.id, field: "payment_link", value: paymentLinkEdit.trim() || null }),
+    });
     setSavingLink(false); setLinkSaved(true); setEditingLink(false);
     setTimeout(() => setLinkSaved(false), 2500);
   };
@@ -233,25 +237,25 @@ export function AdminPanel({ group, initialMembers, isOwner, currentUserId }: Ad
                 <div className="text-[11px]" style={{ color: "rgba(255,255,255,0.3)" }}>{m.country}</div>
               </div>
               {canManageRole && (
-                <div className="relative shrink-0">
+                <div className="relative shrink-0" onClick={e => e.stopPropagation()}>
                   <button
-                    onClick={() => setOpenRoleMenu(openRoleMenu === m.id ? null : m.id)}
+                    onClick={e => { e.stopPropagation(); setOpenRoleMenu(openRoleMenu === m.id ? null : m.id); }}
                     disabled={roleUpdating === m.id}
                     className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-1.5 rounded-lg transition-all"
                     style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.4)" }}>
-                    {roleUpdating === m.id ? "…" : <><ChevronDown size={10} /></>}
+                    {roleUpdating === m.id ? "…" : <ChevronDown size={10} />}
                   </button>
                   {openRoleMenu === m.id && (
-                    <div className="absolute right-0 top-full mt-1 z-20 rounded-xl overflow-hidden min-w-[140px]"
+                    <div className="absolute right-0 top-full mt-1 z-[200] rounded-xl overflow-hidden min-w-[140px]"
                       style={{ background: "rgba(18,14,38,0.98)", border: "1px solid rgba(255,255,255,0.12)", boxShadow: "0 8px 32px rgba(0,0,0,0.5)" }}>
                       {isThisAdmin ? (
-                        <button onClick={() => setMemberRole(m.id, 'member')}
+                        <button onClick={e => { e.stopPropagation(); setMemberRole(m.id, 'member'); }}
                           className="w-full text-left px-3 py-2.5 text-xs font-bold flex items-center gap-2 transition-colors hover:bg-white/5"
                           style={{ color: "#f87171" }}>
                           <Shield size={12} /> Remove Admin
                         </button>
                       ) : (
-                        <button onClick={() => setMemberRole(m.id, 'admin')}
+                        <button onClick={e => { e.stopPropagation(); setMemberRole(m.id, 'admin'); }}
                           className="w-full text-left px-3 py-2.5 text-xs font-bold flex items-center gap-2 transition-colors hover:bg-white/5"
                           style={{ color: "#00D4FF" }}>
                           <Shield size={12} /> Make Co-Admin
