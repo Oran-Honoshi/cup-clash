@@ -32,7 +32,19 @@ export default async function AdminGroupPage({ params }: { params: { groupId: st
     .single();
 
   if (!groupCheck) redirect("/groups");
-  if ((groupCheck as { admin_id: string }).admin_id !== userProfile.id) redirect("/dashboard");
+
+  const isOwner = (groupCheck as { admin_id: string }).admin_id === userProfile.id;
+  if (!isOwner) {
+    // Allow co-admins
+    const { data: membership } = await sbAdmin()
+      .from("group_members")
+      .select("role")
+      .eq("group_id", params.groupId)
+      .eq("user_id", userProfile.id)
+      .maybeSingle();
+    const memberRole = (membership as { role: string } | null)?.role;
+    if (memberRole !== "admin" && memberRole !== "owner") redirect("/dashboard");
+  }
 
   const groupId = params.groupId;
   const [group, members] = await Promise.all([
@@ -62,7 +74,7 @@ export default async function AdminGroupPage({ params }: { params: { groupId: st
       </div>
 
       {/* Member management */}
-      <AdminPanel group={group} initialMembers={members} />
+      <AdminPanel group={group} initialMembers={members} isOwner={isOwner} currentUserId={userProfile.id} />
 
       {/* Group settings: buy-in, prize split */}
       <GroupRulesEditor

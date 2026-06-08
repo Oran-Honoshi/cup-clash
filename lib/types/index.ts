@@ -48,6 +48,7 @@ export interface Member {
   canPredict?:         boolean;
   stakePaid?:          boolean;
   joinedAt?:           string;
+  role?:               'member' | 'admin' | 'owner';
 }
 
 export interface Match {

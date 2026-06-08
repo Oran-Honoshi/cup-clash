@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Users, Trophy, Copy, Check, RefreshCw, CheckCircle, XCircle, Link2, Trash2, UserCog } from "lucide-react";
+import { Users, Trophy, Copy, Check, RefreshCw, CheckCircle, XCircle, Link2, Trash2, UserCog, Shield, Crown, ChevronDown } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { MemberAvatar } from "@/components/ui/member-avatar";
@@ -12,9 +12,13 @@ import { cn } from "@/lib/utils";
 import type { Group, Member } from "@/lib/types";
 import { useLocale } from "@/components/i18n/locale-provider";
 
+type MemberRole = 'member' | 'admin' | 'owner';
+
 interface AdminPanelProps {
   group:          Group;
   initialMembers: Member[];
+  isOwner:        boolean;
+  currentUserId:  string;
 }
 
 const glass = {
@@ -24,7 +28,7 @@ const glass = {
   border: "1px solid rgba(255,255,255,0.14)",
 } as const;
 
-export function AdminPanel({ group, initialMembers }: AdminPanelProps) {
+export function AdminPanel({ group, initialMembers, isOwner, currentUserId }: AdminPanelProps) {
   const router = useRouter();
   const { t } = useLocale();
   const [members,      setMembers]      = useState<Member[]>(initialMembers);
@@ -49,12 +53,21 @@ export function AdminPanel({ group, initialMembers }: AdminPanelProps) {
   const [transferring,    setTransferring]    = useState(false);
   const [transferError,   setTransferError]   = useState<string | null>(null);
   const [copiedTransfer,  setCopiedTransfer]  = useState(false);
+  const [roleUpdating,    setRoleUpdating]    = useState<string | null>(null);
+  const [openRoleMenu,    setOpenRoleMenu]    = useState<string | null>(null);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
       setInviteUrl(`${window.location.origin}/join/${group.passkey}`);
     }
   }, [group.passkey]);
+
+  useEffect(() => {
+    if (!openRoleMenu) return;
+    const close = () => setOpenRoleMenu(null);
+    document.addEventListener("click", close);
+    return () => document.removeEventListener("click", close);
+  }, [openRoleMenu]);
 
   const paidCount    = members.filter(m => m.paid).length;
   const totalPot     = members.length * group.buyInAmount;
@@ -71,6 +84,21 @@ export function AdminPanel({ group, initialMembers }: AdminPanelProps) {
     await sb.from("group_members")
       .update({ paid: !currentPaid } as Record<string, boolean>)
       .eq("user_id", memberId).eq("group_id", group.id);
+  };
+
+  const setMemberRole = async (memberId: string, role: MemberRole) => {
+    setRoleUpdating(memberId);
+    setOpenRoleMenu(null);
+    const sb = createClient();
+    const { data: { session } } = await sb.auth.getSession();
+    const token = session?.access_token ?? "";
+    await fetch("/api/admin/set-role", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+      body: JSON.stringify({ groupId: group.id, targetUserId: memberId, role }),
+    });
+    setMembers(prev => prev.map(m => m.id === memberId ? { ...m, role } : m));
+    setRoleUpdating(null);
   };
 
   const savePayouts = async () => {
@@ -177,14 +205,62 @@ export function AdminPanel({ group, initialMembers }: AdminPanelProps) {
 
         {/* Member list */}
         <div className="space-y-1">
-          {members.map(m => (
+          {members.map(m => {
+            const memberRole: MemberRole = m.role ?? 'member';
+            const isThisOwner = memberRole === 'owner';
+            const isThisAdmin = memberRole === 'admin';
+            const canManageRole = isOwner && m.id !== currentUserId && !isThisOwner;
+            return (
             <div key={m.id} className="flex items-center gap-2 sm:gap-3 py-2.5 border-b last:border-0"
               style={{ borderColor: "rgba(255,255,255,0.06)" }}>
               <MemberAvatar name={m.name} avatarUrl={m.avatarUrl} size="sm" />
               <div className="flex-1 min-w-0">
-                <div className="text-sm font-bold truncate text-white">{m.name}</div>
+                <div className="flex items-center gap-1.5 min-w-0">
+                  <span className="text-sm font-bold truncate text-white">{m.name}</span>
+                  {isThisOwner && (
+                    <span className="flex items-center gap-0.5 text-[10px] font-black uppercase px-1.5 py-0.5 rounded-full shrink-0"
+                      style={{ background: "rgba(251,191,36,0.12)", color: "#fbbf24", border: "1px solid rgba(251,191,36,0.25)" }}>
+                      <Crown size={9} /> Owner
+                    </span>
+                  )}
+                  {isThisAdmin && (
+                    <span className="flex items-center gap-0.5 text-[10px] font-black uppercase px-1.5 py-0.5 rounded-full shrink-0"
+                      style={{ background: "rgba(0,212,255,0.1)", color: "#00D4FF", border: "1px solid rgba(0,212,255,0.2)" }}>
+                      <Shield size={9} /> Admin
+                    </span>
+                  )}
+                </div>
                 <div className="text-[11px]" style={{ color: "rgba(255,255,255,0.3)" }}>{m.country}</div>
               </div>
+              {canManageRole && (
+                <div className="relative shrink-0">
+                  <button
+                    onClick={() => setOpenRoleMenu(openRoleMenu === m.id ? null : m.id)}
+                    disabled={roleUpdating === m.id}
+                    className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-1.5 rounded-lg transition-all"
+                    style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.4)" }}>
+                    {roleUpdating === m.id ? "…" : <><ChevronDown size={10} /></>}
+                  </button>
+                  {openRoleMenu === m.id && (
+                    <div className="absolute right-0 top-full mt-1 z-20 rounded-xl overflow-hidden min-w-[140px]"
+                      style={{ background: "rgba(18,14,38,0.98)", border: "1px solid rgba(255,255,255,0.12)", boxShadow: "0 8px 32px rgba(0,0,0,0.5)" }}>
+                      {isThisAdmin ? (
+                        <button onClick={() => setMemberRole(m.id, 'member')}
+                          className="w-full text-left px-3 py-2.5 text-xs font-bold flex items-center gap-2 transition-colors hover:bg-white/5"
+                          style={{ color: "#f87171" }}>
+                          <Shield size={12} /> Remove Admin
+                        </button>
+                      ) : (
+                        <button onClick={() => setMemberRole(m.id, 'admin')}
+                          className="w-full text-left px-3 py-2.5 text-xs font-bold flex items-center gap-2 transition-colors hover:bg-white/5"
+                          style={{ color: "#00D4FF" }}>
+                          <Shield size={12} /> Make Co-Admin
+                        </button>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
               <div className="hidden sm:block">
                 <NudgeButton
                   memberName={m.name} matchLabel="Next match"
@@ -209,7 +285,8 @@ export function AdminPanel({ group, initialMembers }: AdminPanelProps) {
                   : <><XCircle size={12} /><span className="hidden sm:inline">Unpaid</span></>}
               </button>
             </div>
-          ))}
+            );
+          })}
         </div>
 
         {/* Total */}
@@ -381,8 +458,8 @@ export function AdminPanel({ group, initialMembers }: AdminPanelProps) {
       {/* Bonus Questions */}
       <BonusQuestionsAdmin groupId={group.id} />
 
-      {/* Transfer Admin Role */}
-      <div className="rounded-2xl p-5" style={{ ...glass, border: "1px solid rgba(251,191,36,0.2)" }}>
+      {/* Transfer Admin Role — owner only */}
+      {isOwner && <div className="rounded-2xl p-5" style={{ ...glass, border: "1px solid rgba(251,191,36,0.2)" }}>
         <div className="flex items-center gap-2.5 mb-3">
           <UserCog size={16} style={{ color: "#fbbf24" }} />
           <span className="font-display text-lg uppercase tracking-tight" style={{ color: "#fbbf24" }}>Transfer Admin Role</span>
@@ -431,9 +508,9 @@ export function AdminPanel({ group, initialMembers }: AdminPanelProps) {
             </button>
           </div>
         )}
-      </div>
+      </div>}
 
-      {showTransferConfirm && (
+      {isOwner && showTransferConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.7)", backdropFilter: "blur(4px)" }}>
           <div className="w-full max-w-sm rounded-2xl p-6 space-y-4" style={{ background: "rgba(18,14,38,0.98)", border: "1px solid rgba(251,191,36,0.3)" }}>
             <div className="flex items-center gap-3">
@@ -468,8 +545,8 @@ export function AdminPanel({ group, initialMembers }: AdminPanelProps) {
         </div>
       )}
 
-      {/* Danger zone */}
-      <div className="rounded-2xl p-5" style={{ ...glass, border: "1px solid rgba(239,68,68,0.2)" }}>
+      {/* Danger zone — owner only */}
+      {isOwner && <div className="rounded-2xl p-5" style={{ ...glass, border: "1px solid rgba(239,68,68,0.2)" }}>
         <div className="flex items-center gap-2.5 mb-3">
           <Trash2 size={16} style={{ color: "#f87171" }} />
           <span className="font-display text-lg uppercase tracking-tight" style={{ color: "#f87171" }}>{t("adm_danger")}</span>
@@ -483,9 +560,9 @@ export function AdminPanel({ group, initialMembers }: AdminPanelProps) {
           style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.25)", color: "#f87171" }}>
           <Trash2 size={14} /> {t("grp_delete")}
         </button>
-      </div>
+      </div>}
 
-      {showDeleteConfirm && (
+      {isOwner && showDeleteConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.7)", backdropFilter: "blur(4px)" }}>
           <div className="w-full max-w-sm rounded-2xl p-6 space-y-4" style={{ background: "rgba(18,14,38,0.98)", border: "1px solid rgba(239,68,68,0.3)" }}>
             <div className="flex items-center gap-3">

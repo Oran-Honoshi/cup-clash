@@ -40,11 +40,11 @@ async function getScoringRules(groupId: string) {
 async function getMembers(groupId: string) {
   const { data } = await sbAdmin()
     .from("group_members")
-    .select("user_id, payment_status, can_predict, paid, is_ad_free, profiles(name, country, avatar_url)")
+    .select("user_id, payment_status, can_predict, paid, is_ad_free, role, profiles(name, country, avatar_url)")
     .eq("group_id", groupId);
   return (data ?? []) as unknown as Array<{
     user_id: string; payment_status: string; can_predict: boolean;
-    paid: boolean; is_ad_free: boolean;
+    paid: boolean; is_ad_free: boolean; role: string;
     profiles: { name: string; country: string | null; avatar_url: string | null } | null;
   }>;
 }
@@ -61,8 +61,10 @@ export default async function GroupDetailPage({ params }: { params: { groupId: s
 
   if (!group) redirect("/groups");
 
-  const isAdmin  = group.admin_id === userProfile.id;
-  const isMember = members.some(m => m.user_id === userProfile.id);
+  const myMembership = members.find(m => m.user_id === userProfile.id);
+  const isAdmin  = group.admin_id === userProfile.id ||
+    myMembership?.role === "admin" || myMembership?.role === "owner";
+  const isMember = Boolean(myMembership);
 
   return (
     <GroupDetailClient

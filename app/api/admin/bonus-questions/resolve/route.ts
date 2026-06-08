@@ -57,8 +57,18 @@ export async function POST(req: NextRequest) {
     .eq("id", q.group_id)
     .single();
 
-  if (!group || (group as { admin_id: string }).admin_id !== user.id) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  const isOwner = (group as { admin_id: string } | null)?.admin_id === user.id;
+  if (!isOwner) {
+    const { data: membership } = await sb
+      .from("group_members")
+      .select("role")
+      .eq("group_id", q.group_id)
+      .eq("user_id", user.id)
+      .maybeSingle();
+    const role = (membership as { role: string } | null)?.role;
+    if (role !== "admin" && role !== "owner") {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
   }
 
   if (q.is_resolved) {

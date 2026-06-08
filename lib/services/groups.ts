@@ -96,7 +96,7 @@ export async function getMembers(groupId: string): Promise<Member[]> {
   const { data, error } = await sbAdmin()
     .from("group_members")
     .select(`
-      user_id, payment_status, can_predict, joined_at,
+      user_id, payment_status, can_predict, joined_at, role,
       profiles ( id, name, country, avatar_url )
     `)
     .eq("group_id", groupId);
@@ -119,6 +119,7 @@ export async function getMembers(groupId: string): Promise<Member[]> {
     payment_status: string;
     can_predict: boolean;
     joined_at: string;
+    role: 'member' | 'admin' | 'owner';
     profiles: { id: string; name: string; country: string | null; avatar_url: string | null } | null;
   }>)
     .filter(row => row.profiles !== null)
@@ -132,6 +133,7 @@ export async function getMembers(groupId: string): Promise<Member[]> {
       canPredict: row.can_predict,
       stakePaid:  false,
       joinedAt:   row.joined_at,
+      role:       row.role ?? 'member',
     }))
     .sort((a, b) => b.points - a.points);
 }
