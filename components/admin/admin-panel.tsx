@@ -209,7 +209,10 @@ export function AdminPanel({ group, initialMembers, isOwner, currentUserId }: Ad
             return (
             <div key={m.id} className="flex items-center gap-2 sm:gap-3 py-2.5 border-b last:border-0"
               style={{ borderColor: "rgba(255,255,255,0.06)" }}>
+              {/* Avatar */}
               <MemberAvatar name={m.name} avatarUrl={m.avatarUrl} size="sm" />
+
+              {/* Name + role badge — takes remaining space */}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-1.5 min-w-0">
                   <span className="text-sm font-bold truncate text-white">{m.name}</span>
@@ -228,26 +231,9 @@ export function AdminPanel({ group, initialMembers, isOwner, currentUserId }: Ad
                 </div>
                 <div className="text-[11px]" style={{ color: "rgba(255,255,255,0.3)" }}>{m.country}</div>
               </div>
-              {canManageRole && (
-                isThisAdmin ? (
-                  <button
-                    onClick={() => setMemberRole(m.id, 'member')}
-                    disabled={roleUpdating === m.id}
-                    className="shrink-0 text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full transition-all disabled:opacity-40"
-                    style={{ background: "rgba(248,113,113,0.1)", border: "1px solid rgba(248,113,113,0.25)", color: "#f87171" }}>
-                    {roleUpdating === m.id ? "…" : "Remove Admin"}
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => setMemberRole(m.id, 'admin')}
-                    disabled={roleUpdating === m.id}
-                    className="shrink-0 text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full transition-all disabled:opacity-40"
-                    style={{ background: "rgba(0,212,255,0.08)", border: "1px solid rgba(0,212,255,0.2)", color: "#00D4FF" }}>
-                    {roleUpdating === m.id ? "…" : "Make Admin"}
-                  </button>
-                )
-              )}
-              <div className="hidden sm:block">
+
+              {/* Nudge + amount + paid status — fixed right side */}
+              <div className="hidden sm:block shrink-0">
                 <NudgeButton
                   memberName={m.name} matchLabel="Next match"
                   groupName={group.name} minutesToKickoff={90}
@@ -270,6 +256,27 @@ export function AdminPanel({ group, initialMembers, isOwner, currentUserId }: Ad
                   ? <><CheckCircle size={12} /><span className="hidden sm:inline">Paid</span></>
                   : <><XCircle size={12} /><span className="hidden sm:inline">Unpaid</span></>}
               </button>
+
+              {/* Role management — rightmost, owner-only */}
+              {canManageRole && (
+                isThisAdmin ? (
+                  <button
+                    onClick={() => setMemberRole(m.id, 'member')}
+                    disabled={roleUpdating === m.id}
+                    className="shrink-0 text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full transition-all disabled:opacity-40"
+                    style={{ background: "rgba(248,113,113,0.1)", border: "1px solid rgba(248,113,113,0.25)", color: "#f87171" }}>
+                    {roleUpdating === m.id ? "…" : "Remove Admin"}
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => setMemberRole(m.id, 'admin')}
+                    disabled={roleUpdating === m.id}
+                    className="shrink-0 text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full transition-all disabled:opacity-40"
+                    style={{ background: "rgba(0,212,255,0.08)", border: "1px solid rgba(0,212,255,0.2)", color: "#00D4FF" }}>
+                    {roleUpdating === m.id ? "…" : "Make Admin"}
+                  </button>
+                )
+              )}
             </div>
             );
           })}
