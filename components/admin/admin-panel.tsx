@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Users, Trophy, Copy, Check, RefreshCw, CheckCircle, XCircle, Link2, Trash2, UserCog, Shield, Crown, ChevronDown } from "lucide-react";
+import { Users, Trophy, Copy, Check, RefreshCw, CheckCircle, XCircle, Link2, Trash2, UserCog, Shield, Crown } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { MemberAvatar } from "@/components/ui/member-avatar";
@@ -54,7 +54,6 @@ export function AdminPanel({ group, initialMembers, isOwner, currentUserId }: Ad
   const [transferError,   setTransferError]   = useState<string | null>(null);
   const [copiedTransfer,  setCopiedTransfer]  = useState(false);
   const [roleUpdating,    setRoleUpdating]    = useState<string | null>(null);
-  const [openRoleMenu,    setOpenRoleMenu]    = useState<string | null>(null);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -62,12 +61,6 @@ export function AdminPanel({ group, initialMembers, isOwner, currentUserId }: Ad
     }
   }, [group.passkey]);
 
-  useEffect(() => {
-    if (!openRoleMenu) return;
-    const close = () => setOpenRoleMenu(null);
-    document.addEventListener("click", close);
-    return () => document.removeEventListener("click", close);
-  }, [openRoleMenu]);
 
   const paidCount    = members.filter(m => m.paid).length;
   const totalPot     = members.length * group.buyInAmount;
@@ -88,7 +81,6 @@ export function AdminPanel({ group, initialMembers, isOwner, currentUserId }: Ad
 
   const setMemberRole = async (memberId: string, role: MemberRole) => {
     setRoleUpdating(memberId);
-    setOpenRoleMenu(null);
     const sb = createClient();
     const { data: { session } } = await sb.auth.getSession();
     const token = session?.access_token ?? "";
@@ -208,10 +200,6 @@ export function AdminPanel({ group, initialMembers, isOwner, currentUserId }: Ad
         </div>
 
         {/* Member list */}
-        {/* DEBUG */ }
-        <div className="text-[10px] font-mono mb-2 px-1" style={{ color: "#f59e0b" }}>
-          DEBUG — isOwner: {String(isOwner)} | currentUserId: {currentUserId.slice(0, 8)}… | members: {members.length}
-        </div>
         <div className="space-y-1">
           {members.map(m => {
             const memberRole: MemberRole = m.role ?? 'member';
@@ -225,10 +213,6 @@ export function AdminPanel({ group, initialMembers, isOwner, currentUserId }: Ad
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-1.5 min-w-0">
                   <span className="text-sm font-bold truncate text-white">{m.name}</span>
-                  {/* DEBUG */}
-                  <span className="text-[10px] font-mono shrink-0" style={{ color: "#f59e0b" }}>
-                    [{m.role ?? "undefined"} | sameUser:{String(m.id === currentUserId)} | canManage:{String(canManageRole)}]
-                  </span>
                   {isThisOwner && (
                     <span className="flex items-center gap-0.5 text-[10px] font-black uppercase px-1.5 py-0.5 rounded-full shrink-0"
                       style={{ background: "rgba(251,191,36,0.12)", color: "#fbbf24", border: "1px solid rgba(251,191,36,0.25)" }}>
@@ -245,33 +229,23 @@ export function AdminPanel({ group, initialMembers, isOwner, currentUserId }: Ad
                 <div className="text-[11px]" style={{ color: "rgba(255,255,255,0.3)" }}>{m.country}</div>
               </div>
               {canManageRole && (
-                <div className="relative shrink-0" onClick={e => e.stopPropagation()}>
+                isThisAdmin ? (
                   <button
-                    onClick={e => { e.stopPropagation(); setOpenRoleMenu(openRoleMenu === m.id ? null : m.id); }}
+                    onClick={() => setMemberRole(m.id, 'member')}
                     disabled={roleUpdating === m.id}
-                    className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-1.5 rounded-lg transition-all"
-                    style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.4)" }}>
-                    {roleUpdating === m.id ? "…" : <ChevronDown size={10} />}
+                    className="shrink-0 text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full transition-all disabled:opacity-40"
+                    style={{ background: "rgba(248,113,113,0.1)", border: "1px solid rgba(248,113,113,0.25)", color: "#f87171" }}>
+                    {roleUpdating === m.id ? "…" : "Remove Admin"}
                   </button>
-                  {openRoleMenu === m.id && (
-                    <div className="absolute right-0 top-full mt-1 z-[200] rounded-xl overflow-hidden min-w-[140px]"
-                      style={{ background: "rgba(18,14,38,0.98)", border: "1px solid rgba(255,255,255,0.12)", boxShadow: "0 8px 32px rgba(0,0,0,0.5)" }}>
-                      {isThisAdmin ? (
-                        <button onClick={e => { e.stopPropagation(); setMemberRole(m.id, 'member'); }}
-                          className="w-full text-left px-3 py-2.5 text-xs font-bold flex items-center gap-2 transition-colors hover:bg-white/5"
-                          style={{ color: "#f87171" }}>
-                          <Shield size={12} /> Remove Admin
-                        </button>
-                      ) : (
-                        <button onClick={e => { e.stopPropagation(); setMemberRole(m.id, 'admin'); }}
-                          className="w-full text-left px-3 py-2.5 text-xs font-bold flex items-center gap-2 transition-colors hover:bg-white/5"
-                          style={{ color: "#00D4FF" }}>
-                          <Shield size={12} /> Make Co-Admin
-                        </button>
-                      )}
-                    </div>
-                  )}
-                </div>
+                ) : (
+                  <button
+                    onClick={() => setMemberRole(m.id, 'admin')}
+                    disabled={roleUpdating === m.id}
+                    className="shrink-0 text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full transition-all disabled:opacity-40"
+                    style={{ background: "rgba(0,212,255,0.08)", border: "1px solid rgba(0,212,255,0.2)", color: "#00D4FF" }}>
+                    {roleUpdating === m.id ? "…" : "Make Admin"}
+                  </button>
+                )
               )}
               <div className="hidden sm:block">
                 <NudgeButton
