@@ -14,7 +14,7 @@ type Position = "GK" | "DEF" | "MID" | "FWD";
 interface DBPlayer {
   id:             string;
   full_name:      string;
-  team:           string;
+  country:        string;  // stored as 'country' in the players table
   position:       Position;
   photo:          string | null;
   api_player_id:  number | null;
@@ -89,9 +89,11 @@ export function PlayerPicker({
   useEffect(() => {
     const sb = createClient();
     sb.from("players")
-      .select("id, full_name, team, position, photo, api_player_id")
-      .order("team")
-      .then(({ data }) => {
+      .select("id, full_name, country, position, photo, api_player_id")
+      .order("country")
+      .then(({ data, error }) => {
+        if (error) console.error("[PlayerPicker] fetch error:", error.message);
+        console.log("[PlayerPicker] fetched", data?.length ?? 0, "players");
         setPlayers((data ?? []) as DBPlayer[]);
         setLoading(false);
       });
@@ -107,8 +109,8 @@ export function PlayerPicker({
   const grouped = useMemo(() => {
     const map = new Map<string, DBPlayer[]>();
     for (const p of eligible) {
-      if (!map.has(p.team)) map.set(p.team, []);
-      map.get(p.team)!.push(p);
+      if (!map.has(p.country)) map.set(p.country, []);
+      map.get(p.country)!.push(p);
     }
     // Sort players within each team by position order then name
     for (const [, list] of map) {
@@ -180,9 +182,9 @@ export function PlayerPicker({
               <User size={12} style={{ color: "#00D4FF" }} />
             </div>
           )}
-          {selectedPlayer && flagCode(selectedPlayer.team) && (
-            <img src={`/flags/${flagCode(selectedPlayer.team)}.svg`}
-              alt={selectedPlayer.team} className="w-5 h-3.5 object-cover rounded-sm shrink-0"
+          {selectedPlayer && flagCode(selectedPlayer.country) && (
+            <img src={`/flags/${flagCode(selectedPlayer.country)}.svg`}
+              alt={selectedPlayer.country} className="w-5 h-3.5 object-cover rounded-sm shrink-0"
               onError={e => { (e.target as HTMLImageElement).style.display = "none"; }} />
           )}
           <span className="text-sm font-bold text-white flex-1 truncate">{value}</span>
