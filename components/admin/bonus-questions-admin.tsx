@@ -2,7 +2,14 @@
 
 import { useState, useEffect } from "react";
 import { HelpCircle, Plus, Trash2, CheckCircle, Clock, Search } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
+import { createClient as createSupabaseClient } from "@supabase/supabase-js";
+
+function getClient() {
+  return createSupabaseClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+}
 import { Button } from "@/components/ui/button";
 import { ALL_COUNTRIES } from "@/lib/countries";
 
@@ -57,7 +64,7 @@ export function BonusQuestionsAdmin({ groupId }: BonusQuestionsAdminProps) {
 
   const loadQuestions = async () => {
     setLoading(true);
-    const sb = createClient();
+    const sb = getClient();
     const { data } = await sb
       .from("bonus_questions")
       .select("id, question, question_type, points_awarded, correct_answer, is_resolved, lock_at, display_order")
@@ -94,7 +101,7 @@ export function BonusQuestionsAdmin({ groupId }: BonusQuestionsAdminProps) {
     console.log("Group ID:", groupId);
     setAdding(true);
     setSaveError(null);
-    const sb = createClient();
+    const sb = getClient();
     const { error } = await sb.from("bonus_questions").insert({
       group_id:       groupId,
       question:       newQ.question.trim(),
@@ -118,7 +125,7 @@ export function BonusQuestionsAdmin({ groupId }: BonusQuestionsAdminProps) {
   };
 
   const deleteQuestion = async (id: string) => {
-    const sb = createClient();
+    const sb = getClient();
     await sb.from("bonus_questions").delete().eq("id", id);
     setQuestions(prev => prev.filter(q => q.id !== id));
   };
@@ -132,7 +139,7 @@ export function BonusQuestionsAdmin({ groupId }: BonusQuestionsAdminProps) {
   const submitResolve = async () => {
     if (!resolveId || !resolveAnswer.trim()) return;
     setResolving(true);
-    const sb = createClient();
+    const sb = getClient();
     const { data: { session } } = await sb.auth.getSession();
     const token = session?.access_token ?? "";
 
