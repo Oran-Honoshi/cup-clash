@@ -10,9 +10,6 @@ export async function GET(request: NextRequest) {
   const error = requestUrl.searchParams.get("error");
   const errorDescription = requestUrl.searchParams.get("error_description") ?? "";
 
-  console.log("[callback] URL:", request.url);
-  console.log("[callback] code:", !!code, "type:", type, "next:", next);
-
   // OAuth provider returned an error — only treat as OAuth failure if this
   // isn't a recovery flow (password reset errors have their own path)
   if (error && type !== "recovery") {
@@ -50,8 +47,6 @@ export async function GET(request: NextRequest) {
     );
 
     const result = await supabase.auth.exchangeCodeForSession(code);
-    console.log("[callback] exchange result:", result.error?.message ?? "ok");
-    console.log("[callback] redirecting to:", next);
 
     if (result.error) {
       const msg = result.error.message?.toLowerCase() ?? "";
