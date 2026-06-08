@@ -53,6 +53,7 @@ export function BonusQuestionsAdmin({ groupId }: BonusQuestionsAdminProps) {
   const [resolveAnswer, setResolveAnswer] = useState("");
   const [resolving,    setResolving]    = useState(false);
   const [resolveResult, setResolveResult] = useState<{ correctCount: number; totalAnswers: number; pointsAwarded: number } | null>(null);
+  const [savedConfirm, setSavedConfirm] = useState(false);
   const [newQ, setNewQ] = useState({
     question:       "",
     question_type:  "open_text" as QuestionType,
@@ -108,6 +109,8 @@ export function BonusQuestionsAdmin({ groupId }: BonusQuestionsAdminProps) {
 
     if (!error) {
       setNewQ({ question: "", question_type: "open_text", points_awarded: 10, lock_at: "" });
+      setSavedConfirm(true);
+      setTimeout(() => setSavedConfirm(false), 1500);
       await loadQuestions();
     }
     setAdding(false);
@@ -223,16 +226,22 @@ export function BonusQuestionsAdmin({ groupId }: BonusQuestionsAdminProps) {
           </div>
         </div>
 
-        <Button
-          onClick={addQuestion}
-          loading={adding}
-          disabled={!newQ.question.trim()}
-          size="sm"
-          className="w-full"
-          leftIcon={<Plus size={14} />}
-        >
-          Add Question
-        </Button>
+        {savedConfirm ? (
+          <div className="w-full py-2.5 rounded-xl text-sm font-bold text-center" style={{ background: "rgba(0,255,136,0.08)", border: "1px solid rgba(0,255,136,0.25)", color: "#00FF88" }}>
+            ✅ Question saved!
+          </div>
+        ) : (
+          <Button
+            onClick={addQuestion}
+            loading={adding}
+            disabled={!newQ.question.trim()}
+            size="sm"
+            className="w-full"
+            leftIcon={<Plus size={14} />}
+          >
+            Add Another
+          </Button>
+        )}
       </div>
 
       {/* Question list */}

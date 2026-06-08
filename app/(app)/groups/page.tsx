@@ -55,7 +55,7 @@ export default async function GroupsPage() {
 
   const { data: memberships } = await sbAdmin()
     .from("group_members")
-    .select(`group_id, is_ad_free, groups ( id, name, passkey, max_members, enrollment_fee_cents, admin_id, buy_in_amount )`)
+    .select(`group_id, is_ad_free, groups ( id, name, passkey, max_members, enrollment_fee_cents, admin_id, buy_in_amount, payment_link )`)
     .eq("user_id", userProfile.id)
     .order("joined_at", { ascending: false });
 
@@ -73,7 +73,7 @@ export default async function GroupsPage() {
 
   const groups = (memberships ?? []) as unknown as Array<{
     group_id: string; is_ad_free: boolean;
-    groups: { id: string; name: string; passkey: string; max_members: number; enrollment_fee_cents: number; admin_id: string; buy_in_amount: number } | null;
+    groups: { id: string; name: string; passkey: string; max_members: number; enrollment_fee_cents: number; admin_id: string; buy_in_amount: number; payment_link: string | null } | null;
   }>;
 
   return (
@@ -154,7 +154,7 @@ export default async function GroupsPage() {
                       {serverT("common_view_group")} <ArrowRight size={14} />
                     </button>
                   </Link>
-                  <ShareGroup groupName={g.name} adminName={userProfile.name} passkey={g.passkey} compact />
+                  <ShareGroup groupName={g.name} adminName={userProfile.name} passkey={g.passkey} compact paymentLink={g.payment_link} />
                   {isAdmin && (
                     <Link href={`/admin/${m.group_id}`}>
                       <button className="px-3 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider"

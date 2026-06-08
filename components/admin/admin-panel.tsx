@@ -398,7 +398,7 @@ export function AdminPanel({ group, initialMembers }: AdminPanelProps) {
         </p>
 
         {members.filter(m => m.id !== group.admin).length === 0 ? (
-          <div className="text-sm" style={{ color: "rgba(255,255,255,0.3)" }}>No other members to transfer to.</div>
+          <div className="text-sm" style={{ color: "rgba(255,255,255,0.3)" }}>No other members yet. Invite members to join first, then you can transfer admin role.</div>
         ) : (
           <div className="space-y-3">
             <select

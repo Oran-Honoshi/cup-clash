@@ -176,10 +176,9 @@ export function BonusQuestions({ groupId, userId }: BonusQuestionsProps) {
   const answersRef = useRef(answers);
   answersRef.current = answers;
 
-  useEffect(() => {
+  const fetchQuestions = useCallback(() => {
     if (!groupId || groupId === "00000000-0000-0000-0000-000000000001") return;
     const sb = createClient();
-
     sb.from("bonus_questions")
       .select("id, question, question_type, points_awarded, is_resolved, correct_answer, lock_at")
       .eq("group_id", groupId)
@@ -188,8 +187,21 @@ export function BonusQuestions({ groupId, userId }: BonusQuestionsProps) {
       .then(({ data }) => {
         if (data) setQuestions(data as BonusQuestion[]);
       });
+  }, [groupId]);
 
-    if (!userId) return;
+  useEffect(() => {
+    if (!groupId || groupId === "00000000-0000-0000-0000-000000000001") return;
+    fetchQuestions();
+
+    const sb = createClient();
+    const channel = sb
+      .channel(`bonus_questions:${groupId}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "bonus_questions", filter: `group_id=eq.${groupId}` },
+        () => { fetchQuestions(); })
+      .subscribe();
+
+    if (!userId) return () => { void sb.removeChannel(channel); };
+
     sb.from("bonus_answers")
       .select("question_id, answer")
       .eq("group_id", groupId)
@@ -203,7 +215,9 @@ export function BonusQuestions({ groupId, userId }: BonusQuestionsProps) {
           setAnswers(map);
         }
       });
-  }, [groupId, userId]);
+
+    return () => { void sb.removeChannel(channel); };
+  }, [groupId, userId, fetchQuestions]);
 
   const saveAnswer = useCallback(async (questionId: string, answer: string) => {
     if (!userId || !answer.trim()) return;

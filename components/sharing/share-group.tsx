@@ -19,9 +19,10 @@ interface ShareGroupProps {
   passkey:       string;
   compact?:      boolean;
   scoringRules?: ScoringRules | null;
+  paymentLink?:  string | null;
 }
 
-export function ShareGroup({ groupName, adminName: _adminName, passkey, compact = false, scoringRules }: ShareGroupProps) {
+export function ShareGroup({ groupName, adminName: _adminName, passkey, compact = false, scoringRules, paymentLink }: ShareGroupProps) {
   const { t } = useLocale();
   const [open,   setOpen]   = useState(false);
   const [copied, setCopied] = useState<string | null>(null);
@@ -38,6 +39,7 @@ export function ShareGroup({ groupName, adminName: _adminName, passkey, compact 
     `📋 ${t("share_scoring")}: ${scoring}`,
     ``,
     `${t("share_join_free")} → ${joinUrl}`,
+    ...(paymentLink ? [``, `💳 Send your buy-in here: ${paymentLink}`] : []),
     ``,
     t("share_tagline"),
   ].join("\n");
