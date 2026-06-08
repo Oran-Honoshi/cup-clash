@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Fragment } from "react";
 import { Check, AlertCircle, Calculator, Lock } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
@@ -213,7 +213,23 @@ export function ScoringRulesEditor({ groupId }: ScoringRulesEditorProps) {
     setTimeout(() => setSaved(false), 2500);
   };
 
-  const maxMatch  = enabled.exact ? rules.exactScore * TOTAL_MATCHES : enabled.outcome ? rules.correctOutcome * TOTAL_MATCHES : 0;
+  const maxMatchFlat = enabled.exact
+    ? rules.exactScore * TOTAL_MATCHES
+    : enabled.outcome ? rules.correctOutcome * TOTAL_MATCHES : 0;
+
+  // WC2026 match counts per stage (72 group + 16+8+4+2+1+1 KO = 104)
+  const STAGE_ROWS = [
+    { label: "Group Stage",    count: 72, co: rules.gsCorrectOutcome,    es: rules.gsExactScore    },
+    { label: "Round of 32",    count: 16, co: rules.r32CorrectOutcome,   es: rules.r32ExactScore   },
+    { label: "Round of 16",    count:  8, co: rules.r16CorrectOutcome,   es: rules.r16ExactScore   },
+    { label: "Quarter Finals", count:  4, co: rules.qfCorrectOutcome,    es: rules.qfExactScore    },
+    { label: "Semi Finals",    count:  2, co: rules.sfCorrectOutcome,    es: rules.sfExactScore    },
+    { label: "3rd Place",      count:  1, co: rules.thirdCorrectOutcome, es: rules.thirdExactScore },
+    { label: "Final",          count:  1, co: rules.finalCorrectOutcome, es: rules.finalExactScore },
+  ] as const;
+  const maxMatchProg = STAGE_ROWS.reduce((sum, s) => sum + (s.co + s.es) * s.count, 0);
+
+  const effectiveMaxMatch = enabled.progressiveScoring ? maxMatchProg : maxMatchFlat;
   const maxKo     = enabled.koAdv           ? rules.koAdvancement   * TOTAL_KO : 0;
   const maxWinner = enabled.winner          ? rules.tournamentWinner            : 0;
   const maxScorer = enabled.scorer          ? rules.topScorer                   : 0;
@@ -222,7 +238,7 @@ export function ScoringRulesEditor({ groupId }: ScoringRulesEditorProps) {
   const maxDef    = enabled.bestDefence     ? rules.bestDefence                 : 0;
   const maxYoung  = enabled.bestYoungPlayer ? rules.bestYoungPlayer             : 0;
   const maxThird  = enabled.bestThird       ? rules.bestThird * 8               : 0;
-  const maxTotal  = maxMatch + maxKo + maxWinner + maxScorer + maxAssist + maxGB + maxDef + maxYoung + maxThird;
+  const maxTotal  = effectiveMaxMatch + maxKo + maxWinner + maxScorer + maxAssist + maxGB + maxDef + maxYoung + maxThird;
 
   if (loading) return (
     <div className="rounded-2xl p-5 text-center text-sm" style={{
@@ -266,40 +282,49 @@ export function ScoringRulesEditor({ groupId }: ScoringRulesEditorProps) {
 
       <div className="space-y-2">
         {RULES_CONFIG.map(({ key, feKey, label, desc, per }) => {
-          const isOn = enabled[feKey];
+          const isOverridden = enabled.progressiveScoring && (feKey === "outcome" || feKey === "exact");
+          const isOn = enabled[feKey] && !isOverridden;
           return (
-            <div key={key}
-              className={cn("flex items-center gap-3 p-3 rounded-xl border transition-all",
-                !isOn && "opacity-50")}
-              style={{
-                background: "rgba(255,255,255,0.04)",
-                border: "1px solid rgba(255,255,255,0.07)",
-              }}>
-              <button
-                onClick={() => { if (!locked) setEnabled(e => ({ ...e, [feKey]: !e[feKey] })); }}
-                disabled={locked}
-                className="h-5 w-5 rounded flex items-center justify-center shrink-0 transition-all"
-                style={isOn
-                  ? { borderColor: "rgba(0,212,255,1)", background: "rgba(0,212,255,0.2)", border: "2px solid rgba(0,212,255,1)" }
-                  : { background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)" }}
-              >
-                {isOn && <Check size={11} style={{ color: "#0891B2" }} />}
-              </button>
-              <div className="flex-1 min-w-0">
-                <div className="text-sm font-bold" style={{ color: "white" }}>{label}</div>
-                <div className="text-[11px]" style={{ color: "rgba(255,255,255,0.4)" }}>{desc} · {per}</div>
+            <Fragment key={key}>
+              <div
+                className={cn("flex items-center gap-3 p-3 rounded-xl border transition-all",
+                  (!isOn || isOverridden) && "opacity-30",
+                  isOverridden && "pointer-events-none")}
+                style={{
+                  background: "rgba(255,255,255,0.04)",
+                  border: "1px solid rgba(255,255,255,0.07)",
+                }}>
+                <button
+                  onClick={() => { if (!locked) setEnabled(e => ({ ...e, [feKey]: !e[feKey] })); }}
+                  disabled={locked || isOverridden}
+                  className="h-5 w-5 rounded flex items-center justify-center shrink-0 transition-all"
+                  style={isOn
+                    ? { borderColor: "rgba(0,212,255,1)", background: "rgba(0,212,255,0.2)", border: "2px solid rgba(0,212,255,1)" }
+                    : { background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)" }}
+                >
+                  {isOn && <Check size={11} style={{ color: "#0891B2" }} />}
+                </button>
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-bold" style={{ color: "white" }}>{label}</div>
+                  <div className="text-[11px]" style={{ color: "rgba(255,255,255,0.4)" }}>{desc} · {per}</div>
+                </div>
+                <div className="flex items-center gap-1.5 shrink-0">
+                  <input
+                    type="number" min={0} max={999} value={rules[key]}
+                    disabled={!isOn || locked || isOverridden}
+                    onChange={e => { setRules(r => ({ ...r, [key]: Number(e.target.value) })); setSaved(false); }}
+                    className="w-16 rounded-lg px-2 py-1.5 text-sm text-center focus:outline-none disabled:opacity-30"
+                    style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", color: "#ffffff" }}
+                  />
+                  <span className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>pts</span>
+                </div>
               </div>
-              <div className="flex items-center gap-1.5 shrink-0">
-                <input
-                  type="number" min={0} max={999} value={rules[key]}
-                  disabled={!isOn || locked}
-                  onChange={e => { setRules(r => ({ ...r, [key]: Number(e.target.value) })); setSaved(false); }}
-                  className="w-16 rounded-lg px-2 py-1.5 text-sm text-center focus:outline-none disabled:opacity-30"
-                  style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", color: "#ffffff" }}
-                />
-                <span className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>pts</span>
-              </div>
-            </div>
+              {isOverridden && feKey === "exact" && (
+                <div style={{ fontSize: 11, color: "#00D4FF", padding: "6px 10px", borderRadius: 8, background: "rgba(0,212,255,0.06)", border: "1px solid rgba(0,212,255,0.15)" }}>
+                  Using progressive scoring — per-stage points are set below
+                </div>
+              )}
+            </Fragment>
           );
         })}
       </div>
@@ -325,14 +350,15 @@ export function ScoringRulesEditor({ groupId }: ScoringRulesEditorProps) {
         </div>
 
         {enabled.progressiveScoring && (
-          <div className="mt-3 space-y-3">
+          <div className="mt-3 space-y-2">
             <div style={{ overflowX: "auto" }}>
               <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
                 <thead>
                   <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
-                    <th style={{ textAlign: "left", padding: "6px 8px", color: "rgba(255,255,255,0.4)", fontWeight: 700, fontSize: 10, textTransform: "uppercase", letterSpacing: "0.1em" }}>Stage</th>
-                    <th style={{ textAlign: "center", padding: "6px 8px", color: "rgba(255,255,255,0.4)", fontWeight: 700, fontSize: 10, textTransform: "uppercase", letterSpacing: "0.1em" }}>Outcome</th>
-                    <th style={{ textAlign: "center", padding: "6px 8px", color: "rgba(255,255,255,0.4)", fontWeight: 700, fontSize: 10, textTransform: "uppercase", letterSpacing: "0.1em" }}>Exact</th>
+                    <th style={{ textAlign: "left",   padding: "6px 8px", color: "rgba(255,255,255,0.4)", fontWeight: 700, fontSize: 10, textTransform: "uppercase", letterSpacing: "0.1em" }}>Stage</th>
+                    <th style={{ textAlign: "center", padding: "6px 8px", color: "#00D4FF",                fontWeight: 700, fontSize: 10, textTransform: "uppercase", letterSpacing: "0.1em" }}>Correct Outcome</th>
+                    <th style={{ textAlign: "center", padding: "6px 8px", color: "#00FF88",               fontWeight: 700, fontSize: 10, textTransform: "uppercase", letterSpacing: "0.1em" }}>+Exact Bonus</th>
+                    <th style={{ textAlign: "center", padding: "6px 8px", color: "rgba(255,255,255,0.4)", fontWeight: 700, fontSize: 10, textTransform: "uppercase", letterSpacing: "0.1em" }}>Max</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -344,31 +370,41 @@ export function ScoringRulesEditor({ groupId }: ScoringRulesEditorProps) {
                     { label: "Semi Finals",    coKey: "sfCorrectOutcome"    as keyof ScoringRules, esKey: "sfExactScore"        as keyof ScoringRules },
                     { label: "3rd Place",      coKey: "thirdCorrectOutcome" as keyof ScoringRules, esKey: "thirdExactScore"     as keyof ScoringRules },
                     { label: "Final",          coKey: "finalCorrectOutcome" as keyof ScoringRules, esKey: "finalExactScore"     as keyof ScoringRules },
-                  ]).map(({ label, coKey, esKey }) => (
-                    <tr key={label} style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
-                      <td style={{ padding: "6px 8px", color: "rgba(255,255,255,0.7)", fontWeight: 600, fontSize: 12 }}>{label}</td>
-                      <td style={{ padding: "6px 8px", textAlign: "center" }}>
-                        <input
-                          type="number" min={0} max={999} value={rules[coKey] as number}
-                          disabled={locked}
-                          onChange={e => { setRules(r => ({ ...r, [coKey]: Number(e.target.value) })); setSaved(false); }}
-                          className="w-14 rounded-lg px-2 py-1.5 text-sm text-center focus:outline-none disabled:opacity-30"
-                          style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", color: "#ffffff" }}
-                        />
-                      </td>
-                      <td style={{ padding: "6px 8px", textAlign: "center" }}>
-                        <input
-                          type="number" min={0} max={999} value={rules[esKey] as number}
-                          disabled={locked}
-                          onChange={e => { setRules(r => ({ ...r, [esKey]: Number(e.target.value) })); setSaved(false); }}
-                          className="w-14 rounded-lg px-2 py-1.5 text-sm text-center focus:outline-none disabled:opacity-30"
-                          style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", color: "#ffffff" }}
-                        />
-                      </td>
-                    </tr>
-                  ))}
+                  ]).map(({ label, coKey, esKey }) => {
+                    const coVal = rules[coKey] as number;
+                    const esVal = rules[esKey] as number;
+                    return (
+                      <tr key={label} style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+                        <td style={{ padding: "6px 8px", color: "rgba(255,255,255,0.7)", fontWeight: 600, fontSize: 12 }}>{label}</td>
+                        <td style={{ padding: "6px 8px", textAlign: "center" }}>
+                          <input
+                            type="number" min={0} max={999} value={coVal}
+                            disabled={locked}
+                            onChange={e => { setRules(r => ({ ...r, [coKey]: Number(e.target.value) })); setSaved(false); }}
+                            className="w-14 rounded-lg px-2 py-1.5 text-sm text-center focus:outline-none disabled:opacity-30"
+                            style={{ background: "rgba(0,212,255,0.08)", border: "1px solid rgba(0,212,255,0.2)", color: "#00D4FF" }}
+                          />
+                        </td>
+                        <td style={{ padding: "6px 8px", textAlign: "center" }}>
+                          <input
+                            type="number" min={0} max={999} value={esVal}
+                            disabled={locked}
+                            onChange={e => { setRules(r => ({ ...r, [esKey]: Number(e.target.value) })); setSaved(false); }}
+                            className="w-14 rounded-lg px-2 py-1.5 text-sm text-center focus:outline-none disabled:opacity-30"
+                            style={{ background: "rgba(0,255,136,0.08)", border: "1px solid rgba(0,255,136,0.2)", color: "#00FF88" }}
+                          />
+                        </td>
+                        <td style={{ padding: "6px 8px", textAlign: "center", fontWeight: 700, fontFamily: "var(--font-mono)", color: "white", fontSize: 13 }}>
+                          {coVal + esVal}
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
+            </div>
+            <div className="text-[10px]" style={{ color: "rgba(255,255,255,0.35)", paddingLeft: 2 }}>
+              Max per match = Outcome + Bonus (both earned on an exact-score prediction)
             </div>
           </div>
         )}
@@ -380,8 +416,19 @@ export function ScoringRulesEditor({ groupId }: ScoringRulesEditorProps) {
           Maximum possible points
         </div>
         <div className="space-y-1.5 text-sm">
-          {enabled.exact && <div className="flex justify-between" style={{ color: "rgba(255,255,255,0.5)" }}><span>Exact scores ({TOTAL_MATCHES} × {rules.exactScore})</span><span className="font-bold" style={{ color: "white" }}>{maxMatch}</span></div>}
-          {enabled.outcome && !enabled.exact && <div className="flex justify-between" style={{ color: "rgba(255,255,255,0.5)" }}><span>Outcomes ({TOTAL_MATCHES} × {rules.correctOutcome})</span><span className="font-bold" style={{ color: "white" }}>{maxMatch}</span></div>}
+          {enabled.progressiveScoring ? (
+            STAGE_ROWS.map(({ label, count, co, es }) => (
+              <div key={label} className="flex justify-between" style={{ color: "rgba(255,255,255,0.5)" }}>
+                <span>{label} ({count} × max {co + es}pts)</span>
+                <span className="font-bold" style={{ color: "white" }}>{(co + es) * count}</span>
+              </div>
+            ))
+          ) : (
+            <>
+              {enabled.exact && <div className="flex justify-between" style={{ color: "rgba(255,255,255,0.5)" }}><span>Exact scores ({TOTAL_MATCHES} × {rules.exactScore})</span><span className="font-bold" style={{ color: "white" }}>{maxMatchFlat}</span></div>}
+              {enabled.outcome && !enabled.exact && <div className="flex justify-between" style={{ color: "rgba(255,255,255,0.5)" }}><span>Outcomes ({TOTAL_MATCHES} × {rules.correctOutcome})</span><span className="font-bold" style={{ color: "white" }}>{maxMatchFlat}</span></div>}
+            </>
+          )}
           {enabled.koAdv    && <div className="flex justify-between" style={{ color: "rgba(255,255,255,0.5)" }}><span>KO advancement ({TOTAL_KO} × {rules.koAdvancement})</span><span className="font-bold" style={{ color: "white" }}>{maxKo}</span></div>}
           {enabled.winner   && <div className="flex justify-between" style={{ color: "rgba(255,255,255,0.5)" }}><span>Tournament winner</span><span className="font-bold" style={{ color: "white" }}>{maxWinner}</span></div>}
           {enabled.scorer   && <div className="flex justify-between" style={{ color: "rgba(255,255,255,0.5)" }}><span>Top scorer</span><span className="font-bold" style={{ color: "white" }}>{maxScorer}</span></div>}
