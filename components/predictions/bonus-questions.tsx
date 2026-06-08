@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { ALL_COUNTRIES } from "@/lib/countries";
 import { cn } from "@/lib/utils";
 import { FOCUS_RING } from "@/lib/a11y";
+import { PlayerPicker } from "@/components/predictions/player-picker";
 
 type QuestionType = "open_text" | "player_pick" | "team_pick" | "number";
 
@@ -33,28 +34,6 @@ const glassCard = {
   borderRadius: 22,
 } as const;
 
-const KNOWN_PLAYERS = [
-  { name: "Kylian Mbappé",      team: "France",         flagCode: "fr"     },
-  { name: "Erling Haaland",     team: "Norway",         flagCode: "no"     },
-  { name: "Lionel Messi",       team: "Argentina",      flagCode: "ar"     },
-  { name: "Vinícius Jr.",       team: "Brazil",         flagCode: "br"     },
-  { name: "Harry Kane",         team: "England",        flagCode: "gb-eng" },
-  { name: "Lamine Yamal",       team: "Spain",          flagCode: "es"     },
-  { name: "Rodri",              team: "Spain",          flagCode: "es"     },
-  { name: "Raphinha",           team: "Brazil",         flagCode: "br"     },
-  { name: "Leroy Sané",         team: "Germany",        flagCode: "de"     },
-  { name: "Bruno Fernandes",    team: "Portugal",       flagCode: "pt"     },
-  { name: "Kevin De Bruyne",    team: "Belgium",        flagCode: "be"     },
-  { name: "Jamal Musiala",      team: "Germany",        flagCode: "de"     },
-  { name: "Pedri",              team: "Spain",          flagCode: "es"     },
-  { name: "Florian Wirtz",      team: "Germany",        flagCode: "de"     },
-  { name: "Phil Foden",         team: "England",        flagCode: "gb-eng" },
-  { name: "Bernardo Silva",     team: "Portugal",       flagCode: "pt"     },
-  { name: "Federico Valverde",  team: "Uruguay",        flagCode: "uy"     },
-  { name: "Bukayo Saka",        team: "England",        flagCode: "gb-eng" },
-  { name: "Jude Bellingham",    team: "England",        flagCode: "gb-eng" },
-  { name: "Antoine Griezmann",  team: "France",         flagCode: "fr"     },
-];
 
 // ── Country picker (simplified, no pts header) ─────────────────────────────
 function BonusCountryPicker({ value, onSelect, isLocked }: { value: string; onSelect: (v: string) => void; isLocked: boolean }) {
@@ -100,69 +79,6 @@ function BonusCountryPicker({ value, onSelect, isLocked }: { value: string; onSe
   );
 }
 
-// ── Player picker (simplified) ─────────────────────────────────────────────
-function BonusPlayerPicker({ value, onSelect, isLocked }: { value: string; onSelect: (v: string) => void; isLocked: boolean }) {
-  const [search, setSearch] = useState("");
-  const filtered = KNOWN_PLAYERS.filter(p =>
-    p.name.toLowerCase().includes(search.toLowerCase()) ||
-    p.team.toLowerCase().includes(search.toLowerCase())
-  );
-  const showCustom = search.length > 1 && !filtered.some(p => p.name.toLowerCase() === search.toLowerCase());
-
-  return (
-    <div className="space-y-2">
-      <div className="relative">
-        <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: "rgba(255,255,255,0.4)" }} />
-        <input type="text" placeholder="Search or type player name…" value={search}
-          onChange={e => setSearch(e.target.value)} disabled={isLocked}
-          className="w-full pl-8 pr-3 py-2 rounded-xl text-sm focus:outline-none disabled:opacity-40"
-          style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", color: "#fff" }}
-          onFocus={e => { e.target.style.border = "1px solid #00D4FF"; }}
-          onBlur={e => { e.target.style.border = "1px solid rgba(255,255,255,0.12)"; }}
-        />
-      </div>
-      {search.length > 0 && (
-        <div className="rounded-xl overflow-hidden" style={{ border: "1px solid rgba(255,255,255,0.08)" }}>
-          <div className="max-h-40 overflow-y-auto">
-            {filtered.map(player => {
-              const active = value === player.name;
-              return (
-                <button key={player.name} type="button" disabled={isLocked}
-                  onClick={() => { onSelect(player.name); setSearch(""); }}
-                  className={cn("w-full flex items-center gap-2.5 px-3 py-2.5 border-b last:border-0 text-left transition-all", isLocked && "opacity-40 cursor-not-allowed", FOCUS_RING)}
-                  style={{ borderColor: "rgba(255,255,255,0.08)", background: active ? "rgba(0,255,136,0.1)" : "rgba(255,255,255,0.04)" }}>
-                  <img src={`/flags/${player.flagCode}.svg`} alt={player.team} className="w-6 h-4 object-cover rounded-sm shrink-0"
-                    onError={e => { (e.target as HTMLImageElement).style.display = "none"; }} />
-                  <div className="flex-1 min-w-0">
-                    <div className="text-sm font-bold truncate" style={{ color: "rgba(255,255,255,0.85)" }}>{player.name}</div>
-                    <div className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>{player.team}</div>
-                  </div>
-                  {active && <Check size={13} style={{ color: "#0891B2" }} />}
-                </button>
-              );
-            })}
-            {showCustom && (
-              <button type="button"
-                onClick={() => { onSelect(search); setSearch(""); }}
-                className={`w-full flex items-center gap-2.5 px-3 py-2.5 text-left transition-all ${FOCUS_RING}`}
-                style={{ borderTop: "1px solid rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.04)" }}>
-                <div className="h-6 w-6 rounded-full flex items-center justify-center shrink-0"
-                  style={{ background: "rgba(0,212,255,0.1)", border: "1px solid rgba(0,212,255,0.2)" }}>
-                  <span style={{ color: "#0891B2", fontSize: 10 }}>+</span>
-                </div>
-                <div>
-                  <div className="text-sm font-bold" style={{ color: "rgba(255,255,255,0.85)" }}>Use &quot;{search}&quot;</div>
-                  <div className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>Custom player pick</div>
-                </div>
-              </button>
-            )}
-          </div>
-        </div>
-      )}
-      {value && <div className="text-xs font-bold" style={{ color: "#0891B2" }}>✓ {value}</div>}
-    </div>
-  );
-}
 
 // ── Main component ─────────────────────────────────────────────────────────────
 export function BonusQuestions({ groupId, userId }: BonusQuestionsProps) {
@@ -310,7 +226,7 @@ export function BonusQuestions({ groupId, userId }: BonusQuestionsProps) {
                   <BonusCountryPicker value={currentAnswer} onSelect={v => updateAnswer(q.id, v)} isLocked={isLocked} />
                 )}
                 {q.question_type === "player_pick" && (
-                  <BonusPlayerPicker value={currentAnswer} onSelect={v => updateAnswer(q.id, v)} isLocked={isLocked} />
+                  <PlayerPicker value={currentAnswer} onSelect={v => updateAnswer(q.id, v)} isLocked={isLocked} includeGK={true} />
                 )}
                 {q.question_type === "number" && (
                   <input

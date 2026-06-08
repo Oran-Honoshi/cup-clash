@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Trophy, Star, Search, Check, Lock, AlertCircle, Medal, BarChart2 } from "lucide-react";
+import { PlayerPicker } from "@/components/predictions/player-picker";
 import { createClient } from "@/lib/supabase/client";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -17,49 +18,6 @@ function isTournamentLocked(): boolean {
   return new Date() >= TOURNAMENT_LOCK_UTC;
 }
 
-// ── Player list ───────────────────────────────────────────────────────────────
-
-const KNOWN_PLAYERS = [
-  { name: "Kylian Mbappé",      team: "France",         flagCode: "fr"     },
-  { name: "Erling Haaland",     team: "Norway",         flagCode: "no"     },
-  { name: "Lionel Messi",       team: "Argentina",      flagCode: "ar"     },
-  { name: "Vinícius Jr.",       team: "Brazil",         flagCode: "br"     },
-  { name: "Harry Kane",         team: "England",        flagCode: "gb-eng" },
-  { name: "Lamine Yamal",       team: "Spain",          flagCode: "es"     },
-  { name: "Rodri",              team: "Spain",          flagCode: "es"     },
-  { name: "Raphinha",           team: "Brazil",         flagCode: "br"     },
-  { name: "Leroy Sané",         team: "Germany",        flagCode: "de"     },
-  { name: "Bruno Fernandes",    team: "Portugal",       flagCode: "pt"     },
-  { name: "Kevin De Bruyne",    team: "Belgium",        flagCode: "be"     },
-  { name: "Jamal Musiala",      team: "Germany",        flagCode: "de"     },
-  { name: "Pedri",              team: "Spain",          flagCode: "es"     },
-  { name: "Florian Wirtz",      team: "Germany",        flagCode: "de"     },
-  { name: "Phil Foden",         team: "England",        flagCode: "gb-eng" },
-  { name: "Bernardo Silva",     team: "Portugal",       flagCode: "pt"     },
-  { name: "Federico Valverde",  team: "Uruguay",        flagCode: "uy"     },
-  { name: "Bukayo Saka",        team: "England",        flagCode: "gb-eng" },
-  { name: "Gavi",               team: "Spain",          flagCode: "es"     },
-  { name: "Jude Bellingham",    team: "England",        flagCode: "gb-eng" },
-  { name: "Antoine Griezmann",  team: "France",         flagCode: "fr"     },
-  { name: "Ousmane Dembélé",    team: "France",         flagCode: "fr"     },
-  { name: "Marcus Rashford",    team: "England",        flagCode: "gb-eng" },
-  { name: "Diogo Jota",         team: "Portugal",       flagCode: "pt"     },
-  { name: "Darwin Núñez",       team: "Uruguay",        flagCode: "uy"     },
-  { name: "Richarlison",        team: "Brazil",         flagCode: "br"     },
-  { name: "Son Heung-min",      team: "Korea Republic", flagCode: "kr"     },
-  { name: "Robert Lewandowski", team: "Poland",         flagCode: "pl"     },
-  { name: "Christian Pulisic",  team: "USA",            flagCode: "us"     },
-  { name: "Weston McKennie",    team: "USA",            flagCode: "us"     },
-  { name: "João Félix",         team: "Portugal",       flagCode: "pt"     },
-  { name: "Nico Williams",      team: "Spain",          flagCode: "es"     },
-  { name: "Dani Olmo",          team: "Spain",          flagCode: "es"     },
-  { name: "Achraf Hakimi",      team: "Morocco",        flagCode: "ma"     },
-  { name: "Hakim Ziyech",       team: "Morocco",        flagCode: "ma"     },
-  { name: "Alphonso Davies",    team: "Canada",         flagCode: "ca"     },
-  { name: "Jonathan David",     team: "Canada",         flagCode: "ca"     },
-  { name: "Arda Güler",         team: "Turkey",         flagCode: "tr"     },
-  { name: "Hakan Çalhanoğlu",   team: "Turkey",         flagCode: "tr"     },
-];
 
 interface TournamentPicksProps {
   groupId: string;
@@ -164,98 +122,6 @@ function CountryPicker({ value, onSelect, label, pts, isLocked }: CountryPickerP
           );
         })}
       </div>
-      {value && <div className="text-xs font-bold" style={{ color: "#0891B2" }}>✓ {value}</div>}
-    </div>
-  );
-}
-
-// ── Player picker ──────────────────────────────────────────────────────────
-interface PlayerPickerProps {
-  value: string;
-  label: string;
-  pts: number;
-  onSelect: (name: string) => void;
-  isLocked: boolean;
-}
-
-function PlayerPicker({ value, label, pts, onSelect, isLocked }: PlayerPickerProps) {
-  const [search, setSearch] = useState("");
-  const filtered   = KNOWN_PLAYERS.filter(p =>
-    p.name.toLowerCase().includes(search.toLowerCase()) ||
-    p.team.toLowerCase().includes(search.toLowerCase())
-  );
-  const showCustom = search.length > 1 && !filtered.some(p => p.name.toLowerCase() === search.toLowerCase());
-
-  return (
-    <div className="space-y-3">
-      <div className="flex items-center justify-between">
-        <span className="text-xs font-bold uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.5)" }}>{label}</span>
-        <span className="text-xs font-bold" style={{ color: "#00D4FF", fontFamily: "var(--font-mono)" }}>+{pts} pts</span>
-      </div>
-      <div className="relative">
-        <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: "rgba(255,255,255,0.4)" }} />
-        <input
-          type="text"
-          placeholder="Search or type player name..."
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          disabled={isLocked}
-          className="w-full pl-8 pr-3 py-2 rounded-xl text-sm focus:outline-none disabled:opacity-40"
-          style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", color: "#ffffff" }}
-          onFocus={e => { e.target.style.border = "1px solid #00D4FF"; }}
-          onBlur={e => { e.target.style.border = "1px solid rgba(255,255,255,0.12)"; }}
-        />
-      </div>
-      {search.length > 0 && (
-        <div className="rounded-xl overflow-hidden" style={{ border: "1px solid rgba(255,255,255,0.08)" }}>
-          <div className="max-h-48 overflow-y-auto">
-            {filtered.map(player => {
-              const active = value === player.name;
-              return (
-                <button key={player.name} type="button" aria-label={`Pick ${player.name} (${player.team})`} aria-pressed={active} disabled={isLocked}
-                  onClick={() => { onSelect(player.name); setSearch(""); }}
-                  className={cn("w-full flex items-center gap-2.5 px-3 py-2.5 border-b last:border-0 text-left transition-all",
-                    isLocked && "opacity-40 cursor-not-allowed",
-                    FOCUS_RING)}
-                  style={{
-                    borderColor: "rgba(255,255,255,0.08)",
-                    background: active ? "rgba(0,255,136,0.1)" : "rgba(255,255,255,0.04)",
-                  }}
-                  onMouseEnter={e => { if (!active) (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,255,255,0.07)"; }}
-                  onMouseLeave={e => { if (!active) (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,255,255,0.04)"; }}>
-                  <img src={`/flags/${player.flagCode}.svg`} alt={player.team}
-                    className="w-6 h-4 object-cover rounded-sm shrink-0"
-                    onError={e => { (e.target as HTMLImageElement).style.display = "none"; }} />
-                  <div className="flex-1 min-w-0">
-                    <div className="text-sm font-bold truncate" style={{ color: "rgba(255,255,255,0.85)" }}>{player.name}</div>
-                    <div className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>{player.team}</div>
-                  </div>
-                  {active && <Check size={13} style={{ color: "#0891B2" }} />}
-                </button>
-              );
-            })}
-            {showCustom && (
-              <button
-                type="button"
-                aria-label={`Use custom pick "${search}"`}
-                onClick={() => { onSelect(search); setSearch(""); }}
-                className={`w-full flex items-center gap-2.5 px-3 py-2.5 text-left transition-all ${FOCUS_RING}`}
-                style={{ borderTop: "1px solid rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.04)" }}
-                onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,255,255,0.07)"; }}
-                onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = "rgba(255,255,255,0.04)"; }}>
-                <div className="h-6 w-6 rounded-full flex items-center justify-center shrink-0"
-                  style={{ background: "rgba(0,212,255,0.1)", border: "1px solid rgba(0,212,255,0.2)" }}>
-                  <span style={{ color: "#0891B2", fontSize: 10 }}>+</span>
-                </div>
-                <div>
-                  <div className="text-sm font-bold" style={{ color: "rgba(255,255,255,0.85)" }}>Use &quot;{search}&quot;</div>
-                  <div className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>Custom player pick</div>
-                </div>
-              </button>
-            )}
-          </div>
-        </div>
-      )}
       {value && <div className="text-xs font-bold" style={{ color: "#0891B2" }}>✓ {value}</div>}
     </div>
   );
