@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Users, Trophy, Copy, Check, RefreshCw, CheckCircle, XCircle, Link2, Trash2, UserCog } from "lucide-react";
-import { createClient as createSupabaseClient } from "@supabase/supabase-js";
+import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { MemberAvatar } from "@/components/ui/member-avatar";
 import { NudgeButton } from "@/components/admin/nudge-button";
@@ -11,13 +11,6 @@ import { BonusQuestionsAdmin } from "@/components/admin/bonus-questions-admin";
 import { cn } from "@/lib/utils";
 import type { Group, Member } from "@/lib/types";
 import { useLocale } from "@/components/i18n/locale-provider";
-
-function getClient() {
-  return createSupabaseClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
-}
 
 interface AdminPanelProps {
   group:          Group;
@@ -74,7 +67,7 @@ export function AdminPanel({ group, initialMembers }: AdminPanelProps) {
   const togglePaid = async (memberId: string, currentPaid: boolean) => {
     setMembers(prev => prev.map(m => m.id === memberId ? { ...m, paid: !currentPaid } : m));
     if (!process.env.NEXT_PUBLIC_SUPABASE_URL) return;
-    const sb = getClient();
+    const sb = createClient();
     await sb.from("group_members")
       .update({ paid: !currentPaid } as Record<string, boolean>)
       .eq("user_id", memberId).eq("group_id", group.id);
@@ -84,7 +77,7 @@ export function AdminPanel({ group, initialMembers }: AdminPanelProps) {
     if (totalPct !== 100) { setPayoutError(t("adm_payout_err")); return; }
     setPayoutSaving(true); setPayoutError(null);
     if (process.env.NEXT_PUBLIC_SUPABASE_URL) {
-      const sb = getClient();
+      const sb = createClient();
       await sb.from("groups").update({
         payout_first:  payouts.first,
         payout_second: payouts.second,
@@ -105,7 +98,7 @@ export function AdminPanel({ group, initialMembers }: AdminPanelProps) {
   const savePaymentLink = async () => {
     setSavingLink(true);
     if (process.env.NEXT_PUBLIC_SUPABASE_URL) {
-      const sb = getClient();
+      const sb = createClient();
       await sb.from("groups").update({ payment_link: paymentLinkEdit.trim() || null } as Record<string, string | null>).eq("id", group.id);
     }
     setSavingLink(false); setLinkSaved(true); setEditingLink(false);
@@ -129,7 +122,7 @@ export function AdminPanel({ group, initialMembers }: AdminPanelProps) {
     setTransferring(true);
     setTransferError(null);
     try {
-      const sb = getClient();
+      const sb = createClient();
       const { data: { session } } = await sb.auth.getSession();
       const token = session?.access_token ?? "";
       const res = await fetch("/api/admin/transfer", {

@@ -2,14 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { HelpCircle, Plus, Trash2, CheckCircle, Clock, Search } from "lucide-react";
-import { createClient as createSupabaseClient } from "@supabase/supabase-js";
-
-function getClient() {
-  return createSupabaseClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
-}
+import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { ALL_COUNTRIES } from "@/lib/countries";
 
@@ -64,7 +57,7 @@ export function BonusQuestionsAdmin({ groupId }: BonusQuestionsAdminProps) {
 
   const loadQuestions = async () => {
     setLoading(true);
-    const sb = getClient();
+    const sb = createClient();
     const { data } = await sb
       .from("bonus_questions")
       .select("id, question, question_type, points_awarded, correct_answer, is_resolved, lock_at, display_order")
@@ -101,7 +94,7 @@ export function BonusQuestionsAdmin({ groupId }: BonusQuestionsAdminProps) {
     console.log("Group ID:", groupId);
     setAdding(true);
     setSaveError(null);
-    const sb = getClient();
+    const sb = createClient();
     const { error } = await sb.from("bonus_questions").insert({
       group_id:       groupId,
       question:       newQ.question.trim(),
@@ -125,7 +118,7 @@ export function BonusQuestionsAdmin({ groupId }: BonusQuestionsAdminProps) {
   };
 
   const deleteQuestion = async (id: string) => {
-    const sb = getClient();
+    const sb = createClient();
     await sb.from("bonus_questions").delete().eq("id", id);
     setQuestions(prev => prev.filter(q => q.id !== id));
   };
@@ -139,7 +132,7 @@ export function BonusQuestionsAdmin({ groupId }: BonusQuestionsAdminProps) {
   const submitResolve = async () => {
     if (!resolveId || !resolveAnswer.trim()) return;
     setResolving(true);
-    const sb = getClient();
+    const sb = createClient();
     const { data: { session } } = await sb.auth.getSession();
     const token = session?.access_token ?? "";
 
@@ -222,15 +215,20 @@ export function BonusQuestionsAdmin({ groupId }: BonusQuestionsAdminProps) {
           </div>
           <div>
             <label className="text-[10px] font-bold uppercase tracking-widest block mb-1.5" style={{ color: "rgba(255,255,255,0.35)" }}>
-              Lock date (optional)
+              Lock (optional)
             </label>
-            <input
-              type="datetime-local"
+            <select
               value={newQ.lock_at}
               onChange={e => setNewQ(q => ({ ...q, lock_at: e.target.value }))}
-              className="w-full rounded-xl px-3 py-2.5 text-sm outline-none"
-              style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", color: "rgba(255,255,255,0.6)" }}
-            />
+              className="w-full rounded-xl px-3 py-2.5 text-sm outline-none appearance-none"
+              style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", color: newQ.lock_at ? "rgba(255,255,255,0.85)" : "rgba(255,255,255,0.35)" }}
+            >
+              <option value="" style={{ background: "#0B141B" }}>No lock</option>
+              <option value="2026-06-11T19:50:00Z" style={{ background: "#0B141B" }}>5 min before first match</option>
+              <option value="2026-06-11T19:25:00Z" style={{ background: "#0B141B" }}>30 min before first match</option>
+              <option value="2026-06-11T18:55:00Z" style={{ background: "#0B141B" }}>1 hour before first match</option>
+              <option value="2026-06-11T19:55:00Z" style={{ background: "#0B141B" }}>At tournament start (Jun 11, 19:55 UTC)</option>
+            </select>
           </div>
         </div>
 
