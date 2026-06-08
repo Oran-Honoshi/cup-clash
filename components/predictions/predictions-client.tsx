@@ -5,6 +5,7 @@ import { Users, Trophy, Lock, ChevronDown, Target } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { GroupStagePredictions } from "@/components/predictions/group-stage-predictions";
 import { TournamentPicks } from "@/components/dashboard/tournament-picks";
+import { BonusQuestions } from "@/components/predictions/bonus-questions";
 import { GuestStore } from "@/components/ui/guest-signup-modal";
 import { useLocale } from "@/components/i18n/locale-provider";
 
@@ -171,6 +172,9 @@ export function PredictionsClient({
       </div>
       <div style={{ display: tab === "tournament" ? "block" : "none" }}>
         <TournamentPicks groupId={groupId} userId={userId} locked={false} />
+        <div className="mt-5">
+          <BonusQuestions groupId={groupId} userId={userId} />
+        </div>
       </div>
     </div>
   );

@@ -2,11 +2,12 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Users, Trophy, Copy, Check, RefreshCw, CheckCircle, XCircle, Link2, Trash2 } from "lucide-react";
+import { Users, Trophy, Copy, Check, RefreshCw, CheckCircle, XCircle, Link2, Trash2, UserCog } from "lucide-react";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { Button } from "@/components/ui/button";
 import { MemberAvatar } from "@/components/ui/member-avatar";
 import { NudgeButton } from "@/components/admin/nudge-button";
+import { BonusQuestionsAdmin } from "@/components/admin/bonus-questions-admin";
 import { cn } from "@/lib/utils";
 import type { Group, Member } from "@/lib/types";
 import { useLocale } from "@/components/i18n/locale-provider";
@@ -50,6 +51,10 @@ export function AdminPanel({ group, initialMembers }: AdminPanelProps) {
   const [editingLink,     setEditingLink]     = useState(false);
   const [savingLink,      setSavingLink]      = useState(false);
   const [linkSaved,       setLinkSaved]       = useState(false);
+  const [transferTo,      setTransferTo]      = useState("");
+  const [showTransferConfirm, setShowTransferConfirm] = useState(false);
+  const [transferring,    setTransferring]    = useState(false);
+  const [transferError,   setTransferError]   = useState<string | null>(null);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -115,6 +120,29 @@ export function AdminPanel({ group, initialMembers }: AdminPanelProps) {
     } catch {
       setDeleting(false);
       setShowDeleteConfirm(false);
+    }
+  };
+
+  const handleTransfer = async () => {
+    if (!transferTo) return;
+    setTransferring(true);
+    setTransferError(null);
+    try {
+      const sb = getClient();
+      const { data: { session } } = await sb.auth.getSession();
+      const token = session?.access_token ?? "";
+      const res = await fetch("/api/admin/transfer", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+        body: JSON.stringify({ groupId: group.id, newAdminUserId: transferTo }),
+      });
+      const result = await res.json() as { success?: boolean; error?: string };
+      if (!result.success) throw new Error(result.error ?? "Transfer failed");
+      router.push("/groups");
+    } catch (err) {
+      setTransferError(err instanceof Error ? err.message : "Transfer failed");
+      setTransferring(false);
+      setShowTransferConfirm(false);
     }
   };
 
@@ -355,6 +383,83 @@ export function AdminPanel({ group, initialMembers }: AdminPanelProps) {
         </div>
       </div>
     </div>
+
+      {/* Bonus Questions */}
+      <BonusQuestionsAdmin groupId={group.id} />
+
+      {/* Transfer Admin Role */}
+      <div className="rounded-2xl p-5" style={{ ...glass, border: "1px solid rgba(251,191,36,0.2)" }}>
+        <div className="flex items-center gap-2.5 mb-3">
+          <UserCog size={16} style={{ color: "#fbbf24" }} />
+          <span className="font-display text-lg uppercase tracking-tight" style={{ color: "#fbbf24" }}>Transfer Admin Role</span>
+        </div>
+        <p className="text-sm mb-4" style={{ color: "rgba(255,255,255,0.4)" }}>
+          This will make another member the admin. You will become a regular member.
+        </p>
+
+        {members.filter(m => m.id !== group.admin).length === 0 ? (
+          <div className="text-sm" style={{ color: "rgba(255,255,255,0.3)" }}>No other members to transfer to.</div>
+        ) : (
+          <div className="space-y-3">
+            <select
+              value={transferTo}
+              onChange={e => setTransferTo(e.target.value)}
+              className="w-full rounded-xl px-4 py-3 text-sm outline-none appearance-none"
+              style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", color: transferTo ? "#fff" : "rgba(255,255,255,0.35)" }}
+            >
+              <option value="" disabled>Select new admin…</option>
+              {members.filter(m => m.id !== group.admin).map(m => (
+                <option key={m.id} value={m.id} style={{ background: "#0B141B" }}>{m.name}</option>
+              ))}
+            </select>
+            {transferError && (
+              <p className="text-xs" style={{ color: "#f87171" }}>{transferError}</p>
+            )}
+            <button
+              onClick={() => setShowTransferConfirm(true)}
+              disabled={!transferTo}
+              className="w-full py-3 rounded-xl font-bold text-sm uppercase tracking-wider flex items-center justify-center gap-2 disabled:opacity-40"
+              style={{ background: "rgba(251,191,36,0.08)", border: "1px solid rgba(251,191,36,0.25)", color: "#fbbf24" }}>
+              <UserCog size={14} /> Transfer Admin
+            </button>
+          </div>
+        )}
+      </div>
+
+      {showTransferConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: "rgba(0,0,0,0.7)", backdropFilter: "blur(4px)" }}>
+          <div className="w-full max-w-sm rounded-2xl p-6 space-y-4" style={{ background: "rgba(18,14,38,0.98)", border: "1px solid rgba(251,191,36,0.3)" }}>
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 rounded-full flex items-center justify-center shrink-0" style={{ background: "rgba(251,191,36,0.12)" }}>
+                <UserCog size={18} style={{ color: "#fbbf24" }} />
+              </div>
+              <div>
+                <div className="font-display text-lg uppercase font-black text-white">Transfer Admin?</div>
+                <div className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>This cannot be undone</div>
+              </div>
+            </div>
+            <p className="text-sm" style={{ color: "rgba(255,255,255,0.6)" }}>
+              Are you sure? You will lose admin access and become a regular member.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowTransferConfirm(false)}
+                disabled={transferring}
+                className="flex-1 py-3 rounded-xl font-bold text-sm"
+                style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.6)" }}>
+                Cancel
+              </button>
+              <button
+                onClick={handleTransfer}
+                disabled={transferring}
+                className="flex-1 py-3 rounded-xl font-bold text-sm disabled:opacity-50"
+                style={{ background: "rgba(251,191,36,0.12)", border: "1px solid rgba(251,191,36,0.3)", color: "#fbbf24" }}>
+                {transferring ? "Transferring…" : "Yes, Transfer"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Danger zone */}
       <div className="rounded-2xl p-5" style={{ ...glass, border: "1px solid rgba(239,68,68,0.2)" }}>
