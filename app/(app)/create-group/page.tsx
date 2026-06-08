@@ -155,6 +155,22 @@ function CreateGroupInner() {
   const [knockoutPolicy,   setKnockoutPolicy]   = useState<'regular_90' | 'inc_extra_time' | 'to_qualify'>('regular_90');
   const [correctOutcome,   setCorrectOutcome]   = useState(10);
   const [exactScore,       setExactScore]       = useState(25);
+
+  const [useProgressiveScoring, setUseProgressiveScoring] = useState(false);
+  const [gsCorrectOutcome,    setGsCorrectOutcome]    = useState(2);
+  const [gsExactScore,        setGsExactScore]        = useState(2);
+  const [r32CorrectOutcome,   setR32CorrectOutcome]   = useState(3);
+  const [r32ExactScore,       setR32ExactScore]       = useState(3);
+  const [r16CorrectOutcome,   setR16CorrectOutcome]   = useState(4);
+  const [r16ExactScore,       setR16ExactScore]       = useState(4);
+  const [qfCorrectOutcome,    setQfCorrectOutcome]    = useState(5);
+  const [qfExactScore,        setQfExactScore]        = useState(5);
+  const [sfCorrectOutcome,    setSfCorrectOutcome]    = useState(5);
+  const [sfExactScore,        setSfExactScore]        = useState(5);
+  const [thirdCorrectOutcome, setThirdCorrectOutcome] = useState(5);
+  const [thirdExactScore,     setThirdExactScore]     = useState(5);
+  const [finalCorrectOutcome, setFinalCorrectOutcome] = useState(6);
+  const [finalExactScore,     setFinalExactScore]     = useState(6);
   const [koAdvancement,    setKoAdvancement]    = useState(20);
   const [tourneyWinner,    setTourneyWinner]    = useState(100);
   const [topScorer,        setTopScorer]        = useState(50);
@@ -251,6 +267,21 @@ function CreateGroupInner() {
       enable_best_young:     enableYoung,
       enable_golden_ball:    enableGoldenBall,
       knockout_policy:       knockoutPolicy,
+      use_progressive_scoring: useProgressiveScoring,
+      gs_correct_outcome:    gsCorrectOutcome,
+      gs_exact_score:        gsExactScore,
+      r32_correct_outcome:   r32CorrectOutcome,
+      r32_exact_score:       r32ExactScore,
+      r16_correct_outcome:   r16CorrectOutcome,
+      r16_exact_score:       r16ExactScore,
+      qf_correct_outcome:    qfCorrectOutcome,
+      qf_exact_score:        qfExactScore,
+      sf_correct_outcome:    sfCorrectOutcome,
+      sf_exact_score:        sfExactScore,
+      third_correct_outcome: thirdCorrectOutcome,
+      third_exact_score:     thirdExactScore,
+      final_correct_outcome: finalCorrectOutcome,
+      final_exact_score:     finalExactScore,
     } as Record<string, unknown>, { onConflict: "group_id" });
 
     setCreatedName(groupName.trim());
@@ -878,6 +909,86 @@ function CreateGroupInner() {
             <RuleRow label="Best Defence"          desc="Team with lowest goals conceded"               pts={bestDefence}    setPts={setBestDefence}    enabled={enableDefence}    onToggle={() => setEnableDefence(!enableDefence)}       />
             <RuleRow label="Best Young Player"     desc="Official FIFA Best Young Player award"         pts={bestYoung}      setPts={setBestYoung}      enabled={enableYoung}      onToggle={() => setEnableYoung(!enableYoung)}           />
             <RuleRow label="Golden Ball (MVP)"     desc="Tournament best player award winner"           pts={goldenBall}     setPts={setGoldenBall}     enabled={enableGoldenBall} onToggle={() => setEnableGoldenBall(!enableGoldenBall)} />
+
+            {/* Progressive Stage Scoring */}
+            <div className="pt-3 mt-1 border-t" style={{ borderColor: "rgba(255,255,255,0.08)" }}>
+              <div className="flex items-center justify-between mb-3">
+                <div>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: "white" }}>Progressive Stage Scoring</div>
+                  <div style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", fontFamily: "var(--font-ui)" }}>
+                    Higher-stakes matches award more points
+                  </div>
+                </div>
+                <Toggle enabled={useProgressiveScoring} onToggle={() => setUseProgressiveScoring(v => !v)} />
+              </div>
+
+              {useProgressiveScoring && (
+                <div className="space-y-3">
+                  {/* Stage table */}
+                  <div style={{ overflowX: "auto" }}>
+                    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12, fontFamily: "var(--font-ui)" }}>
+                      <thead>
+                        <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.1)" }}>
+                          <th style={{ textAlign: "left", padding: "6px 8px", color: "rgba(255,255,255,0.4)", fontWeight: 700, fontSize: 10, textTransform: "uppercase", letterSpacing: "0.1em" }}>Stage</th>
+                          <th style={{ textAlign: "center", padding: "6px 8px", color: "rgba(255,255,255,0.4)", fontWeight: 700, fontSize: 10, textTransform: "uppercase", letterSpacing: "0.1em" }}>Outcome</th>
+                          <th style={{ textAlign: "center", padding: "6px 8px", color: "rgba(255,255,255,0.4)", fontWeight: 700, fontSize: 10, textTransform: "uppercase", letterSpacing: "0.1em" }}>Exact</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {([
+                          { label: "Group Stage",    co: gsCorrectOutcome,    setCo: setGsCorrectOutcome,    es: gsExactScore,        setEs: setGsExactScore        },
+                          { label: "Round of 32",    co: r32CorrectOutcome,   setCo: setR32CorrectOutcome,   es: r32ExactScore,       setEs: setR32ExactScore       },
+                          { label: "Round of 16",    co: r16CorrectOutcome,   setCo: setR16CorrectOutcome,   es: r16ExactScore,       setEs: setR16ExactScore       },
+                          { label: "Quarter Finals", co: qfCorrectOutcome,    setCo: setQfCorrectOutcome,    es: qfExactScore,        setEs: setQfExactScore        },
+                          { label: "Semi Finals",    co: sfCorrectOutcome,    setCo: setSfCorrectOutcome,    es: sfExactScore,        setEs: setSfExactScore        },
+                          { label: "3rd Place",      co: thirdCorrectOutcome, setCo: setThirdCorrectOutcome, es: thirdExactScore,     setEs: setThirdExactScore     },
+                          { label: "Final",          co: finalCorrectOutcome, setCo: setFinalCorrectOutcome, es: finalExactScore,     setEs: setFinalExactScore     },
+                        ] as const).map(({ label, co, setCo, es, setEs }) => (
+                          <tr key={label} style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+                            <td style={{ padding: "6px 8px", color: "rgba(255,255,255,0.7)", fontWeight: 600 }}>{label}</td>
+                            <td style={{ padding: "6px 8px", textAlign: "center" }}>
+                              <input type="number" min={0} value={co}
+                                onChange={(e: { target: HTMLInputElement }) => setCo(Number(e.target.value))}
+                                className="text-center"
+                                style={{ width: 52, borderRadius: 8, padding: "4px 6px", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", color: "#00D4FF", fontSize: 13, fontFamily: "var(--font-ui)", outline: "none" }} />
+                            </td>
+                            <td style={{ padding: "6px 8px", textAlign: "center" }}>
+                              <input type="number" min={0} value={es}
+                                onChange={(e: { target: HTMLInputElement }) => setEs(Number(e.target.value))}
+                                className="text-center"
+                                style={{ width: 52, borderRadius: 8, padding: "4px 6px", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", color: "#00FF88", fontSize: 13, fontFamily: "var(--font-ui)", outline: "none" }} />
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Live preview */}
+                  <div style={{ background: "rgba(0,212,255,0.04)", border: "1px solid rgba(0,212,255,0.12)", borderRadius: 12, padding: "10px 14px" }}>
+                    <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.1em", color: "rgba(255,255,255,0.4)", fontFamily: "var(--font-ui)", marginBottom: 6 }}>
+                      Max pts per match by stage
+                    </div>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: "6px 12px", fontFamily: "var(--font-mono)", fontSize: 11 }}>
+                      {[
+                        { label: "Group",  val: gsCorrectOutcome    + gsExactScore        },
+                        { label: "R32",    val: r32CorrectOutcome   + r32ExactScore       },
+                        { label: "R16",    val: r16CorrectOutcome   + r16ExactScore       },
+                        { label: "QF",     val: qfCorrectOutcome    + qfExactScore        },
+                        { label: "SF",     val: sfCorrectOutcome    + sfExactScore        },
+                        { label: "3rd",    val: thirdCorrectOutcome + thirdExactScore     },
+                        { label: "Final",  val: finalCorrectOutcome + finalExactScore     },
+                      ].map(({ label, val }) => (
+                        <span key={label}>
+                          <span style={{ color: "rgba(255,255,255,0.4)" }}>{label}: </span>
+                          <span style={{ color: "#00D4FF", fontWeight: 700 }}>{val}</span>
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
 
             {/* Knockout score evaluation policy */}
             <div className="pt-3 mt-1 border-t" style={{ borderColor: "rgba(255,255,255,0.08)" }}>

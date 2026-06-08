@@ -76,6 +76,26 @@ export interface Prediction {
   isExact?:   boolean;
 }
 
+export interface ScoringRules {
+  correctOutcome:        number;
+  exactScore:            number;
+  gsCorrectOutcome:      number;
+  gsExactScore:          number;
+  r32CorrectOutcome:     number;
+  r32ExactScore:         number;
+  r16CorrectOutcome:     number;
+  r16ExactScore:         number;
+  qfCorrectOutcome:      number;
+  qfExactScore:          number;
+  sfCorrectOutcome:      number;
+  sfExactScore:          number;
+  thirdCorrectOutcome:   number;
+  thirdExactScore:       number;
+  finalCorrectOutcome:   number;
+  finalExactScore:       number;
+  useProgressiveScoring: boolean;
+}
+
 export interface Payment {
   id:               string;
   userId:           string | null;

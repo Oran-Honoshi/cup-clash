@@ -9,42 +9,71 @@ const TOTAL_MATCHES = 104;
 const TOTAL_KO      = 32;
 
 interface ScoringRules {
-  correctOutcome:   number;
-  exactScore:       number;
-  koAdvancement:    number;
-  tournamentWinner: number;
-  topScorer:        number;
-  topAssister:      number;
-  goldenBall:       number;
-  bestDefence:      number;
-  bestYoungPlayer:  number;
-  bestThird:        number;
+  correctOutcome:      number;
+  exactScore:          number;
+  koAdvancement:       number;
+  tournamentWinner:    number;
+  topScorer:           number;
+  topAssister:         number;
+  goldenBall:          number;
+  bestDefence:         number;
+  bestYoungPlayer:     number;
+  bestThird:           number;
+  gsCorrectOutcome:    number;
+  gsExactScore:        number;
+  r32CorrectOutcome:   number;
+  r32ExactScore:       number;
+  r16CorrectOutcome:   number;
+  r16ExactScore:       number;
+  qfCorrectOutcome:    number;
+  qfExactScore:        number;
+  sfCorrectOutcome:    number;
+  sfExactScore:        number;
+  thirdCorrectOutcome: number;
+  thirdExactScore:     number;
+  finalCorrectOutcome: number;
+  finalExactScore:     number;
 }
 
 interface EnabledFeatures {
-  outcome:         boolean;
-  exact:           boolean;
-  koAdv:           boolean;
-  winner:          boolean;
-  scorer:          boolean;
-  assister:        boolean;
-  goldenBall:      boolean;
-  bestDefence:     boolean;
-  bestYoungPlayer: boolean;
-  bestThird:       boolean;
+  outcome:            boolean;
+  exact:              boolean;
+  koAdv:              boolean;
+  winner:             boolean;
+  scorer:             boolean;
+  assister:           boolean;
+  goldenBall:         boolean;
+  bestDefence:        boolean;
+  bestYoungPlayer:    boolean;
+  bestThird:          boolean;
+  progressiveScoring: boolean;
 }
 
 const DEFAULTS: ScoringRules = {
-  correctOutcome:   10,
-  exactScore:       25,
-  koAdvancement:    20,
-  tournamentWinner: 100,
-  topScorer:        50,
-  topAssister:      50,
-  goldenBall:       40,
-  bestDefence:      30,
-  bestYoungPlayer:  30,
-  bestThird:        20,
+  correctOutcome:      10,
+  exactScore:          25,
+  koAdvancement:       20,
+  tournamentWinner:    100,
+  topScorer:           50,
+  topAssister:         50,
+  goldenBall:          40,
+  bestDefence:         30,
+  bestYoungPlayer:     30,
+  bestThird:           20,
+  gsCorrectOutcome:    10,
+  gsExactScore:        25,
+  r32CorrectOutcome:   10,
+  r32ExactScore:       25,
+  r16CorrectOutcome:   10,
+  r16ExactScore:       25,
+  qfCorrectOutcome:    10,
+  qfExactScore:        25,
+  sfCorrectOutcome:    10,
+  sfExactScore:        25,
+  thirdCorrectOutcome: 10,
+  thirdExactScore:     25,
+  finalCorrectOutcome: 10,
+  finalExactScore:     25,
 };
 
 const DEFAULT_ENABLED: EnabledFeatures = {
@@ -52,6 +81,7 @@ const DEFAULT_ENABLED: EnabledFeatures = {
   winner: true, scorer: true, assister: true,
   goldenBall: false, bestDefence: false,
   bestYoungPlayer: false, bestThird: true,
+  progressiveScoring: false,
 };
 
 const RULES_CONFIG = [
@@ -90,28 +120,43 @@ export function ScoringRulesEditor({ groupId }: ScoringRulesEditorProps) {
         if (data) {
           const d = data as Record<string, unknown>;
           setRules({
-            correctOutcome:   Number(d.correct_outcome)    || DEFAULTS.correctOutcome,
-            exactScore:       Number(d.exact_score)        || DEFAULTS.exactScore,
-            koAdvancement:    Number(d.ko_advancement)     || DEFAULTS.koAdvancement,
-            tournamentWinner: Number(d.tournament_winner)  || DEFAULTS.tournamentWinner,
-            topScorer:        Number(d.top_scorer)         || DEFAULTS.topScorer,
-            topAssister:      Number(d.top_assister)       || DEFAULTS.topAssister,
-            goldenBall:       Number(d.golden_ball)        || DEFAULTS.goldenBall,
-            bestDefence:      Number(d.best_defence)       || DEFAULTS.bestDefence,
-            bestYoungPlayer:  Number(d.best_young_player)  || DEFAULTS.bestYoungPlayer,
-            bestThird:        Number(d.best_third)         || DEFAULTS.bestThird,
+            correctOutcome:      Number(d.correct_outcome)       || DEFAULTS.correctOutcome,
+            exactScore:          Number(d.exact_score)           || DEFAULTS.exactScore,
+            koAdvancement:       Number(d.ko_advancement)        || DEFAULTS.koAdvancement,
+            tournamentWinner:    Number(d.tournament_winner)     || DEFAULTS.tournamentWinner,
+            topScorer:           Number(d.top_scorer)            || DEFAULTS.topScorer,
+            topAssister:         Number(d.top_assister)          || DEFAULTS.topAssister,
+            goldenBall:          Number(d.golden_ball)           || DEFAULTS.goldenBall,
+            bestDefence:         Number(d.best_defence)          || DEFAULTS.bestDefence,
+            bestYoungPlayer:     Number(d.best_young_player)     || DEFAULTS.bestYoungPlayer,
+            bestThird:           Number(d.best_third)            || DEFAULTS.bestThird,
+            gsCorrectOutcome:    Number(d.gs_correct_outcome)    || DEFAULTS.gsCorrectOutcome,
+            gsExactScore:        Number(d.gs_exact_score)        || DEFAULTS.gsExactScore,
+            r32CorrectOutcome:   Number(d.r32_correct_outcome)   || DEFAULTS.r32CorrectOutcome,
+            r32ExactScore:       Number(d.r32_exact_score)       || DEFAULTS.r32ExactScore,
+            r16CorrectOutcome:   Number(d.r16_correct_outcome)   || DEFAULTS.r16CorrectOutcome,
+            r16ExactScore:       Number(d.r16_exact_score)       || DEFAULTS.r16ExactScore,
+            qfCorrectOutcome:    Number(d.qf_correct_outcome)    || DEFAULTS.qfCorrectOutcome,
+            qfExactScore:        Number(d.qf_exact_score)        || DEFAULTS.qfExactScore,
+            sfCorrectOutcome:    Number(d.sf_correct_outcome)    || DEFAULTS.sfCorrectOutcome,
+            sfExactScore:        Number(d.sf_exact_score)        || DEFAULTS.sfExactScore,
+            thirdCorrectOutcome: Number(d.third_correct_outcome) || DEFAULTS.thirdCorrectOutcome,
+            thirdExactScore:     Number(d.third_exact_score)     || DEFAULTS.thirdExactScore,
+            finalCorrectOutcome: Number(d.final_correct_outcome) || DEFAULTS.finalCorrectOutcome,
+            finalExactScore:     Number(d.final_exact_score)     || DEFAULTS.finalExactScore,
           });
           setEnabled({
-            outcome:         d.enable_outcome        !== false,
-            exact:           d.enable_exact          !== false,
-            koAdv:           d.enable_ko_advancement !== false,
-            winner:          d.enable_winner         !== false,
-            scorer:          d.enable_scorer         !== false,
-            assister:        d.enable_assister       !== false,
-            goldenBall:      Boolean(d.enable_golden_ball),
-            bestDefence:     Boolean(d.enable_best_defence),
-            bestYoungPlayer: Boolean(d.enable_best_young_player),
-            bestThird:       d.enable_best_third !== false,
+            outcome:            d.enable_outcome        !== false,
+            exact:              d.enable_exact          !== false,
+            koAdv:              d.enable_ko_advancement !== false,
+            winner:             d.enable_winner         !== false,
+            scorer:             d.enable_scorer         !== false,
+            assister:           d.enable_assister       !== false,
+            goldenBall:         Boolean(d.enable_golden_ball),
+            bestDefence:        Boolean(d.enable_best_defence),
+            bestYoungPlayer:    Boolean(d.enable_best_young_player),
+            bestThird:          d.enable_best_third !== false,
+            progressiveScoring: Boolean(d.use_progressive_scoring),
           });
           setLocked(!!d.locked_at);
         }
@@ -145,6 +190,21 @@ export function ScoringRulesEditor({ groupId }: ScoringRulesEditorProps) {
       enable_best_defence:    enabled.bestDefence,
       enable_best_young_player: enabled.bestYoungPlayer,
       enable_best_third:      enabled.bestThird,
+      use_progressive_scoring: enabled.progressiveScoring,
+      gs_correct_outcome:     rules.gsCorrectOutcome,
+      gs_exact_score:         rules.gsExactScore,
+      r32_correct_outcome:    rules.r32CorrectOutcome,
+      r32_exact_score:        rules.r32ExactScore,
+      r16_correct_outcome:    rules.r16CorrectOutcome,
+      r16_exact_score:        rules.r16ExactScore,
+      qf_correct_outcome:     rules.qfCorrectOutcome,
+      qf_exact_score:         rules.qfExactScore,
+      sf_correct_outcome:     rules.sfCorrectOutcome,
+      sf_exact_score:         rules.sfExactScore,
+      third_correct_outcome:  rules.thirdCorrectOutcome,
+      third_exact_score:      rules.thirdExactScore,
+      final_correct_outcome:  rules.finalCorrectOutcome,
+      final_exact_score:      rules.finalExactScore,
       updated_at:             new Date().toISOString(),
     } as Record<string, unknown>, { onConflict: "group_id" });
     setSaving(false);
@@ -242,6 +302,76 @@ export function ScoringRulesEditor({ groupId }: ScoringRulesEditorProps) {
             </div>
           );
         })}
+      </div>
+
+      {/* Progressive stage scoring */}
+      <div className="pt-2 border-t" style={{ borderColor: "rgba(255,255,255,0.08)" }}>
+        <div className={cn("flex items-center gap-3 p-3 rounded-xl border transition-all", !enabled.progressiveScoring && "opacity-50")}
+          style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)" }}>
+          <button
+            onClick={() => { if (!locked) setEnabled(e => ({ ...e, progressiveScoring: !e.progressiveScoring })); }}
+            disabled={locked}
+            className="h-5 w-5 rounded flex items-center justify-center shrink-0 transition-all"
+            style={enabled.progressiveScoring
+              ? { borderColor: "rgba(0,212,255,1)", background: "rgba(0,212,255,0.2)", border: "2px solid rgba(0,212,255,1)" }
+              : { background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)" }}
+          >
+            {enabled.progressiveScoring && <Check size={11} style={{ color: "#0891B2" }} />}
+          </button>
+          <div className="flex-1 min-w-0">
+            <div className="text-sm font-bold" style={{ color: "white" }}>Progressive stage scoring</div>
+            <div className="text-[11px]" style={{ color: "rgba(255,255,255,0.4)" }}>Higher-stakes matches award more points</div>
+          </div>
+        </div>
+
+        {enabled.progressiveScoring && (
+          <div className="mt-3 space-y-3">
+            <div style={{ overflowX: "auto" }}>
+              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
+                <thead>
+                  <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
+                    <th style={{ textAlign: "left", padding: "6px 8px", color: "rgba(255,255,255,0.4)", fontWeight: 700, fontSize: 10, textTransform: "uppercase", letterSpacing: "0.1em" }}>Stage</th>
+                    <th style={{ textAlign: "center", padding: "6px 8px", color: "rgba(255,255,255,0.4)", fontWeight: 700, fontSize: 10, textTransform: "uppercase", letterSpacing: "0.1em" }}>Outcome</th>
+                    <th style={{ textAlign: "center", padding: "6px 8px", color: "rgba(255,255,255,0.4)", fontWeight: 700, fontSize: 10, textTransform: "uppercase", letterSpacing: "0.1em" }}>Exact</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {([
+                    { label: "Group Stage",    coKey: "gsCorrectOutcome"    as keyof ScoringRules, esKey: "gsExactScore"        as keyof ScoringRules },
+                    { label: "Round of 32",    coKey: "r32CorrectOutcome"   as keyof ScoringRules, esKey: "r32ExactScore"       as keyof ScoringRules },
+                    { label: "Round of 16",    coKey: "r16CorrectOutcome"   as keyof ScoringRules, esKey: "r16ExactScore"       as keyof ScoringRules },
+                    { label: "Quarter Finals", coKey: "qfCorrectOutcome"    as keyof ScoringRules, esKey: "qfExactScore"        as keyof ScoringRules },
+                    { label: "Semi Finals",    coKey: "sfCorrectOutcome"    as keyof ScoringRules, esKey: "sfExactScore"        as keyof ScoringRules },
+                    { label: "3rd Place",      coKey: "thirdCorrectOutcome" as keyof ScoringRules, esKey: "thirdExactScore"     as keyof ScoringRules },
+                    { label: "Final",          coKey: "finalCorrectOutcome" as keyof ScoringRules, esKey: "finalExactScore"     as keyof ScoringRules },
+                  ]).map(({ label, coKey, esKey }) => (
+                    <tr key={label} style={{ borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+                      <td style={{ padding: "6px 8px", color: "rgba(255,255,255,0.7)", fontWeight: 600, fontSize: 12 }}>{label}</td>
+                      <td style={{ padding: "6px 8px", textAlign: "center" }}>
+                        <input
+                          type="number" min={0} max={999} value={rules[coKey] as number}
+                          disabled={locked}
+                          onChange={e => { setRules(r => ({ ...r, [coKey]: Number(e.target.value) })); setSaved(false); }}
+                          className="w-14 rounded-lg px-2 py-1.5 text-sm text-center focus:outline-none disabled:opacity-30"
+                          style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", color: "#ffffff" }}
+                        />
+                      </td>
+                      <td style={{ padding: "6px 8px", textAlign: "center" }}>
+                        <input
+                          type="number" min={0} max={999} value={rules[esKey] as number}
+                          disabled={locked}
+                          onChange={e => { setRules(r => ({ ...r, [esKey]: Number(e.target.value) })); setSaved(false); }}
+                          className="w-14 rounded-lg px-2 py-1.5 text-sm text-center focus:outline-none disabled:opacity-30"
+                          style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", color: "#ffffff" }}
+                        />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Max points */}

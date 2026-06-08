@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { scoreMatchResult } from "@/lib/services/predictions";
+import type { ScoringRules } from "@/lib/types";
 
 function sbAdmin() {
   return createAdminClient(
@@ -14,6 +15,52 @@ function sbAnon() {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   );
+}
+
+const SCORING_RULES_SELECT = [
+  "exact_score", "correct_outcome",
+  "gs_exact_score", "gs_correct_outcome",
+  "r32_exact_score", "r32_correct_outcome",
+  "r16_exact_score", "r16_correct_outcome",
+  "qf_exact_score", "qf_correct_outcome",
+  "sf_exact_score", "sf_correct_outcome",
+  "third_exact_score", "third_correct_outcome",
+  "final_exact_score", "final_correct_outcome",
+  "use_progressive_scoring",
+].join(", ");
+
+type ScoringRulesRow = {
+  exact_score: number; correct_outcome: number;
+  gs_exact_score: number; gs_correct_outcome: number;
+  r32_exact_score: number; r32_correct_outcome: number;
+  r16_exact_score: number; r16_correct_outcome: number;
+  qf_exact_score: number; qf_correct_outcome: number;
+  sf_exact_score: number; sf_correct_outcome: number;
+  third_exact_score: number; third_correct_outcome: number;
+  final_exact_score: number; final_correct_outcome: number;
+  use_progressive_scoring: boolean;
+};
+
+function buildScoringRules(r: ScoringRulesRow | null): ScoringRules {
+  return {
+    exactScore:            r?.exact_score            ?? 25,
+    correctOutcome:        r?.correct_outcome        ?? 10,
+    gsExactScore:          r?.gs_exact_score         ?? 25,
+    gsCorrectOutcome:      r?.gs_correct_outcome     ?? 10,
+    r32ExactScore:         r?.r32_exact_score        ?? 25,
+    r32CorrectOutcome:     r?.r32_correct_outcome    ?? 10,
+    r16ExactScore:         r?.r16_exact_score        ?? 25,
+    r16CorrectOutcome:     r?.r16_correct_outcome    ?? 10,
+    qfExactScore:          r?.qf_exact_score         ?? 25,
+    qfCorrectOutcome:      r?.qf_correct_outcome     ?? 10,
+    sfExactScore:          r?.sf_exact_score         ?? 25,
+    sfCorrectOutcome:      r?.sf_correct_outcome     ?? 10,
+    thirdExactScore:       r?.third_exact_score      ?? 25,
+    thirdCorrectOutcome:   r?.third_correct_outcome  ?? 10,
+    finalExactScore:       r?.final_exact_score      ?? 25,
+    finalCorrectOutcome:   r?.final_correct_outcome  ?? 10,
+    useProgressiveScoring: Boolean(r?.use_progressive_scoring),
+  };
 }
 
 export async function POST(req: NextRequest) {
@@ -65,22 +112,21 @@ export async function POST(req: NextRequest) {
       .eq("id", matchId)
       .maybeSingle();
 
-    const { data: rules } = await sb
+    const { data: rulesRow } = await sb
       .from("scoring_rules")
-      .select("exact_score, correct_outcome")
+      .select(SCORING_RULES_SELECT)
       .eq("group_id", groupId)
       .maybeSingle();
 
     const m = match as { home_score: number | null; away_score: number | null } | null;
-    const r = rules as { exact_score: number; correct_outcome: number } | null;
 
     if (m?.home_score != null && m?.away_score != null) {
       await scoreMatchResult({
         matchId,
         groupId,
-        homeScore:  m.home_score,
-        awayScore:  m.away_score,
-        rules: { exactScore: r?.exact_score ?? 25, correctOutcome: r?.correct_outcome ?? 10 },
+        homeScore: m.home_score,
+        awayScore: m.away_score,
+        rules:     buildScoringRules(rulesRow as ScoringRulesRow | null),
       });
     }
 
@@ -103,13 +149,11 @@ export async function POST(req: NextRequest) {
   }
 
   // Fetch scoring rules for this group
-  const { data: rules } = await sb
+  const { data: rulesRow2 } = await sb
     .from("scoring_rules")
-    .select("exact_score, correct_outcome")
+    .select(SCORING_RULES_SELECT)
     .eq("group_id", groupId)
     .maybeSingle();
-
-  const r = rules as { exact_score: number; correct_outcome: number } | null;
 
   // Immediately rescore all predictions for this match in this group
   await scoreMatchResult({
@@ -117,7 +161,7 @@ export async function POST(req: NextRequest) {
     groupId,
     homeScore,
     awayScore,
-    rules: { exactScore: r?.exact_score ?? 25, correctOutcome: r?.correct_outcome ?? 10 },
+    rules: buildScoringRules(rulesRow2 as ScoringRulesRow | null),
   });
 
   return NextResponse.json({ success: true, pointsRecalculated: true });

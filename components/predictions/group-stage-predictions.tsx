@@ -123,12 +123,15 @@ function useAutoSave(predictions: GroupPredictions, userId: string | undefined, 
   return saveStatus;
 }
 
+interface StagePoints { correctOutcome: number; exactScore: number; useProgressive: boolean; }
+
 // ── Match Card Block ──────────────────────────────────────────────────────────
-function MatchCard({ match, prediction, onChange, globalLocked }: {
+function MatchCard({ match, prediction, onChange, globalLocked, stagePoints }: {
   match: typeof WC2026_MATCHES[0];
   prediction: ScorePrediction;
   onChange: (home: string, away: string) => void;
   globalLocked: boolean;
+  stagePoints?: StagePoints;
 }) {
   const { t } = useLocale();
   const filled      = prediction.home !== "" && prediction.away !== "";
@@ -150,6 +153,11 @@ function MatchCard({ match, prediction, onChange, globalLocked }: {
         <div style={{ fontSize: 10, color: "rgba(255,255,255,0.35)", fontFamily: "var(--font-ui)" }}>
           {new Date(match.utcTime).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
           {" · "}{match.time} {match.timezone}
+          {stagePoints?.useProgressive && (
+            <span style={{ marginLeft: 8, color: "#fbbf24", fontWeight: 700 }}>
+              ⭐ {stagePoints.correctOutcome + stagePoints.exactScore} pts
+            </span>
+          )}
         </div>
         {status === "open" && countdown && (
           <span className="flex items-center text-[10px] font-bold uppercase tracking-widest px-2.5 py-0.5 rounded-full"
@@ -348,8 +356,27 @@ export function GroupStagePredictions({ groupId, locked = false, userId }: Group
   const [activeGroup, setActiveGroup] = useState("A");
   const [predictions, setPredictions] = useState<GroupPredictions>({});
   const [loaded,      setLoaded]      = useState(false);
+  const [stagePoints, setStagePoints] = useState<StagePoints | undefined>(undefined);
 
   const saveStatus = useAutoSave(loaded ? predictions : {}, userId, groupId);
+
+  useEffect(() => {
+    const sb = createClient();
+    sb.from("scoring_rules")
+      .select("use_progressive_scoring, gs_correct_outcome, gs_exact_score")
+      .eq("group_id", groupId)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data) {
+          const d = data as Record<string, unknown>;
+          setStagePoints({
+            useProgressive:  Boolean(d.use_progressive_scoring),
+            correctOutcome:  Number(d.gs_correct_outcome) || 10,
+            exactScore:      Number(d.gs_exact_score)     || 25,
+          });
+        }
+      });
+  }, [groupId]);
 
   useEffect(() => {
     if (!userId) return;
@@ -475,6 +502,7 @@ export function GroupStagePredictions({ groupId, locked = false, userId }: Group
                 prediction={predictions[match.id] ?? { home: "", away: "" }}
                 onChange={(h, a) => setScore(match.id, h, a)}
                 globalLocked={locked}
+                stagePoints={stagePoints}
               />
             ))}
           </div>

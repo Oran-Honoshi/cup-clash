@@ -24,6 +24,8 @@
  *   Golden Glove: 2 pts
  */
 
+import type { ScoringRules } from "@/lib/types";
+
 export interface ScoringConfig {
   // Match scoring
   exactScore:       number; // default 3
@@ -186,6 +188,29 @@ export function maxPossiblePoints(config: ScoringConfig): number {
   if (config.enableTrivia)    max += config.triviaPerQuestion * 20;
 
   return max;
+}
+
+/**
+ * Returns the correct-outcome and exact-score point values for a given match stage.
+ * Falls back to the flat rules when progressive scoring is disabled.
+ */
+export function getStagePoints(
+  stage: "Group" | "R32" | "R16" | "QF" | "SF" | "3rd" | "Final",
+  rules: ScoringRules,
+  useProgressive: boolean
+): { correctOutcome: number; exactScore: number } {
+  if (!useProgressive) {
+    return { correctOutcome: rules.correctOutcome, exactScore: rules.exactScore };
+  }
+  switch (stage) {
+    case "R32":   return { correctOutcome: rules.r32CorrectOutcome,   exactScore: rules.r32ExactScore   };
+    case "R16":   return { correctOutcome: rules.r16CorrectOutcome,   exactScore: rules.r16ExactScore   };
+    case "QF":    return { correctOutcome: rules.qfCorrectOutcome,    exactScore: rules.qfExactScore    };
+    case "SF":    return { correctOutcome: rules.sfCorrectOutcome,    exactScore: rules.sfExactScore    };
+    case "3rd":   return { correctOutcome: rules.thirdCorrectOutcome, exactScore: rules.thirdExactScore };
+    case "Final": return { correctOutcome: rules.finalCorrectOutcome, exactScore: rules.finalExactScore };
+    default:      return { correctOutcome: rules.gsCorrectOutcome,    exactScore: rules.gsExactScore    };
+  }
 }
 
 /**

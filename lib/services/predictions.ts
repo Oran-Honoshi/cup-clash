@@ -1,4 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
+import type { ScoringRules, Match } from "@/lib/types";
+import { getStagePoints } from "@/lib/scoring";
 
 function sb() {
   return createClient(
@@ -96,10 +98,20 @@ export async function scoreMatchResult(params: {
   groupId:    string;
   homeScore:  number;
   awayScore:  number;
-  rules:      { exactScore: number; correctOutcome: number };
+  rules:      ScoringRules;
 }): Promise<void> {
   const predictions = await getMatchPredictions(params.matchId, params.groupId);
   if (!predictions.length) return;
+
+  // Fetch match stage for progressive scoring
+  const { data: matchRow } = await sb()
+    .from("matches")
+    .select("stage")
+    .eq("id", params.matchId)
+    .maybeSingle();
+  const stage = ((matchRow as { stage: string } | null)?.stage ?? "Group") as Match["stage"];
+
+  const { correctOutcome, exactScore } = getStagePoints(stage, params.rules, params.rules.useProgressiveScoring);
 
   // Check for a group-level admin override — use it instead of the global score if present
   const { data: overrideRow } = await sb()
@@ -123,17 +135,16 @@ export async function scoreMatchResult(params: {
       : effectiveHome < effectiveAway ? "A" : "D";
     const isOutcome = !isExact && predWinner === realWinner;
 
-    const pts = isExact ? params.rules.exactScore
-      : isOutcome ? params.rules.correctOutcome : 0;
+    const pts = isExact ? exactScore : isOutcome ? correctOutcome : 0;
 
     return {
-      user_id:      pred.user_id,
-      group_id:     params.groupId,
-      match_id:     params.matchId,
-      home_score:   pred.home_score,
-      away_score:   pred.away_score,
+      user_id:       pred.user_id,
+      group_id:      params.groupId,
+      match_id:      params.matchId,
+      home_score:    pred.home_score,
+      away_score:    pred.away_score,
       points_earned: pts,
-      is_exact:     isExact,
+      is_exact:      isExact,
     };
   });
 
