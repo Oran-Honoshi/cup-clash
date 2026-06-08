@@ -96,15 +96,37 @@ interface PlayerRow {
 }
 
 // ── Main ───────────────────────────────────────────────────────────────────────
+//
+// API-Football free plan covers seasons ≤ 2024.
+// WC2026 (league=1, season=2026) requires a paid subscription.
+//
+// Best available free-tier dataset:
+//   league=1  season=2022 — actual 32-team World Cup Qatar squads
+//
+// To use WC2026 data: upgrade to the Pro plan and change LEAGUE/SEASON below.
+//
+const LEAGUE = parseInt(process.env.API_FOOTBALL_LEAGUE ?? "1",  10);
+const SEASON = parseInt(process.env.API_FOOTBALL_SEASON ?? "2022", 10);
 
 async function main() {
-  // 1. Fetch all WC2026 teams
-  console.log("Fetching WC2026 teams (league=1, season=2026)…");
-  const teamsResp = await apiFetch("/teams?league=1&season=2026");
+  console.log(`Using league=${LEAGUE} season=${SEASON}`);
+  console.log("(Override with API_FOOTBALL_LEAGUE= and API_FOOTBALL_SEASON=)\n");
+
+  // 1. Fetch all teams for this league/season
+  console.log("Fetching teams…");
+  const teamsResp = await apiFetch(`/teams?league=${LEAGUE}&season=${SEASON}`);
+
+  if (teamsResp.errors && JSON.stringify(teamsResp.errors) !== "{}") {
+    console.error("✗ API error:", JSON.stringify(teamsResp.errors));
+    console.error("  Free plan is limited to seasons 2022–2024.");
+    console.error("  Upgrade to Pro for WC2026, or set API_FOOTBALL_SEASON=2022 for Qatar data.");
+    process.exit(1);
+  }
+
   const teams = (teamsResp.response as Array<{ team: ApiTeam }>) ?? [];
 
   if (!teams.length) {
-    console.error("✗ No teams returned — verify league ID and season are correct for WC2026");
+    console.error("✗ No teams returned.");
     process.exit(1);
   }
   console.log(`✓ ${teams.length} teams found\n`);
@@ -138,8 +160,8 @@ async function main() {
       teamSummary.push({ name: team.name, count: 0 });
     }
 
-    // Stay well within the 10 req/min free-tier rate limit
-    if (i < teams.length - 1) await sleep(700);
+    // Free tier: 10 req/min → one request every 6 s to stay safe
+    if (i < teams.length - 1) await sleep(6200);
   }
 
   console.log(`\nTotal players fetched: ${allPlayers.length}\n`);
