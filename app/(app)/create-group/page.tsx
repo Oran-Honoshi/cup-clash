@@ -1033,6 +1033,21 @@ function CreateGroupInner() {
             </div>
           </div>
 
+          <div className="flex gap-3 rounded-xl px-4 py-3"
+            style={{
+              background: "rgba(0,0,0,0.3)",
+              borderLeft: "3px solid #00D4FF",
+              border: "1px solid rgba(0,212,255,0.15)",
+              borderLeftWidth: 3,
+              borderLeftColor: "#00D4FF",
+            }}>
+            <span style={{ fontSize: 16, lineHeight: 1.4, flexShrink: 0 }}>💡</span>
+            <p className="text-sm" style={{ color: "rgba(255,255,255,0.5)", fontFamily: "var(--font-ui)", lineHeight: 1.5, margin: 0 }}>
+              After creating your group, you can add custom bonus questions and predictions (e.g. Golden Glove, most red cards, tournament surprises) from the{" "}
+              <span style={{ color: "rgba(255,255,255,0.75)", fontWeight: 600 }}>Admin Panel → Bonus Questions</span>.
+            </p>
+          </div>
+
           <button type="button" onClick={handleCreate} disabled={loading}
             className="w-full flex items-center justify-center gap-2 transition-all disabled:opacity-50 hover:-translate-y-0.5"
             style={{
