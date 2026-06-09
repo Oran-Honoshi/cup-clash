@@ -59,7 +59,7 @@ export function CountdownCard({ target }: CountdownProps) {
 
       {/* Match preview label */}
       <div className="text-[10px] font-bold uppercase tracking-[0.18em] mb-3" style={{ color: "rgba(255,255,255,0.4)" }}>
-        First Match · June 11 · 21:00 UTC
+        First Match · June 11 · 3:00 PM ET
       </div>
 
       {/* Match row with flags */}

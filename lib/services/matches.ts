@@ -165,5 +165,5 @@ export async function getLiveScores(): Promise<Array<{
 }
 
 export function getTournamentStart(): Date {
-  return new Date("2026-06-11T20:00:00Z");
+  return new Date("2026-06-11T19:00:00Z");
 }

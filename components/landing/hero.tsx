@@ -6,7 +6,7 @@ import Link from "next/link";
 import { CountdownCard } from "@/components/landing/countdown-card";
 import { PHOTOS } from "@/lib/assets";
 
-const KICKOFF = new Date("2026-06-11T20:00:00Z");
+const KICKOFF = new Date("2026-06-11T19:00:00Z");
 
 function PhoneMockup() {
   return (

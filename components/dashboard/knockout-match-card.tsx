@@ -37,7 +37,7 @@ export function KnockoutMatchCard({ match, groupId }: KnockoutMatchCardProps) {
   const [knockoutPolicy,  setKnockoutPolicy]  = useState<KnockoutPolicy>('regular_90');
 
   const matchDate        = new Date(match.time);
-  const formattedTime    = formatInTimeZone(matchDate, "UTC", "EEE dd MMM · HH:mm 'UTC'");
+  const formattedTime    = formatInTimeZone(matchDate, "America/New_York", "EEE dd MMM · h:mm a 'ET'");
   const minutesToKickoff = differenceInMinutes(matchDate, new Date());
   const isLocked         = minutesToKickoff <= 5;
 

@@ -151,7 +151,7 @@ function MatchCard({ match, prediction, onChange, globalLocked, stagePoints }: {
       {/* Row 1 — meta strip */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
         <div style={{ fontSize: 10, color: "rgba(255,255,255,0.35)", fontFamily: "var(--font-ui)" }}>
-          {new Date(match.utcTime).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
+          {new Date(match.utcTime).toLocaleDateString("en-US", { timeZone: "America/New_York", day: "numeric", month: "short" })}
           {" · "}{match.time} {match.timezone}
           {stagePoints?.useProgressive && (
             <span style={{ marginLeft: 8, color: "#fbbf24", fontWeight: 700 }}>
