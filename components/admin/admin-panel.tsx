@@ -71,12 +71,16 @@ export function AdminPanel({ group, initialMembers, isOwner, currentUserId }: Ad
   const thirdAmount  = Math.round(paidAmount * payouts.third  / 100);
 
   const togglePaid = async (memberId: string, currentPaid: boolean) => {
-    setMembers(prev => prev.map(m => m.id === memberId ? { ...m, paid: !currentPaid } : m));
-    if (!process.env.NEXT_PUBLIC_SUPABASE_URL) return;
+    const newPaid = !currentPaid;
+    setMembers(prev => prev.map(m => m.id === memberId ? { ...m, paid: newPaid } : m));
     const sb = createClient();
-    await sb.from("group_members")
-      .update({ payment_status: !currentPaid ? "paid" : "unpaid" } as Record<string, string>)
-      .eq("user_id", memberId).eq("group_id", group.id);
+    const { data: { session } } = await sb.auth.getSession();
+    const token = session?.access_token ?? "";
+    await fetch("/api/admin/set-member-paid", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+      body: JSON.stringify({ groupId: group.id, memberId, paid: newPaid }),
+    });
   };
 
   const setMemberRole = async (memberId: string, role: MemberRole) => {
@@ -207,76 +211,73 @@ export function AdminPanel({ group, initialMembers, isOwner, currentUserId }: Ad
             const isThisAdmin = memberRole === 'admin';
             const canManageRole = isOwner && m.id !== currentUserId && !isThisOwner;
             return (
-            <div key={m.id} className="flex items-center gap-2 sm:gap-3 py-2.5 border-b last:border-0"
+            <div key={m.id} className="py-2.5 border-b last:border-0"
               style={{ borderColor: "rgba(255,255,255,0.06)" }}>
-              {/* Avatar */}
-              <MemberAvatar name={m.name} avatarUrl={m.avatarUrl} size="sm" />
+              <div className="flex items-start gap-2.5">
+                {/* Avatar — spans both rows */}
+                <MemberAvatar name={m.name} avatarUrl={m.avatarUrl} size="sm" className="mt-0.5 shrink-0" />
 
-              {/* Name + role badge — takes remaining space */}
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-1.5 min-w-0">
-                  <span className="flex-1 min-w-0 text-sm font-bold truncate text-white">{m.name}</span>
-                  {isThisOwner && (
-                    <span className="flex items-center gap-0.5 text-[10px] font-black uppercase px-1.5 py-0.5 rounded-full shrink-0"
-                      style={{ background: "rgba(251,191,36,0.12)", color: "#fbbf24", border: "1px solid rgba(251,191,36,0.25)" }}>
-                      <Crown size={9} /> Owner
-                    </span>
-                  )}
-                  {isThisAdmin && (
-                    <span className="flex items-center gap-0.5 text-[10px] font-black uppercase px-1.5 py-0.5 rounded-full shrink-0"
-                      style={{ background: "rgba(0,212,255,0.1)", color: "#00D4FF", border: "1px solid rgba(0,212,255,0.2)" }}>
-                      <Shield size={9} /> Admin
-                    </span>
-                  )}
+                <div className="flex-1 min-w-0 space-y-1.5">
+                  {/* Row 1: name + role badge + admin button */}
+                  <div className="flex items-center gap-1.5">
+                    <span className="flex-1 min-w-0 text-sm font-bold truncate text-white">{m.name}</span>
+                    {isThisOwner && (
+                      <span className="flex items-center gap-0.5 text-[10px] font-black uppercase px-1.5 py-0.5 rounded-full shrink-0"
+                        style={{ background: "rgba(251,191,36,0.12)", color: "#fbbf24", border: "1px solid rgba(251,191,36,0.25)" }}>
+                        <Crown size={9} /> Owner
+                      </span>
+                    )}
+                    {isThisAdmin && (
+                      <span className="flex items-center gap-0.5 text-[10px] font-black uppercase px-1.5 py-0.5 rounded-full shrink-0"
+                        style={{ background: "rgba(0,212,255,0.1)", color: "#00D4FF", border: "1px solid rgba(0,212,255,0.2)" }}>
+                        <Shield size={9} /> Admin
+                      </span>
+                    )}
+                    {canManageRole && (
+                      isThisAdmin ? (
+                        <button
+                          onClick={() => setMemberRole(m.id, 'member')}
+                          disabled={roleUpdating === m.id}
+                          className="shrink-0 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full transition-all disabled:opacity-40"
+                          style={{ background: "rgba(248,113,113,0.1)", border: "1px solid rgba(248,113,113,0.25)", color: "#f87171" }}>
+                          {roleUpdating === m.id ? "…" : "Remove Admin"}
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => setMemberRole(m.id, 'admin')}
+                          disabled={roleUpdating === m.id}
+                          className="shrink-0 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full transition-all disabled:opacity-40"
+                          style={{ background: "rgba(0,212,255,0.08)", border: "1px solid rgba(0,212,255,0.2)", color: "#00D4FF" }}>
+                          {roleUpdating === m.id ? "…" : "Make Admin"}
+                        </button>
+                      )
+                    )}
+                  </div>
+
+                  {/* Row 2: nudge + amount + paid toggle */}
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <NudgeButton
+                      memberName={m.name} matchLabel="Next match"
+                      groupName={group.name} minutesToKickoff={90}
+                      hasPredicted={false} size="sm"
+                    />
+                    {group.buyInAmount > 0 && (
+                      <span className="text-xs font-bold" style={{ color: "rgba(255,255,255,0.45)" }}>
+                        {group.currencySymbol}{group.buyInAmount}
+                      </span>
+                    )}
+                    <button onClick={() => togglePaid(m.id, m.paid)}
+                      className="flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider px-2 py-1 rounded-full transition-all"
+                      style={m.paid ? {
+                        background: "rgba(0,255,136,0.12)", border: "1px solid rgba(0,255,136,0.25)", color: "#00FF88",
+                      } : {
+                        background: "rgba(248,113,113,0.1)", border: "1px solid rgba(248,113,113,0.2)", color: "#f87171",
+                      }}>
+                      {m.paid ? <><CheckCircle size={11} /> Paid</> : <><XCircle size={11} /> Unpaid</>}
+                    </button>
+                  </div>
                 </div>
-                <div className="text-[11px]" style={{ color: "rgba(255,255,255,0.3)" }}>{m.country}</div>
               </div>
-
-              {/* Nudge + amount + paid status — fixed right side */}
-              <div className="hidden sm:block shrink-0">
-                <NudgeButton
-                  memberName={m.name} matchLabel="Next match"
-                  groupName={group.name} minutesToKickoff={90}
-                  hasPredicted={false} size="sm"
-                />
-              </div>
-              {group.buyInAmount > 0 && (
-                <span className="hidden sm:inline text-sm font-bold shrink-0" style={{ color: "rgba(255,255,255,0.6)" }}>
-                  {group.currencySymbol}{group.buyInAmount}
-                </span>
-              )}
-              <button onClick={() => togglePaid(m.id, m.paid)}
-                className="flex items-center gap-1 sm:gap-1.5 text-xs font-bold uppercase tracking-wider px-2 sm:px-2.5 py-2 rounded-full transition-all shrink-0"
-                style={m.paid ? {
-                  background: "rgba(0,255,136,0.12)", border: "1px solid rgba(0,255,136,0.25)", color: "#00FF88",
-                } : {
-                  background: "rgba(248,113,113,0.1)", border: "1px solid rgba(248,113,113,0.2)", color: "#f87171",
-                }}>
-                {m.paid
-                  ? <><CheckCircle size={12} /><span className="hidden sm:inline">Paid</span></>
-                  : <><XCircle size={12} /><span className="hidden sm:inline">Unpaid</span></>}
-              </button>
-
-              {/* Role management — rightmost, owner-only */}
-              {canManageRole && (
-                isThisAdmin ? (
-                  <button
-                    onClick={() => setMemberRole(m.id, 'member')}
-                    disabled={roleUpdating === m.id}
-                    className="shrink-0 text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full transition-all disabled:opacity-40"
-                    style={{ background: "rgba(248,113,113,0.1)", border: "1px solid rgba(248,113,113,0.25)", color: "#f87171" }}>
-                    {roleUpdating === m.id ? "…" : "Remove Admin"}
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => setMemberRole(m.id, 'admin')}
-                    disabled={roleUpdating === m.id}
-                    className="shrink-0 text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full transition-all disabled:opacity-40"
-                    style={{ background: "rgba(0,212,255,0.08)", border: "1px solid rgba(0,212,255,0.2)", color: "#00D4FF" }}>
-                    {roleUpdating === m.id ? "…" : "Make Admin"}
-                  </button>
-                )
-              )}
             </div>
             );
           })}
