@@ -3,17 +3,18 @@ import type { Country, CountryCode } from "@/lib/types";
 // Flag SVGs are self-hosted under /public/flags/ — see PRODUCT.md privacy
 // principle and DESIGN.md "Don't ship third-party flag CDN calls".
 // Usage: flagUrl(country.flagCode) → "/flags/us.svg"
+//
+// Team names match the API-Football players table (country column) so that
+// flag lookups in PlayerPicker and CountrySelector work without any mapping.
 
 export const COUNTRIES: Record<CountryCode, Country> = {
   // ── CONCACAF ──────────────────────────────────────────────────────────────
   USA: { code: "USA", name: "USA",         flagCode: "us", theme: { accent: "178 34 34",   accentGlow: "220 100 100" } },
   CAN: { code: "CAN", name: "Canada",      flagCode: "ca", theme: { accent: "220 38 38",   accentGlow: "252 165 165" } },
   MEX: { code: "MEX", name: "Mexico",      flagCode: "mx", theme: { accent: "22 163 74",   accentGlow: "134 239 172" } },
-  JAM: { code: "JAM", name: "Jamaica",     flagCode: "jm", theme: { accent: "234 179 8",   accentGlow: "253 224 71"  } },
   PAN: { code: "PAN", name: "Panama",      flagCode: "pa", theme: { accent: "220 38 38",   accentGlow: "252 165 165" } },
-  CRC: { code: "CRC", name: "Costa Rica",  flagCode: "cr", theme: { accent: "37 99 235",   accentGlow: "147 197 253" } },
-  HON: { code: "HON", name: "Honduras",    flagCode: "hn", theme: { accent: "37 99 235",   accentGlow: "147 197 253" } },
-  TTO: { code: "TTO", name: "Trinidad & Tobago", flagCode: "tt", theme: { accent: "220 38 38", accentGlow: "252 165 165" } },
+  HAI: { code: "HAI", name: "Haiti",       flagCode: "ht", theme: { accent: "37 99 235",   accentGlow: "147 197 253" } },
+  CUR: { code: "CUR", name: "Curaçao",     flagCode: "cw", theme: { accent: "37 99 235",   accentGlow: "147 197 253" } },
 
   // ── CONMEBOL ──────────────────────────────────────────────────────────────
   ARG: { code: "ARG", name: "Argentina",   flagCode: "ar", theme: { accent: "117 192 232", accentGlow: "180 220 245" } },
@@ -21,7 +22,7 @@ export const COUNTRIES: Record<CountryCode, Country> = {
   COL: { code: "COL", name: "Colombia",    flagCode: "co", theme: { accent: "234 179 8",   accentGlow: "253 224 71"  } },
   URU: { code: "URU", name: "Uruguay",     flagCode: "uy", theme: { accent: "59 130 246",  accentGlow: "147 197 253" } },
   ECU: { code: "ECU", name: "Ecuador",     flagCode: "ec", theme: { accent: "234 179 8",   accentGlow: "253 224 71"  } },
-  VEN: { code: "VEN", name: "Venezuela",   flagCode: "ve", theme: { accent: "220 38 38",   accentGlow: "252 165 165" } },
+  PAR: { code: "PAR", name: "Paraguay",    flagCode: "py", theme: { accent: "37 99 235",   accentGlow: "147 197 253" } },
 
   // ── UEFA ──────────────────────────────────────────────────────────────────
   ENG: { code: "ENG", name: "England",     flagCode: "gb-eng", theme: { accent: "220 38 38",  accentGlow: "252 165 165" } },
@@ -31,26 +32,27 @@ export const COUNTRIES: Record<CountryCode, Country> = {
   POR: { code: "POR", name: "Portugal",    flagCode: "pt",     theme: { accent: "5 150 105",  accentGlow: "110 231 183" } },
   NED: { code: "NED", name: "Netherlands", flagCode: "nl",     theme: { accent: "249 115 22", accentGlow: "253 186 116" } },
   BEL: { code: "BEL", name: "Belgium",     flagCode: "be",     theme: { accent: "220 38 38",  accentGlow: "252 165 165" } },
-  ITA: { code: "ITA", name: "Italy",       flagCode: "it",     theme: { accent: "37 99 235",  accentGlow: "147 197 253" } },
   AUT: { code: "AUT", name: "Austria",     flagCode: "at",     theme: { accent: "220 38 38",  accentGlow: "252 165 165" } },
   CHE: { code: "CHE", name: "Switzerland", flagCode: "ch",     theme: { accent: "220 38 38",  accentGlow: "252 165 165" } },
   SCO: { code: "SCO", name: "Scotland",    flagCode: "gb-sct", theme: { accent: "37 99 235",  accentGlow: "147 197 253" } },
-  DNK: { code: "DNK", name: "Denmark",     flagCode: "dk",     theme: { accent: "190 30 45",  accentGlow: "240 100 115" } },
-  HUN: { code: "HUN", name: "Hungary",     flagCode: "hu",     theme: { accent: "220 38 38",  accentGlow: "252 165 165" } },
-  SRB: { code: "SRB", name: "Serbia",      flagCode: "rs",     theme: { accent: "190 30 45",  accentGlow: "240 100 115" } },
-  SVK: { code: "SVK", name: "Slovakia",    flagCode: "sk",     theme: { accent: "37 99 235",  accentGlow: "147 197 253" } },
-  GRE: { code: "GRE", name: "Greece",      flagCode: "gr",     theme: { accent: "37 99 235",  accentGlow: "147 197 253" } },
+  BIH: { code: "BIH", name: "Bosnia & Herzegovina", flagCode: "ba", theme: { accent: "37 99 235", accentGlow: "147 197 253" } },
+  CRO: { code: "CRO", name: "Croatia",     flagCode: "hr",     theme: { accent: "220 38 38",  accentGlow: "252 165 165" } },
+  CZE: { code: "CZE", name: "Czech Republic", flagCode: "cz",  theme: { accent: "220 38 38",  accentGlow: "252 165 165" } },
+  NOR: { code: "NOR", name: "Norway",      flagCode: "no",     theme: { accent: "220 38 38",  accentGlow: "252 165 165" } },
+  SWE: { code: "SWE", name: "Sweden",      flagCode: "se",     theme: { accent: "234 179 8",  accentGlow: "253 224 71"  } },
+  TUR: { code: "TUR", name: "Türkiye",     flagCode: "tr",     theme: { accent: "220 38 38",  accentGlow: "252 165 165" } },
 
   // ── CAF ───────────────────────────────────────────────────────────────────
   MAR: { code: "MAR", name: "Morocco",     flagCode: "ma", theme: { accent: "5 150 105",   accentGlow: "110 231 183" } },
   SEN: { code: "SEN", name: "Senegal",     flagCode: "sn", theme: { accent: "22 163 74",   accentGlow: "134 239 172" } },
-  NGA: { code: "NGA", name: "Nigeria",     flagCode: "ng", theme: { accent: "22 163 74",   accentGlow: "134 239 172" } },
   EGY: { code: "EGY", name: "Egypt",       flagCode: "eg", theme: { accent: "220 38 38",   accentGlow: "252 165 165" } },
-  CMR: { code: "CMR", name: "Cameroon",    flagCode: "cm", theme: { accent: "22 163 74",   accentGlow: "134 239 172" } },
-  CIV: { code: "CIV", name: "Côte d'Ivoire", flagCode: "ci", theme: { accent: "249 115 22", accentGlow: "253 186 116" } },
-  MLI: { code: "MLI", name: "Mali",        flagCode: "ml", theme: { accent: "22 163 74",   accentGlow: "134 239 172" } },
-  RSA: { code: "RSA", name: "South Africa", flagCode: "za", theme: { accent: "22 163 74",  accentGlow: "134 239 172" } },
+  ALG: { code: "ALG", name: "Algeria",     flagCode: "dz", theme: { accent: "22 163 74",   accentGlow: "134 239 172" } },
   TUN: { code: "TUN", name: "Tunisia",     flagCode: "tn", theme: { accent: "220 38 38",   accentGlow: "252 165 165" } },
+  GHA: { code: "GHA", name: "Ghana",       flagCode: "gh", theme: { accent: "22 163 74",   accentGlow: "134 239 172" } },
+  CPV: { code: "CPV", name: "Cape Verde Islands", flagCode: "cv", theme: { accent: "37 99 235", accentGlow: "147 197 253" } },
+  RSA: { code: "RSA", name: "South Africa", flagCode: "za", theme: { accent: "22 163 74",  accentGlow: "134 239 172" } },
+  CIV: { code: "CIV", name: "Ivory Coast", flagCode: "ci", theme: { accent: "249 115 22",  accentGlow: "253 186 116" } },
+  CGO: { code: "CGO", name: "Congo DR",    flagCode: "cd", theme: { accent: "37 99 235",   accentGlow: "147 197 253" } },
 
   // ── AFC ───────────────────────────────────────────────────────────────────
   JPN: { code: "JPN", name: "Japan",       flagCode: "jp", theme: { accent: "188 0 45",    accentGlow: "240 100 130" } },
@@ -60,7 +62,8 @@ export const COUNTRIES: Record<CountryCode, Country> = {
   JOR: { code: "JOR", name: "Jordan",      flagCode: "jo", theme: { accent: "22 163 74",   accentGlow: "134 239 172" } },
   IRQ: { code: "IRQ", name: "Iraq",        flagCode: "iq", theme: { accent: "22 163 74",   accentGlow: "134 239 172" } },
   UZB: { code: "UZB", name: "Uzbekistan",  flagCode: "uz", theme: { accent: "37 99 235",   accentGlow: "147 197 253" } },
-  OMA: { code: "OMA", name: "Oman",        flagCode: "om", theme: { accent: "22 163 74",   accentGlow: "134 239 172" } },
+  QAT: { code: "QAT", name: "Qatar",       flagCode: "qa", theme: { accent: "129 24 75",   accentGlow: "200 100 150" } },
+  KSA: { code: "KSA", name: "Saudi Arabia", flagCode: "sa", theme: { accent: "22 163 74",  accentGlow: "134 239 172" } },
 
   // ── OFC ───────────────────────────────────────────────────────────────────
   NZL: { code: "NZL", name: "New Zealand", flagCode: "nz", theme: { accent: "37 99 235",   accentGlow: "147 197 253" } },

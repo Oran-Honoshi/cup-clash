@@ -12,18 +12,30 @@ interface FlaggedTeamProps {
 // Name → flagCode fallback for callers that pass a country name without an
 // explicit ISO code. Lowercase, hyphenated subdivisions where applicable.
 // SVGs are self-hosted in /public/flags/ — see PRODUCT.md privacy principle.
+// Covers both API-Football names (players table) and our normalized display names (schedule.ts).
 const TEAM_FLAGS: Record<string, string> = {
-  Mexico: "mx", USA: "us", Canada: "ca", Brazil: "br",
-  Argentina: "ar", France: "fr", England: "gb-eng", Germany: "de",
-  Spain: "es", Portugal: "pt", Netherlands: "nl", Italy: "it",
-  Belgium: "be", Croatia: "hr", Morocco: "ma", Senegal: "sn",
-  Japan: "jp", "South Korea": "kr", Australia: "au", Uruguay: "uy",
-  Colombia: "co", Ecuador: "ec", Chile: "cl", Peru: "pe",
-  Nigeria: "ng", Ghana: "gh", Egypt: "eg", Cameroon: "cm",
-  "Saudi Arabia": "sa", Iran: "ir", Qatar: "qa", "South Africa": "za",
-  Serbia: "rs", Switzerland: "ch", Denmark: "dk", Poland: "pl",
-  Ukraine: "ua", Turkey: "tr", "Czech Republic": "cz", Austria: "at",
-  Wales: "gb-wls", Scotland: "gb-sct", Norway: "no", Sweden: "se",
+  // CONCACAF
+  USA: "us", Canada: "ca", Mexico: "mx", Panama: "pa", Haiti: "ht", "Curaçao": "cw",
+  // CONMEBOL
+  Argentina: "ar", Brazil: "br", Colombia: "co", Uruguay: "uy", Ecuador: "ec", Paraguay: "py",
+  // UEFA
+  England: "gb-eng", France: "fr", Spain: "es", Germany: "de", Portugal: "pt",
+  Netherlands: "nl", Belgium: "be", Austria: "at", Switzerland: "ch", Scotland: "gb-sct",
+  "Bosnia & Herzegovina": "ba", Croatia: "hr",
+  "Czech Republic": "cz", Czechia: "cz",
+  Norway: "no", Sweden: "se",
+  "Türkiye": "tr", Turkey: "tr",
+  // CAF
+  Morocco: "ma", Senegal: "sn", Egypt: "eg", Algeria: "dz", Tunisia: "tn",
+  Ghana: "gh", "Cape Verde Islands": "cv", "Cabo Verde": "cv",
+  "South Africa": "za", "Ivory Coast": "ci", "Côte d'Ivoire": "ci", "Congo DR": "cd",
+  // AFC
+  Japan: "jp", "South Korea": "kr", "Korea Republic": "kr",
+  Iran: "ir", "IR Iran": "ir",
+  Australia: "au", Jordan: "jo", Iraq: "iq", Uzbekistan: "uz",
+  Qatar: "qa", "Saudi Arabia": "sa",
+  // OFC
+  "New Zealand": "nz",
 };
 
 const VALID_CODE = /^[a-z]{2}(-[a-z]{2,3})?$/;
