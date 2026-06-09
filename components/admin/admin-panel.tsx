@@ -75,7 +75,7 @@ export function AdminPanel({ group, initialMembers, isOwner, currentUserId }: Ad
     if (!process.env.NEXT_PUBLIC_SUPABASE_URL) return;
     const sb = createClient();
     await sb.from("group_members")
-      .update({ paid: !currentPaid } as Record<string, boolean>)
+      .update({ payment_status: !currentPaid ? "paid" : "unpaid" } as Record<string, string>)
       .eq("user_id", memberId).eq("group_id", group.id);
   };
 
@@ -215,7 +215,7 @@ export function AdminPanel({ group, initialMembers, isOwner, currentUserId }: Ad
               {/* Name + role badge — takes remaining space */}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-1.5 min-w-0">
-                  <span className="text-sm font-bold truncate text-white">{m.name}</span>
+                  <span className="flex-1 min-w-0 text-sm font-bold truncate text-white">{m.name}</span>
                   {isThisOwner && (
                     <span className="flex items-center gap-0.5 text-[10px] font-black uppercase px-1.5 py-0.5 rounded-full shrink-0"
                       style={{ background: "rgba(251,191,36,0.12)", color: "#fbbf24", border: "1px solid rgba(251,191,36,0.25)" }}>
