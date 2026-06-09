@@ -115,7 +115,7 @@ export function TriviaPageClient({
           {[
             { icon: "❓", value: "20",              label: "Questions"    },
             { icon: "⏱",  value: `${SECONDS_PER_QUESTION}s`, label: "Per question" },
-            { icon: "⭐", value: "20",              label: "Max points"   },
+            { icon: "⭐", value: "100",             label: "Max points"   },
           ].map(({ icon, value, label }) => (
             <div key={label} className="rounded-2xl p-4 text-center" style={glass}>
               <div className="text-2xl mb-1">{icon}</div>
@@ -194,7 +194,7 @@ export function TriviaPageClient({
           <div className="font-black text-white text-[10px] uppercase tracking-widest">How it works</div>
           {isPointsMode ? (
             <>
-              <p>You have <strong className="text-white">one shot</strong> to earn up to 20 points — 1 point per correct answer.</p>
+              <p>You have <strong className="text-white">one shot</strong> to earn up to 100 points — 5 points per correct answer.</p>
               <p>Each question has a <strong className="text-white">{SECONDS_PER_QUESTION}-second</strong> countdown. Answer before time runs out.</p>
               <p>After the points round, you can play the remaining questions for fun (pausable, no effect on scores).</p>
             </>

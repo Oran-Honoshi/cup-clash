@@ -72,8 +72,6 @@ export default async function AdminPage() {
                 border: "1px solid rgba(255,255,255,0.08)",
                 boxShadow: "0 4px 16px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06)",
               }}
-              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = "rgba(0,212,255,0.3)"; }}
-              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.08)"; }}
             >
               <div className="h-12 w-12 rounded-2xl flex items-center justify-center shrink-0"
                 style={{ background: "linear-gradient(135deg, rgba(0,212,255,0.12), rgba(0,255,136,0.12))", border: "1px solid rgba(0,212,255,0.2)" }}>

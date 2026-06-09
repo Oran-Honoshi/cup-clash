@@ -19,9 +19,9 @@ export default async function ChatPage() {
     .from("group_members")
     .select("group_id")
     .eq("user_id", user.id)
-    .limit(2);
+    .limit(1);
 
-  if (memberships?.length === 1) {
+  if (memberships?.length) {
     redirect(`/groups/${memberships[0].group_id}?tab=chat`);
   }
 
