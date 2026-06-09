@@ -46,7 +46,7 @@ const NAV_ITEMS = [
   { href: "/admin",        key: "common_admin"      as const, icon: Shield          },
 ];
 
-const CHAT_HREF = "/groups";
+const CHAT_HREF = "/chat";
 
 export function AppSidebar() {
   const pathname  = usePathname();

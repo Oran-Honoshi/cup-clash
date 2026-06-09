@@ -16,6 +16,7 @@ interface GroupDetailClientProps {
   currentUserId: string;
   isAdmin: boolean;
   isMember: boolean;
+  initialTab?: "overview" | "chat";
 }
 
 const ENABLE_KEYS: Record<string, string> = {
@@ -26,10 +27,10 @@ const ENABLE_KEYS: Record<string, string> = {
 
 const glass = { background: "rgba(255,255,255,0.07)", backdropFilter: "blur(24px)", WebkitBackdropFilter: "blur(24px)", border: "1px solid rgba(255,255,255,0.12)", boxShadow: "0 8px 32px rgba(0,0,0,0.25), inset 0 1px 1px rgba(255,255,255,0.06)" } as const;
 
-export function GroupDetailClient({ group, rules, members, currentUserId, isAdmin, isMember }: GroupDetailClientProps) {
+export function GroupDetailClient({ group, rules, members, currentUserId, isAdmin, isMember, initialTab = "overview" }: GroupDetailClientProps) {
   const { t } = useLocale();
   const router = useRouter();
-  const [tab, setTab] = useState<"overview" | "chat">("overview");
+  const [tab, setTab] = useState<"overview" | "chat">(initialTab);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const paidCount = members.filter(m => m.paid).length;  // admin buy-in toggle

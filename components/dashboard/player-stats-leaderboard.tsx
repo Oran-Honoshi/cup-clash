@@ -2,7 +2,6 @@
 
 import { Star, Users, TrendingUp } from "lucide-react";
 import Image from "next/image";
-import { Card } from "@/components/ui/card";
 import { flagUrl } from "@/lib/countries";
 
 export interface PlayerStat {
@@ -93,10 +92,16 @@ function PlayerRow({ player, statLabel }: { player: PlayerStat; statLabel: strin
   );
 }
 
+const DARK_CARD_STYLE = {
+  background: "rgba(12, 18, 32, 0.78)",
+  border: "1px solid rgba(255,255,255,0.08)",
+  boxShadow: "0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.06)",
+} as const;
+
 export function TopScorersLeaderboard() {
   return (
-    <Card variant="glass" className="overflow-hidden">
-      <div className="flex items-center gap-2.5 px-5 py-4 border-b border-white/[0.06]">
+    <div className="rounded-2xl overflow-hidden" style={DARK_CARD_STYLE}>
+      <div className="flex items-center gap-2.5 px-5 py-4 border-b" style={{ borderColor: "rgba(255,255,255,0.07)" }}>
         <Star size={18} className="text-warning" />
         <span className="font-display text-xl uppercase text-white tracking-tight">
           Top Scorers
@@ -104,7 +109,7 @@ export function TopScorersLeaderboard() {
         <span className="ml-auto label-caps">Top 10</span>
       </div>
 
-      <div className="px-5 py-2 border-b border-white/[0.04] flex items-center gap-2 text-[11px] text-pitch-500">
+      <div className="px-5 py-2 border-b flex items-center gap-2 text-[11px] text-pitch-500" style={{ borderColor: "rgba(255,255,255,0.05)" }}>
         <TrendingUp size={11} />
         Updated after each match · Live data coming June 11
       </div>
@@ -114,14 +119,14 @@ export function TopScorersLeaderboard() {
           <PlayerRow key={player.name} player={player} statLabel="goals" />
         ))}
       </div>
-    </Card>
+    </div>
   );
 }
 
 export function TopAssistersLeaderboard() {
   return (
-    <Card variant="glass" className="overflow-hidden">
-      <div className="flex items-center gap-2.5 px-5 py-4 border-b border-white/[0.06]">
+    <div className="rounded-2xl overflow-hidden" style={DARK_CARD_STYLE}>
+      <div className="flex items-center gap-2.5 px-5 py-4 border-b" style={{ borderColor: "rgba(255,255,255,0.07)" }}>
         <Users size={18} style={{ color: "rgb(var(--accent-glow))" }} />
         <span className="font-display text-xl uppercase text-white tracking-tight">
           Top Assisters
@@ -129,7 +134,7 @@ export function TopAssistersLeaderboard() {
         <span className="ml-auto label-caps">Top 10</span>
       </div>
 
-      <div className="px-5 py-2 border-b border-white/[0.04] flex items-center gap-2 text-[11px] text-pitch-500">
+      <div className="px-5 py-2 border-b flex items-center gap-2 text-[11px] text-pitch-500" style={{ borderColor: "rgba(255,255,255,0.05)" }}>
         <TrendingUp size={11} />
         Updated after each match · Live data coming June 11
       </div>
@@ -139,6 +144,6 @@ export function TopAssistersLeaderboard() {
           <PlayerRow key={player.name} player={player} statLabel="assists" />
         ))}
       </div>
-    </Card>
+    </div>
   );
 }

@@ -49,7 +49,7 @@ async function getMembers(groupId: string) {
   }>;
 }
 
-export default async function GroupDetailPage({ params }: { params: { groupId: string } }) {
+export default async function GroupDetailPage({ params, searchParams }: { params: { groupId: string }; searchParams: { tab?: string } }) {
   const userProfile = await getCurrentUserProfile();
   if (!userProfile) redirect("/signup");
 
@@ -74,6 +74,7 @@ export default async function GroupDetailPage({ params }: { params: { groupId: s
       currentUserId={userProfile.id}
       isAdmin={isAdmin}
       isMember={isMember}
+      initialTab={searchParams.tab === "chat" ? "chat" : "overview"}
     />
   );
 }
