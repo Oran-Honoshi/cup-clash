@@ -91,6 +91,7 @@ export function PlayerPicker({
     sb.from("players")
       .select("id, full_name, country, position, photo, api_player_id")
       .order("country")
+      .limit(2000)
       .then(({ data, error }) => {
         if (error) console.error("[PlayerPicker] fetch error:", error.message);
         console.log("[PlayerPicker] fetched", data?.length ?? 0, "players");
