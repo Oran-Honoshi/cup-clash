@@ -299,6 +299,15 @@ export function TournamentPicks({ groupId, userId, locked = false }: TournamentP
 
     if (rows.length === 0) { setSaving(false); return; }
 
+    // Delete all existing best_third rows before reinserting so stale positions
+    // (e.g. from deleted invalid picks) never accumulate as duplicates.
+    await sb
+      .from("group_predictions")
+      .delete()
+      .eq("user_id", user.id)
+      .eq("group_id", groupId)
+      .like("pred_type", "best_third_%");
+
     const { error: saveError } = await sb
       .from("group_predictions")
       .upsert(rows, { onConflict: "user_id,group_id,match_id" });
