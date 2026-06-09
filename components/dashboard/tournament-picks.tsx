@@ -137,10 +137,14 @@ interface BestThirdPickerProps {
 
 function BestThirdPicker({ selected, onToggle, isLocked, pts }: BestThirdPickerProps) {
   const [search, setSearch] = useState("");
+  const validNames = new Set(ALL_COUNTRIES.map(c => c.name));
   const filtered = ALL_COUNTRIES.filter(c =>
     c.name.toLowerCase().includes(search.toLowerCase()) ||
     (c.code ?? c.flagCode).toLowerCase().includes(search.toLowerCase())
   ).slice(0, 48);
+
+  // Picks that no longer correspond to a valid WC2026 team (stale data)
+  const orphaned = selected.filter(s => !validNames.has(s));
 
   return (
     <div className="space-y-3">
@@ -155,6 +159,21 @@ function BestThirdPicker({ selected, onToggle, isLocked, pts }: BestThirdPickerP
       <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>
         Pick which 8 of the 12 group 3rd-place finishers advance to the Round of 32.
       </p>
+
+      {/* Orphaned picks — team didn't qualify, show removable chip */}
+      {orphaned.length > 0 && (
+        <div className="flex flex-wrap gap-1.5">
+          {orphaned.map(name => (
+            <button key={name} type="button" disabled={isLocked}
+              onClick={() => onToggle(name)}
+              className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold disabled:opacity-40"
+              style={{ background: "rgba(220,38,38,0.12)", border: "1px solid rgba(220,38,38,0.3)", color: "#f87171" }}>
+              {name} · did not qualify · ✕
+            </button>
+          ))}
+        </div>
+      )}
+
       <div className="relative">
         <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: "rgba(255,255,255,0.4)" }} />
         <input type="text" placeholder="Search country..." value={search}
@@ -191,7 +210,7 @@ function BestThirdPicker({ selected, onToggle, isLocked, pts }: BestThirdPickerP
         })}
       </div>
       {selected.length > 0 && (
-        <div className="text-xs" style={{ color: "#0891B2" }}>✓ {selected.join(", ")}</div>
+        <div className="text-xs" style={{ color: "#0891B2" }}>✓ {selected.filter(s => validNames.has(s)).join(", ")}</div>
       )}
     </div>
   );
