@@ -50,7 +50,7 @@ export interface ScoringConfig {
   goldenGlove:      number; // default 2
 
   // Trivia
-  triviaPerQuestion: number; // default 1 (max 20 questions)
+  triviaPerQuestion: number; // default 5 (max 100 points)
 
   // Feature toggles
   enableSecond:       boolean;
@@ -83,7 +83,7 @@ export const DEFAULT_SCORING: ScoringConfig = {
   topAssister:      3,
   goldenBall:       2,
   goldenGlove:      2,
-  triviaPerQuestion: 1,
+  triviaPerQuestion: 5,
   enableSecond:       true,
   enableThird:        true,
   enableBestThird:    true,

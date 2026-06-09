@@ -63,7 +63,7 @@ export function recordAnswer(
   if (!q) return session;
 
   const correct = answer === q.answer;
-  const points = correct ? 1 : 0;
+  const points = correct ? 5 : 0;
 
   const result: QuestionResult = {
     questionId: q.id,
