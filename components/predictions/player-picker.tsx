@@ -85,19 +85,29 @@ export function PlayerPicker({
   const [search,   setSearch]   = useState("");
   const [openTeam, setOpenTeam] = useState<string | null>(null);
 
-  // Fetch from Supabase once
+  // Fetch from Supabase with pagination to bypass the 1000-row PostgREST cap
   useEffect(() => {
     const sb = createClient();
-    sb.from("players")
-      .select("id, full_name, country, position, photo, api_player_id")
-      .order("country")
-      .limit(2000)
-      .then(({ data, error }) => {
-        if (error) console.error("[PlayerPicker] fetch error:", error.message);
-        console.log("[PlayerPicker] fetched", data?.length ?? 0, "players");
-        setPlayers((data ?? []) as DBPlayer[]);
-        setLoading(false);
-      });
+    const PAGE = 1000;
+    async function fetchAll() {
+      const all: DBPlayer[] = [];
+      let from = 0;
+      while (true) {
+        const { data, error } = await sb
+          .from("players")
+          .select("id, full_name, country, position, photo, api_player_id")
+          .order("country")
+          .range(from, from + PAGE - 1);
+        if (error) { console.error("[PlayerPicker] fetch error:", error.message); break; }
+        all.push(...((data ?? []) as DBPlayer[]));
+        if ((data?.length ?? 0) < PAGE) break;
+        from += PAGE;
+      }
+      console.log("[PlayerPicker] fetched", all.length, "players");
+      setPlayers(all);
+      setLoading(false);
+    }
+    fetchAll();
   }, []);
 
   // Filter by position (GK excluded for tournament picks unless includeGK)
