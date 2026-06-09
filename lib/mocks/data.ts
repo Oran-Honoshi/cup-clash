@@ -17,7 +17,10 @@ export const MOCK_GROUP: Group = {
   isCorporatePaid:     false,
   currency:            "USD",
   currencySymbol:      "$",
-  paymentLink:         null,
+  paymentLink:           null,
+  enableGroupStagePrize: false,
+  groupStagePrizeAmount: null,
+  groupStagePrizeLabel:  null,
   payouts: { first: "60%", second: "30%", third: "10%" },
 };
 

@@ -5,6 +5,7 @@ import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { AdminPanel }          from "@/components/admin/admin-panel";
 import { ScoringRulesEditor }  from "@/components/admin/scoring-rules-editor";
 import { GroupRulesEditor }    from "@/components/admin/group-rules-editor";
+import { GroupStagePrizeEditor } from "@/components/admin/group-stage-prize-editor";
 import { PickOverridesPanel }  from "@/components/admin/pick-overrides-panel";
 import { MatchOverridePanel }  from "@/components/admin/match-override-panel";
 import { WelcomeEmailSender }  from "@/components/admin/welcome-email-sender";
@@ -81,6 +82,13 @@ export default async function AdminGroupPage({ params }: { params: { groupId: st
         groupId={group.id}
         buyInAmount={group.buyInAmount}
         memberCount={members.length}
+      />
+
+      {/* Group stage prize */}
+      <GroupStagePrizeEditor
+        groupId={group.id}
+        isCashGroup={!group.corporatePrize}
+        currencySymbol={group.currencySymbol}
       />
 
       {/* Scoring rules: locked after June 11 */}

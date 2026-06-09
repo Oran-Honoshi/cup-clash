@@ -152,6 +152,10 @@ function CreateGroupInner() {
   const [otherSymbol,  setOtherSymbol]  = useState("");
   const [paymentLink,  setPaymentLink]  = useState("");
 
+  const [enableGroupStagePrize, setEnableGroupStagePrize] = useState(false);
+  const [groupStagePrizeAmount, setGroupStagePrizeAmount] = useState(0);
+  const [groupStagePrizeLabel,  setGroupStagePrizeLabel]  = useState("");
+
   const [knockoutPolicy,   setKnockoutPolicy]   = useState<'regular_90' | 'inc_extra_time' | 'to_qualify'>('regular_90');
   const [correctOutcome,   setCorrectOutcome]   = useState(10);
   const [exactScore,       setExactScore]       = useState(25);
@@ -223,10 +227,13 @@ function CreateGroupInner() {
         enrollment_fee_cents: isCorporate ? 0 : 200,
         payment_model:        paymentModel,
         is_corporate_paid:    false,
-        corporate_prize:      finalCorporatePrize || null,
-        currency:             currency,
-        currency_symbol:      currencySymbol,
-        payment_link:         paymentLink.trim() || null,
+        corporate_prize:            finalCorporatePrize || null,
+        currency:                   currency,
+        currency_symbol:            currencySymbol,
+        payment_link:               paymentLink.trim() || null,
+        enable_group_stage_prize:   enableGroupStagePrize,
+        group_stage_prize_amount:   enableGroupStagePrize && !(isCorporate && prizeTrack === "company") ? groupStagePrizeAmount : null,
+        group_stage_prize_label:    enableGroupStagePrize && isCorporate && prizeTrack === "company" ? groupStagePrizeLabel.trim() || null : null,
       } as Record<string, unknown>)
       .select("id, passkey")
       .single();
@@ -855,6 +862,46 @@ function CreateGroupInner() {
                 </div>
               </div>
             )}
+
+            {/* Group Stage Prize */}
+            <div className="rounded-2xl p-4 space-y-3"
+              style={{ background: "rgba(167,139,250,0.05)", border: "1px solid rgba(167,139,250,0.15)" }}>
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <div className="text-sm font-bold" style={{ color: "white" }}>🏅 Group Stage Prize</div>
+                  <div className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>
+                    Bonus prize for the leader after all 48 group stage matches (~July 2)
+                  </div>
+                </div>
+                <Toggle enabled={enableGroupStagePrize} onToggle={() => setEnableGroupStagePrize(v => !v)} />
+              </div>
+              {enableGroupStagePrize && (
+                isCorporate && prizeTrack === "company" ? (
+                  <div>
+                    <label style={labelStyle}>Prize description</label>
+                    <input type="text" value={groupStagePrizeLabel}
+                      onChange={(e: { target: HTMLInputElement }) => setGroupStagePrizeLabel(e.target.value)}
+                      placeholder="e.g. Free lunch + coffee voucher"
+                      onFocus={(e: { target: HTMLInputElement }) => { e.target.style.borderColor = "rgba(167,139,250,0.5)"; }}
+                      onBlur={(e: { target: HTMLInputElement }) => { e.target.style.borderColor = "rgba(255,255,255,0.12)"; }}
+                      className="placeholder:text-[rgba(255,255,255,0.3)]"
+                      style={{ ...inputStyle, padding: "10px 16px" }} />
+                  </div>
+                ) : (
+                  <div>
+                    <label style={labelStyle}>Prize amount ({currencySymbol})</label>
+                    <input type="number" min={0} value={groupStagePrizeAmount}
+                      onChange={(e: { target: HTMLInputElement }) => setGroupStagePrizeAmount(Number(e.target.value))}
+                      onFocus={(e: { target: HTMLInputElement }) => { e.target.style.borderColor = "rgba(167,139,250,0.5)"; }}
+                      onBlur={(e: { target: HTMLInputElement }) => { e.target.style.borderColor = "rgba(255,255,255,0.12)"; }}
+                      style={{ ...inputStyle, padding: "10px 16px", color: "#a78bfa" }} />
+                    <p style={{ fontSize: 11, color: "rgba(255,255,255,0.3)", fontFamily: "var(--font-ui)", marginTop: 4 }}>
+                      Paid out to the member with the most group stage points
+                    </p>
+                  </div>
+                )
+              )}
+            </div>
 
             {/* Payment Link */}
             <div>

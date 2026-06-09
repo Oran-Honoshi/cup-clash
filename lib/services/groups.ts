@@ -28,21 +28,27 @@ function mapGroup(d: {
   currency?: string | null;
   currency_symbol?: string | null;
   payment_link?: string | null;
+  enable_group_stage_prize?: boolean | null;
+  group_stage_prize_amount?: number | null;
+  group_stage_prize_label?: string | null;
 }): Group {
   return {
-    id:                  d.id,
-    name:                d.name,
-    admin:               d.admin_id,
-    buyInAmount:         Number(d.buy_in_amount ?? 0),
-    passkey:             d.passkey ?? "",
-    maxMembers:          d.max_members ?? 100,
-    enrollmentFeeCents:  d.enrollment_fee_cents ?? 200,
-    enrollmentDeadline:  d.enrollment_deadline ?? null,
-    corporatePrize:      d.corporate_prize ?? null,
-    isCorporatePaid:     d.is_corporate_paid ?? false,
-    currency:            d.currency ?? "USD",
-    currencySymbol:      d.currency_symbol ?? "$",
-    paymentLink:         d.payment_link ?? null,
+    id:                      d.id,
+    name:                    d.name,
+    admin:                   d.admin_id,
+    buyInAmount:             Number(d.buy_in_amount ?? 0),
+    passkey:                 d.passkey ?? "",
+    maxMembers:              d.max_members ?? 100,
+    enrollmentFeeCents:      d.enrollment_fee_cents ?? 200,
+    enrollmentDeadline:      d.enrollment_deadline ?? null,
+    corporatePrize:          d.corporate_prize ?? null,
+    isCorporatePaid:         d.is_corporate_paid ?? false,
+    currency:                d.currency ?? "USD",
+    currencySymbol:          d.currency_symbol ?? "$",
+    paymentLink:             d.payment_link ?? null,
+    enableGroupStagePrize:   d.enable_group_stage_prize ?? false,
+    groupStagePrizeAmount:   d.group_stage_prize_amount ?? null,
+    groupStagePrizeLabel:    d.group_stage_prize_label ?? null,
     payouts: {
       first:  `${d.payout_first  ?? 60}%`,
       second: `${d.payout_second ?? 30}%`,
@@ -56,7 +62,8 @@ const GROUP_SELECT = `
   buy_in_amount, payout_first, payout_second, payout_third,
   enrollment_fee_cents, passkey, max_members, enrollment_deadline,
   corporate_prize, is_corporate_paid,
-  currency, currency_symbol, payment_link
+  currency, currency_symbol, payment_link,
+  enable_group_stage_prize, group_stage_prize_amount, group_stage_prize_label
 `;
 
 // ── Get group by ID ──────────────────────────────────────────────────────────

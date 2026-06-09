@@ -22,11 +22,14 @@ export interface Group {
   maxMembers:          number;
   enrollmentFeeCents:  number;
   enrollmentDeadline:  string | null;
-  corporatePrize:      string | null;
-  isCorporatePaid:     boolean;
-  currency:            string;
-  currencySymbol:      string;
-  paymentLink:         string | null;
+  corporatePrize:          string | null;
+  isCorporatePaid:         boolean;
+  currency:                string;
+  currencySymbol:          string;
+  paymentLink:             string | null;
+  enableGroupStagePrize:   boolean;
+  groupStagePrizeAmount:   number | null;
+  groupStagePrizeLabel:    string | null;
   payouts: {
     first:  string;  // "60%"
     second: string;  // "30%"

@@ -8,6 +8,8 @@ import { StatCards }       from "@/components/dashboard/stat-cards";
 import { DashboardPopups } from "@/components/dashboard/dashboard-popups";
 import { WallOfShame }     from "@/components/dashboard/wall-of-shame";
 import { DashboardGroupPicker } from "@/components/dashboard/dashboard-group-picker";
+import { TournamentPredictionsSummary } from "@/components/dashboard/tournament-predictions-summary";
+import { GroupStagePrizeCard } from "@/components/dashboard/group-stage-prize-card";
 import { WelcomeModal }    from "@/components/ui/welcome-modal";
 import { DashboardEmptyState } from "@/components/dashboard/empty-state";
 import { AdBanner } from "@/components/ads/ad-banner";
@@ -193,6 +195,16 @@ export default async function DashboardPage({
         {/* Primary action — first on mobile, right column on desktop */}
         <div className="lg:col-span-5 space-y-5 order-first lg:order-last">
           {nextMatch && <NextMatchCard match={nextMatch} groupId={activeGroupId} />}
+          <TournamentPredictionsSummary groupId={activeGroupId} memberCount={members.length} />
+          {group.enableGroupStagePrize && (
+            <GroupStagePrizeCard
+              groupId={activeGroupId}
+              prizeAmount={group.groupStagePrizeAmount}
+              prizeLabel={group.groupStagePrizeLabel}
+              currencySymbol={group.currencySymbol}
+              isCashGroup={!group.corporatePrize}
+            />
+          )}
         </div>
         {/* Secondary — leaderboard + wall, below on mobile, left on desktop */}
         <div className="lg:col-span-7 space-y-5">
