@@ -30,6 +30,11 @@ export interface Group {
   enableGroupStagePrize:   boolean;
   groupStagePrizeAmount:   number | null;
   groupStagePrizeLabel:    string | null;
+  showPrizeSplit:          boolean;
+  showEntryFee:            boolean;
+  showPrizePot:            boolean;
+  showBuyInTracker:        boolean;
+  showPaymentLink:         boolean;
   payouts: {
     first:  string;  // "60%"
     second: string;  // "30%"

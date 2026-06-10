@@ -15,7 +15,7 @@ function sbAdmin() {
 async function getGroupDetail(groupId: string) {
   const { data } = await sbAdmin()
     .from("groups")
-    .select("id, name, passkey, admin_id, buy_in_amount, payout_first, payout_second, payout_third, max_members, enrollment_fee_cents, is_corporate_paid, max_group_capacity, payment_model, corporate_prize, currency_symbol, payment_link, enable_group_stage_prize, group_stage_prize_amount, group_stage_prize_label")
+    .select("id, name, passkey, admin_id, buy_in_amount, payout_first, payout_second, payout_third, max_members, enrollment_fee_cents, is_corporate_paid, max_group_capacity, payment_model, corporate_prize, currency_symbol, payment_link, enable_group_stage_prize, group_stage_prize_amount, group_stage_prize_label, show_prize_split, show_entry_fee, show_prize_pot, show_buy_in_tracker, show_payment_link")
     .eq("id", groupId)
     .single();
   return data as {
@@ -28,6 +28,11 @@ async function getGroupDetail(groupId: string) {
     enable_group_stage_prize: boolean | null;
     group_stage_prize_amount: number | null;
     group_stage_prize_label: string | null;
+    show_prize_split: boolean | null;
+    show_entry_fee: boolean | null;
+    show_prize_pot: boolean | null;
+    show_buy_in_tracker: boolean | null;
+    show_payment_link: boolean | null;
   } | null;
 }
 

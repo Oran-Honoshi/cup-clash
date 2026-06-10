@@ -15,7 +15,14 @@ function sbAnon() {
   );
 }
 
-const ALLOWED_FIELDS = ["payment_link"] as const;
+const ALLOWED_FIELDS = [
+  "payment_link",
+  "show_prize_split",
+  "show_entry_fee",
+  "show_prize_pot",
+  "show_buy_in_tracker",
+  "show_payment_link",
+] as const;
 type AllowedField = (typeof ALLOWED_FIELDS)[number];
 
 export async function POST(req: NextRequest) {

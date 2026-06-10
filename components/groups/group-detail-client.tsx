@@ -10,7 +10,7 @@ import { useLocale } from "@/components/i18n/locale-provider";
 import { interpolate } from "@/lib/i18n";
 
 interface GroupDetailClientProps {
-  group: { id: string; name: string; passkey: string; admin_id: string; buy_in_amount: number; payout_first: number; payout_second: number; payout_third: number; max_members: number; is_corporate_paid?: boolean; corporate_prize?: string | null; currency_symbol?: string | null; payment_link?: string | null; enable_group_stage_prize?: boolean | null; group_stage_prize_amount?: number | null; group_stage_prize_label?: string | null };
+  group: { id: string; name: string; passkey: string; admin_id: string; buy_in_amount: number; payout_first: number; payout_second: number; payout_third: number; max_members: number; is_corporate_paid?: boolean; corporate_prize?: string | null; currency_symbol?: string | null; payment_link?: string | null; enable_group_stage_prize?: boolean | null; group_stage_prize_amount?: number | null; group_stage_prize_label?: string | null; show_prize_split?: boolean | null; show_entry_fee?: boolean | null; show_prize_pot?: boolean | null; show_buy_in_tracker?: boolean | null; show_payment_link?: boolean | null };
   rules: Record<string, number | boolean> | null;
   members: Array<{ user_id: string; payment_status: string; can_predict: boolean; paid: boolean; is_ad_free: boolean; profiles: { name: string; country: string | null; avatar_url: string | null } | null }>;
   currentUserId: string;
@@ -66,6 +66,11 @@ export function GroupDetailClient({ group, rules, members, currentUserId, isAdmi
   };
   const totalPot  = (group.buy_in_amount ?? 0) * paidCount;
   const scoringRows = Object.entries(SCORING_LABELS).filter(([key]) => { const ek = ENABLE_KEYS[key]; return !ek || rules?.[ek] !== false; });
+  const showPrizeSplit    = group.show_prize_split    ?? true;
+  const showEntryFee      = group.show_entry_fee      ?? true;
+  const showPrizePot      = group.show_prize_pot      ?? true;
+  const showBuyInTracker  = group.show_buy_in_tracker ?? true;
+  const showPaymentLink   = group.show_payment_link   ?? true;
 
   return (
     <div className="max-w-2xl mx-auto space-y-5 overflow-x-hidden">
@@ -106,10 +111,10 @@ export function GroupDetailClient({ group, rules, members, currentUserId, isAdmi
         <div className="space-y-4">
           <div className="grid grid-cols-3 gap-2">
             {[
-              { icon: Users,      label: t("grp_members"),   value: `${paidCount}`,                accent: "#00D4FF" },
-              { icon: DollarSign, label: t("grp_entry"),     value: `${group.currency_symbol ?? "$"}${group.buy_in_amount ?? 0}`, accent: "#00FF88" },
-              { icon: Trophy,     label: t("grp_prize_pot"), value: `${group.currency_symbol ?? "$"}${totalPot}`,                 accent: "#fbbf24" },
-            ].map(({ icon: Icon, label, value, accent }) => (
+              { icon: Users,      label: t("grp_members"),   value: `${paidCount}`,                accent: "#00D4FF", show: true },
+              { icon: DollarSign, label: t("grp_entry"),     value: `${group.currency_symbol ?? "$"}${group.buy_in_amount ?? 0}`, accent: "#00FF88", show: showEntryFee },
+              { icon: Trophy,     label: t("grp_prize_pot"), value: `${group.currency_symbol ?? "$"}${totalPot}`,                 accent: "#fbbf24", show: showPrizePot },
+            ].filter(c => c.show).map(({ icon: Icon, label, value, accent }) => (
               <div key={label} className="rounded-2xl p-3 text-center overflow-hidden w-full" style={glass}>
                 <Icon size={16} className="mx-auto mb-1.5" style={{ color: accent }} />
                 <div className="font-display text-lg sm:text-2xl font-black text-white truncate">{value}</div>
@@ -129,7 +134,7 @@ export function GroupDetailClient({ group, rules, members, currentUserId, isAdmi
               <div className="font-mono font-black text-3xl sm:text-4xl tracking-[0.1em] sm:tracking-[0.2em] mb-1 text-white overflow-hidden">{group.passkey}</div>
               <div className="text-xs overflow-hidden" style={{ color: "rgba(255,255,255,0.3)", wordBreak: "break-all" }}>cupclash.live/join/{group.passkey}</div>
             </div>
-            {group.payment_link && (
+            {showPaymentLink && group.payment_link && (
               <a href={group.payment_link} target="_blank" rel="noopener noreferrer"
                 className="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-sm uppercase tracking-wider transition-all hover:-translate-y-0.5"
                 style={{ background: "rgba(0,212,255,0.08)", border: "1px solid rgba(0,212,255,0.25)", color: "#00D4FF" }}>
@@ -138,25 +143,27 @@ export function GroupDetailClient({ group, rules, members, currentUserId, isAdmi
             )}
           </div>
 
-          <div className="rounded-2xl p-5" style={glass}>
-            <div className="text-[10px] font-bold uppercase tracking-widest mb-4" style={{ color: "rgba(255,255,255,0.35)" }}>{t("grp_prize_split")}</div>
-            <div className="space-y-3">
-              {[
-                { label: "🥇 1st", pct: group.payout_first  ?? 60, color: "#fbbf24" },
-                { label: "🥈 2nd", pct: group.payout_second ?? 30, color: "#94a3b8" },
-                { label: "🥉 3rd", pct: group.payout_third  ?? 10, color: "#f97316" },
-              ].map(({ label, pct, color }) => (
-                <div key={label} className="flex items-center gap-2 w-full">
-                  <span className="text-sm w-10 shrink-0" style={{ color: "rgba(255,255,255,0.6)" }}>{label}</span>
-                  <div className="flex-1 min-w-0 h-1.5 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.08)" }}>
-                    <div className="h-full rounded-full" style={{ width: `${pct}%`, background: color, opacity: 0.8 }} />
+          {showPrizeSplit && (
+            <div className="rounded-2xl p-5" style={glass}>
+              <div className="text-[10px] font-bold uppercase tracking-widest mb-4" style={{ color: "rgba(255,255,255,0.35)" }}>{t("grp_prize_split")}</div>
+              <div className="space-y-3">
+                {[
+                  { label: "🥇 1st", pct: group.payout_first  ?? 60, color: "#fbbf24" },
+                  { label: "🥈 2nd", pct: group.payout_second ?? 30, color: "#94a3b8" },
+                  { label: "🥉 3rd", pct: group.payout_third  ?? 10, color: "#f97316" },
+                ].map(({ label, pct, color }) => (
+                  <div key={label} className="flex items-center gap-2 w-full">
+                    <span className="text-sm w-10 shrink-0" style={{ color: "rgba(255,255,255,0.6)" }}>{label}</span>
+                    <div className="flex-1 min-w-0 h-1.5 rounded-full overflow-hidden" style={{ background: "rgba(255,255,255,0.08)" }}>
+                      <div className="h-full rounded-full" style={{ width: `${pct}%`, background: color, opacity: 0.8 }} />
+                    </div>
+                    <span className="text-sm font-black w-9 text-right shrink-0" style={{ color }}>{pct}%</span>
+                    {totalPot > 0 && <span className="text-xs w-10 text-right shrink-0" style={{ color: "rgba(255,255,255,0.3)" }}>{group.currency_symbol ?? "$"}{Math.round(totalPot * pct / 100)}</span>}
                   </div>
-                  <span className="text-sm font-black w-9 text-right shrink-0" style={{ color }}>{pct}%</span>
-                  {totalPot > 0 && <span className="text-xs w-10 text-right shrink-0" style={{ color: "rgba(255,255,255,0.3)" }}>{group.currency_symbol ?? "$"}{Math.round(totalPot * pct / 100)}</span>}
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
+          )}
 
           {group.corporate_prize && (
             <div className="rounded-2xl p-5" style={glass}>
@@ -226,7 +233,7 @@ export function GroupDetailClient({ group, rules, members, currentUserId, isAdmi
                     </div>
                     <div className="text-xs" style={{ color: "rgba(255,255,255,0.3)" }}>{m.profiles?.country ?? ""}</div>
                   </div>
-                  {(group.buy_in_amount ?? 0) > 0 ? (
+                  {showBuyInTracker && (group.buy_in_amount ?? 0) > 0 ? (
                     <span className="flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full"
                       style={(m.paid || m.payment_status === "paid")
                         ? { background: "rgba(0,255,136,0.12)", color: "#00FF88", border: "1px solid rgba(0,255,136,0.2)" }
@@ -236,10 +243,12 @@ export function GroupDetailClient({ group, rules, members, currentUserId, isAdmi
                         : <><Clock size={10} /> Pending</>}
                     </span>
                   ) : (
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full"
-                      style={m.is_ad_free ? { background: "rgba(0,255,136,0.12)", color: "#00FF88", border: "1px solid rgba(0,255,136,0.2)" } : { background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.35)", border: "1px solid rgba(255,255,255,0.1)" }}>
-                      {m.is_ad_free ? t("grp_adfree") : "Free"}
-                    </span>
+                    !showBuyInTracker ? null : (
+                      <span className="text-[10px] font-bold px-2 py-0.5 rounded-full"
+                        style={m.is_ad_free ? { background: "rgba(0,255,136,0.12)", color: "#00FF88", border: "1px solid rgba(0,255,136,0.2)" } : { background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.35)", border: "1px solid rgba(255,255,255,0.1)" }}>
+                        {m.is_ad_free ? t("grp_adfree") : "Free"}
+                      </span>
+                    )
                   )}
                 </div>
               ))}

@@ -31,6 +31,11 @@ function mapGroup(d: {
   enable_group_stage_prize?: boolean | null;
   group_stage_prize_amount?: number | null;
   group_stage_prize_label?: string | null;
+  show_prize_split?: boolean | null;
+  show_entry_fee?: boolean | null;
+  show_prize_pot?: boolean | null;
+  show_buy_in_tracker?: boolean | null;
+  show_payment_link?: boolean | null;
 }): Group {
   return {
     id:                      d.id,
@@ -49,6 +54,11 @@ function mapGroup(d: {
     enableGroupStagePrize:   d.enable_group_stage_prize ?? false,
     groupStagePrizeAmount:   d.group_stage_prize_amount ?? null,
     groupStagePrizeLabel:    d.group_stage_prize_label ?? null,
+    showPrizeSplit:          d.show_prize_split ?? true,
+    showEntryFee:            d.show_entry_fee ?? true,
+    showPrizePot:            d.show_prize_pot ?? true,
+    showBuyInTracker:        d.show_buy_in_tracker ?? true,
+    showPaymentLink:         d.show_payment_link ?? true,
     payouts: {
       first:  `${d.payout_first  ?? 60}%`,
       second: `${d.payout_second ?? 30}%`,
@@ -63,7 +73,8 @@ const GROUP_SELECT = `
   enrollment_fee_cents, passkey, max_members, enrollment_deadline,
   corporate_prize, is_corporate_paid,
   currency, currency_symbol, payment_link,
-  enable_group_stage_prize, group_stage_prize_amount, group_stage_prize_label
+  enable_group_stage_prize, group_stage_prize_amount, group_stage_prize_label,
+  show_prize_split, show_entry_fee, show_prize_pot, show_buy_in_tracker, show_payment_link
 `;
 
 // ── Get group by ID ──────────────────────────────────────────────────────────

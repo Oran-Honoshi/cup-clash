@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Users, Trophy, Copy, Check, RefreshCw, CheckCircle, XCircle, Link2, Trash2, UserCog, Shield, Crown } from "lucide-react";
+import { Users, Trophy, Copy, Check, RefreshCw, CheckCircle, XCircle, Link2, Trash2, UserCog, Shield, Crown, Eye } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { MemberAvatar } from "@/components/ui/member-avatar";
@@ -54,6 +54,14 @@ export function AdminPanel({ group, initialMembers, isOwner, currentUserId }: Ad
   const [transferError,   setTransferError]   = useState<string | null>(null);
   const [copiedTransfer,  setCopiedTransfer]  = useState(false);
   const [roleUpdating,    setRoleUpdating]    = useState<string | null>(null);
+
+  const [displaySettings, setDisplaySettings] = useState({
+    show_prize_split:    group.showPrizeSplit    ?? true,
+    show_entry_fee:      group.showEntryFee      ?? true,
+    show_prize_pot:      group.showPrizePot      ?? true,
+    show_buy_in_tracker: group.showBuyInTracker  ?? true,
+    show_payment_link:   group.showPaymentLink   ?? true,
+  });
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -131,6 +139,19 @@ export function AdminPanel({ group, initialMembers, isOwner, currentUserId }: Ad
     });
     setSavingLink(false); setLinkSaved(true); setEditingLink(false);
     setTimeout(() => setLinkSaved(false), 2500);
+  };
+
+  const toggleDisplaySetting = async (field: keyof typeof displaySettings) => {
+    const newValue = !displaySettings[field];
+    setDisplaySettings(prev => ({ ...prev, [field]: newValue }));
+    const sb = createClient();
+    const { data: { session } } = await sb.auth.getSession();
+    const token = session?.access_token ?? "";
+    await fetch("/api/admin/save-group-setting", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+      body: JSON.stringify({ groupId: group.id, field, value: newValue }),
+    });
   };
 
   const handleDelete = async () => {
@@ -448,6 +469,48 @@ export function AdminPanel({ group, initialMembers, isOwner, currentUserId }: Ad
         </div>
       </div>
     </div>
+
+      {/* Display Settings */}
+      <div className="rounded-2xl p-5" style={glass}>
+        <div className="flex items-center gap-2.5 mb-4">
+          <Eye size={18} strokeWidth={1.5} style={{ color: "#00D4FF" }} />
+          <div>
+            <span className="font-display text-xl uppercase tracking-tight text-white">Display Settings</span>
+            <p className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.35)" }}>Control what members see on the group page</p>
+          </div>
+        </div>
+        <div className="space-y-1">
+          {([
+            { field: "show_entry_fee"      as const, label: "Entry Fee tile",        desc: "The entry cost stat card" },
+            { field: "show_prize_pot"      as const, label: "Prize Pot tile",         desc: "The total prize pool stat card" },
+            { field: "show_prize_split"    as const, label: "Prize Split section",    desc: "1st / 2nd / 3rd % breakdown" },
+            { field: "show_buy_in_tracker" as const, label: "Buy-in Tracker",         desc: "Member payment status list" },
+            { field: "show_payment_link"   as const, label: "Payment Link button",    desc: "The 💳 Send Buy-in button" },
+          ]).map(({ field, label, desc }) => {
+            const enabled = displaySettings[field];
+            return (
+              <div key={field} className="flex items-center gap-3 py-2.5 border-b last:border-0"
+                style={{ borderColor: "rgba(255,255,255,0.07)" }}>
+                <button
+                  type="button"
+                  onClick={() => toggleDisplaySetting(field)}
+                  className="relative h-6 w-11 rounded-full shrink-0 transition-all"
+                  style={{ background: enabled ? "#00D4FF" : "rgba(255,255,255,0.12)" }}>
+                  <div className="absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-all"
+                    style={{ left: enabled ? "22px" : "2px" }} />
+                </button>
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-bold" style={{ color: enabled ? "white" : "rgba(255,255,255,0.3)" }}>{label}</div>
+                  <div className="text-[11px]" style={{ color: "rgba(255,255,255,0.35)", fontFamily: "var(--font-ui)" }}>{desc}</div>
+                </div>
+                <span className="text-[10px] font-bold uppercase shrink-0" style={{ color: enabled ? "#00FF88" : "rgba(255,255,255,0.25)" }}>
+                  {enabled ? "Shown" : "Hidden"}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
 
       {/* Bonus Questions */}
       <BonusQuestionsAdmin groupId={group.id} />

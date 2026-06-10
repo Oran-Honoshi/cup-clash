@@ -21,6 +21,11 @@ export const MOCK_GROUP: Group = {
   enableGroupStagePrize: false,
   groupStagePrizeAmount: null,
   groupStagePrizeLabel:  null,
+  showPrizeSplit:        true,
+  showEntryFee:          true,
+  showPrizePot:          true,
+  showBuyInTracker:      true,
+  showPaymentLink:       true,
   payouts: { first: "60%", second: "30%", third: "10%" },
 };
 
