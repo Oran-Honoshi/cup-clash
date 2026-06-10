@@ -413,7 +413,7 @@ export function GroupStagePredictions({ groupId, locked = false, userId }: Group
   const activeIdx      = GROUPS.indexOf(activeGroup);
 
   return (
-    <div className="w-full max-w-full space-y-4 overflow-x-hidden">
+    <div className="w-full max-w-full space-y-4 overflow-x-clip">
 
       {/* Progress + save status */}
       <div className="rounded-2xl px-4 py-3" style={{ ...glassCard, borderRadius: 18 }}>

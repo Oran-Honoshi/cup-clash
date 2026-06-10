@@ -15,7 +15,7 @@ interface StadiumLayoutProps {
 
 export function StadiumLayout({ children, centred = false }: StadiumLayoutProps) {
   return (
-    <div className="relative min-h-screen w-full overflow-x-hidden bg-slate-950 font-sans antialiased text-white selection:bg-emerald-500 selection:text-black">
+    <div className="relative min-h-screen w-full overflow-x-clip bg-slate-950 font-sans antialiased text-white selection:bg-emerald-500 selection:text-black">
 
       {/* ── Layer 1: Stadium background image ── */}
       {/* Replace the CSS gradient with your actual stadium image once available:       */}

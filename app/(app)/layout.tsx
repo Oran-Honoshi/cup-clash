@@ -7,7 +7,7 @@ import { JoinPromptModal } from "@/components/join/join-prompt-modal";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
-    <div className="relative min-h-screen flex overflow-x-hidden">
+    <div className="relative min-h-screen flex overflow-x-clip">
 
       {/* ── Stadium background ── */}
       <div
