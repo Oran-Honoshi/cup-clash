@@ -143,7 +143,7 @@ export default function ProfilePage() {
   ] as const;
 
   return (
-    <div className="space-y-6 max-w-xl">
+    <div className="space-y-6 max-w-xl pb-32">
       <div>
         <div className="label-caps mb-1">Account</div>
         <h1 className="font-display text-4xl sm:text-5xl uppercase text-white tracking-tight">{t("prof_my_profile")}</h1>

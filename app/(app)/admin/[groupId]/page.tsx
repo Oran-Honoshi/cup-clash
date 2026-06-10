@@ -56,7 +56,7 @@ export default async function AdminGroupPage({ params }: { params: { groupId: st
   const tournamentLocked = new Date() >= new Date("2026-06-11T20:00:00Z");
 
   return (
-    <div className="space-y-6 max-w-3xl mx-auto">
+    <div className="space-y-6 max-w-3xl mx-auto pb-32">
       <div>
         <Link href={`/groups/${groupId}`}
           className="text-xs font-bold uppercase tracking-widest mb-2 flex items-center gap-1"

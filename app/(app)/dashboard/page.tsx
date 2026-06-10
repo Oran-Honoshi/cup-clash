@@ -147,7 +147,7 @@ export default async function DashboardPage({
   const isAdmin       = group.admin === userProfile.id;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-32">
       <WelcomeModal />
       <DashboardPopups groupId={activeGroupId} userId={userProfile.id} />
 

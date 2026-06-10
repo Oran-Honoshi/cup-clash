@@ -59,7 +59,7 @@ export default async function PredictionsPage({
   // ── GUEST MODE ────────────────────────────────────────────────────────────
   if (!user) {
     return (
-      <div>
+      <div className="pb-32">
         <GuestPredictionsBanner />
         <GuestPredictionsShell />
         <AdBanner isAdFree={false} isCorporate={false} />
@@ -123,7 +123,7 @@ export default async function PredictionsPage({
   const isCorporate = adStatus?.groups?.is_corporate_paid ?? false;
 
   return (
-    <>
+    <div className="pb-32">
       <PredictionsClient
         groupId={activeGroupId}
         groupName={activeGroup.name}
@@ -133,6 +133,6 @@ export default async function PredictionsPage({
         migrateGuestPicks={shouldMigrate}
       />
       <AdBanner isAdFree={isAdFree} isCorporate={isCorporate} />
-    </>
+    </div>
   );
 }

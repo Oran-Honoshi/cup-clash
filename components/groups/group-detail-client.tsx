@@ -73,7 +73,7 @@ export function GroupDetailClient({ group, rules, members, currentUserId, isAdmi
   const showPaymentLink   = group.show_payment_link   ?? true;
 
   return (
-    <div className="max-w-2xl mx-auto space-y-5 overflow-x-hidden">
+    <div className="max-w-2xl mx-auto space-y-5 overflow-x-hidden pb-32">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
           <Link href="/groups" className="text-xs font-bold uppercase tracking-widest mb-2 flex items-center gap-1 transition-opacity hover:opacity-70" style={{ color: "#00D4FF" }}>{t("grp_back")}</Link>

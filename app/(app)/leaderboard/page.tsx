@@ -31,7 +31,7 @@ export default async function LeaderboardPage({ searchParams }: { searchParams: 
 
   if (!allGroups.length) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-6 pb-32">
         <div>
           <div className="label-caps mb-1">Leaderboard</div>
           <h1 className="font-display text-4xl sm:text-5xl uppercase tracking-tight text-white">Leaderboard</h1>
@@ -67,7 +67,7 @@ export default async function LeaderboardPage({ searchParams }: { searchParams: 
   const isCorporate = adStatus?.groups?.is_corporate_paid ?? false;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-32">
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
           <div className="label-caps mb-1">{group.name}</div>

@@ -21,7 +21,7 @@ export default async function GroupsPage() {
 
   if (!userProfile) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-6 pb-32">
         <div>
           <div style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: "0.12em", color: "#00D4FF", fontFamily: "var(--font-ui)", marginBottom: 4 }}>Groups</div>
           <h1 className="font-display text-4xl sm:text-5xl uppercase tracking-tight text-white">{serverT("grp_title")}</h1>
@@ -77,7 +77,7 @@ export default async function GroupsPage() {
   }>;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-32">
       <div className="flex items-end justify-between flex-wrap gap-3">
         <div>
           <div style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: "0.12em", color: "#00D4FF", fontFamily: "var(--font-ui)", marginBottom: 4 }}>{serverT("grp_your")}</div>

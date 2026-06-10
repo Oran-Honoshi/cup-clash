@@ -305,7 +305,7 @@ function CreateGroupInner() {
   // ── Success state ──────────────────────────────────────────────────────────
   if (passkey) {
     return (
-      <div className="max-w-[480px] mx-auto space-y-4">
+      <div className="max-w-[480px] mx-auto space-y-4 pb-32">
         <div style={{
           ...glassCard,
           borderRadius: 28,
@@ -401,7 +401,7 @@ function CreateGroupInner() {
   ];
 
   return (
-    <div className="max-w-[480px] mx-auto space-y-4">
+    <div className="max-w-[480px] mx-auto space-y-4 pb-32">
 
       {/* Page header */}
       <div>
