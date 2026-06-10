@@ -91,15 +91,23 @@ export default function ProfilePage() {
     const { data: { user } } = await sb.auth.getUser();
     if (!user) { setUploading(false); return; }
 
-    const ext = file.name.split(".").pop() ?? "jpg";
+    const ext = file.name.split(".").pop()?.toLowerCase() ?? "jpg";
     const path = `${user.id}/avatar.${ext}`;
-    const { error: uploadError } = await sb.storage.from("avatars").upload(path, file, { upsert: true });
+    const { error: uploadError } = await sb.storage.from("avatars").upload(path, file, { upsert: true, contentType: file.type });
     if (uploadError) { setError(uploadError.message); setUploading(false); return; }
 
     const { data: { publicUrl } } = sb.storage.from("avatars").getPublicUrl(path);
-    setProfile(p => ({ ...p, avatar_url: publicUrl }));
+    // Cache-bust so the browser fetches the new image instead of serving a stale one
+    const urlWithBust = `${publicUrl}?t=${Date.now()}`;
+
+    // Persist to the database immediately — don't wait for the Save button
+    const { error: updateError } = await sb.from("profiles").update({ avatar_url: urlWithBust }).eq("id", user.id);
+    if (updateError) { setError(updateError.message); setUploading(false); return; }
+
+    setProfile(p => ({ ...p, avatar_url: urlWithBust }));
     setTab("photo");
     setUploading(false);
+    if (fileRef.current) fileRef.current.value = "";
   };
 
   const handleSave = async () => {
