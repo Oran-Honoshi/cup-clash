@@ -530,7 +530,15 @@ export function GroupStagePredictions({ groupId, locked = false, userId }: Group
             <CopyPredictions
               currentGroupId={groupId}
               userId={userId}
-              onCopied={(preds) => setPredictions(prev => ({ ...prev, ...preds }))}
+              onCopied={(preds) => setPredictions(prev => {
+                const merged = { ...prev };
+                Object.entries(preds).forEach(([matchId, scores]) => {
+                  const homeVal = scores.home?.trim();
+                  const awayVal = scores.away?.trim();
+                  if (homeVal && awayVal) merged[matchId] = scores;
+                });
+                return merged;
+              })}
             />
           )}
 
