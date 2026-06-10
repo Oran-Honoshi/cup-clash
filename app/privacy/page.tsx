@@ -25,6 +25,7 @@ export default function PrivacyPage() {
           <section>
             <h2 className="font-display text-xl uppercase font-black mb-3" style={{ color: "#0F172A" }}>1. Introduction</h2>
             <p>Welcome to Cup Clash (cupclash.live). This Privacy Policy explains how Oran Schreiber (&ldquo;we,&rdquo; &ldquo;our,&rdquo; or &ldquo;us&rdquo;) collects, uses, shares, and protects your personal data when you use our progressive web application. Cup Clash is operated from Israel and we are committed to protecting your privacy in accordance with applicable data protection laws, including the GDPR where applicable.</p>
+            <p className="mt-3">Please also read our <Link href="/terms" style={{ color: "#0891B2", fontWeight: 600 }}>Terms of Service</Link>.</p>
           </section>
 
           <section>
@@ -62,8 +63,12 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="font-display text-xl uppercase font-black mb-3" style={{ color: "#0F172A" }}>6. Children&apos;s Privacy</h2>
-            <p>Cup Clash is intended solely for users aged 18 and over. We do not knowingly collect personal data from anyone under 18. If we become aware that a minor has provided personal information, we will delete it immediately.</p>
+            <h2 className="font-display text-xl uppercase font-black mb-3" style={{ color: "#0F172A" }}>6. Children&apos;s Privacy and Age Requirements</h2>
+            <p>Cup Clash is intended for users aged <strong>13 and over</strong>. Users between the ages of 13 and 17 must have parental or guardian consent before using this service. For children under 13, a parent or guardian must create and manage the account on their behalf.</p>
+            <h3 className="font-bold mt-4 mb-2" style={{ color: "#0F172A" }}>COPPA Notice (US Users)</h3>
+            <p>This service is not directed at children under 13. We do not knowingly collect personal information from children under 13 without verifiable parental consent. If you believe a child under 13 has provided personal information without parental consent, please contact us at <a href="mailto:hello@cupclash.live" style={{ color: "#0891B2" }}>hello@cupclash.live</a> and we will delete that information promptly.</p>
+            <h3 className="font-bold mt-4 mb-2" style={{ color: "#0F172A" }}>GDPR Article 8 Notice (EU/EEA Users)</h3>
+            <p>For users in the EU/EEA under the age of 16, the processing of personal data requires parental or guardian consent under GDPR Article 8. By using this service, you confirm that you are at least 16 years old, or that you have obtained the necessary parental or guardian consent. If we become aware that personal data has been collected from a minor without the required consent, we will delete it immediately.</p>
           </section>
 
           <section>

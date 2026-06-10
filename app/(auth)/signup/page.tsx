@@ -46,6 +46,7 @@ export default function SignUpPage() {
   const [email,        setEmail]       = useState("");
   const [password,     setPassword]    = useState("");
   const [showPass,     setShowPass]    = useState(false);
+  const [ageConfirmed, setAgeConfirmed] = useState(false);
   const [country,      setCountryLocal] = useState<CountryCode | null>(null);
   const [loading,      setLoading]     = useState(false);
   const [error,        setError]       = useState<string | null>(null);
@@ -53,6 +54,7 @@ export default function SignUpPage() {
   const handleStep1 = async () => {
     if (!name || !email || !password) return;
     if (password.length < 8) { setError("Password must be at least 8 characters"); return; }
+    if (!ageConfirmed) { setError("Please confirm you are 13 or older, or have parental consent"); return; }
     setError(null);
     setStep(2);
   };
@@ -237,9 +239,37 @@ export default function SignUpPage() {
                 </div>
               </div>
 
+              {/* Age confirmation */}
+              <label style={{ display: "flex", alignItems: "flex-start", gap: 10, cursor: "pointer" }}>
+                <div
+                  onClick={() => setAgeConfirmed(v => !v)}
+                  style={{
+                    marginTop: 1,
+                    flexShrink: 0,
+                    width: 18,
+                    height: 18,
+                    borderRadius: 5,
+                    border: ageConfirmed ? "2px solid #00D4FF" : "1px solid rgba(255,255,255,0.2)",
+                    background: ageConfirmed ? "rgba(0,212,255,0.15)" : "rgba(255,255,255,0.04)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    transition: "all 0.15s",
+                  }}
+                >
+                  {ageConfirmed && <Check size={11} style={{ color: "#00D4FF" }} />}
+                </div>
+                <span
+                  onClick={() => setAgeConfirmed(v => !v)}
+                  style={{ fontSize: 12, color: "rgba(255,255,255,0.55)", fontFamily: "var(--font-ui)", lineHeight: 1.5 }}
+                >
+                  I confirm I am 13 or older, or have parental or guardian consent to use this service
+                </span>
+              </label>
+
               <button
                 onClick={handleStep1}
-                disabled={!name || !email || password.length < 8}
+                disabled={!name || !email || password.length < 8 || !ageConfirmed}
                 style={{
                   background: "linear-gradient(135deg, #00FF88, #00D4FF)",
                   color: "#0B141B",
@@ -250,8 +280,8 @@ export default function SignUpPage() {
                   width: "100%",
                   border: "none",
                   boxShadow: "0 0 20px rgba(0,255,136,0.25)",
-                  opacity: (!name || !email || password.length < 8) ? 0.45 : 1,
-                  cursor: (!name || !email || password.length < 8) ? "not-allowed" : "pointer",
+                  opacity: (!name || !email || password.length < 8 || !ageConfirmed) ? 0.45 : 1,
+                  cursor: (!name || !email || password.length < 8 || !ageConfirmed) ? "not-allowed" : "pointer",
                   fontSize: 14,
                   display: "flex",
                   alignItems: "center",

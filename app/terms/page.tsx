@@ -24,12 +24,13 @@ export default function TermsPage() {
 
           <section>
             <h2 className="font-display text-xl uppercase font-black mb-3" style={{ color: "#0F172A" }}>1. Agreement to Terms</h2>
-            <p>By accessing or using Cup Clash (cupclash.live), you agree to be bound by these Terms. If you do not agree, do not use the application. These Terms are a binding legal agreement between you and Oran Schreiber (&ldquo;we,&rdquo; &ldquo;our,&rdquo; or &ldquo;us&rdquo;).</p>
+            <p>By accessing or using Cup Clash (cupclash.live), you agree to be bound by these Terms. If you do not agree, do not use the application. These Terms are a binding legal agreement between you and Oran Schreiber (&ldquo;we,&rdquo; &ldquo;our,&rdquo; or &ldquo;us&rdquo;). Please also read our <Link href="/privacy" style={{ color: "#0891B2", fontWeight: 600 }}>Privacy Policy</Link>, which is incorporated into these Terms by reference.</p>
           </section>
 
           <section>
-            <h2 className="font-display text-xl uppercase font-black mb-3" style={{ color: "#0F172A" }}>2. Eligibility</h2>
-            <p>You must be at least 18 years old to create an account and use Cup Clash.</p>
+            <h2 className="font-display text-xl uppercase font-black mb-3" style={{ color: "#0F172A" }}>2. Eligibility and Age Requirements</h2>
+            <p>You must be at least <strong>13 years old</strong> to use Cup Clash. Users aged 13–17 must have parental or guardian consent before using this service. Parents or guardians may create and manage accounts on behalf of children under 13.</p>
+            <p className="mt-3">By creating an account, you confirm that you meet these age requirements or that you have the necessary parental or guardian consent. We comply with the Children&apos;s Online Privacy Protection Act (COPPA) and, where applicable, GDPR Article 8 regarding the processing of data for minors. See our <Link href="/privacy" style={{ color: "#0891B2", fontWeight: 600 }}>Privacy Policy</Link> for full details.</p>
           </section>
 
           <section>
