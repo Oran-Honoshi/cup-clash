@@ -399,27 +399,25 @@ export default function ProfilePage() {
         </div>
       )}
 
-      <div className="sticky-cta-bar">
-        <button
-          onClick={handleSave}
-          disabled={saving}
-          className="w-full flex items-center justify-center gap-2"
-          style={{
-            padding: "14px 24px", borderRadius: 14,
-            background: "linear-gradient(135deg, #00FF88, #00D4FF)",
-            color: "#050810", fontSize: 15, fontWeight: 800,
-            fontFamily: "var(--font-display)",
-            textTransform: "uppercase", letterSpacing: "0.05em",
-            cursor: saving ? "not-allowed" : "pointer",
-            border: "none",
-            boxShadow: "0 0 24px rgba(0,255,136,0.3)",
-            opacity: saving ? 0.7 : 1,
-            transition: "opacity 0.15s",
-          }}>
-          {saved && <Check size={16} />}
-          {saving ? t("prof_saving") : saved ? t("prof_saved") : t("prof_saveChanges")}
-        </button>
-      </div>
+      <button
+        onClick={handleSave}
+        disabled={saving}
+        className="w-full flex items-center justify-center gap-2"
+        style={{
+          padding: "14px 24px", borderRadius: 14,
+          background: "linear-gradient(135deg, #00FF88, #00D4FF)",
+          color: "#050810", fontSize: 15, fontWeight: 800,
+          fontFamily: "var(--font-display)",
+          textTransform: "uppercase", letterSpacing: "0.05em",
+          cursor: saving ? "not-allowed" : "pointer",
+          border: "none",
+          boxShadow: "0 0 24px rgba(0,255,136,0.3)",
+          opacity: saving ? 0.7 : 1,
+          transition: "opacity 0.15s",
+        }}>
+        {saved && <Check size={16} />}
+        {saving ? t("prof_saving") : saved ? t("prof_saved") : t("prof_saveChanges")}
+      </button>
     </div>
   );
 }
