@@ -3,7 +3,7 @@
   "short_name": "Cup Clash",
   "description": "Predict. Compete. Clash.",
   "id": "/",
-  "start_url": "/",
+  "start_url": "/dashboard",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
