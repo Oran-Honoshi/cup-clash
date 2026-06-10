@@ -87,6 +87,23 @@ h1, h2, h3, h4 {
   }
 }
 
+/* ── Sticky bottom action bar — sits above mobile nav on small screens ── */
+.sticky-cta-bar {
+  position: sticky;
+  z-index: 20;
+  padding-top: 0.75rem;
+  padding-bottom: 1rem;
+  bottom: 1rem;
+  background: linear-gradient(to top, rgba(8,12,22,0.97) 55%, transparent);
+}
+
+@media (max-width: 1023px) {
+  .sticky-cta-bar {
+    bottom: calc(5rem + env(safe-area-inset-bottom, 0px));
+    padding-bottom: 0.5rem;
+  }
+}
+
 /* ── Standalone pages (join, auth) need top safe-area for notch/Dynamic Island ── */
 .page-safe-top {
   padding-top: env(safe-area-inset-top, 0px);

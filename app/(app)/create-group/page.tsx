@@ -589,7 +589,7 @@ function CreateGroupInner() {
 
       {/* ── STEP 1 ─────────────────────────────────────────────────────────── */}
       {step === 1 && (
-        <div className="space-y-4">
+        <>
           <div style={{ ...glassCard, padding: 20 }} className="space-y-4">
             <div>
               <label style={labelStyle}>{isCorporate ? t("cg_company_name") : t("cg_group_name")} *</label>
@@ -660,25 +660,27 @@ function CreateGroupInner() {
             )}
           </div>
 
-          <button type="button" onClick={() => {
-            if (!groupName.trim()) { setError("Group name is required"); return; }
-            setError(null); setStep(2);
-          }} className="w-full flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5"
-            style={{
-              padding: "13px", borderRadius: 12, border: "none",
-              background: "linear-gradient(135deg, #00FF88, #00D4FF)", color: "#0B141B",
-              fontWeight: 700, fontFamily: "var(--font-ui)", fontSize: 14,
-              textTransform: "uppercase", letterSpacing: "0.06em", cursor: "pointer",
-              boxShadow: "0 0 20px rgba(0,255,136,0.25)",
-            }}>
-            {t("cg_next_prizes")} <ArrowRight size={16} />
-          </button>
-        </div>
+          <div className="sticky-cta-bar">
+            <button type="button" onClick={() => {
+              if (!groupName.trim()) { setError("Group name is required"); return; }
+              setError(null); setStep(2);
+            }} className="w-full flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5"
+              style={{
+                padding: "13px", borderRadius: 12, border: "none",
+                background: "linear-gradient(135deg, #00FF88, #00D4FF)", color: "#0B141B",
+                fontWeight: 700, fontFamily: "var(--font-ui)", fontSize: 14,
+                textTransform: "uppercase", letterSpacing: "0.06em", cursor: "pointer",
+                boxShadow: "0 0 20px rgba(0,255,136,0.25)",
+              }}>
+              {t("cg_next_prizes")} <ArrowRight size={16} />
+            </button>
+          </div>
+        </>
       )}
 
       {/* ── STEP 2 ─────────────────────────────────────────────────────────── */}
       {step === 2 && (
-        <div className="space-y-4">
+        <>
           <div style={{ ...glassCard, padding: 20 }} className="space-y-4">
             {/* Currency */}
             <div>
@@ -920,26 +922,28 @@ function CreateGroupInner() {
             </div>
           </div>
 
-          <button type="button" onClick={() => {
-            if (!isCorporate && totalPct !== 100) { setError("Prize allocation must equal exactly 100%"); return; }
-            if (isCorporate && prizeTrack === "cash" && totalPct !== 100) { setError("Prize allocation must equal exactly 100%"); return; }
-            setError(null); setStep(3);
-          }} className="w-full flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5"
-            style={{
-              padding: "13px", borderRadius: 12, border: "none",
-              background: "linear-gradient(135deg, #00FF88, #00D4FF)", color: "#0B141B",
-              fontWeight: 700, fontFamily: "var(--font-ui)", fontSize: 14,
-              textTransform: "uppercase", letterSpacing: "0.06em", cursor: "pointer",
-              boxShadow: "0 0 20px rgba(0,255,136,0.25)",
-            }}>
-            {t("cg_next_scoring")} <ArrowRight size={16} />
-          </button>
-        </div>
+          <div className="sticky-cta-bar">
+            <button type="button" onClick={() => {
+              if (!isCorporate && totalPct !== 100) { setError("Prize allocation must equal exactly 100%"); return; }
+              if (isCorporate && prizeTrack === "cash" && totalPct !== 100) { setError("Prize allocation must equal exactly 100%"); return; }
+              setError(null); setStep(3);
+            }} className="w-full flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5"
+              style={{
+                padding: "13px", borderRadius: 12, border: "none",
+                background: "linear-gradient(135deg, #00FF88, #00D4FF)", color: "#0B141B",
+                fontWeight: 700, fontFamily: "var(--font-ui)", fontSize: 14,
+                textTransform: "uppercase", letterSpacing: "0.06em", cursor: "pointer",
+                boxShadow: "0 0 20px rgba(0,255,136,0.25)",
+              }}>
+              {t("cg_next_scoring")} <ArrowRight size={16} />
+            </button>
+          </div>
+        </>
       )}
 
       {/* ── STEP 3 ─────────────────────────────────────────────────────────── */}
       {step === 3 && (
-        <div className="space-y-4">
+        <>
           <div style={{ ...glassCard, padding: 20 }}>
             <div className="flex items-center gap-2 mb-4">
               <Settings size={14} style={{ color: "#00D4FF" }} />
@@ -1095,21 +1099,23 @@ function CreateGroupInner() {
             </p>
           </div>
 
-          <button type="button" onClick={handleCreate} disabled={loading}
-            className="w-full flex items-center justify-center gap-2 transition-all disabled:opacity-50 hover:-translate-y-0.5"
-            style={{
-              padding: "16px", borderRadius: 14, border: "none",
-              background: "linear-gradient(135deg, #00FF88, #00D4FF)", color: "#0B141B",
-              fontFamily: "var(--font-display)", fontWeight: 800, fontSize: 15,
-              textTransform: "uppercase", letterSpacing: "0.02em",
-              cursor: loading ? "not-allowed" : "pointer",
-              boxShadow: "0 0 24px rgba(0,255,136,0.3)",
-            }}>
-            {loading
-              ? <><Loader2 size={16} className="animate-spin" /> Creating your league...</>
-              : <><Trophy size={16} /> {t("cg_complete")}</>}
-          </button>
-        </div>
+          <div className="sticky-cta-bar">
+            <button type="button" onClick={handleCreate} disabled={loading}
+              className="w-full flex items-center justify-center gap-2 transition-all disabled:opacity-50 hover:-translate-y-0.5"
+              style={{
+                padding: "16px", borderRadius: 14, border: "none",
+                background: "linear-gradient(135deg, #00FF88, #00D4FF)", color: "#0B141B",
+                fontFamily: "var(--font-display)", fontWeight: 800, fontSize: 15,
+                textTransform: "uppercase", letterSpacing: "0.02em",
+                cursor: loading ? "not-allowed" : "pointer",
+                boxShadow: "0 0 24px rgba(0,255,136,0.3)",
+              }}>
+              {loading
+                ? <><Loader2 size={16} className="animate-spin" /> Creating your league...</>
+                : <><Trophy size={16} /> {t("cg_complete")}</>}
+            </button>
+          </div>
+        </>
       )}
     </div>
   );
