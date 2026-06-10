@@ -110,6 +110,7 @@ export function Navbar() {
           ? "bg-[rgba(5,8,16,0.95)] backdrop-blur-[24px] border-b border-white/[0.08] shadow-[0_4px_24px_rgba(0,0,0,0.5)]"
           : "bg-[rgba(5,8,16,0.7)] backdrop-blur-[24px] border-b border-white/[0.06]"
       )}
+      style={{ paddingTop: "env(safe-area-inset-top, 0px)" }}
     >
       <nav className="mx-auto max-w-7xl px-5 sm:px-8">
         <div className="flex h-16 items-center justify-between">

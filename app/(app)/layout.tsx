@@ -12,10 +12,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       {/* ── Stadium background ── */}
       <div
         className="fixed inset-0 z-0 bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: "url('/assets/images/stadium-bg-perspective.png')" }}
+        style={{ backgroundImage: "url('/assets/images/stadium-bg-perspective.png')", transform: "translateZ(0)", willChange: "transform" }}
       />
       {/* Darkening overlay so text stays readable */}
-      <div className="fixed inset-0 z-0 bg-black/55" />
+      <div className="fixed inset-0 z-0 bg-black/55" style={{ transform: "translateZ(0)" }} />
 
       {/* ── App shell (sits above the background) ── */}
       <AppSidebar />

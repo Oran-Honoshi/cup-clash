@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Trophy, Users, DollarSign, Target, Lock, Shield, ArrowRight, MessageCircle, Info, Trash2 } from "lucide-react";
+import { Trophy, Users, DollarSign, Target, Lock, Shield, ArrowRight, MessageCircle, Info, Trash2, Gift, CheckCircle, Clock } from "lucide-react";
 import Link from "next/link";
 import { GroupChat } from "@/components/chat/group-chat";
 import { MemberAvatar } from "@/components/ui/member-avatar";
@@ -10,7 +10,7 @@ import { useLocale } from "@/components/i18n/locale-provider";
 import { interpolate } from "@/lib/i18n";
 
 interface GroupDetailClientProps {
-  group: { id: string; name: string; passkey: string; admin_id: string; buy_in_amount: number; payout_first: number; payout_second: number; payout_third: number; max_members: number; is_corporate_paid?: boolean; corporate_prize?: string | null; currency_symbol?: string | null; payment_link?: string | null };
+  group: { id: string; name: string; passkey: string; admin_id: string; buy_in_amount: number; payout_first: number; payout_second: number; payout_third: number; max_members: number; is_corporate_paid?: boolean; corporate_prize?: string | null; currency_symbol?: string | null; payment_link?: string | null; enable_group_stage_prize?: boolean | null; group_stage_prize_amount?: number | null; group_stage_prize_label?: string | null };
   rules: Record<string, number | boolean> | null;
   members: Array<{ user_id: string; payment_status: string; can_predict: boolean; paid: boolean; is_ad_free: boolean; profiles: { name: string; country: string | null; avatar_url: string | null } | null }>;
   currentUserId: string;
@@ -33,7 +33,7 @@ export function GroupDetailClient({ group, rules, members, currentUserId, isAdmi
   const [tab, setTab] = useState<"overview" | "chat">(initialTab);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
-  const paidCount = members.filter(m => m.paid).length;  // admin buy-in toggle
+  const paidCount = members.filter(m => m.paid || m.payment_status === "paid").length;
 
   const TABS = [
     { id: "overview", label: t("grp_overview"), icon: Info          },
@@ -175,6 +175,26 @@ export function GroupDetailClient({ group, rules, members, currentUserId, isAdmi
             </div>
           )}
 
+          {group.enable_group_stage_prize && (group.group_stage_prize_amount || group.group_stage_prize_label) && (
+            <div className="rounded-2xl p-5" style={glass}>
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <Gift size={16} style={{ color: "#a78bfa" }} />
+                  <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.35)" }}>Group Stage Winner Prize</span>
+                </div>
+                {(group.group_stage_prize_amount || group.group_stage_prize_label) && (
+                  <span className="text-xs font-black px-2.5 py-1 rounded-full"
+                    style={{ background: "rgba(167,139,250,0.12)", color: "#a78bfa", border: "1px solid rgba(167,139,250,0.2)" }}>
+                    {group.group_stage_prize_label ?? `${group.currency_symbol ?? "$"}${group.group_stage_prize_amount}`}
+                  </span>
+                )}
+              </div>
+              <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>
+                Awarded to the top scorer at the end of the group stage (approx. July 2).
+              </p>
+            </div>
+          )}
+
           <div className="rounded-2xl p-5" style={glass}>
             <div className="flex items-center gap-2 mb-4">
               <Target size={16} style={{ color: "#00D4FF" }} />
@@ -206,10 +226,21 @@ export function GroupDetailClient({ group, rules, members, currentUserId, isAdmi
                     </div>
                     <div className="text-xs" style={{ color: "rgba(255,255,255,0.3)" }}>{m.profiles?.country ?? ""}</div>
                   </div>
-                  <span className="text-[10px] font-bold px-2 py-0.5 rounded-full"
-                    style={m.is_ad_free ? { background: "rgba(0,255,136,0.12)", color: "#00FF88", border: "1px solid rgba(0,255,136,0.2)" } : { background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.35)", border: "1px solid rgba(255,255,255,0.1)" }}>
-                    {m.is_ad_free ? t("grp_adfree") : "Free"}
-                  </span>
+                  {(group.buy_in_amount ?? 0) > 0 ? (
+                    <span className="flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full"
+                      style={(m.paid || m.payment_status === "paid")
+                        ? { background: "rgba(0,255,136,0.12)", color: "#00FF88", border: "1px solid rgba(0,255,136,0.2)" }
+                        : { background: "rgba(251,191,36,0.1)", color: "#fbbf24", border: "1px solid rgba(251,191,36,0.2)" }}>
+                      {(m.paid || m.payment_status === "paid")
+                        ? <><CheckCircle size={10} /> Paid</>
+                        : <><Clock size={10} /> Pending</>}
+                    </span>
+                  ) : (
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full"
+                      style={m.is_ad_free ? { background: "rgba(0,255,136,0.12)", color: "#00FF88", border: "1px solid rgba(0,255,136,0.2)" } : { background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.35)", border: "1px solid rgba(255,255,255,0.1)" }}>
+                      {m.is_ad_free ? t("grp_adfree") : "Free"}
+                    </span>
+                  )}
                 </div>
               ))}
               {!members.length && <div className="px-5 py-8 text-center text-sm" style={{ color: "rgba(255,255,255,0.3)" }}>{t("grp_no_members")}</div>}

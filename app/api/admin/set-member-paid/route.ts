@@ -44,7 +44,7 @@ export async function POST(req: NextRequest) {
 
   const { error } = await sb
     .from("group_members")
-    .update({ payment_status: paid ? "paid" : "unpaid", is_ad_free: paid })
+    .update({ payment_status: paid ? "paid" : "unpaid", paid, is_ad_free: paid })
     .eq("user_id", memberId)
     .eq("group_id", groupId);
 

@@ -42,6 +42,8 @@ html, body {
   color: #e2e8f0;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+  /* prevent iOS Safari momentum-scroll jumps when fixed/sticky elements change */
+  overscroll-behavior-y: none;
 }
 
 body {
