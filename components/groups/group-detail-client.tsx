@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Trophy, Users, DollarSign, Target, Lock, Shield, ArrowRight, MessageCircle, Info, Trash2, Gift, CheckCircle, Clock } from "lucide-react";
+import { Trophy, Users, DollarSign, Target, Lock, Shield, ArrowRight, MessageCircle, Info, Trash2, Gift, CheckCircle, Clock, GraduationCap } from "lucide-react";
 import Link from "next/link";
 import { GroupChat } from "@/components/chat/group-chat";
 import { MemberAvatar } from "@/components/ui/member-avatar";
@@ -10,7 +10,7 @@ import { useLocale } from "@/components/i18n/locale-provider";
 import { interpolate } from "@/lib/i18n";
 
 interface GroupDetailClientProps {
-  group: { id: string; name: string; passkey: string; admin_id: string; buy_in_amount: number; payout_first: number; payout_second: number; payout_third: number; max_members: number; is_corporate_paid?: boolean; corporate_prize?: string | null; currency_symbol?: string | null; payment_link?: string | null; enable_group_stage_prize?: boolean | null; group_stage_prize_amount?: number | null; group_stage_prize_label?: string | null; show_prize_split?: boolean | null; show_entry_fee?: boolean | null; show_prize_pot?: boolean | null; show_buy_in_tracker?: boolean | null; show_payment_link?: boolean | null };
+  group: { id: string; name: string; passkey: string; admin_id: string; buy_in_amount: number; payout_first: number; payout_second: number; payout_third: number; max_members: number; is_corporate_paid?: boolean; corporate_prize?: string | null; currency_symbol?: string | null; payment_link?: string | null; enable_group_stage_prize?: boolean | null; group_stage_prize_amount?: number | null; group_stage_prize_label?: string | null; show_prize_split?: boolean | null; show_entry_fee?: boolean | null; show_prize_pot?: boolean | null; show_buy_in_tracker?: boolean | null; show_payment_link?: boolean | null; group_mode?: string | null; winner_message?: string | null };
   rules: Record<string, number | boolean> | null;
   members: Array<{ user_id: string; payment_status: string; can_predict: boolean; paid: boolean; is_ad_free: boolean; profiles: { name: string; country: string | null; avatar_url: string | null } | null }>;
   currentUserId: string;
@@ -71,6 +71,7 @@ export function GroupDetailClient({ group, rules, members, currentUserId, isAdmi
   const showPrizePot      = group.show_prize_pot      ?? true;
   const showBuyInTracker  = group.show_buy_in_tracker ?? true;
   const showPaymentLink   = group.show_payment_link   ?? true;
+  const isFriendly        = group.group_mode === "friendly";
 
   return (
     <div className="max-w-2xl mx-auto space-y-5 overflow-x-clip pb-32">
@@ -109,6 +110,26 @@ export function GroupDetailClient({ group, rules, members, currentUserId, isAdmi
 
       {tab === "overview" && (
         <div className="space-y-4">
+          {isFriendly && (
+            <>
+              {group.winner_message && (
+                <div className="rounded-2xl px-5 py-4 flex items-center gap-3"
+                  style={{ background: "rgba(251,191,36,0.07)", border: "1px solid rgba(251,191,36,0.25)" }}>
+                  <Trophy size={20} style={{ color: "#fbbf24", flexShrink: 0 }} />
+                  <span className="font-display text-lg uppercase font-black" style={{ color: "#fbbf24" }}>
+                    {group.winner_message}
+                  </span>
+                </div>
+              )}
+              <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl"
+                style={{ background: "rgba(0,212,255,0.05)", border: "1px solid rgba(0,212,255,0.15)" }}>
+                <GraduationCap size={14} style={{ color: "#00D4FF" }} />
+                <span className="text-xs font-bold uppercase tracking-widest" style={{ color: "#00D4FF" }}>
+                  Family &amp; School Group
+                </span>
+              </div>
+            </>
+          )}
           <div className="grid grid-cols-3 gap-2">
             {[
               { icon: Users,      label: t("grp_members"),   value: `${paidCount}`,                accent: "#00D4FF", show: true },

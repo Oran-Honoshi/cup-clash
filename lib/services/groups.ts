@@ -36,6 +36,8 @@ function mapGroup(d: {
   show_prize_pot?: boolean | null;
   show_buy_in_tracker?: boolean | null;
   show_payment_link?: boolean | null;
+  group_mode?: string | null;
+  winner_message?: string | null;
 }): Group {
   return {
     id:                      d.id,
@@ -59,6 +61,8 @@ function mapGroup(d: {
     showPrizePot:            d.show_prize_pot ?? true,
     showBuyInTracker:        d.show_buy_in_tracker ?? true,
     showPaymentLink:         d.show_payment_link ?? true,
+    groupMode:               d.group_mode ?? "standard",
+    winnerMessage:           d.winner_message ?? null,
     payouts: {
       first:  `${d.payout_first  ?? 60}%`,
       second: `${d.payout_second ?? 30}%`,
@@ -74,7 +78,8 @@ const GROUP_SELECT = `
   corporate_prize, is_corporate_paid,
   currency, currency_symbol, payment_link,
   enable_group_stage_prize, group_stage_prize_amount, group_stage_prize_label,
-  show_prize_split, show_entry_fee, show_prize_pot, show_buy_in_tracker, show_payment_link
+  show_prize_split, show_entry_fee, show_prize_pot, show_buy_in_tracker, show_payment_link,
+  group_mode, winner_message
 `;
 
 // ── Get group by ID ──────────────────────────────────────────────────────────

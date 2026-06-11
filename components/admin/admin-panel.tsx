@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Users, Trophy, Copy, Check, RefreshCw, CheckCircle, XCircle, Link2, Trash2, UserCog, Shield, Crown, Eye } from "lucide-react";
+import { Users, Trophy, Copy, Check, RefreshCw, CheckCircle, XCircle, Link2, Trash2, UserCog, Shield, Crown, Eye, GraduationCap } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { MemberAvatar } from "@/components/ui/member-avatar";
@@ -54,6 +54,25 @@ export function AdminPanel({ group, initialMembers, isOwner, currentUserId }: Ad
   const [transferError,   setTransferError]   = useState<string | null>(null);
   const [copiedTransfer,  setCopiedTransfer]  = useState(false);
   const [roleUpdating,    setRoleUpdating]    = useState<string | null>(null);
+
+  const isFriendly = group.groupMode === "friendly";
+  const [winnerMessageEdit, setWinnerMessageEdit] = useState(group.winnerMessage ?? "You are the Champion!");
+  const [savingWinnerMsg,   setSavingWinnerMsg]   = useState(false);
+  const [winnerMsgSaved,    setWinnerMsgSaved]    = useState(false);
+
+  const saveWinnerMessage = async () => {
+    setSavingWinnerMsg(true);
+    const sb = createClient();
+    const { data: { session } } = await sb.auth.getSession();
+    const token = session?.access_token ?? "";
+    await fetch("/api/admin/save-group-setting", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+      body: JSON.stringify({ groupId: group.id, field: "winner_message", value: winnerMessageEdit.trim() || null }),
+    });
+    setSavingWinnerMsg(false); setWinnerMsgSaved(true);
+    setTimeout(() => setWinnerMsgSaved(false), 2500);
+  };
 
   const [displaySettings, setDisplaySettings] = useState({
     show_prize_split:    group.showPrizeSplit    ?? true,
@@ -193,8 +212,30 @@ export function AdminPanel({ group, initialMembers, isOwner, currentUserId }: Ad
     <div className="space-y-5">
     <div className="grid gap-5 lg:grid-cols-2">
 
-      {/* ── Member Payments ── */}
-      {group.isCorporatePaid ? (
+      {/* ── Member Payments / Winner Message ── */}
+      {isFriendly ? (
+        <div className="rounded-2xl p-5" style={{ ...glass, border: "1px solid rgba(0,212,255,0.2)" }}>
+          <div className="flex items-center gap-2.5 mb-4">
+            <GraduationCap size={18} strokeWidth={1.5} style={{ color: "#00D4FF" }} />
+            <span className="font-display text-xl uppercase tracking-tight text-white">Winner Message</span>
+          </div>
+          <p className="text-xs mb-3" style={{ color: "rgba(255,255,255,0.4)", fontFamily: "var(--font-ui)" }}>
+            Shown as a banner on the group page for all members.
+          </p>
+          <input
+            type="text" maxLength={50} value={winnerMessageEdit}
+            onChange={e => { setWinnerMessageEdit(e.target.value); setWinnerMsgSaved(false); }}
+            className="w-full rounded-xl px-4 py-3 text-sm outline-none mb-3"
+            style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", color: "#fff", fontFamily: "var(--font-ui)" }}
+            onFocus={e => { e.target.style.borderColor = "rgba(0,212,255,0.5)"; e.target.style.boxShadow = "0 0 0 3px rgba(0,212,255,0.1)"; }}
+            onBlur={e => { e.target.style.borderColor = "rgba(255,255,255,0.12)"; e.target.style.boxShadow = "none"; }}
+          />
+          <Button onClick={saveWinnerMessage} loading={savingWinnerMsg} size="sm" className="w-full"
+            leftIcon={winnerMsgSaved ? <Check size={14} /> : <Trophy size={14} />}>
+            {winnerMsgSaved ? "Saved!" : "Save Message"}
+          </Button>
+        </div>
+      ) : group.isCorporatePaid ? (
         <div className="rounded-2xl p-5 flex items-center gap-3" style={{ ...glass, border: "1px solid rgba(0,255,136,0.2)" }}>
           <span style={{ fontSize: 22 }}>✅</span>
           <div>

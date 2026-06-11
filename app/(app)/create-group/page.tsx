@@ -3,7 +3,7 @@
 import { useState, useEffect, Suspense } from "react";
 import {
   Users, Trophy, AlertCircle, Copy, Check,
-  ArrowRight, Zap, ChevronDown, Settings, Building2, UserCheck, Loader2,
+  ArrowRight, Zap, ChevronDown, Settings, Building2, UserCheck, Loader2, GraduationCap,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useSearchParams } from "next/navigation";
@@ -107,7 +107,16 @@ function RuleRow({ label, desc, pts, setPts, enabled, onToggle }: {
   );
 }
 
-type PaymentModel = "pay_per_member" | "corporate_sponsored";
+type PaymentModel = "pay_per_member" | "corporate_sponsored" | "friendly";
+
+const WINNER_MESSAGE_PRESETS = [
+  "You are the Champion!",
+  "World Cup Master!",
+  "The Ultimate Predictor!",
+  "King of Football!",
+  "Football Genius!",
+  "Custom...",
+];
 
 function CreateGroupInner() {
   const { t } = useLocale();
@@ -126,6 +135,8 @@ function CreateGroupInner() {
   const [prizeTrack,     setPrizeTrack]     = useState<"cash" | "company">("company");
   const [rewardPlaces,   setRewardPlaces]   = useState(1);
   const [companyRewards, setCompanyRewards] = useState({ reward1: "", reward2: "", reward3: "" });
+  const [winnerMsgPreset, setWinnerMsgPreset] = useState("You are the Champion!");
+  const [customWinnerMsg, setCustomWinnerMsg] = useState("");
 
   useEffect(() => {
     if (modelParam === "corporate_sponsored") {
@@ -195,6 +206,10 @@ function CreateGroupInner() {
   const totalPct    = payoutFirst + payoutSecond + payoutThird;
   const totalPot    = buyIn * memberCount;
   const isCorporate    = paymentModel === "corporate_sponsored";
+  const isFriendly     = paymentModel === "friendly";
+  const finalWinnerMsg = winnerMsgPreset === "Custom..."
+    ? (customWinnerMsg.trim() || "You are the Champion!")
+    : winnerMsgPreset;
   const currencySymbol = currency === "Other" ? (otherSymbol.trim() || "$") : CURRENCIES.find(c => c.code === currency)?.symbol ?? "$";
 
   const handleCreate = async () => {
@@ -217,23 +232,30 @@ function CreateGroupInner() {
       .insert({
         name:                 groupName.trim(),
         admin_id:             user.id,
-        buy_in_amount:        isCorporate && prizeTrack === "company" ? 0 : buyIn,
-        payout_first:         isCorporate && prizeTrack === "company" ? 0 : payoutFirst,
-        payout_second:        isCorporate && prizeTrack === "company" ? 0 : payoutSecond,
-        payout_third:         isCorporate && prizeTrack === "company" ? 0 : payoutThird,
+        buy_in_amount:        (isCorporate && prizeTrack === "company") || isFriendly ? 0 : buyIn,
+        payout_first:         (isCorporate && prizeTrack === "company") || isFriendly ? 0 : payoutFirst,
+        payout_second:        (isCorporate && prizeTrack === "company") || isFriendly ? 0 : payoutSecond,
+        payout_third:         (isCorporate && prizeTrack === "company") || isFriendly ? 0 : payoutThird,
         max_members:          100,
         group_type:           groupType,
         single_match_id:      groupType === "single_match" ? selectedMatch : null,
-        enrollment_fee_cents: isCorporate ? 0 : 200,
-        payment_model:        paymentModel,
+        enrollment_fee_cents: isCorporate || isFriendly ? 0 : 200,
+        payment_model:        isFriendly ? "pay_per_member" : paymentModel,
+        group_mode:           isFriendly ? "friendly" : isCorporate ? "corporate" : "standard",
         is_corporate_paid:    false,
-        corporate_prize:            finalCorporatePrize || null,
+        corporate_prize:            !isFriendly ? (finalCorporatePrize || null) : null,
         currency:                   currency,
         currency_symbol:            currencySymbol,
-        payment_link:               paymentLink.trim() || null,
-        enable_group_stage_prize:   enableGroupStagePrize,
-        group_stage_prize_amount:   enableGroupStagePrize && !(isCorporate && prizeTrack === "company") ? groupStagePrizeAmount : null,
-        group_stage_prize_label:    enableGroupStagePrize && isCorporate && prizeTrack === "company" ? groupStagePrizeLabel.trim() || null : null,
+        payment_link:               !isFriendly ? (paymentLink.trim() || null) : null,
+        enable_group_stage_prize:   !isFriendly && enableGroupStagePrize,
+        group_stage_prize_amount:   !isFriendly && enableGroupStagePrize && !(isCorporate && prizeTrack === "company") ? groupStagePrizeAmount : null,
+        group_stage_prize_label:    !isFriendly && enableGroupStagePrize && isCorporate && prizeTrack === "company" ? groupStagePrizeLabel.trim() || null : null,
+        winner_message:             isFriendly ? finalWinnerMsg : null,
+        show_prize_split:           isFriendly ? false : undefined,
+        show_entry_fee:             isFriendly ? false : undefined,
+        show_prize_pot:             isFriendly ? false : undefined,
+        show_buy_in_tracker:        isFriendly ? false : undefined,
+        show_payment_link:          isFriendly ? false : undefined,
       } as Record<string, unknown>)
       .select("id, passkey")
       .single();
@@ -327,6 +349,8 @@ function CreateGroupInner() {
             <p style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", marginTop: 6, fontFamily: "var(--font-ui)" }}>
               {isCorporate
                 ? "Your corporate group is ready. Go to the group to unlock team invites."
+                : isFriendly
+                ? "Share the passkey — anyone can join for free!"
                 : "Share the passkey: members pay $2 to join."}
             </p>
           </div>
@@ -394,7 +418,10 @@ function CreateGroupInner() {
     );
   }
 
-  const steps = [
+  const steps = isFriendly ? [
+    { n: 1 as const, label: t("cg_step_setup")   },
+    { n: 3 as const, label: t("cg_step_scoring") },
+  ] : [
     { n: 1 as const, label: t("cg_step_setup")   },
     { n: 2 as const, label: t("cg_step_prizes")  },
     { n: 3 as const, label: t("cg_step_scoring") },
@@ -514,6 +541,49 @@ function CreateGroupInner() {
               </div>
             </div>
           </button>
+
+          {/* Family & School */}
+          <button
+            onClick={() => { setPaymentModel("friendly"); setStep(1); }}
+            className="w-full text-left transition-all hover:-translate-y-0.5"
+            style={{
+              ...glassCard,
+              padding: 0, overflow: "hidden", cursor: "pointer", display: "block",
+              ...(paymentModel === "friendly" ? {
+                border: "2px solid rgba(167,139,250,0.5)",
+                background: "rgba(167,139,250,0.04)",
+              } : {}),
+            }}>
+            <NeonBar gradient="linear-gradient(90deg,#a78bfa,#00D4FF)" />
+            <div style={{ padding: 20 }}>
+              <div style={{ display: "flex", alignItems: "flex-start", gap: 14 }}>
+                <div style={{
+                  width: 48, height: 48, borderRadius: 14, flexShrink: 0,
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  background: "rgba(167,139,250,0.1)", border: "1px solid rgba(167,139,250,0.2)",
+                }}>
+                  <GraduationCap size={22} style={{ color: "#a78bfa" }} />
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6, flexWrap: "wrap" }}>
+                    <span style={{ fontFamily: "var(--font-display)", fontWeight: 800, fontSize: 18, color: "white", textTransform: "uppercase" }}>
+                      Family &amp; School
+                    </span>
+                    <Chip label="Always free" color="#a78bfa" />
+                  </div>
+                  <p style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", fontFamily: "var(--font-ui)", lineHeight: 1.45, margin: 0 }}>
+                    Fun for all ages. No prizes, no money — <strong style={{ color: "white" }}>just bragging rights!</strong>
+                  </p>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginTop: 10 }}>
+                    {["School", "Family", "Kids", "Classroom"].map(tag => (
+                      <span key={tag} style={neutralTagStyle}>{tag}</span>
+                    ))}
+                  </div>
+                </div>
+                <ArrowRight size={18} style={{ color: "#a78bfa", flexShrink: 0, alignSelf: "center" }} />
+              </div>
+            </div>
+          </button>
         </div>
       )}
 
@@ -574,6 +644,15 @@ function CreateGroupInner() {
               <Building2 size={14} style={{ color: "#00D4FF" }} />
               <span className="text-xs font-medium" style={{ color: "#00D4FF" }}>
                 Corporate mode: employees join free · activate dashboard link after setup
+              </span>
+            </div>
+          )}
+          {isFriendly && (
+            <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl"
+              style={{ background: "rgba(0,212,255,0.05)", border: "1px solid rgba(0,212,255,0.15)" }}>
+              <GraduationCap size={14} style={{ color: "#00D4FF" }} />
+              <span className="text-xs font-medium" style={{ color: "#00D4FF" }}>
+                Family &amp; School mode: free to join, no prizes — just bragging rights!
               </span>
             </div>
           )}
@@ -660,9 +739,44 @@ function CreateGroupInner() {
             )}
           </div>
 
+          {isFriendly && (
+            <div style={{ ...glassCard, padding: 20 }} className="space-y-3">
+              <label style={labelStyle}>Winner&apos;s Trophy Message</label>
+              <div className="relative">
+                <select
+                  value={winnerMsgPreset}
+                  onChange={(e: { target: HTMLSelectElement }) => setWinnerMsgPreset(e.target.value)}
+                  style={{
+                    ...inputStyle, padding: "12px 16px", cursor: "pointer",
+                    appearance: "none" as const, WebkitAppearance: "none" as const,
+                  }}>
+                  {WINNER_MESSAGE_PRESETS.map(opt => (
+                    <option key={opt} value={opt} style={{ background: "#0B141B" }}>{opt}</option>
+                  ))}
+                </select>
+                <ChevronDown size={14} className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: "rgba(255,255,255,0.4)" }} />
+              </div>
+              {winnerMsgPreset === "Custom..." && (
+                <div className="mt-2">
+                  <input
+                    type="text" maxLength={50} value={customWinnerMsg}
+                    onChange={(e: { target: HTMLInputElement }) => setCustomWinnerMsg(e.target.value)}
+                    placeholder="Your custom trophy message (max 50 chars)"
+                    onFocus={(e: { target: HTMLInputElement }) => { e.target.style.borderColor = "rgba(251,191,36,0.5)"; e.target.style.boxShadow = "0 0 0 3px rgba(251,191,36,0.1)"; }}
+                    onBlur={(e: { target: HTMLInputElement }) => { e.target.style.borderColor = "rgba(255,255,255,0.12)"; e.target.style.boxShadow = "none"; }}
+                    className="placeholder:text-[rgba(255,255,255,0.3)]"
+                    style={{ ...inputStyle, padding: "12px 16px" }} />
+                  <p style={{ fontSize: 11, color: "rgba(255,255,255,0.3)", fontFamily: "var(--font-ui)", marginTop: 4 }}>
+                    {customWinnerMsg.length}/50 characters
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+
           <button type="button" onClick={() => {
             if (!groupName.trim()) { setError("Group name is required"); return; }
-            setError(null); setStep(2);
+            setError(null); setStep(isFriendly ? 3 : 2);
           }} className="w-full flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5"
             style={{
               padding: "13px", borderRadius: 12, border: "none",

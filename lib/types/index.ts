@@ -35,6 +35,8 @@ export interface Group {
   showPrizePot:            boolean;
   showBuyInTracker:        boolean;
   showPaymentLink:         boolean;
+  groupMode:               string;
+  winnerMessage:           string | null;
   payouts: {
     first:  string;  // "60%"
     second: string;  // "30%"
