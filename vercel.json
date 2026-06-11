@@ -1,6 +1,10 @@
 {
   "crons": [
     {
+      "path": "/api/scores",
+      "schedule": "*/5 * * * *"
+    },
+    {
       "path": "/api/reminders/telegram",
       "schedule": "0 6 * * *"
     },

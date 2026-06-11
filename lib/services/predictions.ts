@@ -1,8 +1,8 @@
-import { createClient } from "@supabase/supabase-js";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import type { ScoringRules, Match } from "@/lib/types";
 import { getStagePoints } from "@/lib/scoring";
 
-function sb() {
+function defaultSb() {
   return createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
@@ -19,7 +19,7 @@ export async function saveGroupPrediction(params: {
   awayScore: number;
 }): Promise<{ success: boolean; locked: boolean }> {
   // Check if match is locked (within 5 min of kickoff)
-  const { data: match } = await sb()
+  const { data: match } = await defaultSb()
     .from("matches")
     .select("kickoff_at")
     .eq("id", params.matchId)
@@ -33,7 +33,7 @@ export async function saveGroupPrediction(params: {
     }
   }
 
-  const { error } = await sb()
+  const { error } = await defaultSb()
     .from("group_predictions")
     .upsert({
       user_id:    params.userId,
@@ -58,7 +58,7 @@ export async function getUserPredictions(
   userId:  string,
   groupId: string
 ): Promise<Record<string, { homeScore: string; awayScore: string }>> {
-  const { data } = await sb()
+  const { data } = await defaultSb()
     .from("group_predictions")
     .select("match_id, home_score, away_score, locked_at")
     .eq("user_id",  userId)
@@ -78,8 +78,13 @@ export async function getUserPredictions(
 
 // ── Get all predictions for a match (for scoring) ────────────────────────────
 
-export async function getMatchPredictions(matchId: string, groupId: string) {
-  const { data } = await sb()
+export async function getMatchPredictions(
+  matchId: string,
+  groupId: string,
+  client?: SupabaseClient,
+) {
+  const c = client ?? defaultSb();
+  const { data } = await c
     .from("group_predictions")
     .select("user_id, home_score, away_score, points_earned, is_exact")
     .eq("match_id", matchId)
@@ -92,6 +97,7 @@ export async function getMatchPredictions(matchId: string, groupId: string) {
 }
 
 // ── Score a match result (called after match ends) ───────────────────────────
+// Pass sbClient (service role) when calling from server-side cron to bypass RLS.
 
 export async function scoreMatchResult(params: {
   matchId:    string;
@@ -99,12 +105,14 @@ export async function scoreMatchResult(params: {
   homeScore:  number;
   awayScore:  number;
   rules:      ScoringRules;
+  sbClient?:  SupabaseClient;
 }): Promise<void> {
-  const predictions = await getMatchPredictions(params.matchId, params.groupId);
+  const c = params.sbClient ?? defaultSb();
+  const predictions = await getMatchPredictions(params.matchId, params.groupId, c);
   if (!predictions.length) return;
 
   // Fetch match stage for progressive scoring
-  const { data: matchRow } = await sb()
+  const { data: matchRow } = await c
     .from("matches")
     .select("stage")
     .eq("id", params.matchId)
@@ -114,7 +122,7 @@ export async function scoreMatchResult(params: {
   const { correctOutcome, exactScore } = getStagePoints(stage, params.rules, params.rules.useProgressiveScoring);
 
   // Check for a group-level admin override — use it instead of the global score if present
-  const { data: overrideRow } = await sb()
+  const { data: overrideRow } = await c
     .from("match_overrides")
     .select("home_score, away_score")
     .eq("match_id", params.matchId)
@@ -148,7 +156,7 @@ export async function scoreMatchResult(params: {
     };
   });
 
-  await sb()
+  await c
     .from("group_predictions")
     .upsert(updates, { onConflict: "user_id,group_id,match_id" });
 }
