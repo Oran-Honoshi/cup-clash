@@ -220,7 +220,7 @@ export function ScoringRulesEditor({ groupId }: ScoringRulesEditorProps) {
   };
 
   const maxMatchFlat = enabled.exact
-    ? rules.exactScore * TOTAL_MATCHES
+    ? (rules.correctOutcome + rules.exactScore) * TOTAL_MATCHES
     : enabled.outcome ? rules.correctOutcome * TOTAL_MATCHES : 0;
 
   // WC2026 match counts per stage (72 group + 16+8+4+2+1+1 KO = 104)
@@ -458,7 +458,7 @@ export function ScoringRulesEditor({ groupId }: ScoringRulesEditorProps) {
             ))
           ) : (
             <>
-              {enabled.exact && <div className="flex justify-between" style={{ color: "rgba(255,255,255,0.5)" }}><span>Exact scores ({TOTAL_MATCHES} × {rules.exactScore})</span><span className="font-bold" style={{ color: "white" }}>{maxMatchFlat}</span></div>}
+              {enabled.exact && <div className="flex justify-between" style={{ color: "rgba(255,255,255,0.5)" }}><span>Exact scores ({TOTAL_MATCHES} × {rules.correctOutcome + rules.exactScore})</span><span className="font-bold" style={{ color: "white" }}>{maxMatchFlat}</span></div>}
               {enabled.outcome && !enabled.exact && <div className="flex justify-between" style={{ color: "rgba(255,255,255,0.5)" }}><span>Outcomes ({TOTAL_MATCHES} × {rules.correctOutcome})</span><span className="font-bold" style={{ color: "white" }}>{maxMatchFlat}</span></div>}
             </>
           )}

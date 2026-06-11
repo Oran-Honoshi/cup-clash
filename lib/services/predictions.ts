@@ -143,7 +143,9 @@ export async function scoreMatchResult(params: {
       : effectiveHome < effectiveAway ? "A" : "D";
     const isOutcome = !isExact && predWinner === realWinner;
 
-    const pts = isExact ? exactScore : isOutcome ? correctOutcome : 0;
+    // Exact score earns the outcome points PLUS the exact-score bonus.
+    // Correct outcome only earns the outcome points alone.
+    const pts = isExact ? correctOutcome + exactScore : isOutcome ? correctOutcome : 0;
 
     return {
       user_id:       pred.user_id,
@@ -171,7 +173,7 @@ export function calcLivePoints(
   rules = { exactScore: 25, correctOutcome: 10 }
 ): { pts: number; type: "exact" | "outcome" | "none" } {
   if (prediction.homeScore === liveHome && prediction.awayScore === liveAway) {
-    return { pts: rules.exactScore, type: "exact" };
+    return { pts: rules.correctOutcome + rules.exactScore, type: "exact" };
   }
   const predW = prediction.homeScore > prediction.awayScore ? "H"
     : prediction.homeScore < prediction.awayScore ? "A" : "D";
