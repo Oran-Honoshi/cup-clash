@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Camera, Check, AlertCircle, Upload, RefreshCw, X, Zap } from "lucide-react";
+import { Camera, Check, AlertCircle, Upload, RefreshCw, X, Zap, Mail } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { CountrySelector } from "@/components/auth/country-selector";
 import { MemberAvatar, SOCCER_PRESETS, dicebearUrl } from "@/components/ui/member-avatar";
@@ -50,6 +50,8 @@ export default function ProfilePage() {
   const [error,  setError]        = useState<string | null>(null);
   const [loading, setLoading]     = useState(true);
   const [uploading, setUploading] = useState(false);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+  const [isGoogle,  setIsGoogle]  = useState(false);
   const [tab, setTab]             = useState<"auto" | "preset" | "photo">("auto");
   const fileRef = useRef<HTMLInputElement>(null);
   const { setCountry } = useTheme();
@@ -59,6 +61,11 @@ export default function ProfilePage() {
       const sb = createClient();
       const { data: { user } } = await sb.auth.getUser();
       if (!user) { setLoading(false); return; }
+      setUserEmail(user.email ?? null);
+      setIsGoogle(
+        user.app_metadata?.provider === "google" ||
+        (user.identities ?? []).some((i: { provider: string }) => i.provider === "google")
+      );
       const { data } = await sb.from("profiles")
         .select("name, country, avatar_url, auto_fill_enabled, auto_fill_home, auto_fill_away").eq("id", user.id).single();
       if (data) {
@@ -156,6 +163,37 @@ export default function ProfilePage() {
         <div className="label-caps mb-1">Account</div>
         <h1 className="font-display text-4xl sm:text-5xl uppercase text-white tracking-tight">{t("prof_my_profile")}</h1>
       </div>
+
+      {/* Signed in as — read-only account info */}
+      {userEmail && (
+        <div style={{ ...glassCard, padding: "12px 16px" }}>
+          <div className="flex items-center gap-3">
+            <Mail size={14} style={{ color: "rgba(255,255,255,0.3)", flexShrink: 0 }} />
+            <div className="flex-1 min-w-0">
+              <div style={{ fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "rgba(255,255,255,0.3)", fontFamily: "var(--font-ui)", marginBottom: 2 }}>
+                Signed in as
+              </div>
+              <div className="truncate" style={{ fontSize: 13, color: "rgba(255,255,255,0.65)", fontFamily: "var(--font-ui)" }}>
+                {userEmail}
+              </div>
+            </div>
+            {isGoogle && (
+              <span className="flex items-center gap-1.5 shrink-0"
+                style={{
+                  padding: "3px 9px", borderRadius: 20,
+                  background: "rgba(255,255,255,0.05)",
+                  border: "1px solid rgba(255,255,255,0.1)",
+                  fontSize: 10, fontWeight: 700,
+                  color: "rgba(255,255,255,0.4)",
+                  fontFamily: "var(--font-ui)",
+                }}>
+                <span style={{ color: "#4285F4", fontWeight: 900, fontSize: 12, lineHeight: 1 }}>G</span>
+                Google
+              </span>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Avatar section */}
       <div style={{ ...glassCard, padding: 24 }}>
