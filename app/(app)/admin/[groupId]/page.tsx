@@ -53,8 +53,6 @@ export default async function AdminGroupPage({ params }: { params: { groupId: st
     getMembers(groupId),
   ]);
 
-  const tournamentLocked = new Date() >= new Date("2026-06-11T20:00:00Z");
-
   return (
     <div className="space-y-6 max-w-3xl mx-auto pb-32">
       <div>
@@ -67,11 +65,6 @@ export default async function AdminGroupPage({ params }: { params: { groupId: st
         <h1 className="font-display text-4xl sm:text-5xl uppercase tracking-tight" style={{ color: "white" }}>
           Admin Panel
         </h1>
-        {tournamentLocked && (
-          <p className="text-sm mt-1 font-bold" style={{ color: "#d97706" }}>
-            ⚠ Tournament has started. Scoring rules are locked.
-          </p>
-        )}
       </div>
 
       {/* Member management */}
@@ -91,27 +84,8 @@ export default async function AdminGroupPage({ params }: { params: { groupId: st
         currencySymbol={group.currencySymbol}
       />
 
-      {/* Scoring rules: locked after June 11 */}
-      {!tournamentLocked ? (
-        <ScoringRulesEditor groupId={group.id} />
-      ) : (
-        <div className="rounded-2xl p-5"
-          style={{
-            background: "rgba(18,14,38,0.32)",
-            backdropFilter: "blur(40px) saturate(180%)",
-            WebkitBackdropFilter: "blur(40px) saturate(180%)",
-            border: "1px solid rgba(217,119,6,0.2)",
-            boxShadow: "0 12px 40px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.18)",
-            borderRadius: 28,
-          }}>
-          <div className="text-xs font-bold uppercase tracking-widest mb-2" style={{ color: "#d97706" }}>
-            Scoring Rules (Locked)
-          </div>
-          <p className="text-sm" style={{ color: "rgba(255,255,255,0.5)" }}>
-            Scoring rules are locked once the tournament starts. Members can view them in the group page.
-          </p>
-        </div>
-      )}
+      {/* Scoring rules */}
+      <ScoringRulesEditor groupId={group.id} />
 
       {/* Match score overrides */}
       <div>

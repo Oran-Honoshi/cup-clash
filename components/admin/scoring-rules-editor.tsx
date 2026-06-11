@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, Fragment } from "react";
-import { Check, AlertCircle, Calculator, Lock } from "lucide-react";
+import { Check, AlertCircle, Calculator } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 
@@ -108,7 +108,6 @@ export function ScoringRulesEditor({ groupId }: ScoringRulesEditorProps) {
   const [saving,            setSaving]            = useState(false);
   const [saved,             setSaved]             = useState(false);
   const [error,             setError]             = useState<string | null>(null);
-  const [locked,            setLocked]            = useState(false);
   const [useCustomLockTime, setUseCustomLockTime] = useState(false);
   const [tournamentLockAt,  setTournamentLockAt]  = useState("");
 
@@ -160,7 +159,6 @@ export function ScoringRulesEditor({ groupId }: ScoringRulesEditorProps) {
             bestThird:          d.enable_best_third !== false,
             progressiveScoring: Boolean(d.use_progressive_scoring),
           });
-          setLocked(!!d.locked_at);
           if (d.tournament_lock_at) {
             setUseCustomLockTime(true);
             const dt = new Date(d.tournament_lock_at as string);
@@ -173,7 +171,6 @@ export function ScoringRulesEditor({ groupId }: ScoringRulesEditorProps) {
   }, [groupId]);
 
   const handleSave = async () => {
-    if (locked) return;
     setSaving(true); setError(null);
     const sb = createClient();
     const { error: upsertError } = await sb.from("scoring_rules").upsert({
@@ -276,17 +273,9 @@ export function ScoringRulesEditor({ groupId }: ScoringRulesEditorProps) {
       <div className="flex items-center gap-2.5">
         <Calculator size={18} style={{ color: "#0891B2" }} />
         <span className="font-display text-xl uppercase font-black" style={{ color: "white" }}>Scoring Rules</span>
-        {locked && (
-          <span className="ml-auto flex items-center gap-1.5 text-xs font-bold uppercase tracking-widest"
-            style={{ color: "#d97706" }}>
-            <Lock size={12} /> Locked
-          </span>
-        )}
       </div>
       <p className="text-xs" style={{ color: "rgba(255,255,255,0.5)" }}>
-        {locked
-          ? "Rules are locked — the tournament has started."
-          : "These rules lock June 11 when the first match kicks off. Enable/disable and set point values below."}
+        Enable/disable and set point values below. Changes apply immediately to all future scoring.
       </p>
 
       <div className="space-y-2">
@@ -304,8 +293,8 @@ export function ScoringRulesEditor({ groupId }: ScoringRulesEditorProps) {
                   border: "1px solid rgba(255,255,255,0.07)",
                 }}>
                 <button
-                  onClick={() => { if (!locked) setEnabled(e => ({ ...e, [feKey]: !e[feKey] })); }}
-                  disabled={locked || isOverridden}
+                  onClick={() => { setEnabled(e => ({ ...e, [feKey]: !e[feKey] })); }}
+                  disabled={isOverridden}
                   className="h-5 w-5 rounded flex items-center justify-center shrink-0 transition-all"
                   style={isOn
                     ? { borderColor: "rgba(0,212,255,1)", background: "rgba(0,212,255,0.2)", border: "2px solid rgba(0,212,255,1)" }
@@ -320,7 +309,7 @@ export function ScoringRulesEditor({ groupId }: ScoringRulesEditorProps) {
                 <div className="flex items-center gap-1.5 shrink-0">
                   <input
                     type="number" min={0} max={999} value={rules[key]}
-                    disabled={!isOn || locked || isOverridden}
+                    disabled={!isOn || isOverridden}
                     onChange={e => { setRules(r => ({ ...r, [key]: Number(e.target.value) })); setSaved(false); }}
                     className="w-16 rounded-lg px-2 py-1.5 text-sm text-center focus:outline-none disabled:opacity-30"
                     style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", color: "#ffffff" }}
@@ -343,8 +332,7 @@ export function ScoringRulesEditor({ groupId }: ScoringRulesEditorProps) {
         <div className={cn("flex items-center gap-3 p-3 rounded-xl border transition-all", !enabled.progressiveScoring && "opacity-50")}
           style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)" }}>
           <button
-            onClick={() => { if (!locked) setEnabled(e => ({ ...e, progressiveScoring: !e.progressiveScoring })); }}
-            disabled={locked}
+            onClick={() => { setEnabled(e => ({ ...e, progressiveScoring: !e.progressiveScoring })); }}
             className="h-5 w-5 rounded flex items-center justify-center shrink-0 transition-all"
             style={enabled.progressiveScoring
               ? { borderColor: "rgba(0,212,255,1)", background: "rgba(0,212,255,0.2)", border: "2px solid rgba(0,212,255,1)" }
@@ -388,7 +376,6 @@ export function ScoringRulesEditor({ groupId }: ScoringRulesEditorProps) {
                         <td style={{ padding: "6px 8px", textAlign: "center" }}>
                           <input
                             type="number" min={0} max={999} value={coVal}
-                            disabled={locked}
                             onChange={e => { setRules(r => ({ ...r, [coKey]: Number(e.target.value) })); setSaved(false); }}
                             className="w-14 rounded-lg px-2 py-1.5 text-sm text-center focus:outline-none disabled:opacity-30"
                             style={{ background: "rgba(0,212,255,0.08)", border: "1px solid rgba(0,212,255,0.2)", color: "#00D4FF" }}
@@ -397,7 +384,6 @@ export function ScoringRulesEditor({ groupId }: ScoringRulesEditorProps) {
                         <td style={{ padding: "6px 8px", textAlign: "center" }}>
                           <input
                             type="number" min={0} max={999} value={esVal}
-                            disabled={locked}
                             onChange={e => { setRules(r => ({ ...r, [esKey]: Number(e.target.value) })); setSaved(false); }}
                             className="w-14 rounded-lg px-2 py-1.5 text-sm text-center focus:outline-none disabled:opacity-30"
                             style={{ background: "rgba(0,255,136,0.08)", border: "1px solid rgba(0,255,136,0.2)", color: "#00FF88" }}
@@ -429,8 +415,7 @@ export function ScoringRulesEditor({ groupId }: ScoringRulesEditorProps) {
             </div>
           </div>
           <button
-            onClick={() => { if (!locked) setUseCustomLockTime(v => !v); }}
-            disabled={locked}
+            onClick={() => { setUseCustomLockTime(v => !v); }}
             className="relative h-6 w-11 rounded-full shrink-0 transition-all"
             style={{ background: useCustomLockTime ? "#00D4FF" : "rgba(255,255,255,0.12)" }}>
             <div className="absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-all"
@@ -442,7 +427,6 @@ export function ScoringRulesEditor({ groupId }: ScoringRulesEditorProps) {
             <input
               type="datetime-local"
               value={tournamentLockAt}
-              disabled={locked}
               onChange={e => { setTournamentLockAt(e.target.value); setSaved(false); }}
               className="w-full rounded-xl px-3 py-2 text-sm focus:outline-none disabled:opacity-30"
               style={{
@@ -500,8 +484,8 @@ export function ScoringRulesEditor({ groupId }: ScoringRulesEditorProps) {
         </div>
       )}
 
-      <button onClick={handleSave} disabled={locked || saving} style={{ padding: "12px 24px", borderRadius: 12, background: locked ? "rgba(255,255,255,0.08)" : "linear-gradient(135deg, #00FF88, #00D4FF)", color: locked ? "rgba(255,255,255,0.3)" : "#050810", fontSize: 14, fontWeight: 800, fontFamily: "var(--font-display)", textTransform: "uppercase" as const, letterSpacing: "0.05em", cursor: locked ? "not-allowed" : "pointer", border: "none", width: "100%", opacity: saving ? 0.7 : 1 }}>
-        {locked ? "Rules locked" : saved ? "Saved!" : saving ? "Saving..." : "Save changes"}
+      <button onClick={handleSave} disabled={saving} style={{ padding: "12px 24px", borderRadius: 12, background: "linear-gradient(135deg, #00FF88, #00D4FF)", color: "#050810", fontSize: 14, fontWeight: 800, fontFamily: "var(--font-display)", textTransform: "uppercase" as const, letterSpacing: "0.05em", cursor: "pointer", border: "none", width: "100%", opacity: saving ? 0.7 : 1 }}>
+        {saved ? "Saved!" : saving ? "Saving..." : "Save changes"}
       </button>
     </div>
   );
