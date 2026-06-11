@@ -2,7 +2,7 @@
 // updates matches table, and triggers point scoring for finished matches.
 
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { scoreMatchResult } from "@/lib/services/predictions";
 import type { ScoringRules } from "@/lib/types";
 
@@ -93,6 +93,217 @@ function buildScoringRules(r: ScoringRulesRow | null): ScoringRules {
     finalCorrectOutcome:   r?.final_correct_outcome  ?? 10,
     useProgressiveScoring: Boolean(r?.use_progressive_scoring),
   };
+}
+
+// ── Tournament scorer / assister tracking ─────────────────────────────────────
+
+// Normalise a player name for fuzzy matching:
+// - strips accents (Mbappé → mbappe)
+// - lowercases
+// - collapses whitespace
+function normName(s: string): string {
+  return s
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/['']/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+// Returns true when a user's pick string matches a canonical player name.
+// Handles abbreviated first names: "L. Messi" ↔ "Lionel Messi".
+function playerNamesMatch(pick: string, canonical: string): boolean {
+  const p = normName(pick);
+  const c = normName(canonical);
+  if (p === c) return true;
+
+  // "L. Messi" style: first token is a single letter followed by a dot
+  const pp = p.split(" ");
+  const cp = c.split(" ");
+  if (pp.length >= 2 && /^[a-z]\.$/.test(pp[0]) && cp.length >= 2) {
+    const initial  = pp[0].replace(".", "");
+    const lastName = pp.slice(1).join(" ");
+    if (initial === cp[0][0] && lastName === cp.slice(1).join(" ")) return true;
+  }
+  // Reverse: canonical is abbreviated, pick is full (less common but handle it)
+  if (cp.length >= 2 && /^[a-z]\.$/.test(cp[0]) && pp.length >= 2) {
+    const initial  = cp[0].replace(".", "");
+    const lastName = cp.slice(1).join(" ");
+    if (initial === pp[0][0] && lastName === pp.slice(1).join(" ")) return true;
+  }
+  return false;
+}
+
+interface GoalEntry {
+  player_id:   number | null;
+  player_name: string | null;
+  assist_id:   number | null;
+  assist_name: string | null;
+  detail:      string; // "Normal Goal" | "Penalty" | "Own Goal" | "Missed Penalty"
+  team_name:   string | null;
+}
+
+// Reads all finished live_scores, builds goal/assist tallies, upserts into
+// player_tournament_stats, then awards / resets points for top_scorer and
+// top_assister predictions across all groups.
+async function updateTournamentScorerPoints(sb: SupabaseClient): Promise<void> {
+  console.log("[scores/cron] STEP 5: Updating tournament scorer/assister points...");
+
+  // ── 1. Aggregate from ALL finished live_scores ───────────────────────────
+
+  const { data: finishedRows, error: fetchErr } = await sb
+    .from("live_scores")
+    .select("raw_data")
+    .in("status", ["FT", "AET", "PEN", "AWD", "WO"]);
+
+  if (fetchErr) {
+    console.error("[scores/cron]   live_scores fetch error:", fetchErr);
+    return;
+  }
+
+  // api_player_id → { name, team, goals, assists }
+  type Tally = { name: string; team: string; goals: number; assists: number };
+  const tally = new Map<number, Tally>();
+
+  for (const row of finishedRows ?? []) {
+    const goals = ((row.raw_data as Record<string, unknown>)?.goals ?? []) as GoalEntry[];
+    for (const g of goals) {
+      if (g.detail === "Own Goal") continue; // own goals don't count for golden boot
+      if (g.player_id && g.player_name) {
+        const curr = tally.get(g.player_id) ?? { name: g.player_name, team: g.team_name ?? "", goals: 0, assists: 0 };
+        tally.set(g.player_id, { ...curr, goals: curr.goals + 1 });
+      }
+      if (g.assist_id && g.assist_name) {
+        const curr = tally.get(g.assist_id) ?? { name: g.assist_name, team: g.team_name ?? "", goals: 0, assists: 0 };
+        tally.set(g.assist_id, { ...curr, assists: curr.assists + 1 });
+      }
+    }
+  }
+
+  console.log(`[scores/cron]   Players with goals/assists: ${tally.size}`);
+  if (tally.size === 0) {
+    console.log("[scores/cron]   No goal data yet — skipping tournament scoring");
+    return;
+  }
+
+  // ── 2. Enrich with full names from players table ─────────────────────────
+
+  const allIds = [...tally.keys()];
+  const { data: playerRows } = await sb
+    .from("players")
+    .select("full_name, api_player_id")
+    .in("api_player_id", allIds);
+
+  const apiIdToFullName = new Map<number, string>(
+    ((playerRows ?? []) as Array<{ full_name: string; api_player_id: number }>)
+      .map(p => [p.api_player_id, p.full_name])
+  );
+
+  // ── 3. Upsert player_tournament_stats ────────────────────────────────────
+
+  const statsRows = allIds.map(id => {
+    const t = tally.get(id)!;
+    return {
+      api_player_id: id,
+      player_name:   t.name,
+      full_name:     apiIdToFullName.get(id) ?? null,
+      team_name:     t.team,
+      goals:         t.goals,
+      assists:       t.assists,
+      updated_at:    new Date().toISOString(),
+    };
+  });
+
+  const { error: statsErr } = await sb
+    .from("player_tournament_stats")
+    .upsert(statsRows, { onConflict: "api_player_id" });
+
+  if (statsErr) {
+    console.error("[scores/cron]   player_tournament_stats upsert error:", statsErr);
+  } else {
+    console.log(`[scores/cron]   player_tournament_stats: ${statsRows.length} player(s) upserted`);
+  }
+
+  // ── 4. Determine current leaders ─────────────────────────────────────────
+
+  const maxGoals   = Math.max(...Array.from(tally.values()).map(v => v.goals),   0);
+  const maxAssists = Math.max(...Array.from(tally.values()).map(v => v.assists), 0);
+
+  // All players tied at the top share the award during the tournament
+  const leadingScorerNames = maxGoals > 0
+    ? [...tally].filter(([, v]) => v.goals   === maxGoals  ).map(([id]) => apiIdToFullName.get(id) ?? tally.get(id)!.name)
+    : [];
+  const leadingAssisterNames = maxAssists > 0
+    ? [...tally].filter(([, v]) => v.assists === maxAssists).map(([id]) => apiIdToFullName.get(id) ?? tally.get(id)!.name)
+    : [];
+
+  console.log(`[scores/cron]   Top scorer(s): ${leadingScorerNames.join(", ")} (${maxGoals}g)`);
+  console.log(`[scores/cron]   Top assister(s): ${leadingAssisterNames.join(", ")} (${maxAssists}a)`);
+
+  // ── 5. Score top_scorer / top_assister predictions ───────────────────────
+
+  const [{ data: preds }, { data: rulesRows }] = await Promise.all([
+    sb.from("group_predictions")
+      .select("id, group_id, pred_type, pred_value, points_earned")
+      .in("pred_type", ["top_scorer", "top_assister"]),
+    sb.from("scoring_rules")
+      .select("group_id, top_scorer, top_assister, enable_scorer, enable_assister"),
+  ]);
+
+  type RulesRow = {
+    group_id: string;
+    top_scorer: number;
+    top_assister: number;
+    enable_scorer: boolean | null;
+    enable_assister: boolean | null;
+  };
+  type PredRow = {
+    id: string;
+    group_id: string;
+    pred_type: string;
+    pred_value: string | null;
+    points_earned: number;
+  };
+
+  const rulesMap = new Map<string, RulesRow>(
+    ((rulesRows ?? []) as unknown as RulesRow[]).map(r => [r.group_id, r])
+  );
+
+  const toUpdate: Array<{ id: string; points_earned: number }> = [];
+
+  for (const pred of ((preds ?? []) as unknown as PredRow[])) {
+    const rules = rulesMap.get(pred.group_id);
+    const val   = pred.pred_value ?? "";
+    let pts = 0;
+
+    if (pred.pred_type === "top_scorer" && rules?.enable_scorer !== false) {
+      if (leadingScorerNames.some(n => playerNamesMatch(val, n))) {
+        pts = rules?.top_scorer ?? 50;
+      }
+    } else if (pred.pred_type === "top_assister" && rules?.enable_assister !== false) {
+      if (leadingAssisterNames.some(n => playerNamesMatch(val, n))) {
+        pts = rules?.top_assister ?? 50;
+      }
+    }
+
+    if (pts !== pred.points_earned) {
+      toUpdate.push({ id: pred.id, points_earned: pts });
+    }
+  }
+
+  console.log(`[scores/cron]   Tournament pick point changes: ${toUpdate.length}`);
+
+  if (toUpdate.length > 0) {
+    await Promise.allSettled(
+      toUpdate.map(u =>
+        sb.from("group_predictions")
+          .update({ points_earned: u.points_earned })
+          .eq("id", u.id)
+      )
+    );
+    console.log(`[scores/cron]   Updated ${toUpdate.length} tournament pick(s)`);
+  }
 }
 
 // ── Types ──────────────────────────────────────────────────────────────────────
@@ -501,6 +712,11 @@ export async function POST(request: NextRequest) {
         console.log(`[scores/cron]   Scoring complete for match ${matchId}`);
       }
     }
+
+    // ── STEP 5: Update tournament scorer / assister points ───────────────────
+    // Runs every cron tick (not just when new matches finish) so the stats
+    // table and pick points stay consistent with the full live_scores history.
+    await updateTournamentScorerPoints(sb);
 
     // ── Summary ──────────────────────────────────────────────────────────────
 
