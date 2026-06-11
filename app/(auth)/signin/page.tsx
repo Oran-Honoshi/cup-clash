@@ -38,15 +38,17 @@ export default function SignInPage() {
   const [showPass,       setShowPass]      = useState(false);
   const [loading,        setLoading]       = useState(false);
   const [error,          setError]         = useState<string | null>(null);
-  const [wrongProvider,  setWrongProvider] = useState(false);
-  const [googleConflict, setGoogleConflict] = useState(false);
-  const [oauthFailed,    setOauthFailed]   = useState(false);
+  const [wrongProvider,     setWrongProvider]     = useState(false);
+  const [googleConflict,    setGoogleConflict]    = useState(false);
+  const [oauthFailed,       setOauthFailed]       = useState(false);
+  const [accountDeactivated, setAccountDeactivated] = useState(false);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const err = params.get("error");
     if (err === "google_conflict") setGoogleConflict(true);
     else if (err === "oauth_failed") setOauthFailed(true);
+    else if (err === "account_deactivated") setAccountDeactivated(true);
   }, []);
 
   const handleSignIn = async () => {
@@ -144,6 +146,14 @@ export default function SignInPage() {
             <span style={{ fontSize: 11, color: "rgba(255,255,255,0.3)", fontFamily: "var(--font-ui)", fontWeight: 600, whiteSpace: "nowrap" }}>{t("auth_continue_email")}</span>
             <div className="flex-1 h-px" style={{ background: "rgba(255,255,255,0.08)" }} />
           </div>
+
+          {accountDeactivated && (
+            <div className="flex items-start gap-2.5 rounded-xl px-4 py-3 text-sm"
+              style={{ background: "rgba(248,113,113,0.08)", border: "1px solid rgba(248,113,113,0.25)", color: "#f87171" }}>
+              <AlertCircle size={16} className="shrink-0 mt-0.5" />
+              <span>This account has been deactivated. Contact <a href="mailto:hello@cupclash.live" style={{ color: "#fca5a5", fontWeight: 700 }}>hello@cupclash.live</a> for support.</span>
+            </div>
+          )}
 
           {googleConflict && (
             <div className="flex items-start gap-2.5 rounded-xl px-4 py-3 text-sm"

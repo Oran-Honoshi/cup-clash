@@ -54,6 +54,22 @@ export async function GET(request: NextRequest) {
         return NextResponse.redirect(new URL("/signin?error=google_conflict", requestUrl.origin));
       }
     }
+
+    // Block soft-deleted users from completing sign-in
+    const { data: { user: cbUser } } = await supabase.auth.getUser();
+    if (cbUser) {
+      const { data: profileCheck } = await supabase
+        .from("profiles")
+        .select("is_deleted")
+        .eq("id", cbUser.id)
+        .single();
+      if ((profileCheck as { is_deleted?: boolean } | null)?.is_deleted) {
+        await supabase.auth.signOut();
+        return NextResponse.redirect(
+          new URL("/signin?error=account_deactivated", requestUrl.origin)
+        );
+      }
+    }
   }
 
   return response;

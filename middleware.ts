@@ -53,9 +53,27 @@ export async function middleware(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser();
 
+  // Treat soft-deleted users as logged out — check before any other logic
+  let activeUser = user;
+  if (user) {
+    const { data: softDeletedCheck } = await supabase
+      .from("profiles")
+      .select("is_deleted")
+      .eq("id", user.id)
+      .single();
+    if ((softDeletedCheck as { is_deleted: boolean } | null)?.is_deleted) {
+      activeUser = null;
+      if (!pathname.startsWith("/signin")) {
+        const url = new URL("/signin", request.url);
+        url.searchParams.set("error", "account_deactivated");
+        return NextResponse.redirect(url);
+      }
+    }
+  }
+
   // Block access to protected routes for unauthenticated users
   const isProtected = PROTECTED_PREFIXES.some((p) => pathname.startsWith(p));
-  if (isProtected && !user) {
+  if (isProtected && !activeUser) {
     const url = new URL("/signup", request.url);
     url.searchParams.set("next", pathname);
     return NextResponse.redirect(url);
@@ -63,7 +81,7 @@ export async function middleware(request: NextRequest) {
 
   // Redirect logged-in users away from auth pages
   const isAuthRoute = AUTH_ROUTES.some((p) => pathname.startsWith(p));
-  if (isAuthRoute && user) {
+  if (isAuthRoute && activeUser) {
     return NextResponse.redirect(new URL("/dashboard", request.url));
   }
 

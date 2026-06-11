@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, Users, Trophy, Target, BarChart2,
-  GitBranch, Brain, Bell, Shield, LogOut, Settings, MessageCircle,
+  GitBranch, Brain, Bell, Shield, LogOut, Settings, MessageCircle, Trash2,
 } from "lucide-react";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
@@ -54,6 +54,12 @@ export function AppSidebar() {
   const { t } = useLocale();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [showDeleteTool, setShowDeleteTool] = useState(false);
+  const [delEmail, setDelEmail] = useState("");
+  const [delReason, setDelReason] = useState("");
+  const [delPreview, setDelPreview] = useState<{ userId: string; name: string; groups: string[] } | null>(null);
+  const [delLoading, setDelLoading] = useState(false);
+  const [delMsg, setDelMsg] = useState("");
 
   const ADMIN_EMAILS = ["lipinksy19@gmail.com", "oransch@gmail.com", "oran@honoshi.co.il"];
 
@@ -82,6 +88,44 @@ export function AppSidebar() {
     const sb = createClient();
     await sb.auth.signOut();
     window.location.replace("/signin");
+  };
+
+  const handleFindUser = async () => {
+    if (!delEmail.trim()) return;
+    setDelLoading(true);
+    setDelMsg("");
+    setDelPreview(null);
+    const sb = createClient();
+    const { data: { session } } = await sb.auth.getSession();
+    const token = session?.access_token ?? "";
+    const res = await fetch(`/api/admin/delete-user?email=${encodeURIComponent(delEmail.trim())}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const data = await res.json() as { userId?: string; name?: string; groups?: string[]; error?: string };
+    setDelLoading(false);
+    if (!res.ok) { setDelMsg(data.error ?? "User not found"); return; }
+    setDelPreview({ userId: data.userId!, name: data.name!, groups: data.groups ?? [] });
+  };
+
+  const handleDeleteUser = async () => {
+    if (!delPreview) return;
+    setDelLoading(true);
+    setDelMsg("");
+    const sb = createClient();
+    const { data: { session } } = await sb.auth.getSession();
+    const token = session?.access_token ?? "";
+    const res = await fetch("/api/admin/delete-user", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ userId: delPreview.userId, reason: delReason || undefined }),
+    });
+    const data = await res.json() as { success?: boolean; name?: string; error?: string };
+    setDelLoading(false);
+    if (!res.ok) { setDelMsg(data.error ?? "Failed to delete"); return; }
+    setDelMsg(`Deleted: ${data.name}`);
+    setDelPreview(null);
+    setDelEmail("");
+    setDelReason("");
   };
 
   const displayName = profile?.name ?? "You";
@@ -162,6 +206,106 @@ export function AppSidebar() {
             <Shield size={17} strokeWidth={1.75} />
             Testing
           </Link>
+        )}
+
+        {/* Delete User — super-admin only */}
+        {isAdmin && (
+          <div>
+            <button
+              onClick={() => { setShowDeleteTool(v => !v); setDelMsg(""); setDelPreview(null); }}
+              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold transition-all"
+              style={{ color: showDeleteTool ? "#f87171" : "rgba(255,255,255,0.35)" }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "rgba(239,68,68,0.08)"; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}
+            >
+              <Trash2 size={17} strokeWidth={1.75} />
+              Delete User
+            </button>
+
+            {showDeleteTool && (
+              <div className="mx-1 mt-1 p-3 rounded-xl space-y-2"
+                style={{ background: "rgba(239,68,68,0.06)", border: "1px solid rgba(239,68,68,0.2)" }}>
+                <input
+                  type="email"
+                  placeholder="user@email.com"
+                  value={delEmail}
+                  onChange={e => { setDelEmail(e.target.value); setDelPreview(null); setDelMsg(""); }}
+                  onKeyDown={e => e.key === "Enter" && handleFindUser()}
+                  className="w-full rounded-lg px-3 py-2 text-xs placeholder:text-[rgba(255,255,255,0.3)]"
+                  style={{
+                    background: "rgba(255,255,255,0.06)",
+                    border: "1px solid rgba(255,255,255,0.12)",
+                    color: "#fff",
+                    outline: "none",
+                  }}
+                />
+
+                {!delPreview ? (
+                  <button
+                    onClick={handleFindUser}
+                    disabled={delLoading || !delEmail.trim()}
+                    className="w-full rounded-lg py-1.5 text-xs font-bold"
+                    style={{
+                      background: "rgba(255,255,255,0.08)",
+                      color: "rgba(255,255,255,0.7)",
+                      opacity: (!delEmail.trim() || delLoading) ? 0.4 : 1,
+                    }}
+                  >
+                    {delLoading ? "Looking up…" : "Find User"}
+                  </button>
+                ) : (
+                  <>
+                    <div className="rounded-lg px-3 py-2"
+                      style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}>
+                      <div className="text-xs font-bold text-white truncate">{delPreview.name}</div>
+                      <div className="text-[10px] mt-0.5" style={{ color: "rgba(255,255,255,0.45)" }}>
+                        {delPreview.groups.length > 0
+                          ? delPreview.groups.join(", ")
+                          : "No groups"}
+                      </div>
+                    </div>
+                    <input
+                      type="text"
+                      placeholder="Reason (optional)"
+                      value={delReason}
+                      onChange={e => setDelReason(e.target.value)}
+                      className="w-full rounded-lg px-3 py-2 text-xs placeholder:text-[rgba(255,255,255,0.3)]"
+                      style={{
+                        background: "rgba(255,255,255,0.06)",
+                        border: "1px solid rgba(255,255,255,0.12)",
+                        color: "#fff",
+                        outline: "none",
+                      }}
+                    />
+                    <div className="flex gap-2">
+                      <button
+                        onClick={handleDeleteUser}
+                        disabled={delLoading}
+                        className="flex-1 rounded-lg py-1.5 text-xs font-bold"
+                        style={{ background: "rgba(239,68,68,0.3)", color: "#fca5a5", opacity: delLoading ? 0.5 : 1 }}
+                      >
+                        {delLoading ? "Deleting…" : "Delete"}
+                      </button>
+                      <button
+                        onClick={() => { setDelPreview(null); setDelReason(""); }}
+                        className="flex-1 rounded-lg py-1.5 text-xs font-bold"
+                        style={{ background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.5)" }}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </>
+                )}
+
+                {delMsg && (
+                  <div className="text-[10px] text-center font-bold"
+                    style={{ color: delMsg.startsWith("Deleted") ? "#4ade80" : "#f87171" }}>
+                    {delMsg}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         )}
       </nav>
 
