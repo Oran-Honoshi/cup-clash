@@ -19,6 +19,8 @@ export async function getUpcomingMatches(limit = 20): Promise<Match[]> {
       .from("matches")
       .select("id, home, away, home_flag, away_flag, kickoff_at, stage, group_letter, stadium, city")
       .gt("kickoff_at", new Date().toISOString())
+      .neq("home", "TBD")
+      .neq("away", "TBD")
       .order("kickoff_at", { ascending: true })
       .limit(limit);
 

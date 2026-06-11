@@ -127,7 +127,7 @@ export async function getMembers(groupId: string): Promise<Member[]> {
   if (error) throw error;
   if (!data?.length) return [];
 
-  const { data: pts } = await sb()
+  const { data: pts } = await sbAdmin()
     .from("group_predictions")
     .select("user_id, points_earned")
     .eq("group_id", groupId);
