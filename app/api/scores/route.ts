@@ -169,6 +169,11 @@ export async function POST(request: NextRequest) {
     const now  = new Date();
     const today = now.toISOString().split("T")[0]; // YYYY-MM-DD in UTC
 
+    // --- DIAGNOSTIC LOGGING (temporary) ---
+    const apiKey = process.env.API_FOOTBALL_KEY ?? "";
+    console.log("[scores/cron] API_FOOTBALL_KEY present:", !!apiKey);
+    console.log("[scores/cron] API_FOOTBALL_KEY prefix:", apiKey ? apiKey.slice(0, 6) + "…" : "(empty)");
+
     // Rate-guard: skip if last fetch was < 5 min ago
     const { data: latest } = await sb
       .from("live_scores")
@@ -188,15 +193,31 @@ export async function POST(request: NextRequest) {
     }
 
     // Fetch live fixtures + today's full schedule in parallel
+    const liveUrl  = `${API_BASE}/fixtures?live=all&league=${LEAGUE_ID}&season=${SEASON}`;
+    const todayUrl = `${API_BASE}/fixtures?league=${LEAGUE_ID}&season=${SEASON}&date=${today}`;
+    console.log("[scores/cron] Fetching live URL:", liveUrl);
+    console.log("[scores/cron] Fetching today URL:", todayUrl);
+
     const [liveRes, todayRes] = await Promise.all([
-      fetch(`${API_BASE}/fixtures?live=all&league=${LEAGUE_ID}&season=${SEASON}`, { headers: apiHeaders() }),
-      fetch(`${API_BASE}/fixtures?league=${LEAGUE_ID}&season=${SEASON}&date=${today}`, { headers: apiHeaders() }),
+      fetch(liveUrl,  { headers: apiHeaders() }),
+      fetch(todayUrl, { headers: apiHeaders() }),
     ]);
 
+    console.log("[scores/cron] live HTTP status:", liveRes.status, liveRes.statusText);
+    console.log("[scores/cron] today HTTP status:", todayRes.status, todayRes.statusText);
+
     const [liveData, todayData] = await Promise.all([
-      liveRes.json()  as Promise<{ response: APIFixture[] }>,
-      todayRes.json() as Promise<{ response: APIFixture[] }>,
+      liveRes.json()  as Promise<{ response: APIFixture[]; errors?: unknown; results?: number }>,
+      todayRes.json() as Promise<{ response: APIFixture[]; errors?: unknown; results?: number }>,
     ]);
+
+    console.log("[scores/cron] live API errors:", JSON.stringify(liveData.errors));
+    console.log("[scores/cron] live API results count:", liveData.results);
+    console.log("[scores/cron] today API errors:", JSON.stringify(todayData.errors));
+    console.log("[scores/cron] today API results count:", todayData.results);
+    console.log("[scores/cron] live response sample:", JSON.stringify((liveData.response ?? []).slice(0, 1)));
+    console.log("[scores/cron] today response sample:", JSON.stringify((todayData.response ?? []).slice(0, 1)));
+    // --- END DIAGNOSTIC LOGGING ---
 
     // Merge and deduplicate by fixture ID
     const seen     = new Set<number>();
@@ -210,7 +231,19 @@ export async function POST(request: NextRequest) {
     });
 
     if (fixtures.length === 0) {
-      return NextResponse.json({ updated: 0, message: "No WC2026 matches today" });
+      return NextResponse.json({
+        updated: 0,
+        message: "No WC2026 matches today",
+        _debug: {
+          liveErrors:   liveData.errors,
+          todayErrors:  todayData.errors,
+          liveResults:  liveData.results,
+          todayResults: todayData.results,
+          liveStatus:   liveRes.status,
+          todayStatus:  todayRes.status,
+          today,
+        },
+      });
     }
 
     // Fetch events for every match that is live OR finished today
