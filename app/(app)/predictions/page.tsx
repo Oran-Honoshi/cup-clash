@@ -97,6 +97,8 @@ export default async function PredictionsPage({
           userId={user.id}
           isPaid={true}
           migrateGuestPicks={shouldMigrate}
+          isAdFree={false}
+          isCorporate={false}
         />
         <AdBanner isAdFree={false} isCorporate={false} />
       </>
@@ -131,6 +133,8 @@ export default async function PredictionsPage({
         userId={user.id}
         isPaid={true}
         migrateGuestPicks={shouldMigrate}
+        isAdFree={isAdFree}
+        isCorporate={isCorporate}
       />
       <AdBanner isAdFree={isAdFree} isCorporate={isCorporate} />
     </div>

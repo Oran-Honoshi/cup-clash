@@ -6,6 +6,7 @@ import {
   Check, Lock, ArrowUpDown, Star, Trophy, Medal,
   Users, AlertCircle, CheckCircle2, ChevronRight, ChevronLeft,
 } from "lucide-react";
+import { AdBanner } from "@/components/ads/ad-banner";
 import { CopyPredictions } from "@/components/predictions/copy-predictions";
 import { FlaggedTeam } from "@/components/predictions/flagged-team";
 import { Flag } from "@/components/ui/flag";
@@ -346,12 +347,14 @@ function SaveIndicator({ status }: { status: "idle"|"saving"|"saved"|"error" }) 
 
 // ── Main Component ────────────────────────────────────────────────────────────
 interface GroupStagePredictionsProps {
-  groupId: string;
-  userId?: string;
-  locked?: boolean;
+  groupId:      string;
+  userId?:      string;
+  locked?:      boolean;
+  isAdFree?:    boolean;
+  isCorporate?: boolean;
 }
 
-export function GroupStagePredictions({ groupId, locked = false, userId }: GroupStagePredictionsProps) {
+export function GroupStagePredictions({ groupId, locked = false, userId, isAdFree, isCorporate }: GroupStagePredictionsProps) {
   const { t } = useLocale();
   const [activeGroup, setActiveGroup] = useState("A");
   const [predictions, setPredictions] = useState<GroupPredictions>({});
@@ -469,6 +472,11 @@ export function GroupStagePredictions({ groupId, locked = false, userId }: Group
           );
         })}
       </div>
+
+      {/* Ad between group tabs and match cards */}
+      {isAdFree !== undefined && isCorporate !== undefined && (
+        <AdBanner isAdFree={isAdFree} isCorporate={isCorporate} />
+      )}
 
       {/* Active group section */}
       <AnimatePresence mode="wait">

@@ -4,6 +4,7 @@ import { useState, type KeyboardEvent } from "react";
 import { Crown, Trophy, TrendingUp, TrendingDown, Minus, ChevronRight, Ghost } from "lucide-react";
 import { PlayerDrawer } from "@/components/dashboard/player-drawer";
 import { MemberAvatar } from "@/components/ui/member-avatar";
+import { AdBanner } from "@/components/ads/ad-banner";
 import { FOCUS_RING, FOCUS_RING_INSET } from "@/lib/a11y";
 import { cn } from "@/lib/utils";
 import type { Member } from "@/lib/types";
@@ -25,6 +26,8 @@ interface LeaderboardProps {
   groupId?:       string;
   showGhost?:     boolean;
   scrollable?:    boolean; // inner scroll for embedded tiles (dashboard); false = page scrolls
+  isAdFree?:      boolean;
+  isCorporate?:   boolean;
 }
 
 const RANK_LABELS = ["1st", "2nd", "3rd"];
@@ -64,7 +67,7 @@ const PODIUM_BAR_HEIGHTS = [64, 80, 50]; // 2nd, 1st, 3rd
 const PODIUM_ACTUAL_RANKS = [2, 1, 3];
 const PODIUM_POINT_COLORS = ["rgba(255,255,255,0.7)", "#fbbf24", "#f97316"];
 
-export function Leaderboard({ members, currentUserId, groupId, showGhost = true, scrollable = false }: LeaderboardProps) {
+export function Leaderboard({ members, currentUserId, groupId, showGhost = true, scrollable = false, isAdFree, isCorporate }: LeaderboardProps) {
   const [selected, setSelected] = useState<Member | null>(null);
 
   const sorted = [...members].sort((a, b) => b.points - a.points);
@@ -195,6 +198,11 @@ export function Leaderboard({ members, currentUserId, groupId, showGhost = true,
             );
           })}
         </div>
+      )}
+
+      {/* ── Ad between podium and table ─────────────────── */}
+      {isAdFree !== undefined && isCorporate !== undefined && (
+        <AdBanner isAdFree={isAdFree} isCorporate={isCorporate} />
       )}
 
       {/* ── Main card ───────────────────────────────────── */}

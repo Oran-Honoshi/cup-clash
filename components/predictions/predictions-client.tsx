@@ -32,10 +32,12 @@ interface PredictionsClientProps {
   userId:             string;
   isPaid:             boolean;
   migrateGuestPicks?: boolean;
+  isAdFree?:          boolean;
+  isCorporate?:       boolean;
 }
 
 export function PredictionsClient({
-  groupId, groupName, allGroups, userId, isPaid, migrateGuestPicks = false,
+  groupId, groupName, allGroups, userId, isPaid, migrateGuestPicks = false, isAdFree, isCorporate,
 }: PredictionsClientProps) {
   const { t } = useLocale();
   const [tab,             setTab]             = useState<"group" | "tournament">("group");
@@ -168,7 +170,7 @@ export function PredictionsClient({
 
       {/* Tab content */}
       <div style={{ display: tab === "group" ? "block" : "none" }}>
-        <GroupStagePredictions groupId={groupId} userId={userId} locked={false} />
+        <GroupStagePredictions groupId={groupId} userId={userId} locked={false} isAdFree={isAdFree} isCorporate={isCorporate} />
       </div>
       <div style={{ display: tab === "tournament" ? "block" : "none" }}>
         <TournamentPicks groupId={groupId} userId={userId} locked={false} />

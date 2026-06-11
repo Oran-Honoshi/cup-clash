@@ -75,7 +75,7 @@ export default async function LeaderboardPage({ searchParams }: { searchParams: 
         </div>
         {allGroups.length > 1 && <DashboardGroupPicker groups={allGroups} activeGroupId={activeGroupId} basePath="/leaderboard" />}
       </div>
-      <LeaderboardTabs members={members} currentUserId={userProfile.id} />
+      <LeaderboardTabs members={members} currentUserId={userProfile.id} isAdFree={isAdFree} isCorporate={isCorporate} />
       <AdBanner isAdFree={isAdFree} isCorporate={isCorporate} />
     </div>
   );
