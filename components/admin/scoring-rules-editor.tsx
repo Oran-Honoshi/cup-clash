@@ -104,11 +104,13 @@ interface ScoringRulesEditorProps {
 export function ScoringRulesEditor({ groupId }: ScoringRulesEditorProps) {
   const [rules,   setRules]   = useState<ScoringRules>(DEFAULTS);
   const [enabled, setEnabled] = useState<EnabledFeatures>(DEFAULT_ENABLED);
-  const [loading, setLoading] = useState(true);
-  const [saving,  setSaving]  = useState(false);
-  const [saved,   setSaved]   = useState(false);
-  const [error,   setError]   = useState<string | null>(null);
-  const [locked,  setLocked]  = useState(false);
+  const [loading,           setLoading]           = useState(true);
+  const [saving,            setSaving]            = useState(false);
+  const [saved,             setSaved]             = useState(false);
+  const [error,             setError]             = useState<string | null>(null);
+  const [locked,            setLocked]            = useState(false);
+  const [useCustomLockTime, setUseCustomLockTime] = useState(false);
+  const [tournamentLockAt,  setTournamentLockAt]  = useState("");
 
   useEffect(() => {
     const sb = createClient();
@@ -159,6 +161,12 @@ export function ScoringRulesEditor({ groupId }: ScoringRulesEditorProps) {
             progressiveScoring: Boolean(d.use_progressive_scoring),
           });
           setLocked(!!d.locked_at);
+          if (d.tournament_lock_at) {
+            setUseCustomLockTime(true);
+            const dt = new Date(d.tournament_lock_at as string);
+            const pad = (n: number) => String(n).padStart(2, "0");
+            setTournamentLockAt(`${dt.getFullYear()}-${pad(dt.getMonth()+1)}-${pad(dt.getDate())}T${pad(dt.getHours())}:${pad(dt.getMinutes())}`);
+          }
         }
         setLoading(false);
       });
@@ -206,6 +214,7 @@ export function ScoringRulesEditor({ groupId }: ScoringRulesEditorProps) {
       final_correct_outcome:  rules.finalCorrectOutcome,
       final_exact_score:      rules.finalExactScore,
       updated_at:             new Date().toISOString(),
+      tournament_lock_at:     useCustomLockTime && tournamentLockAt ? new Date(tournamentLockAt).toISOString() : null,
     } as Record<string, unknown>, { onConflict: "group_id" });
     setSaving(false);
     if (upsertError) { setError(upsertError.message); return; }
@@ -406,6 +415,46 @@ export function ScoringRulesEditor({ groupId }: ScoringRulesEditorProps) {
             <div className="text-[10px]" style={{ color: "rgba(255,255,255,0.35)", paddingLeft: 2 }}>
               Max per match = Outcome + Bonus (both earned on an exact-score prediction)
             </div>
+          </div>
+        )}
+      </div>
+
+      {/* Tournament Picks Lock Time */}
+      <div className="pt-2 border-t" style={{ borderColor: "rgba(255,255,255,0.08)" }}>
+        <div className="flex items-center justify-between mb-3">
+          <div>
+            <div className="text-sm font-bold" style={{ color: "white" }}>Tournament Picks Lock Time</div>
+            <div className="text-[11px]" style={{ color: "rgba(255,255,255,0.4)" }}>
+              Default locks 5 minutes before the first match. Set a custom time for groups joining late.
+            </div>
+          </div>
+          <button
+            onClick={() => { if (!locked) setUseCustomLockTime(v => !v); }}
+            disabled={locked}
+            className="relative h-6 w-11 rounded-full shrink-0 transition-all"
+            style={{ background: useCustomLockTime ? "#00D4FF" : "rgba(255,255,255,0.12)" }}>
+            <div className="absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-all"
+              style={{ left: useCustomLockTime ? "22px" : "2px" }} />
+          </button>
+        </div>
+        {useCustomLockTime && (
+          <div className="space-y-1.5">
+            <input
+              type="datetime-local"
+              value={tournamentLockAt}
+              disabled={locked}
+              onChange={e => { setTournamentLockAt(e.target.value); setSaved(false); }}
+              className="w-full rounded-xl px-3 py-2 text-sm focus:outline-none disabled:opacity-30"
+              style={{
+                background: "rgba(255,255,255,0.06)",
+                border: "1px solid rgba(255,255,255,0.12)",
+                color: "#ffffff",
+                colorScheme: "dark",
+              }}
+            />
+            <p className="text-[11px]" style={{ color: "rgba(255,255,255,0.35)" }}>
+              Time is in your local timezone. Leave off to use default (5 min before first match).
+            </p>
           </div>
         )}
       </div>

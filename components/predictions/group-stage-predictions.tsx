@@ -138,6 +138,18 @@ function MatchCard({ match, prediction, onChange, globalLocked, stagePoints }: {
   const filled      = prediction.home !== "" && prediction.away !== "";
   const matchLocked = globalLocked || isMatchLocked(match.utcTime);
   const countdown   = !matchLocked ? getCountdown(match.utcTime, t) : "";
+
+  const etFallback = `${new Date(match.utcTime).toLocaleDateString("en-US", { timeZone: "America/New_York", day: "numeric", month: "short" })} · ${match.time} ET`;
+  const [localTimeStr, setLocalTimeStr] = useState(etFallback);
+  useEffect(() => {
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const d = new Date(match.utcTime);
+    const dateStr = d.toLocaleDateString(undefined, { timeZone: tz, day: "numeric", month: "short" });
+    const timeStr = d.toLocaleTimeString(undefined, { timeZone: tz, hour: "numeric", minute: "2-digit", hour12: true });
+    const tzAbbr = new Intl.DateTimeFormat("en", { timeZoneName: "short", timeZone: tz })
+      .formatToParts(d).find(p => p.type === "timeZoneName")?.value ?? tz;
+    setLocalTimeStr(`${dateStr} · ${timeStr} ${tzAbbr}`);
+  }, [match.utcTime]);
   const status      = matchLocked ? "locked" : filled ? "saved" : "open";
 
   const cardStyle = {
@@ -152,8 +164,7 @@ function MatchCard({ match, prediction, onChange, globalLocked, stagePoints }: {
       {/* Row 1 — meta strip */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
         <div style={{ fontSize: 10, color: "rgba(255,255,255,0.35)", fontFamily: "var(--font-ui)" }}>
-          {new Date(match.utcTime).toLocaleDateString("en-US", { timeZone: "America/New_York", day: "numeric", month: "short" })}
-          {" · "}{match.time} {match.timezone}
+          <span suppressHydrationWarning>{localTimeStr}</span>
           {stagePoints?.useProgressive && (
             <span style={{ marginLeft: 8, color: "#fbbf24", fontWeight: 700 }}>
               ⭐ {stagePoints.correctOutcome + stagePoints.exactScore} pts

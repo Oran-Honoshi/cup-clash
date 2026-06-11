@@ -28,8 +28,19 @@ export function NextMatchCard({ match, groupId = "" }: NextMatchCardProps) {
   const [errorMsg,  setErrorMsg]  = useState<string | null>(null);
 
   const matchDate        = new Date(match.time);
-  const formattedTime    = formatInTimeZone(matchDate, "America/New_York", "EEE dd MMM · h:mm a 'ET'");
   const minutesToKickoff = differenceInMinutes(matchDate, new Date());
+
+  const etFallback = formatInTimeZone(matchDate, "America/New_York", "EEE dd MMM · h:mm a 'ET'");
+  const [formattedTime, setFormattedTime] = useState(etFallback);
+  useEffect(() => {
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const d = matchDate;
+    const dayStr  = d.toLocaleDateString("en", { timeZone: tz, weekday: "short", day: "2-digit", month: "short" });
+    const timeStr = d.toLocaleTimeString("en", { timeZone: tz, hour: "numeric", minute: "2-digit", hour12: true });
+    const tzAbbr  = new Intl.DateTimeFormat("en", { timeZoneName: "short", timeZone: tz })
+      .formatToParts(d).find(p => p.type === "timeZoneName")?.value ?? "";
+    setFormattedTime(`${dayStr} · ${timeStr} ${tzAbbr}`);
+  }, [match.time]); // eslint-disable-line react-hooks/exhaustive-deps
   const isLocked         = minutesToKickoff <= 5;
   const isLive           = minutesToKickoff <= 0 && minutesToKickoff > -120;
 
@@ -109,7 +120,7 @@ export function NextMatchCard({ match, groupId = "" }: NextMatchCardProps) {
               {isLive && <LiveDot />}
               {isLive ? "Live Match" : "Next Match"}
             </div>
-            <div className="text-xs font-mono" style={{ color: "rgba(255,255,255,0.4)" }}>
+            <div className="text-xs font-mono" style={{ color: "rgba(255,255,255,0.4)" }} suppressHydrationWarning>
               {formattedTime}
             </div>
           </div>

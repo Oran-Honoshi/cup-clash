@@ -203,6 +203,9 @@ function CreateGroupInner() {
   const [enableYoung,      setEnableYoung]      = useState(false);
   const [enableGoldenBall, setEnableGoldenBall] = useState(false);
 
+  const [useCustomLockTime, setUseCustomLockTime] = useState(false);
+  const [customLockAt,      setCustomLockAt]      = useState("");
+
   const totalPct    = payoutFirst + payoutSecond + payoutThird;
   const totalPot    = buyIn * memberCount;
   const isCorporate    = paymentModel === "corporate_sponsored";
@@ -311,6 +314,7 @@ function CreateGroupInner() {
       third_exact_score:     thirdExactScore,
       final_correct_outcome: finalCorrectOutcome,
       final_exact_score:     finalExactScore,
+      tournament_lock_at:    useCustomLockTime && customLockAt ? new Date(customLockAt).toISOString() : null,
     } as Record<string, unknown>, { onConflict: "group_id" });
 
     setCreatedName(groupName.trim());
@@ -785,7 +789,7 @@ function CreateGroupInner() {
               textTransform: "uppercase", letterSpacing: "0.06em", cursor: "pointer",
               boxShadow: "0 0 20px rgba(0,255,136,0.25)",
             }}>
-            {t("cg_next_prizes")} <ArrowRight size={16} />
+            {isFriendly ? t("cg_next_scoring") : t("cg_next_prizes")} <ArrowRight size={16} />
           </button>
         </div>
       )}
@@ -1191,6 +1195,35 @@ function CreateGroupInner() {
                   );
                 })}
               </div>
+            </div>
+
+            {/* Tournament Picks Lock Time */}
+            <div className="pt-3 mt-1 border-t" style={{ borderColor: "rgba(255,255,255,0.08)" }}>
+              <div className="flex items-center justify-between mb-3">
+                <div>
+                  <div style={{ fontSize: 13, fontWeight: 700, color: "white" }}>Tournament Picks Lock Time</div>
+                  <div style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", fontFamily: "var(--font-ui)" }}>
+                    Default locks 5 minutes before the first match. Set a custom time for groups joining late.
+                  </div>
+                </div>
+                <Toggle enabled={useCustomLockTime} onToggle={() => setUseCustomLockTime(v => !v)} />
+              </div>
+              {useCustomLockTime && (
+                <div className="space-y-1.5">
+                  <label style={labelStyle}>Custom lock date &amp; time</label>
+                  <input
+                    type="datetime-local"
+                    value={customLockAt}
+                    onChange={(e: { target: HTMLInputElement }) => setCustomLockAt(e.target.value)}
+                    onFocus={(e: { target: HTMLInputElement }) => { e.target.style.borderColor = "rgba(0,212,255,0.5)"; }}
+                    onBlur={(e: { target: HTMLInputElement }) => { e.target.style.borderColor = "rgba(255,255,255,0.12)"; }}
+                    style={{ ...inputStyle, padding: "12px 16px", colorScheme: "dark" as const }}
+                  />
+                  <p style={{ fontSize: 11, color: "rgba(255,255,255,0.3)", fontFamily: "var(--font-ui)" }}>
+                    Time is in your local timezone. Default locks 5 min before first match (Jun 11, 2026).
+                  </p>
+                </div>
+              )}
             </div>
           </div>
 

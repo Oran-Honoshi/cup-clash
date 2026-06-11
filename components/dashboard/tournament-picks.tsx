@@ -10,10 +10,11 @@ import { cn } from "@/lib/utils";
 
 // ─── Time locking ─────────────────────────────────────────────────────────────
 
-const TOURNAMENT_LOCK_UTC = new Date("2026-06-11T19:55:00Z");
+const TOURNAMENT_LOCK_DEFAULT = new Date("2026-06-11T19:55:00Z");
 
-function isTournamentLocked(): boolean {
-  return new Date() >= TOURNAMENT_LOCK_UTC;
+function isTournamentLocked(customLockAt?: string | null): boolean {
+  const lockDate = customLockAt ? new Date(customLockAt) : TOURNAMENT_LOCK_DEFAULT;
+  return new Date() >= lockDate;
 }
 
 
@@ -48,6 +49,7 @@ interface ScoringRules {
   enable_best_defence:      boolean;
   enable_best_young_player: boolean;
   enable_best_third:        boolean;
+  tournament_lock_at?:      string | null;
 }
 
 const DEFAULT_RULES: ScoringRules = {
@@ -239,8 +241,8 @@ export function TournamentPicks({ groupId, userId, locked = false }: TournamentP
   const picksRef  = useRef(picks);
   picksRef.current = picks;
 
-  // Check time-based lock
-  const timeLocked = isTournamentLocked();
+  // Check time-based lock (uses custom lock time from scoring_rules if set)
+  const timeLocked = isTournamentLocked(rules.tournament_lock_at);
   const isLocked   = locked || timeLocked;
 
   // Load scoring rules and existing picks
