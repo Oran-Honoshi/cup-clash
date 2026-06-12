@@ -9,7 +9,7 @@ import type { ScoringRules } from "@/lib/types";
 const API_BASE      = "https://v3.football.api-sports.io";
 const LEAGUE_ID     = 1;     // FIFA World Cup
 const SEASON        = 2026;
-const POLL_INTERVAL = 5 * 60 * 1000; // 5 minutes
+const POLL_INTERVAL = 4 * 60 * 1000; // 4 min — ensures a 5-min cron always passes the guard
 
 const LIVE_STATUSES     = new Set(["1H", "HT", "2H", "ET", "BT", "P", "INT", "LIVE"]);
 const FINISHED_STATUSES = new Set(["FT", "AET", "PEN", "AWD", "WO"]);
@@ -458,21 +458,24 @@ export async function POST(request: NextRequest) {
     console.log("[scores/cron] SUPABASE_SERVICE_ROLE_KEY set:", !!process.env.SUPABASE_SERVICE_ROLE_KEY);
     console.log("[scores/cron] API_FOOTBALL_KEY prefix:", process.env.API_FOOTBALL_KEY.slice(0, 6) + "…");
 
-    // Rate-guard: skip if last fetch was < 5 min ago
-    const { data: latest } = await sb
-      .from("live_scores")
-      .select("last_fetched")
-      .order("last_fetched", { ascending: false })
-      .limit(1)
-      .maybeSingle();
+    // Rate-guard: skip if last fetch was < 4 min ago, unless there are live matches
+    const [{ data: latest }, { data: liveInDB }] = await Promise.all([
+      sb.from("live_scores").select("last_fetched").order("last_fetched", { ascending: false }).limit(1).maybeSingle(),
+      sb.from("matches").select("id").eq("status", "live").limit(1),
+    ]);
 
-    if (latest?.last_fetched) {
+    const hasLiveMatches = (liveInDB?.length ?? 0) > 0;
+
+    if (!hasLiveMatches && latest?.last_fetched) {
       const age = now.getTime() - new Date(latest.last_fetched).getTime();
       if (age < POLL_INTERVAL) {
         const nextIn = Math.round((POLL_INTERVAL - age) / 1000) + "s";
         console.log("[scores/cron] Rate-guard: skipping, next fetch in", nextIn);
         return NextResponse.json({ skipped: true, nextFetchIn: nextIn });
       }
+    }
+    if (hasLiveMatches) {
+      console.log("[scores/cron] Rate-guard bypassed — live match in progress");
     }
 
     // ── STEP 1: Fetch from API-Football ──────────────────────────────────────

@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
@@ -40,5 +42,8 @@ export async function GET(
     return NextResponse.json({ error: predErr.message }, { status: 500 });
   }
 
-  return NextResponse.json({ matches: matches ?? [], predictions: predictions ?? [] });
+  return NextResponse.json(
+    { matches: matches ?? [], predictions: predictions ?? [] },
+    { headers: { "Cache-Control": "no-store" } }
+  );
 }

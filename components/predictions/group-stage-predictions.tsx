@@ -49,6 +49,8 @@ interface TeamStanding {
 }
 
 const GROUPS = ["A","B","C","D","E","F","G","H","I","J","K","L"];
+const GROUP_MATCH_IDS = new Set(WC2026_MATCHES.filter(m => m.stage === "Group").map(m => m.id));
+const TOTAL_GROUP_MATCHES = GROUP_MATCH_IDS.size;
 
 function getGroupMatches(group: string) {
   return WC2026_MATCHES.filter(m => m.group === group && m.stage === "Group");
@@ -418,29 +420,44 @@ export function GroupStagePredictions({ groupId, locked = false, userId, isAdFre
   const setScore = (matchId: string, home: string, away: string) =>
     setPredictions(prev => ({ ...prev, [matchId]: { home, away } }));
 
-  const groupMatches   = getGroupMatches(activeGroup);
-  const groupTeams     = getGroupTeams(activeGroup);
-  const standings      = calcStandings(activeGroup, predictions);
-  const groupComplete  = isGroupComplete(activeGroup, predictions);
-  const allComplete    = GROUPS.every(g => isGroupComplete(g, predictions));
-  const completedCount = GROUPS.filter(g => isGroupComplete(g, predictions)).length;
-  const activeIdx      = GROUPS.indexOf(activeGroup);
+  const groupMatches        = getGroupMatches(activeGroup);
+  const groupTeams          = getGroupTeams(activeGroup);
+  const standings           = calcStandings(activeGroup, predictions);
+  const groupComplete       = isGroupComplete(activeGroup, predictions);
+  const allComplete         = GROUPS.every(g => isGroupComplete(g, predictions));
+  const completedCount      = GROUPS.filter(g => isGroupComplete(g, predictions)).length;
+  const activeIdx           = GROUPS.indexOf(activeGroup);
+  const predictedMatchCount = Object.keys(predictions).filter(id => GROUP_MATCH_IDS.has(id)).length;
 
   return (
     <div className="w-full max-w-full space-y-4 overflow-x-clip">
 
       {/* Progress + save status */}
       <div className="rounded-2xl px-4 py-3" style={{ ...glassCard, borderRadius: 18 }}>
-        <div className="flex items-center justify-between mb-2">
-          <span className="text-sm font-bold text-white">{t("pred_progress")}</span>
-          <div className="flex items-center gap-3">
-            <SaveIndicator status={saveStatus} />
-            <span className="text-sm font-black" style={{ fontFamily: "var(--font-mono)", color: "#00D4FF" }}>{completedCount} / 12</span>
+        {/* Match counter — prominent */}
+        <div className="flex items-center justify-between mb-3">
+          <div>
+            <div className="text-[10px] font-bold uppercase tracking-widest mb-0.5" style={{ color: "rgba(255,255,255,0.35)" }}>
+              Matches Predicted
+            </div>
+            <div className="flex items-baseline gap-1">
+              <span className="text-2xl font-black font-mono" style={{ color: "#00FF88" }}>{predictedMatchCount}</span>
+              <span className="text-sm font-bold" style={{ color: "rgba(255,255,255,0.3)" }}>/ {TOTAL_GROUP_MATCHES}</span>
+            </div>
+          </div>
+          <div className="text-right">
+            <div className="text-[10px] font-bold uppercase tracking-widest mb-0.5" style={{ color: "rgba(255,255,255,0.35)" }}>
+              {t("pred_progress")}
+            </div>
+            <div className="flex items-center gap-2 justify-end">
+              <SaveIndicator status={saveStatus} />
+              <span className="text-sm font-black font-mono" style={{ color: "#00D4FF" }}>{completedCount} / 12</span>
+            </div>
           </div>
         </div>
         <div className="overflow-hidden" style={{ height: 6, borderRadius: 3, background: "rgba(255,255,255,0.08)" }}>
           <div className="h-full transition-all duration-500"
-            style={{ width: `${(completedCount/12)*100}%`, background: "linear-gradient(90deg, #00D4FF, #00FF88)", borderRadius: 3 }} />
+            style={{ width: `${(predictedMatchCount / TOTAL_GROUP_MATCHES) * 100}%`, background: "linear-gradient(90deg, #00D4FF, #00FF88)", borderRadius: 3 }} />
         </div>
         <p className="text-[10px] mt-1.5" style={{ color: "rgba(255,255,255,0.25)" }}>
           {t("pred_autosave_hint")}

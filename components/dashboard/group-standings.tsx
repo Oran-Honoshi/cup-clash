@@ -77,10 +77,21 @@ function buildStandings(group: string, results: Array<{ home: string; away: stri
   return Object.values(rows).sort((a, b) => b.points - a.points || b.gd - a.gd || b.gf - a.gf);
 }
 
-type MatchResult = { home: string; away: string; homeScore: number; awayScore: number };
+type MatchResult = {
+  home: string;
+  away: string;
+  homeScore: number;
+  awayScore: number;
+  homeFlagCode?: string | null;
+  awayFlagCode?: string | null;
+  kickoffAt?: string;
+};
 
 function GroupTable({ group, results }: { group: string; results: MatchResult[] }) {
   const standings = buildStandings(group, results);
+  const played = [...results].sort((a, b) =>
+    new Date(b.kickoffAt ?? 0).getTime() - new Date(a.kickoffAt ?? 0).getTime()
+  );
 
   return (
     <div
@@ -170,6 +181,49 @@ function GroupTable({ group, results }: { group: string; results: MatchResult[] 
           <span className="text-[10px]" style={{ color: "rgba(255,255,255,0.3)" }}>Advance to Round of 32</span>
         </div>
       </div>
+
+      {/* Played matches */}
+      {played.length > 0 && (
+        <div className="border-t" style={{ borderColor: "rgba(255,255,255,0.07)" }}>
+          <div className="px-4 py-2 text-[10px] font-bold uppercase tracking-widest"
+            style={{ color: "rgba(255,255,255,0.25)", background: "rgba(255,255,255,0.02)" }}>
+            Results
+          </div>
+          {played.map((r, i) => (
+            <div key={i} className="px-4 py-2.5 border-t flex items-center gap-2"
+              style={{ borderColor: "rgba(255,255,255,0.05)" }}>
+              {/* Home */}
+              <div className="flex items-center gap-1.5 flex-1 min-w-0 justify-end">
+                <span className="text-xs font-bold truncate" style={{ color: "rgba(255,255,255,0.75)" }}>{r.home}</span>
+                {r.homeFlagCode && (
+                  <div className="relative h-3.5 w-5 rounded-sm overflow-hidden shrink-0">
+                    <Image src={flagUrl(r.homeFlagCode, 20)} alt={r.home} fill className="object-cover" unoptimized />
+                  </div>
+                )}
+              </div>
+              {/* Score */}
+              <div className="font-mono font-black text-sm shrink-0 px-2 tabular-nums" style={{ color: "white" }}>
+                {r.homeScore}–{r.awayScore}
+              </div>
+              {/* Away */}
+              <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                {r.awayFlagCode && (
+                  <div className="relative h-3.5 w-5 rounded-sm overflow-hidden shrink-0">
+                    <Image src={flagUrl(r.awayFlagCode, 20)} alt={r.away} fill className="object-cover" unoptimized />
+                  </div>
+                )}
+                <span className="text-xs font-bold truncate" style={{ color: "rgba(255,255,255,0.75)" }}>{r.away}</span>
+              </div>
+              {/* Date */}
+              {r.kickoffAt && (
+                <span className="text-[10px] shrink-0 tabular-nums" style={{ color: "rgba(255,255,255,0.25)" }}>
+                  {new Date(r.kickoffAt).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
+                </span>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -183,7 +237,7 @@ export function GroupStandings({ groupId: _groupId }: { groupId?: string }) {
   useEffect(() => {
     createSb()
       .from("matches")
-      .select("home, away, home_score, away_score, group_letter")
+      .select("home, away, home_score, away_score, home_flag, away_flag, kickoff_at, group_letter")
       .eq("stage", "Group")
       .eq("status", "finished")
       .then(({ data }) => {
@@ -191,12 +245,19 @@ export function GroupStandings({ groupId: _groupId }: { groupId?: string }) {
         (data ?? []).forEach((m: {
           home: string; away: string;
           home_score: number; away_score: number;
+          home_flag: string | null; away_flag: string | null;
+          kickoff_at: string;
           group_letter: string | null;
         }) => {
           const g = m.group_letter;
           if (!g) return;
           if (!byGroup[g]) byGroup[g] = [];
-          byGroup[g].push({ home: m.home, away: m.away, homeScore: m.home_score, awayScore: m.away_score });
+          byGroup[g].push({
+            home: m.home, away: m.away,
+            homeScore: m.home_score, awayScore: m.away_score,
+            homeFlagCode: m.home_flag, awayFlagCode: m.away_flag,
+            kickoffAt: m.kickoff_at,
+          });
         });
         setMatchResults(byGroup);
         setLoaded(true);

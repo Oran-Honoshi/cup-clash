@@ -52,7 +52,7 @@ export function MatchResultsTable({ groupId, members }: Props) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`/api/groups/${groupId}/results`)
+    fetch(`/api/groups/${groupId}/results`, { cache: "no-store" })
       .then(r => r.json())
       .then(data => {
         setMatches(data.matches ?? []);
