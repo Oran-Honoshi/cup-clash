@@ -43,8 +43,10 @@ export interface ScheduleClientProps {
 
 // ── Constants ──────────────────────────────────────────────────────────────────
 
-const FINISHED = new Set(["FT", "AET", "PEN"]);
-const LIVE     = new Set(["1H", "HT", "2H", "ET", "P"]);
+// matches.status values written by the /api/scores cron:
+//   "upcoming" (default) | "live" | "finished"
+const FINISHED_STATUS = "finished";
+const LIVE_STATUS     = "live";
 const GROUPS   = ["A","B","C","D","E","F","G","H","I","J","K","L"];
 const STAGES   = ["All","Group","R32","R16","QF","SF","Final"] as const;
 const STATUSES = ["All","Upcoming","Live","Finished"] as const;
@@ -83,15 +85,24 @@ function getTzAbbr(utcTime: string): string {
 }
 
 function getMatchState(matchId: string, results: Record<string, MatchResult>) {
-  const r = results[matchId];
-  if (!r || !r.status || r.status === "NS" || r.status === "") {
-    return { type: "upcoming" as const };
+  const r      = results[matchId];
+  const status = r?.status ?? "upcoming";
+
+  if (status === FINISHED_STATUS) {
+    return {
+      type:      "finished" as const,
+      homeScore: r.homeScore ?? 0,
+      awayScore: r.awayScore ?? 0,
+      label:     "FT",
+    };
   }
-  if (FINISHED.has(r.status)) {
-    return { type: "finished" as const, homeScore: r.homeScore ?? 0, awayScore: r.awayScore ?? 0, label: r.status };
-  }
-  if (LIVE.has(r.status)) {
-    return { type: "live" as const, homeScore: r.homeScore ?? 0, awayScore: r.awayScore ?? 0, label: r.status };
+  if (status === LIVE_STATUS) {
+    return {
+      type:      "live" as const,
+      homeScore: r.homeScore ?? 0,
+      awayScore: r.awayScore ?? 0,
+      label:     "Live",
+    };
   }
   return { type: "upcoming" as const };
 }

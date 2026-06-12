@@ -126,7 +126,7 @@ export async function getPlayedMatches(groupLetter?: string): Promise<Array<{
   let query = sb()
     .from("matches")
     .select("id, home, away, home_score, away_score, status, group_letter")
-    .in("status", ["FT", "AET", "PEN"]);
+    .eq("status", "finished");
 
   if (groupLetter) {
     query = query.eq("group_letter", groupLetter);
