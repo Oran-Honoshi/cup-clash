@@ -7,17 +7,18 @@ import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 import { flagUrl } from "@/lib/countries";
 import { FOCUS_RING } from "@/lib/a11y";
+import { PredictionBadge } from "@/components/predictions/prediction-badge";
 
 interface PointHistoryItem {
-  matchId:    string;
-  home:       string;
-  away:       string;
+  matchId:      string;
+  home:         string;
+  away:         string;
   homeFlagCode: string;
   awayFlagCode: string;
-  predicted:  string;
-  actual:     string;
-  pts:        number;
-  type:       "exact" | "outcome" | "none";
+  predicted:    string;
+  actual:       string;
+  pts:          number;
+  type:         "exact" | "correct" | "missed";
 }
 
 interface PlayerDrawerProps {
@@ -57,39 +58,62 @@ export function PlayerDrawer({ userId, groupId, name, country, points, rank, ope
     sb.from("group_predictions")
       .select(`
         match_id, home_score, away_score, points_earned, is_exact,
-        matches ( home, away, home_flag, away_flag )
+        matches ( home, away, home_flag, away_flag, home_score, away_score, status )
       `)
       .eq("user_id",  userId)
       .eq("group_id", groupId)
-      .order("created_at", { ascending: false })
-      .limit(30)
+      .order("updated_at", { ascending: false })
+      .limit(100)
       .then(({ data }) => {
         if (!data?.length) { setLoading(false); return; }
 
-        const items: PointHistoryItem[] = (data as unknown as Array<{
-          match_id: string;
-          home_score: number;
-          away_score: number;
-          points_earned: number;
-          is_exact: boolean;
-          matches: { home: string; away: string; home_flag: string | null; away_flag: string | null } | null;
-        }>)
-          .filter(p => p.matches && p.points_earned > 0)
-          .map(p => ({
-            matchId:      p.match_id,
-            home:         p.matches!.home,
-            away:         p.matches!.away,
-            homeFlagCode: p.matches!.home_flag ?? getFlagCode(p.matches!.home),
-            awayFlagCode: p.matches!.away_flag ?? getFlagCode(p.matches!.away),
-            predicted:    `${p.home_score}–${p.away_score}`,
-            actual:       `${p.home_score}–${p.away_score}`,
-            pts:          p.points_earned,
-            type:         p.is_exact ? "exact" : "outcome",
-          }));
+        type RawRow = {
+          match_id:      string;
+          home_score:    number;
+          away_score:    number;
+          points_earned: number | null;
+          is_exact:      boolean | null;
+          matches: {
+            home:       string;
+            away:       string;
+            home_flag:  string | null;
+            away_flag:  string | null;
+            home_score: number | null;
+            away_score: number | null;
+            status:     string;
+          } | null;
+        };
+
+        const items: PointHistoryItem[] = (data as unknown as RawRow[])
+          // only show finished matches
+          .filter(p => p.matches?.status === "finished")
+          .map(p => {
+            const m         = p.matches!;
+            const actualH   = m.home_score ?? 0;
+            const actualA   = m.away_score ?? 0;
+            const predH     = p.home_score;
+            const predA     = p.away_score;
+            const isExact   = predH === actualH && predA === actualA;
+            const predW     = predH > predA ? "H" : predH < predA ? "A" : "D";
+            const realW     = actualH > actualA ? "H" : actualH < actualA ? "A" : "D";
+            const type: PointHistoryItem["type"] =
+              isExact ? "exact" : predW === realW ? "correct" : "missed";
+            return {
+              matchId:      p.match_id,
+              home:         m.home,
+              away:         m.away,
+              homeFlagCode: m.home_flag ?? getFlagCode(m.home),
+              awayFlagCode: m.away_flag ?? getFlagCode(m.away),
+              predicted:    `${predH}–${predA}`,
+              actual:       `${actualH}–${actualA}`,
+              pts:          p.points_earned ?? 0,
+              type,
+            };
+          });
 
         setHistory(items);
         setExactCount(items.filter(i => i.type === "exact").length);
-        setOutcomeCount(items.filter(i => i.type === "outcome").length);
+        setOutcomeCount(items.filter(i => i.type === "correct").length);
         setLoading(false);
       });
   }, [open, userId, groupId]);
@@ -155,8 +179,8 @@ export function PlayerDrawer({ userId, groupId, name, country, points, rank, ope
             <div className="grid grid-cols-3 gap-3 px-5 py-4">
               {[
                 { icon: Trophy,    label: "Total pts",  value: points,       color: "#0891B2" },
-                { icon: Target,    label: "Exact",      value: exactCount,   color: "#00c46a" },
-                { icon: TrendingUp,label: "Outcome",    value: outcomeCount, color: "#d97706" },
+                { icon: Target,    label: "Exact",      value: exactCount,   color: "#facc15" },
+                { icon: TrendingUp,label: "Correct",    value: outcomeCount, color: "#00FF88" },
               ].map(({ icon: Icon, label, value, color }) => (
                 <div key={label} className="rounded-xl p-3 text-center"
                   style={{ background: "rgba(18,14,38,0.4)", border: "1px solid rgba(255,255,255,0.08)" }}>
@@ -179,46 +203,60 @@ export function PlayerDrawer({ userId, groupId, name, country, points, rank, ope
                 <div className="py-8 text-center space-y-2">
                   <Zap size={28} className="mx-auto" style={{ color: "rgba(255,255,255,0.2)" }} />
                   <p className="text-sm" style={{ color: "rgba(255,255,255,0.35)" }}>
-                    No points scored yet. Check back after matches are played.
+                    No finished matches yet. Check back after games are played.
                   </p>
                 </div>
               ) : (
                 <div className="space-y-2">
                   {history.map(item => (
                     <div key={item.matchId}
-                      className="flex items-center gap-3 rounded-xl px-3 py-2.5"
+                      className="rounded-xl px-3 py-2.5"
                       style={{
-                        background: item.type === "exact" ? "rgba(0,255,136,0.05)" : "rgba(0,212,255,0.04)",
-                        border: `1px solid ${item.type === "exact" ? "rgba(0,255,136,0.15)" : "rgba(0,212,255,0.1)"}`,
+                        background:
+                          item.type === "exact"   ? "rgba(250,204,21,0.05)"  :
+                          item.type === "correct" ? "rgba(0,255,136,0.04)"   :
+                          "rgba(239,68,68,0.04)",
+                        border: `1px solid ${
+                          item.type === "exact"   ? "rgba(250,204,21,0.18)" :
+                          item.type === "correct" ? "rgba(0,255,136,0.15)"  :
+                          "rgba(239,68,68,0.15)"
+                        }`,
                       }}>
-                      {/* Flags */}
-                      <div className="flex items-center gap-1 shrink-0">
-                        <div className="relative h-4 w-5 rounded-sm overflow-hidden">
-                          <Image src={flagUrl(item.homeFlagCode, 20)} alt={item.home} fill className="object-cover" unoptimized />
+                      {/* Top row: flags + match name + points */}
+                      <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-1 shrink-0">
+                          <div className="relative h-4 w-5 rounded-sm overflow-hidden">
+                            <Image src={flagUrl(item.homeFlagCode, 20)} alt={item.home} fill className="object-cover" unoptimized />
+                          </div>
+                          <span className="text-[10px]" style={{ color: "rgba(255,255,255,0.3)" }}>vs</span>
+                          <div className="relative h-4 w-5 rounded-sm overflow-hidden">
+                            <Image src={flagUrl(item.awayFlagCode, 20)} alt={item.away} fill className="object-cover" unoptimized />
+                          </div>
                         </div>
-                        <span className="text-[10px]" style={{ color: "rgba(255,255,255,0.4)" }}>vs</span>
-                        <div className="relative h-4 w-5 rounded-sm overflow-hidden">
-                          <Image src={flagUrl(item.awayFlagCode, 20)} alt={item.away} fill className="object-cover" unoptimized />
+                        <div className="flex-1 min-w-0">
+                          <div className="text-xs font-bold truncate text-white">
+                            {item.home} vs {item.away}
+                          </div>
                         </div>
+                        {item.pts > 0 && (
+                          <div className="shrink-0 font-black text-base font-mono"
+                            style={{ color: item.type === "exact" ? "#facc15" : "#00FF88" }}>
+                            +{item.pts}
+                          </div>
+                        )}
                       </div>
-                      {/* Match */}
-                      <div className="flex-1 min-w-0">
-                        <div className="text-xs font-bold truncate" style={{ color: "white" }}>
-                          {item.home} vs {item.away}
-                        </div>
-                        <div className="text-[10px]" style={{ color: "rgba(255,255,255,0.4)" }}>
-                          Guessed: {item.predicted}
-                        </div>
-                      </div>
-                      {/* Points */}
-                      <div className="shrink-0 text-right">
-                        <div className="font-black text-lg" style={{ color: item.type === "exact" ? "#00c46a" : "#0891B2" }}>
-                          +{item.pts}
-                        </div>
-                        <div className="text-[9px] font-bold uppercase"
-                          style={{ color: item.type === "exact" ? "#00c46a" : "#0891B2" }}>
-                          {item.type}
-                        </div>
+                      {/* Bottom row: pick · result · badge */}
+                      <div className="flex items-center gap-2 mt-1.5">
+                        <span className="text-[10px]" style={{ color: "rgba(255,255,255,0.35)" }}>
+                          Pick: <span className="font-mono font-bold text-white">{item.predicted}</span>
+                        </span>
+                        <span style={{ color: "rgba(255,255,255,0.2)" }}>·</span>
+                        <span className="text-[10px]" style={{ color: "rgba(255,255,255,0.35)" }}>
+                          Result: <span className="font-mono font-bold text-white">{item.actual}</span>
+                        </span>
+                        <span className="ml-auto">
+                          <PredictionBadge type={item.type} size="sm" />
+                        </span>
                       </div>
                     </div>
                   ))}

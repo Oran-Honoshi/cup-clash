@@ -3,11 +3,12 @@
 import { useState, useMemo, useRef, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
-  Calendar, Clock, Lock, Search, Star, Check, X as XIcon,
+  Calendar, Lock, Search, X as XIcon,
   ChevronDown, Users, Zap,
 } from "lucide-react";
 import { Flag } from "@/components/ui/flag";
 import { ScoreInputCC } from "@/components/ui/score-input-cc";
+import { PredictionBadge } from "@/components/predictions/prediction-badge";
 import { createClient } from "@/lib/supabase/client";
 import { WC2026_MATCHES, STAGE_LABELS } from "@/lib/schedule";
 import { cn } from "@/lib/utils";
@@ -138,12 +139,6 @@ function PredRow({
 }) {
   if (type === "finished" && homeScore !== undefined && awayScore !== undefined) {
     const result = predResult(pred, homeScore, awayScore);
-    const cfg = {
-      exact:   { icon: Star,   color: "#00FF88", label: "Exact",   bg: "rgba(0,255,136,0.1)",  border: "rgba(0,255,136,0.25)"  },
-      correct: { icon: Check,  color: "#00D4FF", label: "Correct", bg: "rgba(0,212,255,0.08)", border: "rgba(0,212,255,0.2)"   },
-      missed:  { icon: XIcon,  color: "#f87171", label: "Missed",  bg: "rgba(239,68,68,0.08)", border: "rgba(239,68,68,0.18)"  },
-    }[result];
-    const Icon = cfg.icon;
     return (
       <div className="flex items-center gap-2 mt-1.5 pt-1.5"
         style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
@@ -152,16 +147,13 @@ function PredRow({
         <span className="font-mono text-xs font-bold" style={{ color: "rgba(255,255,255,0.65)" }}>
           {pred.homeScore}–{pred.awayScore}
         </span>
-        <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold"
-          style={{ background: cfg.bg, border: `1px solid ${cfg.border}`, color: cfg.color }}>
-          <Icon size={9} />
-          {cfg.label}
+        <span className="ml-auto">
+          <PredictionBadge
+            type={result}
+            points={pred.pointsEarned ?? undefined}
+            size="sm"
+          />
         </span>
-        {pred.pointsEarned !== null && (
-          <span className="text-[11px] font-bold ml-auto" style={{ color: cfg.color }}>
-            +{pred.pointsEarned} pts
-          </span>
-        )}
       </div>
     );
   }

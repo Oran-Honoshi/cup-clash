@@ -9,6 +9,7 @@ import {
 import { AdBanner } from "@/components/ads/ad-banner";
 import { CopyPredictions } from "@/components/predictions/copy-predictions";
 import { FlaggedTeam } from "@/components/predictions/flagged-team";
+import { PredictionBadge } from "@/components/predictions/prediction-badge";
 import { Flag } from "@/components/ui/flag";
 import { ScoreInputCC } from "@/components/ui/score-input-cc";
 import { WC2026_MATCHES } from "@/lib/schedule";
@@ -128,13 +129,20 @@ function useAutoSave(predictions: GroupPredictions, userId: string | undefined, 
 
 interface StagePoints { correctOutcome: number; exactScore: number; useProgressive: boolean; }
 
+interface MatchResultData {
+  homeScore: number;
+  awayScore: number;
+}
+
 // ── Match Card Block ──────────────────────────────────────────────────────────
-function MatchCard({ match, prediction, onChange, globalLocked, stagePoints }: {
+function MatchCard({ match, prediction, onChange, globalLocked, stagePoints, matchResult, earnedPts }: {
   match: typeof WC2026_MATCHES[0];
   prediction: ScorePrediction;
   onChange: (home: string, away: string) => void;
   globalLocked: boolean;
   stagePoints?: StagePoints;
+  matchResult?: MatchResultData;
+  earnedPts?: { pts: number; isExact: boolean };
 }) {
   const { t } = useLocale();
   const filled      = prediction.home !== "" && prediction.away !== "";
@@ -152,7 +160,29 @@ function MatchCard({ match, prediction, onChange, globalLocked, stagePoints }: {
       .formatToParts(d).find(p => p.type === "timeZoneName")?.value ?? tz;
     setLocalTimeStr(`${dateStr} · ${timeStr} ${tzAbbr}`);
   }, [match.utcTime]);
-  const status      = matchLocked ? "locked" : filled ? "saved" : "open";
+  const status = matchLocked ? "locked" : filled ? "saved" : "open";
+
+  // Result badge (only for finished matches with a prediction)
+  type BadgeType = "exact" | "correct" | "missed" | "none";
+  let badgeType: BadgeType = "none";
+  let badgePoints = 0;
+  if (matchResult && filled) {
+    const predH = parseInt(prediction.home, 10);
+    const predA = parseInt(prediction.away, 10);
+    if (!isNaN(predH) && !isNaN(predA)) {
+      if (earnedPts?.isExact || (predH === matchResult.homeScore && predA === matchResult.awayScore)) {
+        badgeType = "exact";
+      } else {
+        const pw = predH > predA ? "H" : predH < predA ? "A" : "D";
+        const rw = matchResult.homeScore > matchResult.awayScore ? "H"
+          : matchResult.homeScore < matchResult.awayScore ? "A" : "D";
+        badgeType = pw === rw ? "correct" : "missed";
+      }
+      badgePoints = earnedPts?.pts ?? 0;
+    }
+  } else if (matchResult && !filled) {
+    badgeType = "none";
+  }
 
   const cardStyle = {
     open:   { background: "rgba(18,14,38,0.55)",  border: "1px solid rgba(0,255,136,0.25)"   },
@@ -213,6 +243,21 @@ function MatchCard({ match, prediction, onChange, globalLocked, stagePoints }: {
           </span>
         </div>
       </div>
+
+      {/* Result badge row — only when match is finished */}
+      {matchResult && (
+        <div className="flex items-center justify-between mt-2 pt-2"
+          style={{ borderTop: "1px solid rgba(255,255,255,0.07)" }}>
+          <span className="text-[10px] font-mono font-bold" style={{ color: "rgba(255,255,255,0.45)" }}>
+            {matchResult.homeScore}–{matchResult.awayScore}
+          </span>
+          <PredictionBadge
+            type={badgeType}
+            points={badgeType !== "none" ? badgePoints : undefined}
+            size="sm"
+          />
+        </div>
+      )}
     </div>
   );
 }
@@ -369,10 +414,12 @@ interface GroupStagePredictionsProps {
 
 export function GroupStagePredictions({ groupId, locked = false, userId, isAdFree, isCorporate }: GroupStagePredictionsProps) {
   const { t } = useLocale();
-  const [activeGroup, setActiveGroup] = useState("A");
-  const [predictions, setPredictions] = useState<GroupPredictions>({});
-  const [loaded,      setLoaded]      = useState(false);
-  const [stagePoints, setStagePoints] = useState<StagePoints | undefined>(undefined);
+  const [activeGroup,  setActiveGroup]  = useState("A");
+  const [predictions,  setPredictions]  = useState<GroupPredictions>({});
+  const [loaded,       setLoaded]       = useState(false);
+  const [stagePoints,  setStagePoints]  = useState<StagePoints | undefined>(undefined);
+  const [matchResults, setMatchResults] = useState<Record<string, MatchResultData>>({});
+  const [earnedPoints, setEarnedPoints] = useState<Record<string, { pts: number; isExact: boolean }>>({});
 
   const saveStatus = useAutoSave(loaded ? predictions : {}, userId, groupId);
 
@@ -394,6 +441,25 @@ export function GroupStagePredictions({ groupId, locked = false, userId, isAdFre
       });
   }, [groupId]);
 
+  // Fetch finished match actual scores
+  useEffect(() => {
+    const sb = createClient();
+    sb.from("matches")
+      .select("id, home_score, away_score")
+      .eq("status", "finished")
+      .then(({ data }) => {
+        if (!data?.length) return;
+        const results: Record<string, MatchResultData> = {};
+        (data as Array<{ id: string; home_score: number | null; away_score: number | null }>)
+          .forEach(m => {
+            if (m.home_score !== null && m.away_score !== null) {
+              results[m.id] = { homeScore: m.home_score, awayScore: m.away_score };
+            }
+          });
+        setMatchResults(results);
+      });
+  }, []);
+
   useEffect(() => {
     if (!userId) return;
     setPredictions({});
@@ -402,15 +468,24 @@ export function GroupStagePredictions({ groupId, locked = false, userId, isAdFre
     sb.auth.getUser().then(({ data: { user } }) => {
       if (!user) { setLoaded(true); return; }
       sb.from("group_predictions")
-        .select("match_id, home_score, away_score")
+        .select("match_id, home_score, away_score, points_earned, is_exact")
         .eq("group_id", groupId).eq("user_id", user.id).eq("pred_type", "match")
         .then(({ data, error }) => {
           if (error) console.error("Load predictions error:", error.message);
           if (data?.length) {
-            const loaded: GroupPredictions = {};
-            (data as Array<{ match_id: string; home_score: number; away_score: number }>)
-              .forEach(row => { loaded[row.match_id] = { home: String(row.home_score), away: String(row.away_score) }; });
-            setPredictions(loaded);
+            const loadedPreds: GroupPredictions = {};
+            const earned: Record<string, { pts: number; isExact: boolean }> = {};
+            (data as Array<{
+              match_id: string; home_score: number; away_score: number;
+              points_earned: number | null; is_exact: boolean | null;
+            }>).forEach(row => {
+              loadedPreds[row.match_id] = { home: String(row.home_score), away: String(row.away_score) };
+              if (row.points_earned !== null) {
+                earned[row.match_id] = { pts: row.points_earned, isExact: row.is_exact ?? false };
+              }
+            });
+            setPredictions(loadedPreds);
+            setEarnedPoints(earned);
           }
           setLoaded(true);
         });
@@ -539,6 +614,8 @@ export function GroupStagePredictions({ groupId, locked = false, userId, isAdFre
                 onChange={(h, a) => setScore(match.id, h, a)}
                 globalLocked={locked}
                 stagePoints={stagePoints}
+                matchResult={matchResults[match.id]}
+                earnedPts={earnedPoints[match.id]}
               />
             ))}
           </div>
