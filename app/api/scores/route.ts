@@ -20,6 +20,7 @@ const TEAM_ALIASES: Record<string, string> = {
   "ivory coast":                   "côte d'ivoire",
   "bosnia":                        "bosnia & herzegovina",
   "south korea":                   "korea republic",
+  "czech republic":                "czechia",
   "united states":                 "usa",
   "curacao":                       "curaçao",
   "iran":                          "ir iran",
