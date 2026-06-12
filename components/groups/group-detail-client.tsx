@@ -2,10 +2,11 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Trophy, Users, DollarSign, Target, Lock, Shield, ArrowRight, MessageCircle, Info, Trash2, Gift, CheckCircle, Clock, GraduationCap } from "lucide-react";
+import { Trophy, Users, DollarSign, Target, Lock, Shield, ArrowRight, MessageCircle, Info, Trash2, Gift, CheckCircle, Clock, GraduationCap, ClipboardList } from "lucide-react";
 import Link from "next/link";
 import { GroupChat } from "@/components/chat/group-chat";
 import { MemberAvatar } from "@/components/ui/member-avatar";
+import { MatchResultsTable } from "@/components/groups/match-results-table";
 import { useLocale } from "@/components/i18n/locale-provider";
 import { interpolate } from "@/lib/i18n";
 
@@ -16,7 +17,7 @@ interface GroupDetailClientProps {
   currentUserId: string;
   isAdmin: boolean;
   isMember: boolean;
-  initialTab?: "overview" | "chat";
+  initialTab?: "overview" | "chat" | "results";
 }
 
 const ENABLE_KEYS: Record<string, string> = {
@@ -30,7 +31,7 @@ const glass = { background: "rgba(255,255,255,0.07)", backdropFilter: "blur(24px
 export function GroupDetailClient({ group, rules, members, currentUserId, isAdmin, isMember, initialTab = "overview" }: GroupDetailClientProps) {
   const { t } = useLocale();
   const router = useRouter();
-  const [tab, setTab] = useState<"overview" | "chat">(initialTab);
+  const [tab, setTab] = useState<"overview" | "chat" | "results">(initialTab);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const paidCount = members.filter(m => m.paid || m.payment_status === "paid").length;
@@ -38,6 +39,7 @@ export function GroupDetailClient({ group, rules, members, currentUserId, isAdmi
   const TABS = [
     { id: "overview", label: t("grp_overview"), icon: Info          },
     { id: "chat",     label: t("nav_chat"),      icon: MessageCircle },
+    { id: "results",  label: "Results",          icon: ClipboardList },
   ];
 
   const SCORING_LABELS: Record<string, string> = {
@@ -97,7 +99,7 @@ export function GroupDetailClient({ group, rules, members, currentUserId, isAdmi
         {TABS.map(tab_ => {
           const active = tab === tab_.id;
           return (
-            <button key={tab_.id} onClick={() => setTab(tab_.id as "overview" | "chat")}
+            <button key={tab_.id} onClick={() => setTab(tab_.id as "overview" | "chat" | "results")}
               className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-sm transition-all"
               style={active ? { background: "rgba(0,212,255,0.12)", border: "1px solid rgba(0,212,255,0.35)", color: "#00D4FF" } : { background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.5)" }}>
               <tab_.icon size={15} style={{ color: active ? "#00D4FF" : "rgba(255,255,255,0.3)" }} />
@@ -307,6 +309,10 @@ export function GroupDetailClient({ group, rules, members, currentUserId, isAdmi
         <div className="rounded-2xl overflow-hidden" style={glass}>
           <GroupChat groupId={group.id} currentUserId={currentUserId} currentUserName="" isPaid={isMember} inline />
         </div>
+      )}
+
+      {tab === "results" && (
+        <MatchResultsTable groupId={group.id} members={members} />
       )}
 
       {showDeleteConfirm && (

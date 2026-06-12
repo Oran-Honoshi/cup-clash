@@ -84,7 +84,7 @@ export default async function GroupDetailPage({ params, searchParams }: { params
       currentUserId={userProfile.id}
       isAdmin={isAdmin}
       isMember={isMember}
-      initialTab={searchParams.tab === "chat" ? "chat" : "overview"}
+      initialTab={searchParams.tab === "chat" ? "chat" : searchParams.tab === "results" ? "results" : "overview"}
     />
   );
 }

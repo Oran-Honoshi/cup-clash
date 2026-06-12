@@ -1,13 +1,18 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import { motion } from "framer-motion";
-import { TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { useState, useEffect } from "react";
+import { createClient } from "@supabase/supabase-js";
 import Image from "next/image";
 import { flagUrl } from "@/lib/countries";
-import { WC2026_MATCHES } from "@/lib/schedule";
 import { NeonBar } from "@/components/ui/neon-bar";
 import { FOCUS_RING } from "@/lib/a11y";
+
+function createSb() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+  );
+}
 
 // All 12 groups with real teams from the official FIFA draw
 const GROUPS: Record<string, string[]> = {
@@ -72,9 +77,10 @@ function buildStandings(group: string, results: Array<{ home: string; away: stri
   return Object.values(rows).sort((a, b) => b.points - a.points || b.gd - a.gd || b.gf - a.gf);
 }
 
-function GroupTable({ group }: { group: string }) {
-  // No results yet, show pre-tournament standings (all zeros).
-  const standings = buildStandings(group, []);
+type MatchResult = { home: string; away: string; homeScore: number; awayScore: number };
+
+function GroupTable({ group, results }: { group: string; results: MatchResult[] }) {
+  const standings = buildStandings(group, results);
 
   return (
     <div
@@ -170,18 +176,46 @@ function GroupTable({ group }: { group: string }) {
 
 export function GroupStandings({ groupId: _groupId }: { groupId?: string }) {
   const [activeGroup, setActiveGroup] = useState("A");
+  const [matchResults, setMatchResults] = useState<Record<string, MatchResult[]>>({});
+  const [loaded, setLoaded] = useState(false);
   const groups = Object.keys(GROUPS);
+
+  useEffect(() => {
+    createSb()
+      .from("matches")
+      .select("home, away, home_score, away_score, group_letter")
+      .eq("stage", "Group")
+      .eq("status", "finished")
+      .then(({ data }) => {
+        const byGroup: Record<string, MatchResult[]> = {};
+        (data ?? []).forEach((m: {
+          home: string; away: string;
+          home_score: number; away_score: number;
+          group_letter: string | null;
+        }) => {
+          const g = m.group_letter;
+          if (!g) return;
+          if (!byGroup[g]) byGroup[g] = [];
+          byGroup[g].push({ home: m.home, away: m.away, homeScore: m.home_score, awayScore: m.away_score });
+        });
+        setMatchResults(byGroup);
+        setLoaded(true);
+      });
+  }, []);
+
+  const hasResults = loaded && Object.keys(matchResults).length > 0;
 
   return (
     <div className="space-y-5">
-      {/* Pre-tournament notice */}
-      <div className="rounded-xl px-4 py-3 flex items-center gap-2.5"
-        style={{ background: "rgba(251,191,36,0.08)", border: "1px solid rgba(251,191,36,0.2)" }}>
-        <span className="text-sm">⏳</span>
-        <p className="text-sm" style={{ color: "#fbbf24" }}>
-          <strong>Tournament starts June 11.</strong> Standings will update live after each match.
-        </p>
-      </div>
+      {!hasResults && loaded && (
+        <div className="rounded-xl px-4 py-3 flex items-center gap-2.5"
+          style={{ background: "rgba(251,191,36,0.08)", border: "1px solid rgba(251,191,36,0.2)" }}>
+          <span className="text-sm">⏳</span>
+          <p className="text-sm" style={{ color: "#fbbf24" }}>
+            <strong>Tournament underway.</strong> Standings will update after each match finishes.
+          </p>
+        </div>
+      )}
 
       {/* Group selector */}
       <div className="flex flex-wrap gap-2">
@@ -210,11 +244,11 @@ export function GroupStandings({ groupId: _groupId }: { groupId?: string }) {
       </div>
 
       {/* Active group table */}
-      <GroupTable group={activeGroup} />
+      <GroupTable group={activeGroup} results={matchResults[activeGroup] ?? []} />
 
       {/* All groups grid on larger screens */}
       <div className="hidden xl:grid grid-cols-3 gap-4 mt-6">
-        {groups.map(g => <GroupTable key={g} group={g} />)}
+        {groups.map(g => <GroupTable key={g} group={g} results={matchResults[g] ?? []} />)}
       </div>
     </div>
   );
