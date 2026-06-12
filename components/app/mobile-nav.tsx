@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
   LayoutDashboard, Users, Target, Trophy,
-  GitBranch, Brain, BarChart2, User, Bell, MoreHorizontal, X, MessageCircle,
+  GitBranch, Brain, BarChart2, User, Bell, MoreHorizontal, X, MessageCircle, CalendarDays,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useLocale } from "@/components/i18n/locale-provider";
@@ -19,12 +19,13 @@ const NAV_ITEMS = [
 ];
 
 const MORE_ITEMS = [
-  { href: "/chat",          label: "Chat",           icon: MessageCircle },
-  { href: "/bracket",       label: "Bracket",        icon: GitBranch     },
-  { href: "/trivia",        label: "Trivia",          icon: Brain         },
-  { href: "/standings",     label: "Standings",       icon: BarChart2     },
-  { href: "/profile",       label: "Profile",         icon: User          },
-  { href: "/notifications", label: "Notifications",   icon: Bell          },
+  { href: "/schedule",      label: "Schedule",        icon: CalendarDays  },
+  { href: "/chat",          label: "Chat",            icon: MessageCircle },
+  { href: "/bracket",       label: "Bracket",         icon: GitBranch     },
+  { href: "/trivia",        label: "Trivia",           icon: Brain         },
+  { href: "/standings",     label: "Standings",        icon: BarChart2     },
+  { href: "/profile",       label: "Profile",          icon: User          },
+  { href: "/notifications", label: "Notifications",    icon: Bell          },
 ];
 
 function MoreDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
