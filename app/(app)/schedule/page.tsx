@@ -24,11 +24,21 @@ function sbAdmin() {
   );
 }
 
+type DbMatchEvent = {
+  minute: number;
+  extra: number | null;
+  player: string | null;
+  team: string | null;
+  type: string;
+};
+
 type DbMatch = {
   id: string;
   status: string;
   home_score: number | null;
   away_score: number | null;
+  minute: number | null;
+  match_events: DbMatchEvent[] | null;
 };
 
 type DbPred = {
@@ -52,14 +62,22 @@ export default async function SchedulePage({
   // ── Fetch all match statuses + scores ──────────────────────────────────────
   const { data: dbMatchRows } = await sbAdmin()
     .from("matches")
-    .select("id, status, home_score, away_score");
+    .select("id, status, home_score, away_score, minute, match_events");
 
-  const matchResults: Record<string, { status: string; homeScore: number | null; awayScore: number | null }> = {};
+  const matchResults: Record<string, {
+    status: string;
+    homeScore: number | null;
+    awayScore: number | null;
+    minute: number | null;
+    matchEvents: DbMatchEvent[] | null;
+  }> = {};
   for (const m of (dbMatchRows ?? []) as DbMatch[]) {
     matchResults[m.id] = {
-      status: m.status ?? "",
-      homeScore: m.home_score,
-      awayScore: m.away_score,
+      status:      m.status ?? "",
+      homeScore:   m.home_score,
+      awayScore:   m.away_score,
+      minute:      m.minute ?? null,
+      matchEvents: m.match_events ?? null,
     };
   }
 

@@ -15,10 +15,20 @@ import { cn } from "@/lib/utils";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
+interface MatchEvent {
+  minute: number;
+  extra: number | null;
+  player: string | null;
+  team: string | null;
+  type: string;
+}
+
 interface MatchResult {
   status: string;
   homeScore: number | null;
   awayScore: number | null;
+  minute: number | null;
+  matchEvents: MatchEvent[] | null;
 }
 
 interface UserPrediction {
@@ -95,6 +105,7 @@ function getMatchState(matchId: string, results: Record<string, MatchResult>) {
       homeScore: r.homeScore ?? 0,
       awayScore: r.awayScore ?? 0,
       label:     "FT",
+      events:    r.matchEvents ?? [] as MatchEvent[],
     };
   }
   if (status === LIVE_STATUS) {
@@ -103,6 +114,8 @@ function getMatchState(matchId: string, results: Record<string, MatchResult>) {
       homeScore: r.homeScore ?? 0,
       awayScore: r.awayScore ?? 0,
       label:     "Live",
+      minute:    r.minute,
+      events:    r.matchEvents ?? [] as MatchEvent[],
     };
   }
   return { type: "upcoming" as const };
@@ -190,6 +203,34 @@ function PredRow({
       <span className="font-mono text-xs font-bold" style={{ color: "#fbbf24" }}>
         {pred.homeScore}–{pred.awayScore}
       </span>
+    </div>
+  );
+}
+
+// ── Goal Events ────────────────────────────────────────────────────────────────
+
+function GoalEvents({ events }: { events: MatchEvent[] }) {
+  if (events.length === 0) return null;
+  return (
+    <div className="mt-1.5 pt-1.5 space-y-0.5" style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}>
+      {events.map((e, i) => (
+        <div key={i} className="flex items-center gap-1.5 text-[11px]" style={{ color: "rgba(255,255,255,0.5)" }}>
+          <span>⚽</span>
+          <span className="font-mono font-bold" style={{ color: "rgba(255,255,255,0.6)" }}>
+            {e.extra != null ? `${e.minute}+${e.extra}'` : `${e.minute}'`}
+          </span>
+          {e.player && <span>{e.player}</span>}
+          {e.type === "own_goal" && (
+            <span style={{ color: "rgba(239,68,68,0.7)" }}>(OG)</span>
+          )}
+          {e.type === "penalty" && (
+            <span style={{ color: "rgba(255,255,255,0.35)" }}>(pen)</span>
+          )}
+          {e.team && (
+            <span style={{ color: "rgba(255,255,255,0.3)" }}>· {e.team}</span>
+          )}
+        </div>
+      ))}
     </div>
   );
 }
@@ -332,11 +373,18 @@ function MatchCard({
             </span>
           )}
           {state.type === "live" && (
-            <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full"
-              style={{ background: "rgba(239,68,68,0.12)", color: "#f87171", border: "1px solid rgba(239,68,68,0.25)" }}>
-              <span className="inline-block w-1.5 h-1.5 rounded-full bg-red-400 animate-pulse" />
-              {state.label}
-            </span>
+            <div className="flex flex-col items-end gap-0.5">
+              <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full"
+                style={{ background: "rgba(239,68,68,0.12)", color: "#f87171", border: "1px solid rgba(239,68,68,0.25)" }}>
+                <span className="inline-block w-1.5 h-1.5 rounded-full bg-red-400 animate-pulse" />
+                {state.label}
+              </span>
+              {state.minute != null && (
+                <span className="font-mono text-[10px] font-bold" style={{ color: "#f87171" }}>
+                  {state.minute}&apos;
+                </span>
+              )}
+            </div>
           )}
           {state.type === "upcoming" && (
             <div className="flex flex-col items-end gap-0.5">
@@ -353,6 +401,11 @@ function MatchCard({
           )}
         </div>
       </div>
+
+      {/* Goal events for live and finished matches */}
+      {(state.type === "live" || state.type === "finished") && state.events.length > 0 && (
+        <GoalEvents events={state.events} />
+      )}
 
       {/* Prediction row */}
       {showPred && pred && (
@@ -402,6 +455,17 @@ export function ScheduleClient({
   initialPredictions,
 }: ScheduleClientProps) {
   const router = useRouter();
+
+  // ── Auto-refresh every 60s when a match is live
+  const hasLive = useMemo(
+    () => Object.values(matchResults).some(r => r.status === LIVE_STATUS),
+    [matchResults]
+  );
+  useEffect(() => {
+    if (!hasLive) return;
+    const id = setInterval(() => router.refresh(), 60_000);
+    return () => clearInterval(id);
+  }, [hasLive, router]);
 
   // ── Filter state
   const [groupFilter, setGroupFilter]   = useState<string>("All");

@@ -687,6 +687,19 @@ export async function POST(request: NextRequest) {
 
       const wasFinished = dbMatch.status === "finished";
 
+      const parsedEvts = eventsMap.get(f.fixture.id);
+      const matchEvents = parsedEvts
+        ? parsedEvts.goals.map(g => ({
+            minute: g.minute,
+            extra:  g.extra,
+            player: g.player_name,
+            team:   g.team_name,
+            type:   g.detail === "Own Goal" ? "own_goal"
+                  : g.detail === "Penalty"  ? "penalty"
+                  :                           "goal",
+          }))
+        : null;
+
       const { error: updErr } = await sb
         .from("matches")
         .update({
@@ -694,6 +707,8 @@ export async function POST(request: NextRequest) {
           away_score:     f.goals.away ?? 0,
           status:         newStatus,
           api_fixture_id: f.fixture.id,
+          minute:         f.fixture.status.elapsed ?? null,
+          match_events:   matchEvents,
         })
         .eq("id", dbMatch.id);
 
