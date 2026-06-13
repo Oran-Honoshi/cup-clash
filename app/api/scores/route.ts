@@ -462,15 +462,24 @@ export async function POST(request: NextRequest) {
     console.log("[scores/cron] SUPABASE_SERVICE_ROLE_KEY set:", !!process.env.SUPABASE_SERVICE_ROLE_KEY);
     console.log("[scores/cron] API_FOOTBALL_KEY prefix:", process.env.API_FOOTBALL_KEY.slice(0, 6) + "…");
 
-    // Rate-guard: skip if last fetch was < 4 min ago, unless there are live matches
-    const [{ data: latest }, { data: liveInDB }] = await Promise.all([
+    // Rate-guard: skip if last fetch was < 4 min ago, unless there are live
+    // matches OR matches with api_fixture_id that are still showing 'upcoming'.
+    const [{ data: latest }, { data: liveInDB }, { data: staleDB }] = await Promise.all([
       sb.from("live_scores").select("last_fetched").order("last_fetched", { ascending: false }).limit(1).maybeSingle(),
       sb.from("matches").select("id").eq("status", "live").limit(1),
+      sb.from("matches")
+        .select("api_fixture_id")
+        .not("api_fixture_id", "is", null)
+        .eq("status", "upcoming")
+        .gte("kickoff_at", `${yesterday}T00:00:00Z`)
+        .lte("kickoff_at", `${tomorrow}T23:59:59Z`),
     ]);
 
-    const hasLiveMatches = (liveInDB?.length ?? 0) > 0;
+    const hasLiveMatches  = (liveInDB?.length ?? 0) > 0;
+    const staleFixtureIds = (staleDB ?? []).map(m => m.api_fixture_id as number);
+    const hasStaleMatches = staleFixtureIds.length > 0;
 
-    if (!hasLiveMatches && latest?.last_fetched) {
+    if (!hasLiveMatches && !hasStaleMatches && latest?.last_fetched) {
       const age = now.getTime() - new Date(latest.last_fetched).getTime();
       if (age < POLL_INTERVAL) {
         const nextIn = Math.round((POLL_INTERVAL - age) / 1000) + "s";
@@ -478,9 +487,8 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ skipped: true, nextFetchIn: nextIn });
       }
     }
-    if (hasLiveMatches) {
-      console.log("[scores/cron] Rate-guard bypassed — live match in progress");
-    }
+    if (hasLiveMatches)  console.log("[scores/cron] Rate-guard bypassed — live match in progress");
+    if (hasStaleMatches) console.log(`[scores/cron] Rate-guard bypassed — ${staleFixtureIds.length} stale fixture(s) need re-fetch`);
 
     // ── STEP 1: Fetch from API-Football ──────────────────────────────────────
 
@@ -526,6 +534,29 @@ export async function POST(request: NextRequest) {
     });
 
     console.log(`[scores/cron]   total unique fixtures: ${fixtures.length}`);
+
+    // ── STEP 1b: Re-fetch stale fixtures directly by ID ───────────────────────
+    // Matches with api_fixture_id set but still 'upcoming' won't appear in the
+    // today-only API query if they were played on a different date or if an
+    // alias mismatch previously prevented the matches table from being updated.
+    const missingStaleIds = staleFixtureIds.filter(id => !seen.has(id));
+    if (missingStaleIds.length > 0) {
+      console.log(`[scores/cron] STEP 1b: Re-fetching ${missingStaleIds.length} stale fixture(s) by ID:`, missingStaleIds);
+      await Promise.all(
+        missingStaleIds.map(async id => {
+          const res = await fetch(`${API_BASE}/fixtures?id=${id}`, { headers: apiHeaders() });
+          if (!res.ok) { console.warn(`[scores/cron]   fixture ${id} HTTP ${res.status}`); return; }
+          const data = await res.json() as { response: APIFixture[] };
+          for (const f of data.response ?? []) {
+            if (!seen.has(f.fixture.id)) {
+              seen.add(f.fixture.id);
+              fixtures.push(f);
+            }
+          }
+        })
+      );
+      console.log(`[scores/cron]   After stale re-fetch: ${fixtures.length} total fixture(s)`);
+    }
 
     if (fixtures.length === 0) {
       console.log("[scores/cron] No WC2026 matches found — exiting early");
