@@ -4,6 +4,33 @@ export async function registerServiceWorker() {
   if (typeof window === "undefined" || !("serviceWorker" in navigator)) return null;
   try {
     const reg = await navigator.serviceWorker.register("/sw.js", { scope: "/" });
+
+    // When a new SW takes control, reload once to serve fresh assets
+    let refreshing = false;
+    navigator.serviceWorker.addEventListener("controllerchange", () => {
+      if (refreshing) return;
+      refreshing = true;
+      window.location.reload();
+    });
+
+    const activateWaiting = (sw: ServiceWorker) => sw.postMessage("SKIP_WAITING");
+
+    // If a new SW is already waiting (page was open during a deploy), activate now
+    if (reg.waiting) {
+      activateWaiting(reg.waiting);
+    }
+
+    // Watch for future updates — activate as soon as the new SW finishes installing
+    reg.addEventListener("updatefound", () => {
+      const installing = reg.installing;
+      if (!installing) return;
+      installing.addEventListener("statechange", () => {
+        if (installing.state === "installed" && navigator.serviceWorker.controller) {
+          activateWaiting(installing);
+        }
+      });
+    });
+
     return reg;
   } catch (e) {
     console.warn("SW registration failed:", e);

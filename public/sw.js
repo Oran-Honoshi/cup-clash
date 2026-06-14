@@ -1,5 +1,5 @@
 // Cup Clash Service Worker — PWA + Web Push
-const CACHE_NAME = "cupclash-v4";
+const CACHE_NAME = "cupclash-v5";
 const STATIC_ASSETS = ["/", "/dashboard", "/predictions", "/leaderboard"];
 
 // Install — cache core routes
@@ -52,6 +52,13 @@ self.addEventListener("notificationclick", (event) => {
       return clients.openWindow(url);
     })
   );
+});
+
+// Client-triggered skip waiting (sent from lib/pwa.ts on update detection)
+self.addEventListener("message", (event) => {
+  if (event.data === "SKIP_WAITING") {
+    self.skipWaiting();
+  }
 });
 
 // Fetch — network first, cache fallback
