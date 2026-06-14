@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { ScheduleClient } from "@/components/schedule/schedule-client";
+import { GroupPersistRedirect } from "@/components/app/group-persist-redirect";
 
 export const metadata: Metadata = {
   title: "FIFA World Cup 2026 Schedule — All 104 Matches | Cup Clash",
@@ -133,13 +134,16 @@ export default async function SchedulePage({
   }
 
   return (
-    <ScheduleClient
-      userId={userId}
-      groupId={activeGroupId}
-      groupName={groupName}
-      allGroups={allGroups}
-      matchResults={matchResults}
-      initialPredictions={initialPredictions}
-    />
+    <>
+      {allGroups.length > 0 && <GroupPersistRedirect groups={allGroups} basePath="/schedule" />}
+      <ScheduleClient
+        userId={userId}
+        groupId={activeGroupId}
+        groupName={groupName}
+        allGroups={allGroups}
+        matchResults={matchResults}
+        initialPredictions={initialPredictions}
+      />
+    </>
   );
 }

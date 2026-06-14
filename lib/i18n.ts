@@ -327,7 +327,7 @@ const en: Translations = {
   nav_signout:       "Sign out",
   nav_home:          "Home",
   nav_table:         "Table",
-  nav_mybets:        "My Bets",
+  nav_mybets:        "My Picks",
 
   auth_createAccount:      "Create Account",
   auth_signin:             "Sign in",
@@ -1941,7 +1941,7 @@ const he: Translations = {
   nav_signout:       "התנתקות",
   nav_home:          "בית",
   nav_table:         "טבלה",
-  nav_mybets:        "ההימורים שלי",
+  nav_mybets:        "הניחושים שלי",
 
   auth_createAccount:      "יצירת חשבון",
   auth_signin:             "כניסה",
@@ -2031,7 +2031,7 @@ const he: Translations = {
   sc_young:    "שחקן צעיר הטוב ביותר",
   sc_third:    "מקום שלישי (כל אחד)",
 
-  pred_lock_notice:    "המשחקים ננעלים 5 דקות לפני השריקה · הימורי טורניר ננעלים ב-11 ביוני",
+  pred_lock_notice:    "המשחקים ננעלים 5 דקות לפני השריקה · ניחושי טורניר ננעלים ב-11 ביוני",
   pred_predicting_for: "מנחש עבור",
   pred_grp_subtitle:   "36 משחקים · תוצאות וטבלאות",
   pred_trn_subtitle:   "אלוף, מלך שערים, הגנה ועוד",

@@ -90,10 +90,10 @@ export function WelcomePopup({ visible, onDismiss, memberName, groupName }: Welc
                     <strong className="text-white">{memberName}</strong>!
                   </p>
                   <p className="text-pitch-400 text-sm leading-relaxed">
-                    The bets are open. Make your predictions before kickoff — every match counts.
+                    Predictions are open. Make your picks before kickoff — every match counts.
                   </p>
                   <Button onClick={onDismiss} size="lg" className="w-full mt-2 font-semibold">
-                    Let the bets begin! 🏆
+                    Let the games begin! 🏆
                   </Button>
                 </div>
               </motion.div>

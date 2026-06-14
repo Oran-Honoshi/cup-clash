@@ -5,6 +5,7 @@ import { createClient }          from "@/lib/supabase/server";
 import { PredictionsClient }     from "@/components/predictions/predictions-client";
 import { GuestPredictionsShell } from "@/components/predictions/guest-predictions-shell";
 import { AdBanner } from "@/components/ads/ad-banner";
+import { GroupPersistRedirect } from "@/components/app/group-persist-redirect";
 import Link from "next/link";
 
 function sbAdmin() {
@@ -126,6 +127,7 @@ export default async function PredictionsPage({
 
   return (
     <div className="pb-32">
+      <GroupPersistRedirect groups={groups} basePath="/predictions" />
       <PredictionsClient
         groupId={activeGroupId}
         groupName={activeGroup.name}

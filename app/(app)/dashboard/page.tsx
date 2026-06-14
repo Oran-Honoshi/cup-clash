@@ -13,6 +13,7 @@ import { GroupStagePrizeCard } from "@/components/dashboard/group-stage-prize-ca
 import { WelcomeModal }    from "@/components/ui/welcome-modal";
 import { DashboardEmptyState } from "@/components/dashboard/empty-state";
 import { AdBanner } from "@/components/ads/ad-banner";
+import { GroupPersistRedirect } from "@/components/app/group-persist-redirect";
 import { getMembers, getGroup } from "@/lib/services/groups";
 import { getNextMatch }    from "@/lib/services/matches";
 import { getCurrentUserProfile } from "@/lib/services/user-group";
@@ -148,6 +149,7 @@ export default async function DashboardPage({
 
   return (
     <div className="space-y-6 pb-32">
+      <GroupPersistRedirect groups={allGroups} basePath="/dashboard" />
       <WelcomeModal />
       <DashboardPopups groupId={activeGroupId} userId={userProfile.id} />
 

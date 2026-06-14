@@ -12,6 +12,7 @@ import { PredictionBadge } from "@/components/predictions/prediction-badge";
 import { createClient } from "@/lib/supabase/client";
 import { WC2026_MATCHES, STAGE_LABELS } from "@/lib/schedule";
 import { cn } from "@/lib/utils";
+import { saveSelectedGroup } from "@/lib/group-storage";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -585,6 +586,7 @@ export function ScheduleClient({
 
   const switchGroup = (id: string) => {
     setGroupPickerOpen(false);
+    saveSelectedGroup(id);
     router.push(`/schedule?group=${id}`);
   };
 

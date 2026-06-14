@@ -8,6 +8,7 @@ import { TournamentPicks } from "@/components/dashboard/tournament-picks";
 import { BonusQuestions } from "@/components/predictions/bonus-questions";
 import { GuestStore } from "@/components/ui/guest-signup-modal";
 import { useLocale } from "@/components/i18n/locale-provider";
+import { saveSelectedGroup } from "@/lib/group-storage";
 
 // ── Shared glass tokens ───────────────────────────────────────────────────────
 const glass = {
@@ -69,7 +70,7 @@ export function PredictionsClient({
     }).catch(err => console.error("[migrate guest picks]", err));
   }, [migrateGuestPicks, migrated, groupId, userId]);
 
-  const switchGroup = (id: string) => { setGroupPickerOpen(false); router.push(`/predictions?group=${id}`); };
+  const switchGroup = (id: string) => { setGroupPickerOpen(false); saveSelectedGroup(id); router.push(`/predictions?group=${id}`); };
 
   return (
     <div className="flex flex-col space-y-4 max-w-2xl mx-auto w-full">

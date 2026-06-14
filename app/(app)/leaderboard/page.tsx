@@ -7,6 +7,7 @@ import { getMembers, getGroup } from "@/lib/services/groups";
 import { getCurrentUserProfile } from "@/lib/services/user-group";
 import { DashboardGroupPicker } from "@/components/dashboard/dashboard-group-picker";
 import { AdBanner } from "@/components/ads/ad-banner";
+import { GroupPersistRedirect } from "@/components/app/group-persist-redirect";
 import Link from "next/link";
 
 function sbAdmin() {
@@ -68,6 +69,7 @@ export default async function LeaderboardPage({ searchParams }: { searchParams: 
 
   return (
     <div className="space-y-6 pb-32">
+      <GroupPersistRedirect groups={allGroups} basePath="/leaderboard" />
       <div className="flex items-start justify-between gap-4 flex-wrap">
         <div>
           <div className="label-caps mb-1">{group.name}</div>
