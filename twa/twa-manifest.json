@@ -1,0 +1,41 @@
+{
+  "packageId": "live.cupclash.app",
+  "host": "cupclash.live",
+  "name": "Cup Clash",
+  "launcherName": "Cup Clash",
+  "display": "standalone",
+  "orientation": "portrait",
+  "themeColor": "#0a1b0e",
+  "navigationColor": "#0a1b0e",
+  "navigationColorDark": "#0a1b0e",
+  "navigationDividerColor": "#0a1b0e",
+  "navigationDividerColorDark": "#0a1b0e",
+  "backgroundColor": "#0a1b0e",
+  "enableNotifications": true,
+  "startUrl": "/dashboard",
+  "iconUrl": "https://cupclash.live/icons/icon-512.png",
+  "maskableIconUrl": "https://cupclash.live/icons/maskable-512.png",
+  "monochromeIconUrl": "https://cupclash.live/icons/maskable-512.png",
+  "splashScreenFadeOutDuration": 300,
+  "signingKey": {
+    "path": "./android.keystore",
+    "alias": "android"
+  },
+  "appVersionName": "1.0.0",
+  "appVersionCode": 1,
+  "shortcuts": [],
+  "generatorApp": "bubblewrap-cli",
+  "webManifestUrl": "https://cupclash.live/manifest.webmanifest",
+  "fallbackType": "customtabs",
+  "features": {
+    "locationDelegation": { "enabled": false },
+    "playBilling": { "enabled": false }
+  },
+  "alphaDependencies": { "enabled": false },
+  "enableSiteSettingsShortcut": true,
+  "isChromeOSOnly": false,
+  "isMetaQuest": false,
+  "fullScopeUrl": "https://cupclash.live/",
+  "minSdkVersion": 21,
+  "pwaJsonUrl": "https://cupclash.live/manifest.webmanifest"
+}

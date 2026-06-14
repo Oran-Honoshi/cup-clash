@@ -1,0 +1,10 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "live.cupclash.app",
+    "sha256_cert_fingerprints": [
+      "3F:D3:F6:B6:F1:69:5A:6B:47:1C:A4:DB:21:3C:89:88:76:29:6A:45:B0:91:FC:E9:C0:17:81:B8:8C:DA:71:8D"
+    ]
+  }
+}]

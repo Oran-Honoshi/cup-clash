@@ -1,0 +1,14 @@
+# Signing keystore — never commit; store in a password manager
+*.keystore
+*.jks
+
+# Android build artifacts
+android-project/build/
+android-project/.gradle/
+android-project/local.properties
+
+# Generated script helper
+generate-project.js
+
+# Downloaded SDK
+android-sdk/
