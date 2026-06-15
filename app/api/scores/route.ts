@@ -32,6 +32,7 @@ const TEAM_ALIASES: Record<string, string> = {
   "bosnia and herzegovina":        "bosnia & herzegovina",
   "bosnia-herzegovina":            "bosnia & herzegovina",
   "cape verde":                    "cabo verde",
+  "cape verde islands":            "cabo verde",
   "dr congo":                      "congo dr",
   "democratic republic of congo":  "congo dr",
 };
