@@ -9,7 +9,10 @@ import type { ScoringRules } from "@/lib/types";
 const API_BASE      = "https://v3.football.api-sports.io";
 const LEAGUE_ID     = 1;     // FIFA World Cup
 const SEASON        = 2026;
-const POLL_INTERVAL = 4 * 60 * 1000; // 4 min — ensures a 5-min cron always passes the guard
+const POLL_INTERVAL  = 4 * 60 * 1000; // 4 min — ensures a 5-min cron always passes the guard
+const THIRTY_MIN_MS  = 30 * 60 * 1000;
+const THREE_HOURS_MS = 3 * 60 * 60 * 1000;
+const FOUR_HOURS_MS  = 4 * 60 * 60 * 1000;
 
 const LIVE_STATUSES     = new Set(["1H", "HT", "2H", "ET", "BT", "P", "INT", "LIVE"]);
 const FINISHED_STATUSES = new Set(["FT", "AET", "PEN", "AWD", "WO"]);
@@ -655,7 +658,7 @@ export async function POST(request: NextRequest) {
 
     const { data: dbMatches, error: dbMatchErr } = await sb
       .from("matches")
-      .select("id, home, away, kickoff_at, status, home_score, away_score, api_fixture_id")
+      .select("id, home, away, kickoff_at, status, home_score, away_score, api_fixture_id, minute")
       .gte("kickoff_at", `${yesterday}T00:00:00Z`)
       .lte("kickoff_at", `${tomorrow}T23:59:59Z`);
 
@@ -725,6 +728,123 @@ export async function POST(request: NextRequest) {
           awayScore: f.goals.away ?? 0,
         });
         console.log(`[scores/cron]   Match ${dbMatch.id} just finished — queued for scoring`);
+      }
+    }
+
+    // ── STEP 3b: Stuck live match detector ──────────────────────────────────────
+    // Finds live matches that were missed by the main loop (not in live/today API
+    // endpoints) and force-refreshes them. Hard-closes any match > 4 hours old.
+
+    console.log("[scores/cron] STEP 3b: Checking for stuck live matches...");
+
+    {
+      const justFinishedIds = new Set(newlyFinished.map(m => m.matchId));
+      const dbLiveMatches = (dbMatches ?? []).filter(m =>
+        m.status === "live" &&
+        m.api_fixture_id != null &&
+        !justFinishedIds.has(m.id)
+      );
+
+      if (dbLiveMatches.length === 0) {
+        console.log("[scores/cron] STEP 3b: No live matches in 3-day window to check");
+      } else {
+        console.log(`[scores/cron] STEP 3b: Checking ${dbLiveMatches.length} live match(es) for stuck state`);
+
+        // Batch-fetch last_fetched from live_scores for all live fixtures
+        const { data: lsRows } = await sb
+          .from("live_scores")
+          .select("api_fixture_id, last_fetched")
+          .in("api_fixture_id", dbLiveMatches.map(m => m.api_fixture_id));
+
+        const lastFetchedMap = new Map<number, number>(
+          (lsRows ?? []).map(r => [
+            r.api_fixture_id as number,
+            new Date(r.last_fetched as string).getTime(),
+          ])
+        );
+
+        for (const m of dbLiveMatches) {
+          const ageMs        = now.getTime() - new Date(m.kickoff_at).getTime();
+          const lastFetched  = lastFetchedMap.get(m.api_fixture_id as number) ?? 0;
+          const staleFetchMs = now.getTime() - lastFetched;
+          const isHardFallback = ageMs > FOUR_HOURS_MS;
+
+          const isStuck =
+            isHardFallback ||
+            ageMs > THREE_HOURS_MS ||
+            ((m.minute ?? 0) >= 90 && staleFetchMs > THIRTY_MIN_MS);
+
+          if (!isStuck) continue;
+
+          console.log(
+            `[scores/cron] STEP 3b: Stuck match ${m.id} (${m.home} vs ${m.away}),` +
+            ` age=${Math.round(ageMs / 60000)}min, minute=${m.minute ?? "?"},` +
+            ` staleFetch=${Math.round(staleFetchMs / 60000)}min, hardFallback=${isHardFallback}`
+          );
+
+          const fixtureId = m.api_fixture_id as number;
+
+          // Use scores from the main-loop fixture if already fetched (post-STEP3 values)
+          const mainFixture = fixtures.find(f => f.fixture.id === fixtureId);
+          let resolvedHome = (mainFixture?.goals.home ?? m.home_score ?? 0) as number;
+          let resolvedAway = (mainFixture?.goals.away ?? m.away_score ?? 0) as number;
+          let shouldFinish = isHardFallback;
+
+          if (!seen.has(fixtureId)) {
+            // Not fetched in main loop — re-fetch directly by fixture ID
+            try {
+              const r = await fetch(`${API_BASE}/fixtures?id=${fixtureId}`, { headers: apiHeaders() });
+              const d = await r.json() as { response: APIFixture[] };
+              const af = d.response?.[0];
+              seen.add(fixtureId);
+
+              if (af) {
+                resolvedHome = af.goals.home ?? resolvedHome;
+                resolvedAway = af.goals.away ?? resolvedAway;
+                const apiStatus = af.fixture.status.short;
+                console.log(`[scores/cron] STEP 3b:   API → ${apiStatus} (${resolvedHome}-${resolvedAway})`);
+
+                if (FINISHED_STATUSES.has(apiStatus)) {
+                  shouldFinish = true;
+                } else if (LIVE_STATUSES.has(apiStatus) && !isHardFallback) {
+                  // Still live and not a hard fallback — refresh score/minute only
+                  await sb.from("matches").update({
+                    home_score: resolvedHome,
+                    away_score: resolvedAway,
+                    minute:     af.fixture.status.elapsed ?? m.minute,
+                  }).eq("id", m.id);
+                  console.log(`[scores/cron] STEP 3b:   Match ${m.id} still live (${apiStatus}) — refreshed`);
+                  continue;
+                }
+                // Hard fallback with live API status → shouldFinish stays true (force close)
+              } else {
+                console.warn(`[scores/cron] STEP 3b:   No API data for fixture ${fixtureId}`);
+              }
+            } catch (e) {
+              console.warn(`[scores/cron] STEP 3b:   API error for fixture ${fixtureId}:`, e);
+            }
+          } else if (!isHardFallback) {
+            // Already handled in main loop and not a hard fallback — skip
+            continue;
+          }
+          // Hard fallback + already in main loop: STEP 3 set status=live based on API;
+          // we still force-close it because no match runs longer than 4 hours.
+
+          if (shouldFinish) {
+            const { error: finErr } = await sb
+              .from("matches")
+              .update({ status: "finished", home_score: resolvedHome, away_score: resolvedAway })
+              .eq("id", m.id);
+
+            if (finErr) {
+              console.error(`[scores/cron] STEP 3b:   Failed to force-finish ${m.id}:`, finErr);
+            } else {
+              const label = isHardFallback ? "Hard-forced" : "Force-finished";
+              console.log(`[scores/cron] STEP 3b:   ${label} match ${m.id} → finished (${resolvedHome}-${resolvedAway})`);
+              newlyFinished.push({ matchId: m.id, homeScore: resolvedHome, awayScore: resolvedAway });
+            }
+          }
+        }
       }
     }
 
