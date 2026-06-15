@@ -468,6 +468,58 @@ export function ScheduleClient({
     return () => clearInterval(id);
   }, [hasLive, router]);
 
+  // ── Refetch predictions when the user switches groups ─────────────────────
+  // `groupId` is a prop from the server — it changes (without unmounting) when
+  // router.push updates the URL. We detect that change here, clear stale state,
+  // and fetch fresh predictions for the new group client-side so the user sees
+  // correct data immediately rather than stale inputs from the previous group.
+  useEffect(() => {
+    if (prevGroupIdRef.current === groupId) return;
+    prevGroupIdRef.current = groupId;
+    if (!userId) return;
+
+    let cancelled = false;
+    setPredsLoading(true);
+    setSavedPreds({});
+    setLocalPreds({});
+
+    type GroupPredRow = {
+      match_id: string;
+      home_score: number;
+      away_score: number;
+      points_earned: number | null;
+      is_exact: boolean | null;
+    };
+
+    createClient()
+      .from("group_predictions")
+      .select("match_id, home_score, away_score, points_earned, is_exact")
+      .eq("group_id", groupId)
+      .eq("user_id", userId)
+      .then(({ data }) => {
+        if (cancelled) return;
+        const newSaved: Record<string, UserPrediction> = {};
+        const newLocal: Record<string, LocalPred> = {};
+        for (const p of (data ?? []) as GroupPredRow[]) {
+          newSaved[p.match_id] = {
+            homeScore:    p.home_score,
+            awayScore:    p.away_score,
+            pointsEarned: p.points_earned,
+            isExact:      p.is_exact,
+          };
+          newLocal[p.match_id] = {
+            home: String(p.home_score),
+            away: String(p.away_score),
+          };
+        }
+        setSavedPreds(newSaved);
+        setLocalPreds(newLocal);
+        setPredsLoading(false);
+      });
+
+    return () => { cancelled = true; };
+  }, [groupId, userId]);
+
   // ── Filter state
   const [groupFilter, setGroupFilter]   = useState<string>("All");
   const [stageFilter, setStageFilter]   = useState<string>("All");
@@ -487,8 +539,14 @@ export function ScheduleClient({
   // Persisted predictions (confirmed from DB)
   const [savedPreds, setSavedPreds] = useState<Record<string, UserPrediction>>(initialPredictions);
 
+  // Loading state while fetching predictions for a newly-selected group
+  const [predsLoading, setPredsLoading] = useState(false);
+
   // ── Per-match debounce timers
   const timersRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
+
+  // Track previous groupId so we can detect prop changes without re-running on every render
+  const prevGroupIdRef = useRef(groupId);
 
   const savePred = useCallback(async (matchId: string, home: string, away: string) => {
     if (!userId || !groupId) return;
@@ -586,6 +644,9 @@ export function ScheduleClient({
 
   const switchGroup = (id: string) => {
     setGroupPickerOpen(false);
+    setPredsLoading(true);
+    setSavedPreds({});
+    setLocalPreds({});
     saveSelectedGroup(id);
     router.push(`/schedule?group=${id}`);
   };
@@ -634,7 +695,11 @@ export function ScheduleClient({
               </div>
             </div>
             <div className="flex items-center gap-2 text-[11px] shrink-0" style={{ color: "rgba(255,255,255,0.35)" }}>
-              <span>{predStats.made}/{predStats.total} picks</span>
+              {predsLoading ? (
+                <span style={{ color: "#00D4FF" }}>Loading…</span>
+              ) : (
+                <span>{predStats.made}/{predStats.total} picks</span>
+              )}
               {allGroups.length > 1 && (
                 <ChevronDown size={14} style={{ transform: groupPickerOpen ? "rotate(180deg)" : "none", transition: "transform 0.2s" }} />
               )}
