@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { ChevronDown, Users } from "lucide-react";
 import { FOCUS_RING, FOCUS_RING_INSET } from "@/lib/a11y";
-import { saveSelectedGroup } from "@/lib/group-storage";
+import { useGroupContext } from "@/lib/contexts/group-context";
 
 type HoverMap = Record<string, boolean>;
 
@@ -20,6 +20,7 @@ export function DashboardGroupPicker({
   basePath = "/dashboard",
 }: DashboardGroupPickerProps) {
   const [open, setOpen] = useState(false);
+  const { setSelectedGroupId } = useGroupContext();
 
   // Escape closes the dropdown when it's open.
   useEffect(() => {
@@ -78,7 +79,7 @@ export function DashboardGroupPicker({
                 aria-selected={g.id === activeGroupId}
                 onClick={() => {
                   setOpen(false);
-                  saveSelectedGroup(g.id);
+                  setSelectedGroupId(g.id);
                   router.push(`${basePath}?group=${g.id}`);
                 }}
                 onMouseEnter={() => setHovered(h => ({ ...h, [g.id]: true }))}

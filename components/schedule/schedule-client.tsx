@@ -12,7 +12,7 @@ import { PredictionBadge } from "@/components/predictions/prediction-badge";
 import { createClient } from "@/lib/supabase/client";
 import { WC2026_MATCHES, STAGE_LABELS } from "@/lib/schedule";
 import { cn } from "@/lib/utils";
-import { saveSelectedGroup } from "@/lib/group-storage";
+import { useGroupContext } from "@/lib/contexts/group-context";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -456,6 +456,7 @@ export function ScheduleClient({
   initialPredictions,
 }: ScheduleClientProps) {
   const router = useRouter();
+  const { setSelectedGroupId } = useGroupContext();
 
   // ── Auto-refresh every 60s when a match is live
   const hasLive = useMemo(
@@ -647,7 +648,7 @@ export function ScheduleClient({
     setPredsLoading(true);
     setSavedPreds({});
     setLocalPreds({});
-    saveSelectedGroup(id);
+    setSelectedGroupId(id);
     router.push(`/schedule?group=${id}`);
   };
 

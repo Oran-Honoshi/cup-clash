@@ -9,6 +9,7 @@ import { Flag } from "@/components/ui/flag";
 import { ScoreInputCC } from "@/components/ui/score-input-cc";
 import type { SummaryMatch } from "@/app/(app)/predictions/summary/page";
 import { saveGroupPrediction } from "@/lib/services/predictions";
+import { useGroupContext } from "@/lib/contexts/group-context";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -227,8 +228,14 @@ function ScoreCell({
 export function PredictionsSummaryClient({
   userId, groups, matches, initialPredictions, initialTournamentPicks,
 }: Props) {
+  const { setSelectedGroupId } = useGroupContext();
   const [predictions, setPredictions] = useState(initialPredictions);
   const [filterGroup, setFilterGroup] = useState<string | "all">("all");
+
+  const switchFilterGroup = useCallback((id: string | "all") => {
+    setFilterGroup(id);
+    if (id !== "all") setSelectedGroupId(id);
+  }, [setSelectedGroupId]);
   const [filterStage, setFilterStage] = useState<FilterStage>("all");
   const [filterOnlyPredicted, setFilterOnlyPredicted] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
@@ -330,11 +337,11 @@ export function PredictionsSummaryClient({
               Group
             </div>
             <div className="flex flex-wrap gap-2">
-              <FilterChip active={filterGroup === "all"} onClick={() => setFilterGroup("all")}>
+              <FilterChip active={filterGroup === "all"} onClick={() => switchFilterGroup("all")}>
                 All Groups
               </FilterChip>
               {groups.map(g => (
-                <FilterChip key={g.id} active={filterGroup === g.id} onClick={() => setFilterGroup(g.id)}>
+                <FilterChip key={g.id} active={filterGroup === g.id} onClick={() => switchFilterGroup(g.id)}>
                   {g.name}
                 </FilterChip>
               ))}

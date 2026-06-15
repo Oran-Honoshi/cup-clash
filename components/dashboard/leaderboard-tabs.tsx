@@ -21,11 +21,12 @@ const TABS: Array<{ id: Tab; label: string; mobileLabel: string; icon: typeof Tr
 interface LeaderboardTabsProps {
   members: Member[];
   currentUserId?: string;
+  groupId?: string;
   isAdFree?: boolean;
   isCorporate?: boolean;
 }
 
-export function LeaderboardTabs({ members, currentUserId = "1", isAdFree, isCorporate }: LeaderboardTabsProps) {
+export function LeaderboardTabs({ members, currentUserId = "1", groupId, isAdFree, isCorporate }: LeaderboardTabsProps) {
   const [active, setActive] = useState<Tab>("predictions");
 
   return (
@@ -61,7 +62,7 @@ export function LeaderboardTabs({ members, currentUserId = "1", isAdFree, isCorp
 
       {/* Tab content */}
       {active === "predictions" && (
-        <Leaderboard members={members} currentUserId={currentUserId} isAdFree={isAdFree} isCorporate={isCorporate} />
+        <Leaderboard members={members} currentUserId={currentUserId} groupId={groupId} isAdFree={isAdFree} isCorporate={isCorporate} />
       )}
       {active === "scorers"     && <TopScorersLeaderboard />}
       {active === "assisters"   && <TopAssistersLeaderboard />}

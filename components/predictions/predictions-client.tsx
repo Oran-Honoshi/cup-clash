@@ -8,7 +8,7 @@ import { TournamentPicks } from "@/components/dashboard/tournament-picks";
 import { BonusQuestions } from "@/components/predictions/bonus-questions";
 import { GuestStore } from "@/components/ui/guest-signup-modal";
 import { useLocale } from "@/components/i18n/locale-provider";
-import { saveSelectedGroup } from "@/lib/group-storage";
+import { useGroupContext } from "@/lib/contexts/group-context";
 
 // ── Shared glass tokens ───────────────────────────────────────────────────────
 const glass = {
@@ -45,6 +45,7 @@ export function PredictionsClient({
   const [groupPickerOpen, setGroupPickerOpen] = useState(false);
   const [migrated,        setMigrated]        = useState(false);
   const router = useRouter();
+  const { setSelectedGroupId } = useGroupContext();
 
   const TABS = [
     { id: "group"      as const, label: t("pred_groupStage"),  icon: Target, sub: t("pred_grp_subtitle") },
@@ -70,7 +71,7 @@ export function PredictionsClient({
     }).catch(err => console.error("[migrate guest picks]", err));
   }, [migrateGuestPicks, migrated, groupId, userId]);
 
-  const switchGroup = (id: string) => { setGroupPickerOpen(false); saveSelectedGroup(id); router.push(`/predictions?group=${id}`); };
+  const switchGroup = (id: string) => { setGroupPickerOpen(false); setSelectedGroupId(id); router.push(`/predictions?group=${id}`); };
 
   return (
     <div className="flex flex-col space-y-4 max-w-2xl mx-auto w-full">

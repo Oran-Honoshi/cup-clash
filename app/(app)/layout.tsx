@@ -4,9 +4,11 @@ import { AppHeader } from "@/components/app/app-header";
 import { PageTransition } from "@/components/app/page-transition";
 import { AppInstallBanner } from "@/components/app/install-banner";
 import { JoinPromptModal } from "@/components/join/join-prompt-modal";
+import { GroupProvider } from "@/lib/contexts/group-context";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
+    <GroupProvider>
     <div className="relative min-h-screen flex overflow-x-clip">
 
       {/* ── Stadium background ── */}
@@ -29,5 +31,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       <MobileNav />
       <JoinPromptModal />
     </div>
+    </GroupProvider>
   );
 }
