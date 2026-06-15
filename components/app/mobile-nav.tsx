@@ -157,7 +157,7 @@ export function MobileNav() {
           {NAV_ITEMS_DEF.map((item) => {
             const label = "labelKey" in item ? t(item.labelKey) : item.staticLabel;
             const Icon  = item.icon;
-            const active = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href));
+            const active = pathname === item.href || (item.href !== "/dashboard" && item.href !== "/predictions" && pathname.startsWith(item.href));
             return (
               <Link
                 key={item.href}

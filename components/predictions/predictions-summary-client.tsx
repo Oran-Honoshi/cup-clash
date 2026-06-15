@@ -62,7 +62,7 @@ const TOURN_PICK_LABELS: Record<string, string> = {
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function isMatchFinished(m: SummaryMatch) {
-  return m.matchStatus === "finished" || m.homeScore !== null;
+  return m.matchStatus === "finished";
 }
 
 function isMatchLocked(m: SummaryMatch) {
