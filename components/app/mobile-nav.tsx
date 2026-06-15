@@ -2,30 +2,35 @@
 
 import { useRef, useEffect, useState } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import {
-  LayoutDashboard, Users, Target, Trophy,
-  GitBranch, Brain, BarChart2, User, Bell, MoreHorizontal, X, MessageCircle, CalendarDays,
+  Home, Target, CalendarDays, LayoutGrid,
+  GitBranch, Brain, BarChart2, User, Bell, MoreHorizontal, X, MessageCircle, Users, Trophy,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { useLocale } from "@/components/i18n/locale-provider";
 import { createPortal } from "react-dom";
+import type { Translations } from "@/lib/i18n";
 
-const NAV_ITEMS = [
-  { href: "/dashboard",   key: "nav_home"    as const, icon: LayoutDashboard },
-  { href: "/groups",      key: "nav_groups"  as const, icon: Users           },
-  { href: "/predictions", key: "nav_mybets"  as const, icon: Target          },
-  { href: "/leaderboard", key: "nav_table"   as const, icon: Trophy          },
+type NavItemDef =
+  | { href: string; labelKey: keyof Translations; icon: React.ElementType }
+  | { href: string; staticLabel: string; icon: React.ElementType };
+
+const NAV_ITEMS_DEF: NavItemDef[] = [
+  { href: "/dashboard",           labelKey: "nav_home"    as const, icon: Home       },
+  { href: "/predictions",         labelKey: "nav_mybets"  as const, icon: Target     },
+  { href: "/schedule",            staticLabel: "Schedule",           icon: CalendarDays },
+  { href: "/predictions/summary", staticLabel: "Summary",            icon: LayoutGrid   },
 ];
 
 const MORE_ITEMS = [
-  { href: "/schedule",      label: "Schedule",        icon: CalendarDays  },
+  { href: "/groups",        label: "My Groups",      icon: Users        },
+  { href: "/leaderboard",   label: "Leaderboard",    icon: Trophy       },
   { href: "/chat",          label: "Chat",            icon: MessageCircle },
-  { href: "/bracket",       label: "Bracket",         icon: GitBranch     },
-  { href: "/trivia",        label: "Trivia",           icon: Brain         },
-  { href: "/standings",     label: "Standings",        icon: BarChart2     },
-  { href: "/profile",       label: "Profile",          icon: User          },
-  { href: "/notifications", label: "Notifications",    icon: Bell          },
+  { href: "/bracket",       label: "Bracket",         icon: GitBranch    },
+  { href: "/trivia",        label: "Trivia",           icon: Brain        },
+  { href: "/standings",     label: "Standings",        icon: BarChart2    },
+  { href: "/profile",       label: "Profile",          icon: User         },
+  { href: "/notifications", label: "Notifications",    icon: Bell         },
 ];
 
 function MoreDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
@@ -149,13 +154,15 @@ export function MobileNav() {
           className="flex items-center justify-around px-2 py-2"
           style={{ paddingBottom: "max(8px, env(safe-area-inset-bottom))" }}
         >
-          {NAV_ITEMS.map(({ href, key, icon: Icon }) => {
-            const active = pathname === href || (href !== "/dashboard" && pathname.startsWith(href));
+          {NAV_ITEMS_DEF.map((item) => {
+            const label = "labelKey" in item ? t(item.labelKey) : item.staticLabel;
+            const Icon  = item.icon;
+            const active = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href));
             return (
               <Link
-                key={href}
-                href={href}
-                className="flex flex-col items-center gap-1 px-3 py-1.5 rounded-xl transition-all min-w-0"
+                key={item.href}
+                href={item.href}
+                className="flex flex-col items-center gap-1 px-2 py-1.5 rounded-xl transition-all min-w-0 flex-1"
                 style={active ? { background: "rgba(0,255,136,0.1)" } : undefined}
               >
                 <Icon
@@ -167,7 +174,7 @@ export function MobileNav() {
                   className="text-[10px] font-bold uppercase tracking-wider"
                   style={{ color: active ? "#00FF88" : "rgba(255,255,255,0.4)" }}
                 >
-                  {t(key)}
+                  {label}
                 </span>
                 {active && (
                   <div className="w-4 h-0.5 rounded-full" style={{ background: "#00FF88" }} />

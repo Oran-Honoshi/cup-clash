@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, Users, Trophy, Target, BarChart2,
-  GitBranch, Brain, Bell, Shield, LogOut, Settings, MessageCircle, Trash2, CalendarDays,
+  GitBranch, Brain, Bell, Shield, LogOut, Settings, MessageCircle, Trash2, CalendarDays, LayoutGrid,
 } from "lucide-react";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
@@ -197,6 +197,22 @@ export function AppSidebar() {
         >
           <CalendarDays size={17} strokeWidth={pathname === "/schedule" ? 2.5 : 1.75} />
           Schedule
+        </Link>
+
+        {/* Predictions Summary */}
+        <Link href="/predictions/summary"
+          className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold transition-all"
+          style={pathname.startsWith("/predictions/summary") ? {
+            background: "rgba(0, 255, 136, 0.12)",
+            color: "#00FF88",
+            border: "1px solid rgba(0, 255, 136, 0.25)",
+            boxShadow: "0 0 12px rgba(0,255,136,0.08)",
+          } : { color: "rgba(255,255,255,0.55)" }}
+          onMouseEnter={e => { if (!pathname.startsWith("/predictions/summary")) { (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.9)"; (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.06)"; } }}
+          onMouseLeave={e => { if (!pathname.startsWith("/predictions/summary")) { (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.55)"; (e.currentTarget as HTMLElement).style.background = "transparent"; } }}
+        >
+          <LayoutGrid size={17} strokeWidth={pathname.startsWith("/predictions/summary") ? 2.5 : 1.75} />
+          Summary
         </Link>
 
         {/* Chat */}
