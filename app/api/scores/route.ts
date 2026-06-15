@@ -696,6 +696,7 @@ export async function POST(request: NextRequest) {
             minute: g.minute,
             extra:  g.extra,
             player: g.player_name,
+            assist: g.assist_name,
             team:   g.team_name,
             type:   g.detail === "Own Goal" ? "own_goal"
                   : g.detail === "Penalty"  ? "penalty"
@@ -831,9 +832,61 @@ export async function POST(request: NextRequest) {
           // we still force-close it because no match runs longer than 4 hours.
 
           if (shouldFinish) {
+            // Ensure events are fetched for this fixture
+            if (!eventsMap.has(fixtureId)) {
+              const rawEvts = await fetchEvents(fixtureId);
+              eventsMap.set(fixtureId, parseEvents(rawEvts));
+              console.log(`[scores/cron] STEP 3b:   Fetched events for fixture ${fixtureId}: ${rawEvts.length} event(s)`);
+            }
+
+            const stuckParsed = eventsMap.get(fixtureId);
+            const stuckMatchEvents = stuckParsed
+              ? stuckParsed.goals.map(g => ({
+                  minute: g.minute,
+                  extra:  g.extra,
+                  player: g.player_name,
+                  assist: g.assist_name,
+                  team:   g.team_name,
+                  type:   g.detail === "Own Goal" ? "own_goal"
+                        : g.detail === "Penalty"  ? "penalty"
+                        :                           "goal",
+                }))
+              : null;
+
+            // Sync live_scores → "FT" + fresh events so STEP 5 aggregates player stats correctly
+            const { data: lsRow } = await sb
+              .from("live_scores")
+              .select("raw_data")
+              .eq("api_fixture_id", fixtureId)
+              .maybeSingle();
+
+            if (lsRow) {
+              const existingRaw = lsRow.raw_data as Record<string, unknown>;
+              await sb.from("live_scores").update({
+                status:     "FT",
+                home_score: resolvedHome,
+                away_score: resolvedAway,
+                raw_data: {
+                  ...existingRaw,
+                  status_short: "FT",
+                  status_long:  "Match Finished",
+                  home_score:   resolvedHome,
+                  away_score:   resolvedAway,
+                  goals: stuckParsed?.goals ?? existingRaw.goals ?? [],
+                  cards: stuckParsed?.cards ?? existingRaw.cards ?? [],
+                },
+              }).eq("api_fixture_id", fixtureId);
+              console.log(`[scores/cron] STEP 3b:   Synced live_scores fixture ${fixtureId} → FT`);
+            }
+
             const { error: finErr } = await sb
               .from("matches")
-              .update({ status: "finished", home_score: resolvedHome, away_score: resolvedAway })
+              .update({
+                status:       "finished",
+                home_score:   resolvedHome,
+                away_score:   resolvedAway,
+                match_events: stuckMatchEvents,
+              })
               .eq("id", m.id);
 
             if (finErr) {
