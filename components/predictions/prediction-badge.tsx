@@ -18,10 +18,13 @@ const CFG = {
 } as const;
 
 export function PredictionBadge({ type, points, size = "md" }: PredictionBadgeProps) {
+  // "none" means no prediction was made — callers render their own dash if needed
+  if (type === "none") return null;
+
   const { Icon, label, color, bg, border } = CFG[type];
-  const iconSize  = size === "sm" ? 9  : 11;
-  const fontSize  = size === "sm" ? 9  : 10;
-  const px        = size === "sm" ? "4px 7px" : "4px 9px";
+  const iconSize = size === "sm" ? 9  : 11;
+  const fontSize = size === "sm" ? 9  : 10;
+  const px       = size === "sm" ? "4px 7px" : "4px 9px";
 
   return (
     <span className="inline-flex items-center gap-1.5">
@@ -32,7 +35,7 @@ export function PredictionBadge({ type, points, size = "md" }: PredictionBadgePr
         <Icon size={iconSize} />
         {label}
       </span>
-      {type !== "none" && points !== undefined && (
+      {points !== undefined && (
         <span
           className="font-mono font-bold"
           style={{ color: type === "missed" ? "rgba(255,255,255,0.3)" : color, fontSize }}

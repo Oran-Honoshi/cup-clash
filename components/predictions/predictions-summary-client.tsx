@@ -62,7 +62,7 @@ const TOURN_PICK_LABELS: Record<string, string> = {
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function isMatchFinished(m: SummaryMatch) {
-  return m.homeScore != null && m.awayScore != null;
+  return m.matchStatus === "finished";
 }
 
 function isMatchLocked(m: SummaryMatch) {
@@ -84,13 +84,32 @@ function fmtTime(m: SummaryMatch) {
 // ── Result badge ──────────────────────────────────────────────────────────────
 
 function ResultBadge({ pred, match }: { pred: PredData | undefined; match: SummaryMatch }) {
+  // Only show result badges for truly finished matches
   if (!isMatchFinished(match)) return null;
+  // No prediction → gray dash
   if (!pred) {
     return <Minus size={13} style={{ color: "rgba(255,255,255,0.25)" }} />;
   }
+  // Exact score (trust DB flag OR verify against actual scores)
   if (pred.isExact) {
     return <Trophy size={13} style={{ color: "#FBBF24" }} />;
   }
+  // Compute outcome from actual scores (don't rely solely on pointsEarned=0,
+  // which can be zero for recently-finished matches that haven't been scored yet)
+  const actualH = match.homeScore;
+  const actualA = match.awayScore;
+  if (actualH != null && actualA != null) {
+    const predW   = pred.homeScore > pred.awayScore ? "H" : pred.homeScore < pred.awayScore ? "A" : "D";
+    const actualW = actualH > actualA ? "H" : actualH < actualA ? "A" : "D";
+    if (pred.homeScore === actualH && pred.awayScore === actualA) {
+      return <Trophy size={13} style={{ color: "#FBBF24" }} />;
+    }
+    if (predW === actualW) {
+      return <Check size={13} style={{ color: "#00FF88" }} />;
+    }
+    return <X size={13} style={{ color: "#f87171" }} />;
+  }
+  // Fallback: use stored points if actual scores somehow unavailable
   if (pred.pointsEarned > 0) {
     return <Check size={13} style={{ color: "#00FF88" }} />;
   }

@@ -18,6 +18,7 @@ function sbAdmin() {
 export interface SummaryMatch extends ScheduleMatch {
   homeScore: number | null;
   awayScore: number | null;
+  matchStatus: string | null;
 }
 
 export default async function PredictionsSummaryPage() {
@@ -86,7 +87,7 @@ export default async function PredictionsSummaryPage() {
       .not("pred_type", "eq", "match"),
     admin
       .from("matches")
-      .select("id, home_score, away_score")
+      .select("id, home_score, away_score, status")
       .not("home_score", "is", null),
   ]);
 
@@ -130,14 +131,15 @@ export default async function PredictionsSummaryPage() {
   }
 
   // Merge schedule with actual DB scores
-  const dbScores: Record<string, { homeScore: number | null; awayScore: number | null }> = {};
-  for (const row of (dbMatchResult.data ?? []) as Array<{ id: string; home_score: number | null; away_score: number | null }>) {
-    dbScores[row.id] = { homeScore: row.home_score, awayScore: row.away_score };
+  const dbScores: Record<string, { homeScore: number | null; awayScore: number | null; matchStatus: string | null }> = {};
+  for (const row of (dbMatchResult.data ?? []) as Array<{ id: string; home_score: number | null; away_score: number | null; status: string | null }>) {
+    dbScores[row.id] = { homeScore: row.home_score, awayScore: row.away_score, matchStatus: row.status };
   }
   const matches: SummaryMatch[] = WC2026_MATCHES.map(m => ({
     ...m,
-    homeScore: dbScores[m.id]?.homeScore ?? null,
-    awayScore: dbScores[m.id]?.awayScore ?? null,
+    homeScore:   dbScores[m.id]?.homeScore   ?? null,
+    awayScore:   dbScores[m.id]?.awayScore   ?? null,
+    matchStatus: dbScores[m.id]?.matchStatus ?? null,
   }));
 
   return (
