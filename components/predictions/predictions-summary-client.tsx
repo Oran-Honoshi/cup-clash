@@ -62,10 +62,11 @@ const TOURN_PICK_LABELS: Record<string, string> = {
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function isMatchFinished(m: SummaryMatch) {
-  return m.matchStatus === "finished";
+  return m.matchStatus === "finished" || m.homeScore !== null;
 }
 
 function isMatchLocked(m: SummaryMatch) {
+  if (isMatchFinished(m)) return false;
   const kickoff = new Date(m.utcTime).getTime();
   return Date.now() >= kickoff - 5 * 60 * 1000;
 }
@@ -73,12 +74,20 @@ function isMatchLocked(m: SummaryMatch) {
 function fmtScore(h: number, a: number) { return `${h}–${a}`; }
 
 function fmtDate(m: SummaryMatch) {
-  const d = new Date(m.utcTime);
-  return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  return new Date(m.utcTime).toLocaleDateString(undefined, {
+    timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    day: "numeric",
+    month: "short",
+  });
 }
 
 function fmtTime(m: SummaryMatch) {
-  return m.time + " " + m.timezone;
+  return new Date(m.utcTime).toLocaleTimeString(undefined, {
+    timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: false,
+  });
 }
 
 // ── Result badge ──────────────────────────────────────────────────────────────
