@@ -23,26 +23,32 @@ interface PlayerDrawerProps {
 export function PlayerDrawer({ userId, groupId, name, country, points, rank, open, onClose }: PlayerDrawerProps) {
   const [history,      setHistory]      = useState<MemberPrediction[]>([]);
   const [loading,      setLoading]      = useState(false);
-  const [totalPoints,  setTotalPoints]  = useState(points);
+  const [dataLoaded,   setDataLoaded]   = useState(false);
   const [exactCount,   setExactCount]   = useState(0);
   const [outcomeCount, setOutcomeCount] = useState(0);
   const [missedCount,  setMissedCount]  = useState(0);
   const [closeHover,   setCloseHover]   = useState(false);
 
+  // Derive total directly from history so tile and list are always in sync.
+  // Fall back to the leaderboard prop while loading or on API failure.
+  const totalPoints = dataLoaded
+    ? history.reduce((s, i) => s + i.pts, 0)
+    : points;
+
   useEffect(() => {
     if (!open || !userId || !groupId) return;
     setLoading(true);
+    setDataLoaded(false);
     setHistory([]);
-    setTotalPoints(points);
 
     fetch(`/api/member-predictions?userId=${encodeURIComponent(userId)}&groupId=${encodeURIComponent(groupId)}`)
       .then(r => r.json())
       .then((data: MemberPredictionsResponse) => {
         setHistory(data.history ?? []);
-        setTotalPoints(data.stats.totalPoints);
         setExactCount(data.stats.exactCount);
         setOutcomeCount(data.stats.outcomeCount);
         setMissedCount(data.stats.missedCount);
+        setDataLoaded(true);
       })
       .catch(() => { /* silently fail — UI already shows empty state */ })
       .finally(() => setLoading(false));
