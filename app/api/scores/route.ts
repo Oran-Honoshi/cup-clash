@@ -27,7 +27,6 @@ const TEAM_ALIASES: Record<string, string> = {
   "united states":                 "usa",
   "curacao":                       "curaçao",
   "iran":                          "ir iran",
-  "korea republic":                "south korea",
   "bosnia and herzegovina":        "bosnia & herzegovina",
   "bosnia-herzegovina":            "bosnia & herzegovina",
   "cape verde":                    "cabo verde",
