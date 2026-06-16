@@ -68,7 +68,8 @@ export async function getUserGroups(userId: string): Promise<UserGroupSummary[]>
     const { data: allPts } = await sb()
       .from("group_predictions")
       .select("user_id, points_earned")
-      .eq("group_id", g.id);
+      .eq("group_id", g.id)
+      .limit(10000);
 
     const { data: allBonusPts } = await sb()
       .from("bonus_answers")

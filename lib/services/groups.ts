@@ -127,10 +127,13 @@ export async function getMembers(groupId: string): Promise<Member[]> {
   if (error) throw error;
   if (!data?.length) return [];
 
+  // PostgREST default cap is 1000 rows — large groups exceed it, silently
+  // dropping predictions. Use an explicit limit well above any real group size.
   const { data: pts } = await sbAdmin()
     .from("group_predictions")
     .select("user_id, points_earned")
-    .eq("group_id", groupId);
+    .eq("group_id", groupId)
+    .limit(10000);
 
   const pointsMap: Record<string, number> = {};
   (pts ?? []).forEach((p: { user_id: string; points_earned: number }) => {
