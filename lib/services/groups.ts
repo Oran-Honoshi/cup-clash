@@ -127,27 +127,14 @@ export async function getMembers(groupId: string): Promise<Member[]> {
   if (error) throw error;
   if (!data?.length) return [];
 
-  // PostgREST default cap is 1000 rows — large groups exceed it, silently
-  // dropping predictions. Use an explicit limit well above any real group size.
-  const { data: pts } = await sbAdmin()
-    .from("group_predictions")
-    .select("user_id, points_earned")
-    .eq("group_id", groupId)
-    .limit(10000);
+  // Aggregate via SQL function — avoids PostgREST's server-side row cap
+  // which silently truncates large groups when fetching raw rows.
+  const { data: ptRows } = await sbAdmin()
+    .rpc("get_group_member_points", { p_group_id: groupId });
 
   const pointsMap: Record<string, number> = {};
-  (pts ?? []).forEach((p: { user_id: string; points_earned: number }) => {
-    pointsMap[p.user_id] = (pointsMap[p.user_id] ?? 0) + (p.points_earned ?? 0);
-  });
-
-  // Add bonus question points
-  const { data: bonusPts } = await sbAdmin()
-    .from("bonus_answers")
-    .select("user_id, points_earned")
-    .eq("group_id", groupId);
-
-  (bonusPts ?? []).forEach((b: { user_id: string; points_earned: number }) => {
-    pointsMap[b.user_id] = (pointsMap[b.user_id] ?? 0) + (b.points_earned ?? 0);
+  ((ptRows ?? []) as { user_id: string; total_points: number }[]).forEach(r => {
+    pointsMap[r.user_id] = Number(r.total_points ?? 0);
   });
 
   return (data as unknown as Array<{
