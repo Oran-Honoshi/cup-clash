@@ -23,6 +23,7 @@ interface PlayerDrawerProps {
 export function PlayerDrawer({ userId, groupId, name, country, points, rank, open, onClose }: PlayerDrawerProps) {
   const [history,      setHistory]      = useState<MemberPrediction[]>([]);
   const [loading,      setLoading]      = useState(false);
+  const [totalPoints,  setTotalPoints]  = useState(points);
   const [exactCount,   setExactCount]   = useState(0);
   const [outcomeCount, setOutcomeCount] = useState(0);
   const [missedCount,  setMissedCount]  = useState(0);
@@ -32,11 +33,13 @@ export function PlayerDrawer({ userId, groupId, name, country, points, rank, ope
     if (!open || !userId || !groupId) return;
     setLoading(true);
     setHistory([]);
+    setTotalPoints(points);
 
     fetch(`/api/member-predictions?userId=${encodeURIComponent(userId)}&groupId=${encodeURIComponent(groupId)}`)
       .then(r => r.json())
       .then((data: MemberPredictionsResponse) => {
         setHistory(data.history ?? []);
+        setTotalPoints(data.stats.totalPoints);
         setExactCount(data.stats.exactCount);
         setOutcomeCount(data.stats.outcomeCount);
         setMissedCount(data.stats.missedCount);
@@ -100,7 +103,7 @@ export function PlayerDrawer({ userId, groupId, name, country, points, rank, ope
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-bold" style={{ color: "#00D4FF" }}>Rank #{rank}</span>
                     <span className="text-xs" style={{ color: "rgba(255,255,255,0.3)" }}>·</span>
-                    <span className="text-xs font-black" style={{ color: "white" }}>{points} pts</span>
+                    <span className="text-xs font-black" style={{ color: "white" }}>{totalPoints} pts</span>
                   </div>
                 </div>
               </div>
@@ -123,7 +126,7 @@ export function PlayerDrawer({ userId, groupId, name, country, points, rank, ope
             {/* Stats — 2×2 grid */}
             <div className="grid grid-cols-2 gap-3 px-5 py-4">
               {[
-                { icon: Trophy,    label: "Total pts",  value: points,       color: "#0891B2" },
+                { icon: Trophy,    label: "Total pts",  value: totalPoints,  color: "#0891B2" },
                 { icon: Target,    label: "Exact",      value: exactCount,   color: "#facc15" },
                 { icon: TrendingUp,label: "Correct",    value: outcomeCount, color: "#00FF88" },
                 { icon: XCircle,   label: "Missed",     value: missedCount,  color: "#f87171" },

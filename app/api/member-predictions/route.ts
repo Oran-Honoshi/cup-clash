@@ -90,9 +90,18 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  console.log("[member-predictions] userId:", userId, "groupId:", groupId, "rows returned:", preds.length, "matches found:", Object.keys(matchMap).length);
+  // Bonus question points — included in leaderboard total, must be here too
+  const { data: bonusRows } = await sb
+    .from("bonus_answers")
+    .select("points_earned")
+    .eq("user_id", userId)
+    .eq("group_id", groupId);
+  const bonusPoints = ((bonusRows ?? []) as { points_earned: number | null }[])
+    .reduce((s, b) => s + (b.points_earned ?? 0), 0);
 
-  let totalPoints  = 0;
+  console.log("[member-predictions] userId:", userId, "groupId:", groupId, "rows returned:", preds.length, "matches found:", Object.keys(matchMap).length, "bonusPoints:", bonusPoints);
+
+  let matchPoints  = 0;
   let exactCount   = 0;
   let outcomeCount = 0;
   let missedCount  = 0;
@@ -105,7 +114,7 @@ export async function GET(req: NextRequest) {
     const pts  = p.points_earned ?? 0;
     const isEx = p.is_exact ?? false;
 
-    totalPoints += pts;
+    matchPoints += pts;
 
     if (isEx) {
       exactCount++;
@@ -131,7 +140,7 @@ export async function GET(req: NextRequest) {
   }
 
   const body: MemberPredictionsResponse = {
-    stats: { totalPoints, exactCount, outcomeCount, missedCount },
+    stats: { totalPoints: matchPoints + bonusPoints, exactCount, outcomeCount, missedCount },
     history,
   };
 
