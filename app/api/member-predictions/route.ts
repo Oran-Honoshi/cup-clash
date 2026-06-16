@@ -32,21 +32,23 @@ export interface MemberPredictionsResponse {
   history: MemberPrediction[];
 }
 
-type RawRow = {
+type PredRow = {
   match_id:      string;
   home_score:    number | null;
   away_score:    number | null;
   points_earned: number | null;
   is_exact:      boolean | null;
-  matches: {
-    home:       string;
-    away:       string;
-    home_flag:  string | null;
-    away_flag:  string | null;
-    home_score: number | null;
-    away_score: number | null;
-    status:     string;
-  } | null;
+};
+
+type MatchRow = {
+  id:         string;
+  home:       string;
+  away:       string;
+  home_flag:  string | null;
+  away_flag:  string | null;
+  home_score: number | null;
+  away_score: number | null;
+  status:     string;
 };
 
 export async function GET(req: NextRequest) {
@@ -59,34 +61,48 @@ export async function GET(req: NextRequest) {
 
   const sb = sbAdmin();
 
-  const { data: rows, error } = await sb
+  // group_predictions.match_id has no FK to matches, so PostgREST auto-join
+  // always returns null. Fetch predictions and matches separately, join in JS.
+  const { data: predRows, error: predError } = await sb
     .from("group_predictions")
-    .select(`
-      match_id, home_score, away_score, points_earned, is_exact,
-      matches ( home, away, home_flag, away_flag, home_score, away_score, status )
-    `)
+    .select("match_id, home_score, away_score, points_earned, is_exact")
     .eq("user_id", userId)
     .eq("group_id", groupId)
     .not("match_id", "is", null)
     .order("created_at", { ascending: false });
 
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+  if (predError) {
+    return NextResponse.json({ error: predError.message }, { status: 500 });
   }
 
-  const finished = ((rows ?? []) as unknown as RawRow[])
-    .filter(p => p.matches?.status === "finished");
+  const preds = (predRows ?? []) as PredRow[];
+
+  const matchIds = [...new Set(preds.map(p => p.match_id).filter(Boolean))];
+
+  const matchMap: Record<string, MatchRow> = {};
+  if (matchIds.length > 0) {
+    const { data: matchRows } = await sb
+      .from("matches")
+      .select("id, home, away, home_flag, away_flag, home_score, away_score, status")
+      .in("id", matchIds);
+    for (const m of (matchRows ?? []) as MatchRow[]) {
+      matchMap[m.id] = m;
+    }
+  }
+
+  console.log("[member-predictions] userId:", userId, "groupId:", groupId, "rows returned:", preds.length, "matches found:", Object.keys(matchMap).length);
 
   let totalPoints  = 0;
   let exactCount   = 0;
   let outcomeCount = 0;
   let missedCount  = 0;
-
   const history: MemberPrediction[] = [];
 
-  for (const p of finished) {
-    const m   = p.matches!;
-    const pts = p.points_earned ?? 0;
+  for (const p of preds) {
+    const m = matchMap[p.match_id];
+    if (!m || m.status !== "finished") continue;
+
+    const pts  = p.points_earned ?? 0;
     const isEx = p.is_exact ?? false;
 
     totalPoints += pts;
