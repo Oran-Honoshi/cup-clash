@@ -12,16 +12,31 @@ import { ScoreInputCC } from "@/components/ui/score-input-cc";
 import { LiveDot } from "@/components/ui/live-dot";
 import { FOCUS_RING } from "@/lib/a11y";
 import { cn } from "@/lib/utils";
+import { PredictionDistribution } from "@/components/dashboard/prediction-distribution";
 import type { Match } from "@/lib/types";
 
 interface NextMatchCardProps {
-  match:    Match;
-  groupId?: string;
+  match:      Match;
+  groupId?:   string;
+  cardLabel?: string;
+}
+
+function getStageLabel(match: Match): string {
+  if (match.stage === "Group" && match.group) return `Group ${match.group}`;
+  const labels: Record<string, string> = {
+    R32: "Round of 32",
+    R16: "Round of 16",
+    QF:  "Quarter-final",
+    SF:  "Semi-final",
+    "3rd": "3rd Place",
+    Final: "Final",
+  };
+  return labels[match.stage] ?? match.stage;
 }
 
 type SaveState = "idle" | "saving" | "saved" | "error" | "locked";
 
-export function NextMatchCard({ match, groupId = "" }: NextMatchCardProps) {
+export function NextMatchCard({ match, groupId = "", cardLabel }: NextMatchCardProps) {
   const [homeScore, setHomeScore] = useState("");
   const [awayScore, setAwayScore] = useState("");
   const [saveState, setSaveState] = useState<SaveState>("idle");
@@ -118,7 +133,20 @@ export function NextMatchCard({ match, groupId = "" }: NextMatchCardProps) {
               }}
             >
               {isLive && <LiveDot />}
-              {isLive ? "Live Match" : "Next Match"}
+              {cardLabel ?? (isLive ? "Live Match" : "Next Match")}
+            </div>
+            <div
+              style={{
+                fontSize: 9,
+                fontWeight: 700,
+                textTransform: "uppercase",
+                letterSpacing: "0.1em",
+                color: "rgba(255,255,255,0.35)",
+                fontFamily: "var(--font-ui)",
+                marginBottom: 2,
+              }}
+            >
+              {getStageLabel(match)}
             </div>
             <div className="text-xs font-mono" style={{ color: "rgba(255,255,255,0.4)" }} suppressHydrationWarning>
               {formattedTime}
@@ -224,6 +252,9 @@ export function NextMatchCard({ match, groupId = "" }: NextMatchCardProps) {
             </Button>
           )}
         </div>
+
+        {/* Prediction distribution (anonymous, upcoming only) */}
+        {groupId && <PredictionDistribution matchId={match.id} groupId={groupId} />}
       </div>
     </div>
   );

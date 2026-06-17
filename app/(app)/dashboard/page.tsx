@@ -2,9 +2,10 @@ import { serverT } from "@/lib/server-locale";
 export const dynamic = "force-dynamic";
 
 import { createClient as createAdminClient } from "@supabase/supabase-js";
-import { Leaderboard }     from "@/components/dashboard/leaderboard";
-import { NextMatchCard }   from "@/components/dashboard/next-match-card";
-import { StatCards }       from "@/components/dashboard/stat-cards";
+import { Leaderboard }       from "@/components/dashboard/leaderboard";
+import { MatchCarousel }    from "@/components/dashboard/match-carousel";
+import { MiniLeaderboard }  from "@/components/dashboard/mini-leaderboard";
+import { StatCards }        from "@/components/dashboard/stat-cards";
 import { DashboardPopups } from "@/components/dashboard/dashboard-popups";
 import { WallOfShame }     from "@/components/dashboard/wall-of-shame";
 import { DashboardGroupPicker } from "@/components/dashboard/dashboard-group-picker";
@@ -15,7 +16,7 @@ import { DashboardEmptyState } from "@/components/dashboard/empty-state";
 import { AdBanner } from "@/components/ads/ad-banner";
 import { GroupPersistRedirect } from "@/components/app/group-persist-redirect";
 import { getMembers, getGroup } from "@/lib/services/groups";
-import { getNextMatch }    from "@/lib/services/matches";
+import { getUpcomingMatches } from "@/lib/services/matches";
 import { getCurrentUserProfile } from "@/lib/services/user-group";
 import Link from "next/link";
 
@@ -128,10 +129,10 @@ export default async function DashboardPage({
   const activeGroup = allGroups.find(g => g.id === activeGroupId)!;
 
   type AdStatus = { is_ad_free: boolean; groups: { is_corporate_paid: boolean } | null } | null;
-  const [members, group, nextMatch, adStatusResult] = await Promise.all([
+  const [members, group, upcomingMatches, adStatusResult] = await Promise.all([
     getMembers(activeGroupId),
     getGroup(activeGroupId),
-    getNextMatch(),
+    getUpcomingMatches(5),
     sbAdmin()
       .from("group_members")
       .select("is_ad_free, groups(is_corporate_paid)")
@@ -196,7 +197,14 @@ export default async function DashboardPage({
       <div className="grid gap-5 lg:grid-cols-12">
         {/* Primary action — first on mobile, right column on desktop */}
         <div className="lg:col-span-5 space-y-5 order-first lg:order-last">
-          {nextMatch && <NextMatchCard match={nextMatch} groupId={activeGroupId} />}
+          {upcomingMatches.length > 0 && (
+            <MatchCarousel matches={upcomingMatches} groupId={activeGroupId} />
+          )}
+          <MiniLeaderboard
+            members={members}
+            groupId={activeGroupId}
+            currentUserId={userProfile.id}
+          />
           <TournamentPredictionsSummary groupId={activeGroupId} memberCount={members.length} />
           {group.enableGroupStagePrize && (
             <GroupStagePrizeCard
