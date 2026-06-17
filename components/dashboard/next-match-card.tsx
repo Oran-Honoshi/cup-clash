@@ -12,7 +12,6 @@ import { ScoreInputCC } from "@/components/ui/score-input-cc";
 import { LiveDot } from "@/components/ui/live-dot";
 import { FOCUS_RING } from "@/lib/a11y";
 import { cn } from "@/lib/utils";
-import { PredictionDistribution } from "@/components/dashboard/prediction-distribution";
 import type { Match } from "@/lib/types";
 
 interface NextMatchCardProps {
@@ -253,8 +252,6 @@ export function NextMatchCard({ match, groupId = "", cardLabel }: NextMatchCardP
           )}
         </div>
 
-        {/* Prediction distribution (anonymous, upcoming only) */}
-        {groupId && <PredictionDistribution matchId={match.id} groupId={groupId} />}
       </div>
     </div>
   );

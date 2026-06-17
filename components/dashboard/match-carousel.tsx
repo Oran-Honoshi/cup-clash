@@ -3,6 +3,7 @@
 import { useRef, useState, useCallback } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { NextMatchCard } from "@/components/dashboard/next-match-card";
+import { PredictionDistribution } from "@/components/dashboard/prediction-distribution";
 import { cn } from "@/lib/utils";
 import { FOCUS_RING } from "@/lib/a11y";
 import type { Match } from "@/lib/types";
@@ -34,10 +35,10 @@ export function MatchCarousel({ matches, groupId }: MatchCarouselProps) {
   if (matches.length === 1) return <NextMatchCard match={matches[0]} groupId={groupId} />;
 
   return (
-    <div style={{ width: "100%" }}>
-      {/* Scrollable track — explicit width breaks the iOS Safari circular
-          dependency where flex-basis:100% on slides references an indeterminate
-          container, causing cards to render at 0 or wrong width. */}
+    <div style={{ width: "100%", overflow: "hidden" }}>
+      {/* overflow:hidden on wrapper is critical — without it, the CSS Grid
+          parent sizes the column based on the track's full scroll-content width
+          (5× card width), breaking the entire page layout on mobile. */}
       <div
         ref={trackRef}
         onScroll={onScroll}
@@ -47,13 +48,12 @@ export function MatchCarousel({ matches, groupId }: MatchCarouselProps) {
           overflowX: "auto",
           scrollSnapType: "x mandatory",
           scrollbarWidth: "none",
-          width: "100%",
         }}
       >
         {matches.map((match, i) => (
           <div
             key={match.id}
-            style={{ scrollSnapAlign: "start", flex: "0 0 100%", minWidth: "100%" }}
+            style={{ scrollSnapAlign: "start", flex: "none", width: "100%" }}
           >
             <NextMatchCard
               match={match}
@@ -114,6 +114,16 @@ export function MatchCarousel({ matches, groupId }: MatchCarouselProps) {
           <ChevronRight size={13} />
         </button>
       </div>
+
+      {/* Prediction distribution for the active match — sits outside the card
+          so it doesn't inflate each card's height */}
+      {groupId && matches[active] && (
+        <PredictionDistribution
+          key={matches[active].id}
+          matchId={matches[active].id}
+          groupId={groupId}
+        />
+      )}
     </div>
   );
 }
