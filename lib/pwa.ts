@@ -5,6 +5,10 @@ export async function registerServiceWorker() {
   try {
     const reg = await navigator.serviceWorker.register("/sw.js", { scope: "/" });
 
+    // Force an update check on every page load — without this Chrome may skip
+    // the check if the SW is already active, even with no-cache headers.
+    reg.update().catch(() => {});
+
     // When a new SW takes control, reload once to serve fresh assets
     let refreshing = false;
     navigator.serviceWorker.addEventListener("controllerchange", () => {
