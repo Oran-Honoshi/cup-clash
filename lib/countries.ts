@@ -84,3 +84,16 @@ export const HOST_NATIONS: CountryCode[] = ["USA", "CAN", "MEX"];
 export function flagUrl(flagCode: string, _width?: 20 | 40 | 80 | 160): string {
   return `/flags/${flagCode}.svg`;
 }
+
+/**
+ * Convert a stored country identifier to a 2-letter flag code for use with flagUrl().
+ * Handles: 3-letter CountryCode keys ("ARG" → "ar"), already-2-letter codes, and
+ * unknown values (falls back to "un" placeholder).
+ */
+export function countryFlagCode(country: string): string {
+  if (!country) return "un";
+  const entry = COUNTRIES[country as CountryCode];
+  if (entry) return entry.flagCode;
+  if (/^[a-z]{2}(-[a-z]{2,3})?$/.test(country)) return country;
+  return "un";
+}

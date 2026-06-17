@@ -73,7 +73,8 @@ function MobileLanguagePicker() {
                   borderBottom: "1px solid rgba(255,255,255,0.06)",
                   minHeight: 56,
                 }}>
-                <span className="text-2xl leading-none shrink-0">{LOCALES[l].flag}</span>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={`/flags/${LOCALES[l].flagCode}.svg`} alt="" aria-hidden="true" width={28} height={20} className="shrink-0 rounded-sm object-cover" style={{ aspectRatio: "3/2" }} />
                 <span className="font-bold text-base" style={{ color: active ? "#00D4FF" : "#ffffff" }}>
                   {LOCALES[l].nativeName}
                 </span>

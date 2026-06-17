@@ -34,8 +34,10 @@ export function MatchCarousel({ matches, groupId }: MatchCarouselProps) {
   if (matches.length === 1) return <NextMatchCard match={matches[0]} groupId={groupId} />;
 
   return (
-    <div>
-      {/* Scrollable track */}
+    <div style={{ width: "100%" }}>
+      {/* Scrollable track — explicit width breaks the iOS Safari circular
+          dependency where flex-basis:100% on slides references an indeterminate
+          container, causing cards to render at 0 or wrong width. */}
       <div
         ref={trackRef}
         onScroll={onScroll}
@@ -45,6 +47,7 @@ export function MatchCarousel({ matches, groupId }: MatchCarouselProps) {
           overflowX: "auto",
           scrollSnapType: "x mandatory",
           scrollbarWidth: "none",
+          width: "100%",
         }}
       >
         {matches.map((match, i) => (

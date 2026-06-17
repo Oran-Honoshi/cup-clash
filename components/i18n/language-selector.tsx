@@ -18,7 +18,9 @@ export function LanguageSelector() {
         onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.06)"; }}
         onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}>
         <Globe size={16} strokeWidth={1.75} />
-        <span>{LOCALES[locale].flag} {LOCALES[locale].nativeName}</span>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={`/flags/${LOCALES[locale].flagCode}.svg`} alt="" aria-hidden="true" width={20} height={14} className="rounded-sm object-cover shrink-0" style={{ aspectRatio: "3/2" }} />
+        <span>{LOCALES[locale].nativeName}</span>
       </button>
 
       {open && (
@@ -42,7 +44,8 @@ export function LanguageSelector() {
               }}
               onMouseEnter={e => { if (locale !== l) (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.05)"; }}
               onMouseLeave={e => { if (locale !== l) (e.currentTarget as HTMLElement).style.background = "transparent"; }}>
-              <span>{LOCALES[l].flag}</span>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={`/flags/${LOCALES[l].flagCode}.svg`} alt="" aria-hidden="true" width={20} height={14} className="rounded-sm object-cover shrink-0" style={{ aspectRatio: "3/2" }} />
               <span>{LOCALES[l].nativeName}</span>
               {l === "he" || l === "ar" ? <span className="ms-auto text-[10px] opacity-50">RTL</span> : null}
             </button>

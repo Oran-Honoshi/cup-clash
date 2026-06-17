@@ -1,13 +1,13 @@
 // ── Locale metadata ────────────────────────────────────────────────────────────
 export const LOCALES = {
-  en: { name: "English",    nativeName: "English",    flag: "🇬🇧", dir: "ltr" as const },
-  fr: { name: "French",     nativeName: "Français",   flag: "🇫🇷", dir: "ltr" as const },
-  de: { name: "German",     nativeName: "Deutsch",    flag: "🇩🇪", dir: "ltr" as const },
-  nl: { name: "Dutch",      nativeName: "Nederlands", flag: "🇳🇱", dir: "ltr" as const },
-  es: { name: "Spanish",    nativeName: "Español",    flag: "🇪🇸", dir: "ltr" as const },
-  pt: { name: "Portuguese", nativeName: "Português",  flag: "🇧🇷", dir: "ltr" as const },
-  he: { name: "Hebrew",     nativeName: "עברית",       flag: "🇮🇱", dir: "rtl" as const },
-  ar: { name: "Arabic",     nativeName: "العربية",    flag: "🇸🇦", dir: "rtl" as const },
+  en: { name: "English",    nativeName: "English",    flagCode: "gb", dir: "ltr" as const },
+  fr: { name: "French",     nativeName: "Français",   flagCode: "fr", dir: "ltr" as const },
+  de: { name: "German",     nativeName: "Deutsch",    flagCode: "de", dir: "ltr" as const },
+  nl: { name: "Dutch",      nativeName: "Nederlands", flagCode: "nl", dir: "ltr" as const },
+  es: { name: "Spanish",    nativeName: "Español",    flagCode: "es", dir: "ltr" as const },
+  pt: { name: "Portuguese", nativeName: "Português",  flagCode: "br", dir: "ltr" as const },
+  he: { name: "Hebrew",     nativeName: "עברית",       flagCode: "il", dir: "rtl" as const },
+  ar: { name: "Arabic",     nativeName: "العربية",    flagCode: "sa", dir: "rtl" as const },
 } as const;
 
 export type Locale = keyof typeof LOCALES;

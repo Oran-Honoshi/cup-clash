@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Target, Trophy, TrendingUp, Zap, XCircle } from "lucide-react";
 import Image from "next/image";
-import { flagUrl } from "@/lib/countries";
+import { flagUrl, countryFlagCode } from "@/lib/countries";
 import { FOCUS_RING } from "@/lib/a11y";
 import { PredictionBadge } from "@/components/predictions/prediction-badge";
 import type { MemberPrediction, MemberPredictionsResponse } from "@/app/api/member-predictions/route";
@@ -102,7 +102,7 @@ export function PlayerDrawer({ userId, groupId, name, country, points, rank, ope
                   className="relative h-10 w-10 rounded-full overflow-hidden"
                   style={{ border: "2px solid rgba(0,212,255,0.2)" }}
                 >
-                  <Image src={flagUrl(country, 40)} alt={country} fill className="object-cover" unoptimized />
+                  <Image src={flagUrl(countryFlagCode(country), 40)} alt={country} fill className="object-cover" unoptimized />
                 </div>
                 <div>
                   <div className="font-display text-xl uppercase font-black" style={{ color: "white" }}>{name}</div>
