@@ -117,19 +117,19 @@ export function MobileNav() {
     const reposition = () => {
       const el = navRef.current;
       if (!el) return;
-      const offsetFromBottom =
-        window.innerHeight - vv.height - (vv.offsetTop ?? 0);
-      el.style.transform = `translateY(-${Math.max(0, offsetFromBottom)}px)`;
+      // Only react to keyboard-sized changes (> 100px). Gesture navigation on
+      // Android briefly fires visualViewport resize with tiny offsets, causing
+      // the nav to jump up and snap back on fast upward scrolls.
+      const offsetFromBottom = window.innerHeight - vv.height - (vv.offsetTop ?? 0);
+      el.style.transform = offsetFromBottom > 100
+        ? `translateY(-${offsetFromBottom}px)`
+        : "translateY(0)";
     };
 
     vv.addEventListener("resize", reposition);
-    vv.addEventListener("scroll", reposition);
     reposition();
 
-    return () => {
-      vv.removeEventListener("resize", reposition);
-      vv.removeEventListener("scroll", reposition);
-    };
+    return () => { vv.removeEventListener("resize", reposition); };
   }, []);
 
   // Check if current path is a "More" item so we highlight the More button

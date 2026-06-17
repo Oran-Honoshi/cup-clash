@@ -1,5 +1,5 @@
 // Cup Clash Service Worker — PWA + Web Push
-const CACHE_NAME = "cupclash-v5";
+const CACHE_NAME = "cupclash-v6";
 const STATIC_ASSETS = ["/", "/dashboard", "/predictions", "/leaderboard"];
 
 // Install — cache core routes
