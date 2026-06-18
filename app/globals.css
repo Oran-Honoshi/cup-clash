@@ -75,7 +75,7 @@ h1, h2, h3, h4 {
 }
 
 .font-display {
-  font-family: var(--font-barlow, var(--font-display), 'Barlow Condensed', 'Arial Narrow', sans-serif);
+  font-family: var(--font-barlow, 'Barlow Condensed', var(--font-display), 'Arial Narrow', sans-serif);
 }
 
 .font-mono { font-family: var(--font-mono); }
@@ -433,4 +433,105 @@ h1, h2, h3, h4 {
 :lang(he), :lang(ar) {
   font-family: system-ui, -apple-system, Arial, sans-serif;
   letter-spacing: 0;
+}
+
+/* ── Design Tokens: Cup Clash Update (June 2026) ──────────────────────────── */
+:root {
+  /* Font */
+  --font-barlow: var(--font-barlow, 'Barlow Condensed', 'Arial Narrow', sans-serif);
+
+  /* Accent */
+  --cc-accent:           #00e5a0;
+  --cc-accent-dim:       #2a5a2a;
+  --cc-accent-dimmer:    #1c3a1c;
+
+  /* Text hierarchy */
+  --cc-text-primary:     #e0f2e0;
+  --cc-text-secondary:   #a0c8a0;
+  --cc-text-muted:       #7ab07a;
+  --cc-text-faint:       #3a7a3a;
+
+  /* Borders */
+  --cc-border:           #1a3a1a;
+  --cc-border-dim:       #162a16;
+  --cc-border-strong:    #1c5a1c;
+
+  /* Surface (icon buttons, chips) */
+  --cc-surface-2:        #0e1f0e;
+
+  /* Status */
+  --cc-gold:             #ffaa00;
+  --cc-success:          #5aaa6a;
+  --cc-danger:           #cc4444;
+  --cc-live:             #ff6666;
+  --cc-notification:     #e53e3e;
+}
+
+/* Barlow Condensed utility class */
+.font-barlow {
+  font-family: var(--font-barlow, 'Barlow Condensed', 'Arial Narrow', sans-serif);
+}
+
+/* App title — Barlow Condensed, 900 weight, 2px letter-spacing */
+.app-title {
+  font-family: var(--font-barlow, 'Barlow Condensed', 'Arial Narrow', sans-serif);
+  font-size: 19px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  color: var(--cc-text-primary);
+  text-transform: uppercase;
+}
+
+/* Section heading — Barlow Condensed, 900 weight */
+.section-heading {
+  font-family: var(--font-barlow, 'Barlow Condensed', 'Arial Narrow', sans-serif);
+  font-weight: 900;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+/* Panel label / tab — Barlow Condensed, 9px, 700, 1px letter-spacing */
+.panel-label {
+  font-family: var(--font-barlow, 'Barlow Condensed', 'Arial Narrow', sans-serif);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+/* Icon button — design token border + bg */
+.icon-btn {
+  background: var(--cc-surface-2);
+  border: 1px solid var(--cc-border-strong);
+  border-radius: 16px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Score box — 46×46, radius 10, accent border */
+.score-box {
+  width: 46px;
+  height: 46px;
+  border-radius: 10px;
+  border: 2px solid var(--cc-accent);
+  background: #091808;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-barlow, 'Barlow Condensed', 'Arial Narrow', sans-serif);
+  font-size: 26px;
+  font-weight: 900;
+  color: var(--cc-accent);
+  text-align: center;
+}
+
+/* Nav active indicator bar */
+.nav-indicator {
+  width: 20px;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--cc-accent);
 }

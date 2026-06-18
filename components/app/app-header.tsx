@@ -106,10 +106,16 @@ function MobileLanguagePicker() {
     <>
       <button
         onClick={() => setOpen(true)}
-        className="h-9 w-9 flex items-center justify-center rounded-xl transition-all"
-        style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)" }}
+        className="flex items-center justify-center transition-all"
+        style={{
+          width: 32,
+          height: 32,
+          borderRadius: 16,
+          background: "#0e1f0e",
+          border: "1px solid #1c3a1c",
+        }}
         aria-label="Change language">
-        <Globe size={16} style={{ color: "rgba(255,255,255,0.7)" }} />
+        <Globe size={16} style={{ color: "#a0c8a0" }} />
       </button>
 
       {/* Portal to <body> — escapes header's z-index stacking context */}
@@ -134,27 +140,42 @@ export function AppHeader({ title }: { title?: string }) {
         background: "rgba(8, 12, 22, 0.85)",
         backdropFilter: "blur(24px)",
         WebkitBackdropFilter: "blur(24px)",
-        borderColor: "rgba(255,255,255,0.07)",
+        borderColor: "#0c1c0c",
         boxShadow: "0 2px 16px rgba(0,0,0,0.4)",
         paddingTop: "calc(12px + env(safe-area-inset-top))",
         paddingBottom: "12px",
+        height: "calc(52px + env(safe-area-inset-top))",
       }}
     >
-      <div className="font-display text-lg uppercase font-bold text-white">
+      <div className="app-title">
         {title ?? "Cup Clash"}
       </div>
       <div className="flex items-center gap-2">
         <MobileLanguagePicker />
         <Link
           href="/notifications"
-          className="relative h-9 w-9 flex items-center justify-center rounded-xl transition-all"
-          style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)" }}
+          className="relative flex items-center justify-center transition-all"
+          style={{
+            width: 32,
+            height: 32,
+            borderRadius: 16,
+            background: "#0e1f0e",
+            border: "1px solid #1c3a1c",
+          }}
         >
-          <Bell size={18} style={{ color: "rgba(255,255,255,0.7)" }} />
+          <Bell size={16} style={{ color: "#a0c8a0" }} />
           {unread > 0 && (
             <span
-              className="absolute top-1 right-1 h-4 w-4 rounded-full flex items-center justify-center text-[9px] font-bold text-white"
-              style={{ background: "#dc2626", boxShadow: "0 0 8px rgba(220,38,38,0.5)" }}
+              className="absolute flex items-center justify-center font-mono font-bold text-white"
+              style={{
+                top: -3,
+                right: -3,
+                width: 14,
+                height: 14,
+                borderRadius: 7,
+                background: "#e53e3e",
+                fontSize: 8,
+              }}
             >
               {unread > 9 ? "9+" : unread}
             </span>
@@ -162,11 +183,17 @@ export function AppHeader({ title }: { title?: string }) {
         </Link>
         <button
           onClick={handleSignOut}
-          className="h-9 w-9 flex items-center justify-center rounded-xl transition-all"
-          style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.08)" }}
+          className="flex items-center justify-center transition-all"
+          style={{
+            width: 32,
+            height: 32,
+            borderRadius: 16,
+            background: "#0e1f0e",
+            border: "1px solid #1c3a1c",
+          }}
           aria-label="Sign out"
         >
-          <LogOut size={16} style={{ color: "#f87171" }} />
+          <LogOut size={14} style={{ color: "#f87171" }} />
         </button>
       </div>
     </header>

@@ -274,14 +274,14 @@ function MatchCard({
 
   // Card border color based on state
   const cardBorderStyle = state.type === "live"
-    ? "1px solid rgba(239,68,68,0.3)"
+    ? "1px solid #5a1a1a"
     : state.type === "finished" && pred
       ? pred.isExact
-        ? "1px solid rgba(0,255,136,0.2)"
+        ? "1px solid #2a5a2a"
         : predResult(pred, (state as { homeScore: number }).homeScore, (state as { awayScore: number }).awayScore) === "correct"
-          ? "1px solid rgba(0,212,255,0.2)"
-          : "1px solid rgba(239,68,68,0.15)"
-      : "1px solid rgba(255,255,255,0.09)";
+          ? "1px solid #1a3a1a"
+          : "1px solid #3a1a1a"
+      : "1px solid #1a3a1a";
 
   return (
     <div
@@ -310,11 +310,11 @@ function MatchCard({
         <div className="flex items-center gap-2 shrink-0">
           {state.type === "finished" && (
             <div className="flex items-center gap-1.5">
-              <span className="font-mono text-xl sm:text-2xl font-black text-white tabular-nums leading-none">
+              <span className="font-barlow text-xl sm:text-2xl font-black tabular-nums leading-none" style={{ color: "#a0c8a0" }}>
                 {state.homeScore}
               </span>
-              <span className="text-sm font-bold" style={{ color: "rgba(255,255,255,0.3)" }}>–</span>
-              <span className="font-mono text-xl sm:text-2xl font-black text-white tabular-nums leading-none">
+              <span className="text-sm font-bold" style={{ color: "#1c4a1c" }}>–</span>
+              <span className="font-barlow text-xl sm:text-2xl font-black tabular-nums leading-none" style={{ color: "#a0c8a0" }}>
                 {state.awayScore}
               </span>
             </div>
@@ -322,13 +322,13 @@ function MatchCard({
 
           {state.type === "live" && (
             <div className="flex items-center gap-1.5">
-              <span className="font-mono text-xl sm:text-2xl font-black tabular-nums leading-none"
-                style={{ color: "#f87171" }}>
+              <span className="font-barlow text-xl sm:text-2xl font-black tabular-nums leading-none"
+                style={{ color: "#ff6666" }}>
                 {state.homeScore}
               </span>
-              <span className="text-sm font-bold" style={{ color: "rgba(248,113,113,0.5)" }}>–</span>
-              <span className="font-mono text-xl sm:text-2xl font-black tabular-nums leading-none"
-                style={{ color: "#f87171" }}>
+              <span className="text-sm font-bold" style={{ color: "rgba(255,102,102,0.5)" }}>–</span>
+              <span className="font-barlow text-xl sm:text-2xl font-black tabular-nums leading-none"
+                style={{ color: "#ff6666" }}>
                 {state.awayScore}
               </span>
             </div>
@@ -435,10 +435,14 @@ function Chip({
   return (
     <button
       onClick={onClick}
-      className="shrink-0 px-3 py-1.5 rounded-full text-[11px] font-bold uppercase tracking-wider transition-all"
-      style={active
-        ? { background: "rgba(0,212,255,0.12)", color: "#00D4FF", border: "1px solid rgba(0,212,255,0.35)" }
-        : { background: "rgba(255,255,255,0.04)", color: "rgba(255,255,255,0.4)", border: "1px solid rgba(255,255,255,0.1)" }}
+      className="font-barlow shrink-0 px-3 py-1.5 rounded-full font-bold uppercase transition-all"
+      style={{
+        fontSize: 11,
+        letterSpacing: "1px",
+        ...(active
+          ? { background: "#162a16", color: "#00e5a0", border: "1px solid #00e5a0" }
+          : { background: "rgba(255,255,255,0.04)", color: "#3a7a3a", border: "1px solid #1a3a1a" }),
+      }}
     >
       {children}
     </button>
@@ -842,12 +846,12 @@ export function ScheduleClient({
                   <Calendar size={13} style={{ color: isToday ? "#00FF88" : "rgba(255,255,255,0.3)" }} />
                   <div className="flex items-center gap-2">
                     <span className="font-display text-xl uppercase font-black tracking-tight"
-                      style={{ color: isToday ? "#00FF88" : "rgba(255,255,255,0.9)" }}>
+                      style={{ color: isToday ? "#00e5a0" : "rgba(255,255,255,0.9)" }}>
                       {dayLabel}
                     </span>
                     {isToday && (
-                      <span className="text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full"
-                        style={{ background: "rgba(0,255,136,0.12)", color: "#00FF88", border: "1px solid rgba(0,255,136,0.3)" }}>
+                      <span className="font-barlow text-[10px] font-bold uppercase px-2 py-0.5 rounded-full"
+                        style={{ background: "#162a16", color: "#00e5a0", border: "1px solid #1c5a1c", letterSpacing: "1px" }}>
                         Today
                       </span>
                     )}

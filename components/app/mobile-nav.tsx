@@ -146,39 +146,54 @@ export function MobileNav() {
           background: "rgba(8, 12, 22, 0.9)",
           backdropFilter: "blur(24px)",
           WebkitBackdropFilter: "blur(24px)",
-          borderColor: "rgba(255,255,255,0.07)",
+          borderColor: "#0c1c0c",
           willChange: "transform",
         }}
       >
         <div
-          className="flex items-center justify-around px-2 py-2"
-          style={{ paddingBottom: "max(8px, env(safe-area-inset-bottom))" }}
+          className="flex items-center justify-around px-1"
+          style={{
+            height: 68,
+            paddingTop: 10,
+            paddingBottom: "max(10px, env(safe-area-inset-bottom))",
+          }}
         >
           {NAV_ITEMS_DEF.map((item) => {
             const label = "labelKey" in item ? t(item.labelKey) : item.staticLabel;
             const Icon  = item.icon;
             const active = pathname === item.href || (item.href !== "/dashboard" && item.href !== "/predictions" && pathname.startsWith(item.href));
+            const activeColor   = "#00e5a0";
+            const inactiveColor = "#2a5a2a";
             return (
               <Link
                 key={item.href}
                 href={item.href}
-                className="flex flex-col items-center gap-1 px-2 py-1.5 rounded-xl transition-all min-w-0 flex-1"
-                style={active ? { background: "rgba(0,255,136,0.1)" } : undefined}
+                className="flex flex-col items-center gap-[3px] flex-1 min-w-0"
               >
                 <Icon
                   size={20}
                   strokeWidth={active ? 2.5 : 1.75}
-                  style={{ color: active ? "#00FF88" : "rgba(255,255,255,0.4)" }}
+                  style={{ color: active ? activeColor : inactiveColor }}
                 />
                 <span
-                  className="text-[10px] font-bold uppercase tracking-wider"
-                  style={{ color: active ? "#00FF88" : "rgba(255,255,255,0.4)" }}
+                  className="font-barlow uppercase"
+                  style={{
+                    fontSize: 9,
+                    fontWeight: 700,
+                    letterSpacing: "0.5px",
+                    color: active ? activeColor : inactiveColor,
+                  }}
                 >
                   {label}
                 </span>
-                {active && (
-                  <div className="w-4 h-0.5 rounded-full" style={{ background: "#00FF88" }} />
-                )}
+                <div
+                  style={{
+                    width: 20,
+                    height: 2,
+                    borderRadius: 1,
+                    background: active ? activeColor : "transparent",
+                  }}
+                />
               </Link>
             );
           })}
@@ -186,23 +201,32 @@ export function MobileNav() {
           {/* More button */}
           <button
             onClick={() => setMoreOpen(o => !o)}
-            className="flex flex-col items-center gap-1 px-3 py-1.5 rounded-xl transition-all min-w-0"
-            style={(moreOpen || isMoreActive) ? { background: "rgba(0,212,255,0.1)" } : undefined}
+            className="flex flex-col items-center gap-[3px] min-w-0 flex-1"
           >
             <MoreHorizontal
               size={20}
               strokeWidth={(moreOpen || isMoreActive) ? 2.5 : 1.75}
-              style={{ color: (moreOpen || isMoreActive) ? "#00D4FF" : "rgba(255,255,255,0.4)" }}
+              style={{ color: (moreOpen || isMoreActive) ? "#00e5a0" : "#2a5a2a" }}
             />
             <span
-              className="text-[10px] font-bold uppercase tracking-wider"
-              style={{ color: (moreOpen || isMoreActive) ? "#00D4FF" : "rgba(255,255,255,0.4)" }}
+              className="font-barlow uppercase"
+              style={{
+                fontSize: 9,
+                fontWeight: 700,
+                letterSpacing: "0.5px",
+                color: (moreOpen || isMoreActive) ? "#00e5a0" : "#2a5a2a",
+              }}
             >
               More
             </span>
-            {isMoreActive && !moreOpen && (
-              <div className="w-4 h-0.5 rounded-full" style={{ background: "#00D4FF" }} />
-            )}
+            <div
+              style={{
+                width: 20,
+                height: 2,
+                borderRadius: 1,
+                background: (isMoreActive && !moreOpen) ? "#00e5a0" : "transparent",
+              }}
+            />
           </button>
         </div>
       </nav>

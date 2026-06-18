@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Bricolage_Grotesque, Outfit, JetBrains_Mono } from "next/font/google";
+import { Bricolage_Grotesque, Outfit, JetBrains_Mono, Barlow_Condensed } from "next/font/google";
 import { ThemeProvider } from "@/components/theme-provider";
 import { LocaleProvider } from "@/components/i18n/locale-provider";
 import { PWAInit } from "@/components/pwa-init";
@@ -16,6 +16,8 @@ const outfit    = Outfit({             subsets: ["latin"], variable: "--font-ui"
   weight: ["400", "500", "600", "700"] });
 const jetbrains = JetBrains_Mono({     subsets: ["latin"], variable: "--font-mono",    display: "swap",
   weight: ["400", "600", "700"] });
+const barlowCondensed = Barlow_Condensed({ subsets: ["latin"], variable: "--font-barlow", display: "swap",
+  weight: ["400", "600", "700", "900"] });
 
 export const viewport: Viewport = {
   themeColor: "#0a1b0e",
@@ -96,7 +98,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${bricolage.variable} ${outfit.variable} ${jetbrains.variable}`}>
+    <html lang="en" className={`${bricolage.variable} ${outfit.variable} ${jetbrains.variable} ${barlowCondensed.variable}`}>
       <head>
         <meta httpEquiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
         <meta httpEquiv="Pragma" content="no-cache" />

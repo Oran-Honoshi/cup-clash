@@ -1,0 +1,803 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+
+<helmet>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;900&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
+::-webkit-scrollbar { width: 0; height: 0; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+body { margin: 0; }
+</style>
+</helmet>
+
+<div style="min-height:100vh;background:#111;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:24px;">
+
+  <div id="phone" style="width:390px;height:844px;background:#030a04;border-radius:44px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 40px 100px rgba(0,0,0,0.9),0 0 0 1px rgba(255,255,255,0.06);flex-shrink:0;position:relative;">
+
+    <!-- Status bar -->
+    <div style="height:44px;background:#020804;display:flex;align-items:flex-end;padding:0 28px 10px;flex:none;">
+      <span style="font-size:12px;color:#3a5a3a;font-family:'Barlow Condensed',sans-serif;font-weight:600;">9:41</span>
+      <div style="flex:1;"></div>
+      <span style="font-size:11px;color:#3a5a3a;font-family:'Barlow Condensed',sans-serif;">5G ▓▓▓ 85%</span>
+    </div>
+
+    <!-- ══ HOME ══ -->
+    <sc-if value="{{ isHome }}">
+      <div style="flex:1;overflow:hidden;display:flex;flex-direction:column;">
+
+        <!-- App header -->
+        <div style="height:52px;background:#020804;padding:0 18px;display:flex;align-items:center;flex:none;">
+          <span style="font-size:19px;font-weight:900;color:#e0f2e0;letter-spacing:2px;font-family:'Barlow Condensed',sans-serif;">CUP CLASH</span>
+          <div style="flex:1;"></div>
+          <div style="width:32px;height:32px;border-radius:16px;background:#0e1f0e;border:1px solid #1c3a1c;display:flex;align-items:center;justify-content:center;font-size:14px;">🌐</div>
+          <div style="width:32px;height:32px;border-radius:16px;background:#0e1f0e;border:1px solid #1c3a1c;display:flex;align-items:center;justify-content:center;font-size:14px;position:relative;margin-left:6px;">🔔<div style="position:absolute;top:-3px;right:-3px;width:14px;height:14px;border-radius:7px;background:#e53e3e;display:flex;align-items:center;justify-content:center;font-size:8px;color:#fff;font-family:monospace;font-weight:700;">2</div></div>
+        </div>
+
+        <!-- Group selector -->
+        <div style="height:42px;background:#020804;padding:0 18px;display:flex;align-items:center;border-bottom:1px solid #0c1c0c;flex:none;">
+          <div style="display:inline-flex;align-items:center;gap:7px;background:#0e1f0e;border-radius:20px;padding:6px 14px;border:1px solid #1c3a1c;cursor:pointer;">
+            <span style="font-size:13px;">👥</span>
+            <span style="font-size:12px;color:#00e5a0;font-weight:700;font-family:'Barlow Condensed',sans-serif;">HEYBLINK FOR REAL</span>
+            <span style="font-size:12px;color:#2a5a2a;">▾</span>
+          </div>
+        </div>
+
+        <!-- Named panel pills (replaces tiny dots) -->
+        <div style="height:40px;background:#020c04;display:flex;align-items:center;justify-content:center;gap:6px;flex:none;border-bottom:1px solid #091509;">
+          <div onClick="{{ setPanel0 }}" style="cursor:pointer;padding:5px 13px;border-radius:20px;background:{{ pill0Bg }};border:1px solid {{ pill0Border }};">
+            <span style="font-size:9px;font-weight:700;font-family:'Barlow Condensed',sans-serif;color:{{ pill0Color }};letter-spacing:1px;">MATCH</span>
+          </div>
+          <div onClick="{{ setPanel1 }}" style="cursor:pointer;padding:5px 13px;border-radius:20px;background:{{ pill1Bg }};border:1px solid {{ pill1Border }};">
+            <span style="font-size:9px;font-weight:700;font-family:'Barlow Condensed',sans-serif;color:{{ pill1Color }};letter-spacing:1px;">LEADERBOARD</span>
+          </div>
+          <div onClick="{{ setPanel2 }}" style="cursor:pointer;padding:5px 13px;border-radius:20px;background:{{ pill2Bg }};border:1px solid {{ pill2Border }};">
+            <span style="font-size:9px;font-weight:700;font-family:'Barlow Condensed',sans-serif;color:{{ pill2Color }};letter-spacing:1px;">MY STATS</span>
+          </div>
+        </div>
+
+        <!-- Swipeable carousel — 3 panels -->
+        <div id="pw" onTouchStart="{{ onTouchStart }}" onTouchMove="{{ onTouchMove }}" onTouchEnd="{{ onTouchEnd }}" onMouseDown="{{ onMouseDown }}" style="flex:1;overflow:hidden;position:relative;cursor:grab;">
+          <div id="pt" style="display:flex;height:100%;width:1170px;">
+
+            <!-- PANEL 0: NEXT MATCH -->
+            <div style="width:390px;height:100%;flex:none;overflow-y:auto;padding:18px 18px 8px;background:radial-gradient(ellipse at 50% 120%,#1a3810 0%,#0a1808 55%,#030c04 100%);">
+
+              <div style="font-size:9px;color:#3a7a3a;letter-spacing:1.5px;font-family:'Barlow Condensed',sans-serif;margin-bottom:12px;text-transform:uppercase;">Group A  ·  Today Thu 18 Jun  ·  7:00 PM GMT+3</div>
+
+              <!-- Match card -->
+              <div style="background:#0c1c0c;border-radius:18px;padding:18px 16px 14px;border:1px solid #1a3a1a;margin-bottom:12px;">
+                <!-- Teams & score -->
+                <div style="display:flex;align-items:center;padding-bottom:14px;">
+                  <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;">
+                    <span style="font-size:48px;line-height:1;">🇨🇿</span>
+                    <span style="font-size:10px;color:#7ab07a;font-weight:700;font-family:'Barlow Condensed',sans-serif;text-align:center;letter-spacing:0.3px;">CZECH REPUBLIC</span>
+                  </div>
+                  <div style="flex:none;display:flex;align-items:center;gap:5px;padding:0 8px;">
+                    <div style="width:46px;height:46px;border-radius:10px;background:#091808;border:2px solid #00e5a0;display:flex;align-items:center;justify-content:center;">
+                      <span style="font-size:26px;color:#00e5a0;font-weight:900;font-family:'Barlow Condensed',sans-serif;">2</span>
+                    </div>
+                    <span style="font-size:14px;color:#1c4a1c;font-family:'Barlow Condensed',sans-serif;font-weight:900;">–</span>
+                    <div style="width:46px;height:46px;border-radius:10px;background:#091808;border:2px solid #00e5a0;display:flex;align-items:center;justify-content:center;">
+                      <span style="font-size:26px;color:#00e5a0;font-weight:900;font-family:'Barlow Condensed',sans-serif;">1</span>
+                    </div>
+                  </div>
+                  <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:6px;">
+                    <span style="font-size:48px;line-height:1;">🇿🇦</span>
+                    <span style="font-size:10px;color:#7ab07a;font-weight:700;font-family:'Barlow Condensed',sans-serif;text-align:center;letter-spacing:0.3px;">SOUTH AFRICA</span>
+                  </div>
+                </div>
+                <!-- Divider + status -->
+                <div style="border-top:1px solid #162a16;padding-top:12px;display:flex;align-items:center;justify-content:space-between;">
+                  <span style="font-size:11px;color:#00e5a0;font-family:'Barlow Condensed',sans-serif;font-weight:700;">✓ PREDICTION SAVED</span>
+                  <div style="background:#0a1c0a;border-radius:20px;padding:5px 16px;border:1px solid #2a5a2a;cursor:pointer;">
+                    <span style="font-size:10px;color:#5ab87a;font-family:'Barlow Condensed',sans-serif;font-weight:700;">EDIT</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Group picks comparison -->
+              <div style="background:#0c1c0c;border-radius:14px;padding:13px 14px;border:1px solid #1a3a1a;">
+                <div style="font-size:9px;color:#2a6a2a;letter-spacing:1px;margin-bottom:10px;font-family:'Barlow Condensed',sans-serif;">YOUR GROUP'S PICKS  ·  11 MEMBERS</div>
+                <div style="display:flex;gap:5px;">
+                  <div style="flex:1;background:#091509;border-radius:8px;padding:8px 0;border:1px solid #2a5a2a;text-align:center;">
+                    <div style="font-size:16px;color:#00e5a0;font-weight:900;font-family:'Barlow Condensed',sans-serif;line-height:1;">2-0</div>
+                    <div style="font-size:9px;color:#2a6a2a;margin-top:3px;font-family:'Barlow Condensed',sans-serif;">38%</div>
+                  </div>
+                  <div style="flex:1;background:#091509;border-radius:8px;padding:8px 0;border:1px solid #2a5a2a;text-align:center;">
+                    <div style="font-size:16px;color:#6aaa7a;font-weight:900;font-family:'Barlow Condensed',sans-serif;line-height:1;">2-1</div>
+                    <div style="font-size:9px;color:#2a6a2a;margin-top:3px;font-family:'Barlow Condensed',sans-serif;">38%</div>
+                  </div>
+                  <div style="flex:1;background:#091509;border-radius:8px;padding:8px 0;border:1px solid #162a16;text-align:center;">
+                    <div style="font-size:16px;color:#4a7a4a;font-weight:900;font-family:'Barlow Condensed',sans-serif;line-height:1;">1-1</div>
+                    <div style="font-size:9px;color:#2a5a2a;margin-top:3px;font-family:'Barlow Condensed',sans-serif;">13%</div>
+                  </div>
+                  <div style="flex:1;background:#091509;border-radius:8px;padding:8px 0;border:1px solid #162a16;text-align:center;">
+                    <div style="font-size:16px;color:#4a7a4a;font-weight:900;font-family:'Barlow Condensed',sans-serif;line-height:1;">3-1</div>
+                    <div style="font-size:9px;color:#2a5a2a;margin-top:3px;font-family:'Barlow Condensed',sans-serif;">13%</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- PANEL 1: LEADERBOARD -->
+            <div style="width:390px;height:100%;flex:none;overflow-y:auto;padding:18px 18px 8px;background:radial-gradient(ellipse at 50% 120%,#1a3810 0%,#0a1808 55%,#030c04 100%);">
+
+              <div style="font-size:9px;color:#3a7a3a;letter-spacing:1.5px;font-family:'Barlow Condensed',sans-serif;margin-bottom:14px;">HEYBLINK FOR REAL  ·  11 MEMBERS</div>
+
+              <!-- Podium -->
+              <div style="display:flex;align-items:flex-end;justify-content:center;gap:8px;margin-bottom:16px;">
+                <!-- 2nd -->
+                <div style="display:flex;flex-direction:column;align-items:center;gap:4px;width:96px;">
+                  <div style="width:48px;height:48px;border-radius:24px;background:#1c3a1c;border:2px solid #4a7a4a;display:flex;align-items:center;justify-content:center;font-size:24px;">🤓</div>
+                  <span style="font-size:11px;color:#a0c8a0;font-weight:700;font-family:'Barlow Condensed',sans-serif;">BEN</span>
+                  <span style="font-size:10px;color:#5a9a5a;font-family:'Barlow Condensed',sans-serif;">185 pts</span>
+                  <div style="width:80px;height:46px;background:#1c3a1c;border-radius:6px 6px 0 0;border:1px solid #2a5a2a;display:flex;align-items:center;justify-content:center;font-size:22px;">🥈</div>
+                </div>
+                <!-- 1st -->
+                <div style="display:flex;flex-direction:column;align-items:center;gap:4px;width:96px;">
+                  <div style="width:56px;height:56px;border-radius:28px;background:#1c3a1c;border:2px solid #ffaa00;display:flex;align-items:center;justify-content:center;font-size:28px;">⚽</div>
+                  <span style="font-size:11px;color:#e0f0e0;font-weight:700;font-family:'Barlow Condensed',sans-serif;">CR7</span>
+                  <span style="font-size:10px;color:#00e5a0;font-weight:700;font-family:'Barlow Condensed',sans-serif;">250 pts</span>
+                  <div style="width:80px;height:64px;background:#162a10;border-radius:6px 6px 0 0;border:1px solid #2a5a2a;display:flex;align-items:center;justify-content:center;font-size:26px;">🥇</div>
+                </div>
+                <!-- 3rd — YOU -->
+                <div style="display:flex;flex-direction:column;align-items:center;gap:4px;width:96px;">
+                  <div style="width:48px;height:48px;border-radius:24px;background:#2a5a2a;border:2px solid #00e5a0;display:flex;align-items:center;justify-content:center;font-size:24px;">😎</div>
+                  <span style="font-size:11px;color:#00e5a0;font-weight:700;font-family:'Barlow Condensed',sans-serif;">YOU</span>
+                  <span style="font-size:10px;color:#00e5a0;font-family:'Barlow Condensed',sans-serif;">180 pts</span>
+                  <div style="width:80px;height:34px;background:#1c3a1c;border-radius:6px 6px 0 0;border:1px solid #00e5a0;display:flex;align-items:center;justify-content:center;font-size:20px;">🥉</div>
+                </div>
+              </div>
+
+              <!-- Rest of the list -->
+              <div style="background:#0c1c0c;border-radius:14px;border:1px solid #1a3a1a;overflow:hidden;">
+                <div style="display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid #162a16;">
+                  <span style="font-size:12px;color:#5a9a5a;width:20px;text-align:center;font-family:'Barlow Condensed',sans-serif;font-weight:700;">4</span>
+                  <div style="width:32px;height:32px;border-radius:16px;background:#1c3a1c;display:flex;align-items:center;justify-content:center;font-size:17px;">🙂</div>
+                  <span style="font-size:13px;color:#a0c8a0;flex:1;font-family:'Barlow Condensed',sans-serif;font-weight:700;">IDAN DAYANI</span>
+                  <span style="font-size:13px;color:#7ab07a;font-weight:700;font-family:'Barlow Condensed',sans-serif;">160 pts</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid #162a16;">
+                  <span style="font-size:12px;color:#5a9a5a;width:20px;text-align:center;font-family:'Barlow Condensed',sans-serif;font-weight:700;">5</span>
+                  <div style="width:32px;height:32px;border-radius:16px;background:#1c3a1c;display:flex;align-items:center;justify-content:center;font-size:17px;">🎮</div>
+                  <span style="font-size:13px;color:#a0c8a0;flex:1;font-family:'Barlow Condensed',sans-serif;font-weight:700;">YOAV MILSTEIN</span>
+                  <span style="font-size:13px;color:#7ab07a;font-weight:700;font-family:'Barlow Condensed',sans-serif;">140 pts</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:10px;padding:12px 14px;">
+                  <span style="font-size:12px;color:#3a6a3a;width:20px;text-align:center;font-family:'Barlow Condensed',sans-serif;font-weight:700;">6</span>
+                  <div style="width:32px;height:32px;border-radius:16px;background:#1c3a1c;display:flex;align-items:center;justify-content:center;font-size:17px;">🦊</div>
+                  <span style="font-size:13px;color:#7ab07a;flex:1;font-family:'Barlow Condensed',sans-serif;font-weight:700;">ARIEL COHEN</span>
+                  <span style="font-size:13px;color:#5a9a5a;font-weight:700;font-family:'Barlow Condensed',sans-serif;">120 pts</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- PANEL 2: MY STATS -->
+            <div style="width:390px;height:100%;flex:none;overflow-y:auto;padding:18px 18px 8px;background:radial-gradient(ellipse at 50% 120%,#1a3810 0%,#0a1808 55%,#030c04 100%);">
+
+              <div style="font-size:9px;color:#3a7a3a;letter-spacing:1.5px;font-family:'Barlow Condensed',sans-serif;margin-bottom:10px;">FIFA WORLD CUP 2026</div>
+
+              <!-- Big rank -->
+              <div style="background:#0c1c0c;border-radius:18px;padding:20px;border:1px solid #1a3a1a;margin-bottom:10px;text-align:center;">
+                <div style="font-size:64px;font-weight:900;color:#00e5a0;font-family:'Barlow Condensed',sans-serif;line-height:1;">3rd</div>
+                <div style="font-size:11px;color:#3a7a3a;font-family:'Barlow Condensed',sans-serif;letter-spacing:1px;margin-top:4px;">OF 11 MEMBERS</div>
+              </div>
+
+              <!-- Stats grid -->
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
+                <div style="background:#0c1c0c;border-radius:12px;padding:14px;border:1px solid #1a3a1a;">
+                  <div style="font-size:32px;color:#00e5a0;font-weight:900;font-family:'Barlow Condensed',sans-serif;line-height:1;">180</div>
+                  <div style="font-size:9px;color:#3a7a3a;letter-spacing:1px;margin-top:4px;font-family:'Barlow Condensed',sans-serif;">TOTAL POINTS</div>
+                </div>
+                <div style="background:#0c1c0c;border-radius:12px;padding:14px;border:1px solid #1a3a1a;">
+                  <div style="font-size:32px;color:#ffaa00;font-weight:900;font-family:'Barlow Condensed',sans-serif;line-height:1;">+25</div>
+                  <div style="font-size:9px;color:#3a7a3a;letter-spacing:1px;margin-top:4px;font-family:'Barlow Condensed',sans-serif;">TODAY</div>
+                </div>
+                <div style="background:#0c1c0c;border-radius:12px;padding:14px;border:1px solid #1a3a1a;">
+                  <div style="font-size:32px;color:#00e5a0;font-weight:900;font-family:'Barlow Condensed',sans-serif;line-height:1;">21</div>
+                  <div style="font-size:9px;color:#3a7a3a;letter-spacing:1px;margin-top:4px;font-family:'Barlow Condensed',sans-serif;">EXACT SCORES</div>
+                </div>
+                <div style="background:#0c1c0c;border-radius:12px;padding:14px;border:1px solid #1a3a1a;">
+                  <div style="font-size:32px;color:#5aaa6a;font-weight:900;font-family:'Barlow Condensed',sans-serif;line-height:1;">30</div>
+                  <div style="font-size:9px;color:#3a7a3a;letter-spacing:1px;margin-top:4px;font-family:'Barlow Condensed',sans-serif;">CORRECT RESULT</div>
+                </div>
+              </div>
+
+              <!-- Accuracy bar -->
+              <div style="background:#0c1c0c;border-radius:12px;padding:14px;border:1px solid #1a3a1a;">
+                <div style="font-size:9px;color:#2a6a2a;letter-spacing:1px;margin-bottom:10px;font-family:'Barlow Condensed',sans-serif;">ACCURACY  ·  72 PREDICTED</div>
+                <div style="height:8px;background:#091509;border-radius:4px;display:flex;overflow:hidden;">
+                  <div style="width:29%;background:#00e5a0;"></div>
+                  <div style="width:42%;background:#5aaa6a;"></div>
+                  <div style="width:29%;background:#1c3a1c;"></div>
+                </div>
+                <div style="display:flex;gap:14px;margin-top:10px;">
+                  <div style="display:flex;align-items:center;gap:5px;">
+                    <div style="width:8px;height:8px;border-radius:2px;background:#00e5a0;flex:none;"></div>
+                    <span style="font-size:9px;color:#00e5a0;font-family:'Barlow Condensed',sans-serif;">21 EXACT</span>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:5px;">
+                    <div style="width:8px;height:8px;border-radius:2px;background:#5aaa6a;flex:none;"></div>
+                    <span style="font-size:9px;color:#5aaa6a;font-family:'Barlow Condensed',sans-serif;">30 CORRECT</span>
+                  </div>
+                  <div style="display:flex;align-items:center;gap:5px;">
+                    <div style="width:8px;height:8px;border-radius:2px;background:#2a4a2a;flex:none;"></div>
+                    <span style="font-size:9px;color:#3a6a3a;font-family:'Barlow Condensed',sans-serif;">21 MISS</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- ══ MY PICKS ══ -->
+    <sc-if value="{{ isPicks }}">
+      <div style="flex:1;overflow:hidden;display:flex;flex-direction:column;">
+
+        <!-- Header — simplified, no progress bar -->
+        <div style="background:#020804;padding:14px 18px 12px;flex:none;border-bottom:1px solid #0c1c0c;">
+          <div style="display:flex;align-items:center;margin-bottom:8px;">
+            <span style="font-size:19px;font-weight:900;color:#e0f2e0;letter-spacing:2px;font-family:'Barlow Condensed',sans-serif;flex:1;">CUP CLASH</span>
+            <div style="width:32px;height:32px;border-radius:16px;background:#0e1f0e;border:1px solid #1c3a1c;display:flex;align-items:center;justify-content:center;font-size:14px;position:relative;">🔔<div style="position:absolute;top:-3px;right:-3px;width:14px;height:14px;border-radius:7px;background:#e53e3e;display:flex;align-items:center;justify-content:center;font-size:8px;color:#fff;font-family:monospace;font-weight:700;">2</div></div>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div style="display:inline-flex;align-items:center;gap:7px;background:#0e1f0e;border-radius:20px;padding:6px 13px;border:1px solid #1c3a1c;cursor:pointer;">
+              <span style="font-size:12px;">👥</span>
+              <span style="font-size:11px;color:#00e5a0;font-weight:700;font-family:'Barlow Condensed',sans-serif;">HEYBLINK FOR REAL</span>
+              <span style="font-size:11px;color:#2a5a2a;">▾</span>
+            </div>
+            <span style="font-size:10px;color:#00e5a0;font-weight:700;font-family:'Barlow Condensed',sans-serif;">72 / 72 ✓</span>
+          </div>
+        </div>
+
+        <!-- Accordion list -->
+        <div style="flex:1;overflow-y:auto;padding:10px 14px;background:#030c04;display:flex;flex-direction:column;gap:6px;">
+
+          <!-- GROUP STAGE -->
+          <div style="background:#0e1f0e;border-radius:14px;border:1px solid #1a3a1a;overflow:hidden;">
+            <div onClick="{{ toggleGroupStage }}" style="display:flex;align-items:center;gap:10px;padding:14px 14px;cursor:pointer;">
+              <span style="font-size:16px;">⚽</span>
+              <span style="font-size:15px;color:#00e5a0;font-weight:900;font-family:'Barlow Condensed',sans-serif;flex:1;">GROUP STAGE</span>
+              <span style="font-size:10px;color:#2a7a2a;font-family:'Barlow Condensed',sans-serif;">72/72  ·  12 groups  ✓</span>
+              <span style="font-size:14px;color:#00e5a0;margin-left:8px;">{{ groupStageChevron }}</span>
+            </div>
+            <sc-if value="{{ picksGroupStageOpen }}">
+              <div style="border-top:1px solid #162a16;padding:8px 10px;display:flex;flex-direction:column;gap:4px;">
+                <div onClick="{{ toggleGroupA }}" style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:#091409;border-radius:9px;border:1px solid #{{ grpABorder }};cursor:pointer;">
+                  <span style="font-size:10px;color:#4a9a4a;font-weight:700;font-family:'Barlow Condensed',sans-serif;width:46px;">GRP A</span>
+                  <span style="font-size:14px;">🇲🇽🇿🇦</span>
+                  <span style="font-size:10px;color:#2a6a2a;flex:1;font-family:'Barlow Condensed',sans-serif;">Complete ✓</span>
+                  <span style="font-size:13px;color:#{{ grpAChevronColor }};">{{ grpAChevron }}</span>
+                </div>
+                <sc-if value="{{ isGrpAOpen }}">
+                  <div style="margin:0 4px 0 12px;background:#071207;border-radius:8px;padding:9px 11px;border:1px solid #162a16;display:flex;flex-direction:column;gap:6px;">
+                    <div style="display:flex;align-items:center;gap:8px;">
+                      <span style="font-size:10px;color:#3a7a3a;flex:1;font-family:'Barlow Condensed',sans-serif;">MEX  2–0  SOU</span>
+                      <div style="background:#162a10;border-radius:5px;padding:2px 9px;font-size:9px;color:#ffaa00;border:1px solid #2a4a10;font-family:'Barlow Condensed',sans-serif;font-weight:700;">🏆 EXACT  +25</div>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:8px;">
+                      <span style="font-size:10px;color:#3a7a3a;flex:1;font-family:'Barlow Condensed',sans-serif;">KOR  2–1  CZE</span>
+                      <div style="background:#1a0a0a;border-radius:5px;padding:2px 9px;font-size:9px;color:#cc4444;border:1px solid #3a1a1a;font-family:'Barlow Condensed',sans-serif;font-weight:700;">✗ MISSED</div>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:8px;">
+                      <span style="font-size:10px;color:#3a7a3a;flex:1;font-family:'Barlow Condensed',sans-serif;">CZE  [2]:[1]  SOU</span>
+                      <div style="background:#162a16;border-radius:5px;padding:2px 9px;font-size:9px;color:#00e5a0;border:1px solid #2a5a2a;font-family:'Barlow Condensed',sans-serif;font-weight:700;">✓ SAVED</div>
+                    </div>
+                  </div>
+                </sc-if>
+                <div onClick="{{ toggleGroupB }}" style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:#091409;border-radius:9px;border:1px solid #{{ grpBBorder }};cursor:pointer;">
+                  <span style="font-size:10px;color:#4a9a4a;font-weight:700;font-family:'Barlow Condensed',sans-serif;width:46px;">GRP B</span>
+                  <span style="font-size:14px;">🇨🇦🇧🇦</span>
+                  <span style="font-size:10px;color:#2a6a2a;flex:1;font-family:'Barlow Condensed',sans-serif;">Complete ✓</span>
+                  <span style="font-size:13px;color:#{{ grpBChevronColor }};">{{ grpBChevron }}</span>
+                </div>
+                <sc-if value="{{ isGrpBOpen }}">
+                  <div style="margin:0 4px 0 12px;background:#071207;border-radius:8px;padding:9px 11px;border:1px solid #162a16;display:flex;flex-direction:column;gap:6px;">
+                    <div style="display:flex;align-items:center;gap:8px;">
+                      <span style="font-size:10px;color:#3a7a3a;flex:1;font-family:'Barlow Condensed',sans-serif;">CAN  1–1  BOS</span>
+                      <div style="background:#1a0a0a;border-radius:5px;padding:2px 9px;font-size:9px;color:#cc4444;border:1px solid #3a1a1a;font-family:'Barlow Condensed',sans-serif;font-weight:700;">✗ MISSED</div>
+                    </div>
+                    <div style="display:flex;align-items:center;gap:8px;">
+                      <span style="font-size:10px;color:#3a7a3a;flex:1;font-family:'Barlow Condensed',sans-serif;">USA  4–1  PAR</span>
+                      <div style="background:#162a16;border-radius:5px;padding:2px 9px;font-size:9px;color:#5aaa6a;border:1px solid #2a5a2a;font-family:'Barlow Condensed',sans-serif;font-weight:700;">✓ CORRECT  +10</div>
+                    </div>
+                  </div>
+                </sc-if>
+                <div style="display:flex;align-items:center;gap:8px;padding:8px 10px;background:#071207;border-radius:9px;border:1px dashed #162a16;opacity:0.5;cursor:pointer;">
+                  <span style="font-size:9px;color:#2a5a2a;font-family:'Barlow Condensed',sans-serif;flex:1;font-style:italic;">GRP C · D · E · F · G · H · I · J · K · L — all complete ✓</span>
+                  <span style="font-size:12px;color:#2a5a2a;">›</span>
+                </div>
+              </div>
+            </sc-if>
+          </div>
+
+          <!-- TOURNAMENT PICKS -->
+          <div style="background:#0e1f0e;border-radius:14px;border:1px solid #1a3a1a;overflow:hidden;">
+            <div onClick="{{ toggleTournament }}" style="display:flex;align-items:center;gap:10px;padding:14px 14px;cursor:pointer;">
+              <span style="font-size:16px;">🏆</span>
+              <span style="font-size:15px;color:#e0f2e0;font-weight:900;font-family:'Barlow Condensed',sans-serif;flex:1;">TOURNAMENT PICKS</span>
+              <span style="font-size:10px;color:#2a7a2a;font-family:'Barlow Condensed',sans-serif;">Done ✓</span>
+              <span style="font-size:14px;color:#3a6a3a;margin-left:8px;">{{ tournamentChevron }}</span>
+            </div>
+            <sc-if value="{{ picksTournamentOpen }}">
+              <div style="border-top:1px solid #162a16;padding:12px 14px;display:flex;flex-direction:column;gap:10px;">
+                <div style="display:flex;align-items:center;gap:10px;">
+                  <span style="font-size:9px;color:#2a6a2a;width:96px;font-family:'Barlow Condensed',sans-serif;letter-spacing:0.5px;">WINNER</span>
+                  <span style="font-size:18px;">🇫🇷</span>
+                  <span style="font-size:13px;color:#a0c8a0;font-family:'Barlow Condensed',sans-serif;font-weight:700;">FRANCE</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:10px;">
+                  <span style="font-size:9px;color:#2a6a2a;width:96px;font-family:'Barlow Condensed',sans-serif;letter-spacing:0.5px;">TOP SCORER</span>
+                  <span style="font-size:13px;color:#a0c8a0;font-family:'Barlow Condensed',sans-serif;font-weight:700;">K. MBAPPÉ  🇫🇷</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:10px;">
+                  <span style="font-size:9px;color:#2a6a2a;width:96px;font-family:'Barlow Condensed',sans-serif;letter-spacing:0.5px;">TOP ASSISTER</span>
+                  <span style="font-size:13px;color:#a0c8a0;font-family:'Barlow Condensed',sans-serif;font-weight:700;">L. YAMAL  🇪🇸</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:10px;">
+                  <span style="font-size:9px;color:#2a6a2a;width:96px;font-family:'Barlow Condensed',sans-serif;letter-spacing:0.5px;">GOLDEN BALL</span>
+                  <span style="font-size:13px;color:#a0c8a0;font-family:'Barlow Condensed',sans-serif;font-weight:700;">K. MBAPPÉ  🇫🇷</span>
+                </div>
+              </div>
+            </sc-if>
+          </div>
+
+          <!-- BONUS QUESTIONS -->
+          <div style="background:#0e1f0e;border-radius:14px;border:1px solid #1a3a1a;overflow:hidden;">
+            <div onClick="{{ toggleBonus }}" style="display:flex;align-items:center;gap:10px;padding:14px 14px;cursor:pointer;">
+              <span style="font-size:16px;">❓</span>
+              <span style="font-size:15px;color:#e0f2e0;font-weight:900;font-family:'Barlow Condensed',sans-serif;flex:1;">BONUS QUESTIONS</span>
+              <div style="background:#3a2a00;border-radius:12px;padding:3px 8px;border:1px solid #5a4400;">
+                <span style="font-size:9px;color:#ffaa00;font-weight:700;font-family:'Barlow Condensed',sans-serif;">2 NEW</span>
+              </div>
+              <span style="font-size:14px;color:#3a6a3a;margin-left:8px;">{{ bonusChevron }}</span>
+            </div>
+            <sc-if value="{{ picksBonusOpen }}">
+              <div style="border-top:1px solid #162a16;padding:12px 14px;">
+                <div style="background:#091409;border-radius:10px;padding:12px 13px;border:1px solid #162a16;">
+                  <div style="font-size:10px;color:#2a6a2a;font-family:'Barlow Condensed',sans-serif;margin-bottom:10px;letter-spacing:0.5px;">WHO SCORES IN THE FINAL?</div>
+                  <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                    <div style="background:#162a16;border-radius:6px;padding:5px 12px;border:1px solid #2a5a2a;font-size:11px;color:#5a9a5a;font-family:'Barlow Condensed',sans-serif;">MBAPPÉ</div>
+                    <div style="background:#162a16;border-radius:6px;padding:5px 12px;border:1px solid #2a5a2a;font-size:11px;color:#5a9a5a;font-family:'Barlow Condensed',sans-serif;">KANE</div>
+                    <div style="background:#162a16;border-radius:6px;padding:5px 12px;border:1.5px solid #00e5a0;font-size:11px;color:#00e5a0;font-weight:700;font-family:'Barlow Condensed',sans-serif;">OTHER ✓</div>
+                  </div>
+                </div>
+              </div>
+            </sc-if>
+          </div>
+
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- ══ SCHEDULE ══ -->
+    <sc-if value="{{ isSchedule }}">
+      <div style="flex:1;overflow:hidden;display:flex;flex-direction:column;">
+
+        <!-- Header -->
+        <div style="background:#020804;padding:14px 18px 12px;flex:none;border-bottom:1px solid #0c1c0c;">
+          <div style="display:flex;align-items:center;margin-bottom:10px;">
+            <div style="flex:1;">
+              <div style="font-size:9px;color:#3a7a3a;letter-spacing:2px;font-family:'Barlow Condensed',sans-serif;margin-bottom:1px;">FIFA WORLD CUP 2026</div>
+              <div style="font-size:22px;font-weight:900;color:#e0f2e0;font-family:'Barlow Condensed',sans-serif;line-height:1.1;">SCHEDULE</div>
+            </div>
+            <div style="width:32px;height:32px;border-radius:16px;background:#0e1f0e;border:1px solid #1c3a1c;display:flex;align-items:center;justify-content:center;font-size:14px;position:relative;">🔔<div style="position:absolute;top:-3px;right:-3px;width:14px;height:14px;border-radius:7px;background:#e53e3e;display:flex;align-items:center;justify-content:center;font-size:8px;color:#fff;font-family:monospace;font-weight:700;">2</div></div>
+          </div>
+          <!-- Search -->
+          <div style="background:#0e1f0e;border-radius:22px;padding:8px 14px;border:1px solid #1c5a1c;display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+            <span style="font-size:13px;color:#3a7a3a;">🔍</span>
+            <span style="font-size:12px;color:#2a5a2a;flex:1;font-family:'Barlow Condensed',sans-serif;font-style:italic;">Search teams, stage, date...</span>
+            <div style="background:#162a16;border-radius:10px;padding:2px 8px;border:1px solid #2a5a2a;">
+              <span style="font-size:9px;color:#3a7a3a;font-family:'Barlow Condensed',sans-serif;">83/108 ▾</span>
+            </div>
+          </div>
+          <!-- 4-tab row (removed ALL) -->
+          <div style="display:flex;background:#091409;border-radius:10px;border:1px solid #162a16;overflow:hidden;padding:3px;gap:2px;">
+            <div onClick="{{ setTabLive }}" style="flex:1;padding:7px 0;text-align:center;cursor:pointer;background:{{ tabLiveBg }};border-radius:7px;">
+              <span style="font-size:11px;font-weight:{{ tabLiveFW }};font-family:'Barlow Condensed',sans-serif;color:{{ tabLiveColor }};">● LIVE</span>
+            </div>
+            <div onClick="{{ setTabToday }}" style="flex:1;padding:7px 0;text-align:center;cursor:pointer;background:{{ tabTodayBg }};border-radius:7px;">
+              <span style="font-size:11px;font-weight:{{ tabTodayFW }};font-family:'Barlow Condensed',sans-serif;color:{{ tabTodayColor }};">TODAY</span>
+            </div>
+            <div onClick="{{ setTabUpcoming }}" style="flex:1;padding:7px 0;text-align:center;cursor:pointer;background:{{ tabUpcomingBg }};border-radius:7px;">
+              <span style="font-size:10px;font-weight:{{ tabUpcomingFW }};font-family:'Barlow Condensed',sans-serif;color:{{ tabUpcomingColor }};">UPCOMING</span>
+            </div>
+            <div onClick="{{ setTabDone }}" style="flex:1;padding:7px 0;text-align:center;cursor:pointer;background:{{ tabDoneBg }};border-radius:7px;">
+              <span style="font-size:11px;font-weight:{{ tabDoneFW }};font-family:'Barlow Condensed',sans-serif;color:{{ tabDoneColor }};">DONE</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Match list -->
+        <div style="flex:1;overflow-y:auto;padding:10px 14px;background:#030c04;display:flex;flex-direction:column;gap:5px;">
+
+          <sc-if value="{{ showLive }}">
+            <div style="padding:2px 2px 4px;">
+              <span style="font-size:9px;color:#ff6666;font-weight:700;font-family:'Barlow Condensed',sans-serif;letter-spacing:1px;">● LIVE NOW</span>
+            </div>
+            <div style="background:#160e0e;border-radius:12px;padding:12px 13px;border:1px solid #3a1a1a;">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:7px;">
+                <span style="font-size:11px;font-weight:700;color:#c8a0a0;flex:1;font-family:'Barlow Condensed',sans-serif;">🇪🇸 SPAIN  ·  🇨🇻 CABO VERDE</span>
+                <div style="background:#3a1010;border-radius:6px;padding:3px 9px;display:flex;align-items:center;gap:5px;border:1px solid #5a1a1a;">
+                  <div style="width:6px;height:6px;border-radius:3px;background:#ff4444;animation:pulse 1s infinite;flex:none;"></div>
+                  <span style="font-size:11px;color:#ff6666;font-weight:700;font-family:'Barlow Condensed',sans-serif;">1–0  67'</span>
+                </div>
+              </div>
+              <span style="font-size:10px;color:#cc4444;font-family:'Barlow Condensed',sans-serif;font-weight:700;">YOUR PICK: 5-0  ·  ✗ MISSED  ·  0 pts</span>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ showToday }}">
+            <div style="display:flex;align-items:center;gap:8px;padding:2px 2px 4px;">
+              <span style="font-size:9px;color:#00e5a0;font-weight:700;font-family:'Barlow Condensed',sans-serif;letter-spacing:1px;">TODAY</span>
+              <span style="font-size:9px;color:#2a5a2a;font-family:'Barlow Condensed',sans-serif;">THURSDAY JUNE 18  ·  4 MATCHES</span>
+            </div>
+            <div style="background:#0e1f0e;border-radius:12px;padding:12px 13px;border:1.5px solid #00e5a0;">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+                <span style="font-size:11px;font-weight:700;color:#a0c8a0;flex:1;font-family:'Barlow Condensed',sans-serif;">🇨🇿 CZECH REPUBLIC  ·  🇿🇦 SOUTH AFRICA</span>
+                <span style="font-size:9px;color:#2a6a2a;font-family:'Barlow Condensed',sans-serif;">7:00 PM</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:6px;">
+                <div style="display:flex;gap:4px;">
+                  <div style="width:26px;height:26px;border-radius:6px;background:#162a16;border:1.5px solid #00e5a0;display:flex;align-items:center;justify-content:center;font-size:13px;color:#00e5a0;font-weight:700;font-family:'Barlow Condensed',sans-serif;">2</div>
+                  <div style="width:26px;height:26px;border-radius:6px;background:#162a16;border:1.5px solid #00e5a0;display:flex;align-items:center;justify-content:center;font-size:13px;color:#00e5a0;font-weight:700;font-family:'Barlow Condensed',sans-serif;">1</div>
+                </div>
+                <span style="font-size:10px;color:#00e5a0;font-family:'Barlow Condensed',sans-serif;">✓ Saved</span>
+                <div style="flex:1;"></div>
+                <div style="background:#162a16;border-radius:6px;padding:2px 8px;font-size:9px;color:#2a7a2a;border:1px solid #2a5a2a;font-family:'Barlow Condensed',sans-serif;">GRP A</div>
+              </div>
+            </div>
+            <div style="background:#0e1f0e;border-radius:12px;padding:12px 13px;border:1px solid #1a3a1a;">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+                <span style="font-size:11px;font-weight:700;color:#a0c8a0;flex:1;font-family:'Barlow Condensed',sans-serif;">🇲🇽 MEXICO  ·  🇰🇷 KOREA REPUBLIC</span>
+                <span style="font-size:9px;color:#2a6a2a;font-family:'Barlow Condensed',sans-serif;">4:00 AM</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:6px;">
+                <div style="display:flex;gap:4px;">
+                  <div style="width:26px;height:26px;border-radius:6px;background:#162a16;border:1.5px solid #2a5a2a;display:flex;align-items:center;justify-content:center;font-size:13px;color:#5aaa5a;font-weight:700;font-family:'Barlow Condensed',sans-serif;">2</div>
+                  <div style="width:26px;height:26px;border-radius:6px;background:#162a16;border:1.5px solid #2a5a2a;display:flex;align-items:center;justify-content:center;font-size:13px;color:#5aaa5a;font-weight:700;font-family:'Barlow Condensed',sans-serif;">1</div>
+                </div>
+                <span style="font-size:10px;color:#5aaa5a;font-family:'Barlow Condensed',sans-serif;">✓ Saved</span>
+                <div style="flex:1;"></div>
+                <div style="background:#162a16;border-radius:6px;padding:2px 8px;font-size:9px;color:#2a7a2a;border:1px solid #2a5a2a;font-family:'Barlow Condensed',sans-serif;">GRP A</div>
+              </div>
+            </div>
+            <div style="background:#0e1f0e;border-radius:12px;padding:12px 13px;border:1px solid #1a3a1a;">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+                <span style="font-size:11px;font-weight:700;color:#a0c8a0;flex:1;font-family:'Barlow Condensed',sans-serif;">🇨🇭 SWITZERLAND  ·  🇧🇦 BOSNIA</span>
+                <span style="font-size:9px;color:#2a6a2a;font-family:'Barlow Condensed',sans-serif;">10:00 PM</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:6px;">
+                <div style="display:flex;gap:4px;">
+                  <div style="width:26px;height:26px;border-radius:6px;background:#162a16;border:1.5px solid #2a5a2a;display:flex;align-items:center;justify-content:center;font-size:13px;color:#5aaa5a;font-weight:700;font-family:'Barlow Condensed',sans-serif;">2</div>
+                  <div style="width:26px;height:26px;border-radius:6px;background:#162a16;border:1.5px solid #2a5a2a;display:flex;align-items:center;justify-content:center;font-size:13px;color:#5aaa5a;font-weight:700;font-family:'Barlow Condensed',sans-serif;">1</div>
+                </div>
+                <span style="font-size:10px;color:#5aaa5a;font-family:'Barlow Condensed',sans-serif;">✓ Saved</span>
+                <div style="flex:1;"></div>
+                <div style="background:#162a16;border-radius:6px;padding:2px 8px;font-size:9px;color:#2a7a2a;border:1px solid #2a5a2a;font-family:'Barlow Condensed',sans-serif;">GRP B</div>
+              </div>
+            </div>
+            <div style="background:#0e1f0e;border-radius:12px;padding:12px 13px;border:1px solid #1a3a1a;">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+                <span style="font-size:11px;font-weight:700;color:#a0c8a0;flex:1;font-family:'Barlow Condensed',sans-serif;">🇨🇦 CANADA  ·  🇶🇦 QATAR</span>
+                <span style="font-size:9px;color:#2a6a2a;font-family:'Barlow Condensed',sans-serif;">1:00 AM</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:6px;">
+                <div style="display:flex;gap:4px;">
+                  <div style="width:26px;height:26px;border-radius:6px;background:#162a16;border:1.5px solid #2a5a2a;display:flex;align-items:center;justify-content:center;font-size:13px;color:#5aaa5a;font-weight:700;font-family:'Barlow Condensed',sans-serif;">2</div>
+                  <div style="width:26px;height:26px;border-radius:6px;background:#162a16;border:1.5px solid #2a5a2a;display:flex;align-items:center;justify-content:center;font-size:13px;color:#5aaa5a;font-weight:700;font-family:'Barlow Condensed',sans-serif;">0</div>
+                </div>
+                <span style="font-size:10px;color:#5aaa5a;font-family:'Barlow Condensed',sans-serif;">✓ Saved</span>
+                <div style="flex:1;"></div>
+                <div style="background:#162a16;border-radius:6px;padding:2px 8px;font-size:9px;color:#2a7a2a;border:1px solid #2a5a2a;font-family:'Barlow Condensed',sans-serif;">GRP B</div>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ showUpcoming }}">
+            <div style="display:flex;align-items:center;gap:8px;padding:2px 2px 4px;">
+              <span style="font-size:9px;color:#5a9a5a;font-weight:700;font-family:'Barlow Condensed',sans-serif;letter-spacing:1px;">FRIDAY JUNE 19</span>
+              <span style="font-size:9px;color:#2a5a2a;font-family:'Barlow Condensed',sans-serif;">4 MATCHES</span>
+            </div>
+            <div style="background:#0e1f0e;border-radius:12px;padding:12px 13px;border:1px solid #1a3a1a;">
+              <div style="display:flex;align-items:center;gap:8px;">
+                <span style="font-size:11px;font-weight:700;color:#a0c8a0;flex:1;font-family:'Barlow Condensed',sans-serif;">🏴󠁧󠁢󠁳󠁣󠁴󠁿 SCOTLAND  ·  🇲🇦 MOROCCO</span>
+                <span style="font-size:9px;color:#2a6a2a;font-family:'Barlow Condensed',sans-serif;">1:00 AM</span>
+              </div>
+            </div>
+            <div style="background:#0e1f0e;border-radius:12px;padding:12px 13px;border:1px solid #1a3a1a;">
+              <div style="display:flex;align-items:center;gap:8px;">
+                <span style="font-size:11px;font-weight:700;color:#a0c8a0;flex:1;font-family:'Barlow Condensed',sans-serif;">🇧🇷 BRAZIL  ·  🇭🇹 HAITI</span>
+                <span style="font-size:9px;color:#2a6a2a;font-family:'Barlow Condensed',sans-serif;">3:30 AM</span>
+              </div>
+            </div>
+            <div style="background:#0e1f0e;border-radius:12px;padding:12px 13px;border:1px solid #1a3a1a;">
+              <div style="display:flex;align-items:center;gap:8px;">
+                <span style="font-size:11px;font-weight:700;color:#a0c8a0;flex:1;font-family:'Barlow Condensed',sans-serif;">🇺🇸 USA  ·  🇦🇺 AUSTRALIA</span>
+                <span style="font-size:9px;color:#2a6a2a;font-family:'Barlow Condensed',sans-serif;">10:00 PM</span>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ showDone }}">
+            <div style="display:flex;align-items:center;gap:8px;padding:2px 2px 4px;">
+              <span style="font-size:9px;color:#4a7a4a;font-weight:700;font-family:'Barlow Condensed',sans-serif;letter-spacing:1px;">THURSDAY JUNE 11</span>
+              <span style="font-size:9px;color:#2a5a2a;font-family:'Barlow Condensed',sans-serif;">2 MATCHES</span>
+            </div>
+            <div style="background:#0a140a;border-radius:12px;padding:12px 13px;border:1px solid #162a16;opacity:0.9;">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+                <span style="font-size:11px;font-weight:700;color:#7ab07a;flex:1;font-family:'Barlow Condensed',sans-serif;">🇲🇽 MEXICO  2–0  🇿🇦 SOUTH AFRICA</span>
+                <div style="background:#162a10;border-radius:4px;padding:2px 7px;font-size:9px;color:#ffaa00;border:1px solid #2a4a10;font-family:'Barlow Condensed',sans-serif;font-weight:700;">FT</div>
+              </div>
+              <span style="font-size:10px;color:#00e5a0;font-family:'Barlow Condensed',sans-serif;font-weight:700;">YOUR PICK: 2-0  🏆 EXACT  +25 pts</span>
+            </div>
+            <div style="background:#0a140a;border-radius:12px;padding:12px 13px;border:1px solid #162a16;opacity:0.9;">
+              <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+                <span style="font-size:11px;font-weight:700;color:#7ab07a;flex:1;font-family:'Barlow Condensed',sans-serif;">🇰🇷 KOREA REPUBLIC  2–1  🇨🇿 CZECHIA</span>
+                <div style="background:#162a10;border-radius:4px;padding:2px 7px;font-size:9px;color:#ffaa00;border:1px solid #2a4a10;font-family:'Barlow Condensed',sans-serif;font-weight:700;">FT</div>
+              </div>
+              <span style="font-size:10px;color:#cc4444;font-family:'Barlow Condensed',sans-serif;font-weight:700;">YOUR PICK: 1-1  ✗ MISSED  0 pts</span>
+            </div>
+          </sc-if>
+
+        </div>
+      </div>
+    </sc-if>
+
+    <!-- BOTTOM NAV -->
+    <div style="height:78px;background:#020804;border-top:1px solid #0c1c0c;display:flex;align-items:flex-start;padding-top:10px;flex:none;">
+      <div onClick="{{ goHome }}" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;">
+        <span style="font-size:20px;">🏠</span>
+        <span style="font-size:9px;font-weight:700;font-family:'Barlow Condensed',sans-serif;letter-spacing:0.5px;color:{{ homeNavColor }};">HOME</span>
+        <div style="width:20px;height:2px;border-radius:1px;background:{{ homeNavColor }};"></div>
+      </div>
+      <div onClick="{{ goPicks }}" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;">
+        <span style="font-size:20px;">🎯</span>
+        <span style="font-size:9px;font-weight:700;font-family:'Barlow Condensed',sans-serif;letter-spacing:0.5px;color:{{ picksNavColor }};">MY PICKS</span>
+        <div style="width:20px;height:2px;border-radius:1px;background:{{ picksNavColor }};"></div>
+      </div>
+      <div onClick="{{ goSchedule }}" style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;">
+        <span style="font-size:20px;">📅</span>
+        <span style="font-size:9px;font-weight:700;font-family:'Barlow Condensed',sans-serif;letter-spacing:0.5px;color:{{ scheduleNavColor }};">SCHEDULE</span>
+        <div style="width:20px;height:2px;border-radius:1px;background:{{ scheduleNavColor }};"></div>
+      </div>
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;opacity:0.22;pointer-events:none;">
+        <span style="font-size:20px;">⊞</span>
+        <span style="font-size:9px;font-family:'Barlow Condensed',sans-serif;letter-spacing:0.5px;color:#2a5a2a;">SUMMARY</span>
+        <div style="width:20px;height:2px;border-radius:1px;background:#2a5a2a;"></div>
+      </div>
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;opacity:0.22;pointer-events:none;">
+        <span style="font-size:20px;">···</span>
+        <span style="font-size:9px;font-family:'Barlow Condensed',sans-serif;letter-spacing:0.5px;color:#2a5a2a;">MORE</span>
+        <div style="width:20px;height:2px;border-radius:1px;background:#2a5a2a;"></div>
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;: {&quot;width&quot;: 440, &quot;height&quot;: 920}}">
+
+class Component extends DCLogic {
+  state = {
+    screen: 'home',
+    panel: 0,
+    picksGroupStageOpen: true,
+    picksActiveGroup: null,
+    picksTournamentOpen: false,
+    picksBonusOpen: false,
+    scheduleTab: 'today',
+  };
+
+  componentDidMount() {
+    // Scale phone to fit viewport
+    const scalePhone = () => {
+      const phone = document.getElementById('phone');
+      if (!phone) return;
+      const s = Math.min(1, (window.innerHeight - 80) / 844, (window.innerWidth - 48) / 390);
+      phone.style.transform = `scale(${s})`;
+      phone.style.transformOrigin = 'top center';
+      const wrap = phone.parentElement;
+      if (wrap) wrap.style.minHeight = Math.ceil(844 * s + 64) + 'px';
+    };
+    scalePhone();
+    window.addEventListener('resize', scalePhone);
+
+    this._setPanelPos(0, false);
+
+    // Desktop mouse drag
+    let dragStartX = 0;
+    let isDragging = false;
+
+    document.addEventListener('mousemove', (e) => {
+      if (!isDragging || this.state.screen !== 'home') return;
+      const track = document.getElementById('pt');
+      if (!track) return;
+      const diff = e.clientX - dragStartX;
+      const base = -this.state.panel * 390;
+      const raw = base + diff;
+      // Clamp with rubber-band feel at edges
+      const clamped = Math.max(-2 * 390, Math.min(0, raw));
+      track.style.transition = 'none';
+      track.style.transform = `translateX(${clamped}px)`;
+    });
+
+    document.addEventListener('mouseup', (e) => {
+      if (!isDragging) return;
+      isDragging = false;
+      document.body.style.cursor = '';
+      const diff = e.clientX - dragStartX;
+      let p = this.state.panel;
+      if (diff < -50 && p < 2) p++;
+      else if (diff > 50 && p > 0) p--;
+      if (p !== this.state.panel) {
+        this.setState({ panel: p });
+      } else {
+        this._setPanelPos(p, true); // snap back
+      }
+    });
+
+    this._startDrag = (x) => {
+      dragStartX = x;
+      isDragging = true;
+      document.body.style.cursor = 'grabbing';
+    };
+  }
+
+  componentDidUpdate(prevProps, prevState) {
+    if (this.state.screen === 'home') {
+      if (prevState.screen !== 'home') {
+        setTimeout(() => this._setPanelPos(this.state.panel, false), 0);
+      } else if (prevState.panel !== this.state.panel) {
+        this._setPanelPos(this.state.panel, true);
+      }
+    }
+  }
+
+  _setPanelPos(panel, animate) {
+    const track = document.getElementById('pt');
+    if (!track) return;
+    track.style.transition = animate
+      ? 'transform 0.32s cubic-bezier(0.25, 0.46, 0.45, 0.94)'
+      : 'none';
+    track.style.transform = `translateX(${-panel * 390}px)`;
+  }
+
+  renderVals() {
+    const {
+      screen, panel,
+      picksGroupStageOpen, picksActiveGroup,
+      picksTournamentOpen, picksBonusOpen,
+      scheduleTab
+    } = this.state;
+
+    const ac = '#00e5a0';
+    const dim = '#2a5a2a';
+
+    // Pill tab helper
+    const pill = (i) => panel === i
+      ? { bg: '#162a16', border: '#00e5a0', color: '#00e5a0' }
+      : { bg: 'transparent', border: '#1a3a1a', color: '#3a7a3a' };
+    const p0 = pill(0), p1 = pill(1), p2 = pill(2);
+
+    // Schedule tab helper
+    const sTab = (key, live) => ({
+      bg: scheduleTab === key ? (live ? '#2a1010' : '#162a16') : 'transparent',
+      color: scheduleTab === key ? (live ? '#ff6666' : '#00e5a0') : '#3a6a3a',
+      fw: scheduleTab === key ? '700' : '400',
+    });
+    const tLive = sTab('live', true);
+    const tToday = sTab('today', false);
+    const tUpcoming = sTab('upcoming', false);
+    const tDone = sTab('done', false);
+
+    return {
+      // Screen flags
+      isHome: screen === 'home',
+      isPicks: screen === 'picks',
+      isSchedule: screen === 'schedule',
+
+      // Navigation
+      goHome: () => this.setState({ screen: 'home' }),
+      goPicks: () => this.setState({ screen: 'picks' }),
+      goSchedule: () => this.setState({ screen: 'schedule' }),
+      homeNavColor: screen === 'home' ? ac : dim,
+      picksNavColor: screen === 'picks' ? ac : dim,
+      scheduleNavColor: screen === 'schedule' ? ac : dim,
+
+      // Panel pills
+      setPanel0: () => this.setState({ panel: 0 }),
+      setPanel1: () => this.setState({ panel: 1 }),
+      setPanel2: () => this.setState({ panel: 2 }),
+      pill0Bg: p0.bg, pill0Border: p0.border, pill0Color: p0.color,
+      pill1Bg: p1.bg, pill1Border: p1.border, pill1Color: p1.color,
+      pill2Bg: p2.bg, pill2Border: p2.border, pill2Color: p2.color,
+
+      // Touch swipe — real-time feedback via onTouchMove
+      onTouchStart: (e) => {
+        this._touchX = e.touches[0].clientX;
+        const track = document.getElementById('pt');
+        if (track) track.style.transition = 'none';
+      },
+      onTouchMove: (e) => {
+        const diff = e.touches[0].clientX - (this._touchX || 0);
+        const track = document.getElementById('pt');
+        if (!track) return;
+        const raw = -this.state.panel * 390 + diff;
+        const clamped = Math.max(-2 * 390, Math.min(0, raw));
+        track.style.transform = `translateX(${clamped}px)`;
+      },
+      onTouchEnd: (e) => {
+        const diff = e.changedTouches[0].clientX - (this._touchX || 0);
+        let p = this.state.panel;
+        if (diff < -50 && p < 2) p++;
+        else if (diff > 50 && p > 0) p--;
+        if (p !== this.state.panel) this.setState({ panel: p });
+        else this._setPanelPos(p, true);
+      },
+      onMouseDown: (e) => {
+        e.preventDefault();
+        if (this._startDrag) this._startDrag(e.clientX);
+      },
+
+      // Picks accordion
+      picksGroupStageOpen,
+      toggleGroupStage: () => this.setState(s => ({
+        picksGroupStageOpen: !s.picksGroupStageOpen,
+        picksActiveGroup: null,
+      })),
+      toggleGroupA: () => this.setState(s => ({
+        picksActiveGroup: s.picksActiveGroup === 'A' ? null : 'A',
+      })),
+      toggleGroupB: () => this.setState(s => ({
+        picksActiveGroup: s.picksActiveGroup === 'B' ? null : 'B',
+      })),
+      isGrpAOpen: picksActiveGroup === 'A',
+      isGrpBOpen: picksActiveGroup === 'B',
+      groupStageChevron: picksGroupStageOpen ? '▾' : '›',
+      grpAChevron: picksActiveGroup === 'A' ? '▾' : '›',
+      grpBChevron: picksActiveGroup === 'B' ? '▾' : '›',
+      grpAChevronColor: picksActiveGroup === 'A' ? '00e5a0' : '2a5a2a',
+      grpBChevronColor: picksActiveGroup === 'B' ? '00e5a0' : '2a5a2a',
+      grpABorder: picksActiveGroup === 'A' ? '1c5a1c' : '162a16',
+      grpBBorder: picksActiveGroup === 'B' ? '1c5a1c' : '162a16',
+      picksTournamentOpen,
+      toggleTournament: () => this.setState(s => ({ picksTournamentOpen: !s.picksTournamentOpen })),
+      tournamentChevron: picksTournamentOpen ? '▾' : '›',
+      picksBonusOpen,
+      toggleBonus: () => this.setState(s => ({ picksBonusOpen: !s.picksBonusOpen })),
+      bonusChevron: picksBonusOpen ? '▾' : '›',
+
+      // Schedule — 4 tabs (LIVE · TODAY · UPCOMING · DONE)
+      setTabLive: () => this.setState({ scheduleTab: 'live' }),
+      setTabToday: () => this.setState({ scheduleTab: 'today' }),
+      setTabUpcoming: () => this.setState({ scheduleTab: 'upcoming' }),
+      setTabDone: () => this.setState({ scheduleTab: 'done' }),
+      showLive: scheduleTab === 'live',
+      showToday: scheduleTab === 'today',
+      showUpcoming: scheduleTab === 'upcoming',
+      showDone: scheduleTab === 'done',
+      tabLiveBg: tLive.bg, tabLiveColor: tLive.color, tabLiveFW: tLive.fw,
+      tabTodayBg: tToday.bg, tabTodayColor: tToday.color, tabTodayFW: tToday.fw,
+      tabUpcomingBg: tUpcoming.bg, tabUpcomingColor: tUpcoming.color, tabUpcomingFW: tUpcoming.fw,
+      tabDoneBg: tDone.bg, tabDoneColor: tDone.color, tabDoneFW: tDone.fw,
+    };
+  }
+}
+
+</script>
+</body>
+</html>

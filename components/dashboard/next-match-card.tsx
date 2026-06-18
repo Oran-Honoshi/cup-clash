@@ -180,13 +180,13 @@ export function NextMatchCard({ match, groupId = "", cardLabel }: NextMatchCardP
             {saveState === "saved" ? (
               <>
                 <ScoreDisplay value={homeScore} />
-                <span className="font-display text-2xl font-black" style={{ color: "rgba(255,255,255,0.3)" }}>–</span>
+                <span className="font-barlow text-2xl font-black" style={{ color: "#1c4a1c" }}>–</span>
                 <ScoreDisplay value={awayScore} />
               </>
             ) : (
               <>
                 <ScoreInputCC value={homeScore} onChange={setHomeScore} disabled={isLocked} />
-                <span className="font-display text-2xl font-black" style={{ color: "rgba(255,255,255,0.3)" }}>–</span>
+                <span className="font-barlow text-2xl font-black" style={{ color: "#1c4a1c" }}>–</span>
                 <ScoreInputCC value={awayScore} onChange={setAwayScore} disabled={isLocked} />
               </>
             )}
@@ -203,12 +203,12 @@ export function NextMatchCard({ match, groupId = "", cardLabel }: NextMatchCardP
 
         {/* Points hint */}
         <div
-          className="mt-4 flex items-center justify-center gap-4 text-[11px]"
-          style={{ color: "rgba(255,255,255,0.3)" }}
+          className="mt-4 flex items-center justify-center gap-4 font-barlow"
+          style={{ color: "#3a7a3a", fontSize: 11, letterSpacing: "0.5px" }}
         >
-          <span><span className="font-bold" style={{ color: "#00FF88" }}>+10</span> correct outcome</span>
-          <span style={{ opacity: 0.3 }}>·</span>
-          <span><span className="font-bold" style={{ color: "#00D4FF" }}>+25</span> exact score</span>
+          <span><span className="font-bold" style={{ color: "#5aaa6a" }}>+10</span> correct outcome</span>
+          <span style={{ color: "#1c3a1c" }}>·</span>
+          <span><span className="font-bold" style={{ color: "#00e5a0" }}>+25</span> exact score</span>
         </div>
 
         {saveState === "error" && errorMsg && (
@@ -228,8 +228,8 @@ export function NextMatchCard({ match, groupId = "", cardLabel }: NextMatchCardP
             </div>
           ) : saveState === "saved" ? (
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-1.5 text-sm font-bold" style={{ color: "#00FF88" }}>
-                <CheckCircle size={15} /> Prediction saved
+              <div className="flex items-center gap-1.5 font-barlow font-bold" style={{ color: "#00e5a0", fontSize: 13, letterSpacing: "0.5px" }}>
+                <CheckCircle size={15} /> PREDICTION SAVED
               </div>
               <button
                 type="button"
@@ -260,12 +260,15 @@ export function NextMatchCard({ match, groupId = "", cardLabel }: NextMatchCardP
 function ScoreDisplay({ value }: { value: string }) {
   return (
     <div
-      className="w-14 h-14 flex items-center justify-center font-display text-3xl font-black rounded-xl"
+      className="flex items-center justify-center font-barlow font-black"
       style={{
-        background: "rgba(0,255,136,0.08)",
-        border: "1px solid rgba(0,255,136,0.3)",
-        color: "#00FF88",
-        boxShadow: "0 0 12px rgba(0,255,136,0.1)",
+        width: 46,
+        height: 46,
+        borderRadius: 10,
+        background: "#091808",
+        border: "2px solid #00e5a0",
+        color: "#00e5a0",
+        fontSize: 26,
       }}
     >
       {value}
