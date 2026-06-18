@@ -1,11 +1,13 @@
 // Cup Clash Service Worker — PWA + Web Push
-const CACHE_NAME = "cupclash-v7";
+const CACHE_NAME = "cupclash-v8";
 const STATIC_ASSETS = ["/", "/dashboard", "/predictions", "/leaderboard"];
 
-// Install — cache core routes
+// Install — nuke all old caches, then pre-cache core routes
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => cache.addAll(STATIC_ASSETS))
+    caches.keys()
+      .then(keys => Promise.all(keys.map(k => caches.delete(k))))
+      .then(() => caches.open(CACHE_NAME).then(cache => cache.addAll(STATIC_ASSETS)))
   );
   self.skipWaiting();
 });
