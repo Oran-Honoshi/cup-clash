@@ -247,6 +247,8 @@ function MatchCard({
   onLocalPredChange,
   userId,
   groupId,
+  isToday,
+  isNext,
 }: {
   match: typeof WC2026_MATCHES[0];
   state: ReturnType<typeof getMatchState>;
@@ -255,6 +257,8 @@ function MatchCard({
   onLocalPredChange: (matchId: string, home: string, away: string) => void;
   userId: string | undefined;
   groupId: string;
+  isToday: boolean;
+  isNext: boolean;
 }) {
   const locked = state.type !== "upcoming" || isLocked(match.utcTime);
   const canPredict = !!userId && !!groupId && !locked && state.type === "upcoming";
@@ -266,162 +270,131 @@ function MatchCard({
     setTzAbbr(getTzAbbr(match.utcTime));
   }, [match.utcTime]);
 
-  const stageCfg = STAGE_COLORS[match.stage] ?? STAGE_COLORS.Group;
   const stageName = match.group ? `Grp ${match.group}` : STAGE_LABELS[match.stage] ?? match.stage;
 
   const showPred = !!pred && (state.type !== "upcoming" || locked);
   const showInputs = canPredict && !pred;
   const showEditInputs = canPredict && !!pred;
 
-  // Card border color based on state
-  const cardBorderStyle = state.type === "live"
-    ? "1px solid #5a1a1a"
-    : state.type === "finished" && pred
-      ? pred.isExact
-        ? "1px solid #2a5a2a"
-        : predResult(pred, (state as { homeScore: number }).homeScore, (state as { awayScore: number }).awayScore) === "correct"
-          ? "1px solid #1a3a1a"
-          : "1px solid #3a1a1a"
-      : "1px solid #1a3a1a";
+  // Per-state card style
+  const cardStyle: React.CSSProperties =
+    state.type === "live"
+      ? { background: "#160e0e", border: "1px solid #3a1a1a", borderRadius: 12, padding: "12px 13px" }
+      : state.type === "finished"
+        ? { background: "#0a140a", border: "1px solid #162a16", borderRadius: 12, padding: "12px 13px", opacity: 0.9 }
+        : isNext
+          ? { background: "#0e1f0e", border: "1.5px solid #00e5a0", borderRadius: 12, padding: "12px 13px" }
+          : isToday
+            ? { background: "#0e1f0e", border: "1px solid #1a3a1a", borderRadius: 12, padding: "12px 13px" }
+            : { background: "rgba(18,14,38,0.25)", border: "1px solid #1a3a1a", borderRadius: 12, padding: "12px 13px" };
+
+  const teamColor = state.type === "live" ? "#c8a0a0" : isToday ? "#a0c8a0" : "rgba(255,255,255,0.8)";
 
   return (
-    <div
-      className="rounded-2xl px-4 py-3 transition-all"
-      style={{ ...glassCard, border: cardBorderStyle }}
-    >
-      {/* Main row */}
-      <div className="flex items-center gap-3">
-        {/* Stage badge */}
-        <span
-          className="shrink-0 hidden sm:inline-flex items-center text-[10px] font-bold uppercase tracking-wide px-2.5 py-1 rounded-full"
-          style={{ background: stageCfg.bg, color: stageCfg.text, border: `1px solid ${stageCfg.border}` }}
-        >
-          {stageName}
-        </span>
+    <div className="transition-all" style={cardStyle}>
 
-        {/* Home team */}
-        <div className="flex items-center gap-1.5 min-w-0 flex-1 justify-end">
-          <span className="font-display text-sm sm:text-base uppercase font-black truncate text-white">
-            {match.home}
-          </span>
-          <Flag code={match.homeFlagCode} size="xs" />
-        </div>
-
-        {/* Score / vs / inputs */}
-        <div className="flex items-center gap-2 shrink-0">
-          {state.type === "finished" && (
-            <div className="flex items-center gap-1.5">
-              <span className="font-barlow text-xl sm:text-2xl font-black tabular-nums leading-none" style={{ color: "#a0c8a0" }}>
-                {state.homeScore}
-              </span>
-              <span className="text-sm font-bold" style={{ color: "#1c4a1c" }}>–</span>
-              <span className="font-barlow text-xl sm:text-2xl font-black tabular-nums leading-none" style={{ color: "#a0c8a0" }}>
-                {state.awayScore}
+      {/* ── Live layout ─────────────────────────────────────────── */}
+      {state.type === "live" && (
+        <>
+          <div className="flex items-center justify-between gap-2">
+            <span className="font-barlow text-xs font-bold uppercase tracking-wide truncate" style={{ color: "#c8a0a0" }}>
+              {match.home} vs {match.away}
+            </span>
+            <div className="flex items-center gap-1.5 shrink-0 px-2.5 py-1 rounded-md"
+              style={{ background: "#3a1010", border: "1px solid #5a1a1a" }}>
+              <span className="inline-block rounded-full animate-pulse" style={{ width: 6, height: 6, background: "#ff4444" }} />
+              <span className="font-barlow font-bold" style={{ fontSize: 11, color: "#ff6666" }}>
+                {state.homeScore}–{state.awayScore}
+                {state.minute != null && <span style={{ marginLeft: 4 }}>{state.minute}&apos;</span>}
               </span>
             </div>
-          )}
-
-          {state.type === "live" && (
-            <div className="flex items-center gap-1.5">
-              <span className="font-barlow text-xl sm:text-2xl font-black tabular-nums leading-none"
-                style={{ color: "#ff6666" }}>
-                {state.homeScore}
-              </span>
-              <span className="text-sm font-bold" style={{ color: "rgba(255,102,102,0.5)" }}>–</span>
-              <span className="font-barlow text-xl sm:text-2xl font-black tabular-nums leading-none"
-                style={{ color: "#ff6666" }}>
-                {state.awayScore}
-              </span>
+          </div>
+          {state.events.length > 0 && <GoalEvents events={state.events} />}
+          {showPred && pred && (
+            <div className="flex items-center gap-2 mt-1.5 pt-1.5" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+              <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "#3a7a3a" }}>Your pick</span>
+              <span className="font-mono text-[10px] font-bold" style={{ color: "#00e5a0" }}>{pred.homeScore}–{pred.awayScore}</span>
             </div>
           )}
+          {groupId && <PredictionDistribution matchId={match.id} groupId={groupId} />}
+        </>
+      )}
 
-          {state.type === "upcoming" && (showInputs || showEditInputs) && (
-            <div className="flex items-center gap-1.5">
+      {/* ── Finished layout ─────────────────────────────────────── */}
+      {state.type === "finished" && (
+        <>
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 min-w-0">
+              <Flag code={match.homeFlagCode} size="xs" />
+              <span className="font-barlow font-bold uppercase truncate text-xs" style={{ color: "#a0c8a0" }}>{match.home}</span>
+              <span className="font-barlow font-black text-base tabular-nums" style={{ color: "#ffaa00" }}>{state.homeScore}–{state.awayScore}</span>
+              <span className="font-barlow font-bold uppercase truncate text-xs" style={{ color: "#a0c8a0" }}>{match.away}</span>
+              <Flag code={match.awayFlagCode} size="xs" />
+            </div>
+            <span className="shrink-0 font-barlow font-bold px-2 py-0.5 rounded-md"
+              style={{ background: "#162a10", border: "1px solid #2a4a10", color: "#ffaa00", fontSize: 9 }}>
+              FT
+            </span>
+          </div>
+          {state.events.length > 0 && <GoalEvents events={state.events} />}
+          {showPred && pred && (
+            <PredRow pred={pred} type="finished"
+              homeScore={(state as { homeScore: number }).homeScore}
+              awayScore={(state as { awayScore: number }).awayScore} />
+          )}
+        </>
+      )}
+
+      {/* ── Upcoming layout ─────────────────────────────────────── */}
+      {state.type === "upcoming" && (
+        <>
+          {/* Teams + time row */}
+          <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5 flex-1 min-w-0">
+              <Flag code={match.homeFlagCode} size="xs" />
+              <span className="font-barlow font-bold uppercase text-xs truncate" style={{ color: teamColor }}>{match.home}</span>
+            </div>
+            <span className="font-barlow font-bold text-xs shrink-0" style={{ color: "#3a7a3a" }}>vs</span>
+            <div className="flex items-center gap-1.5 flex-1 min-w-0 justify-end">
+              <span className="font-barlow font-bold uppercase text-xs truncate" style={{ color: teamColor }}>{match.away}</span>
+              <Flag code={match.awayFlagCode} size="xs" />
+            </div>
+            <div className="flex flex-col items-end shrink-0 ml-2">
+              {locked && <Lock size={8} style={{ color: "rgba(255,255,255,0.25)" }} />}
+              <span className="font-mono text-[10px] font-bold" style={{ color: isNext ? "#00e5a0" : "#00D4FF" }} suppressHydrationWarning>{localTime}</span>
+            </div>
+          </div>
+
+          {/* Score chips row — only for today / open matches */}
+          {isToday && (showInputs || showEditInputs || pred) && (
+            <div className="flex items-center gap-1.5 mt-2">
               <ScoreInputCC
                 value={localPred?.home ?? ""}
                 onChange={v => onLocalPredChange(match.id, v, localPred?.away ?? "")}
-                size={40}
+                size={26}
+                disabled={locked}
               />
-              <span className="text-xs font-bold" style={{ color: "rgba(255,255,255,0.25)" }}>–</span>
+              <span style={{ fontSize: 11, fontWeight: 700, color: "#1c4a1c" }}>–</span>
               <ScoreInputCC
                 value={localPred?.away ?? ""}
                 onChange={v => onLocalPredChange(match.id, localPred?.home ?? "", v)}
-                size={40}
+                size={26}
+                disabled={locked}
               />
-            </div>
-          )}
-
-          {state.type === "upcoming" && !showInputs && !showEditInputs && (
-            <span className="text-sm font-bold px-3 sm:px-4" style={{ color: "rgba(255,255,255,0.25)" }}>
-              vs
-            </span>
-          )}
-        </div>
-
-        {/* Away team */}
-        <div className="flex items-center gap-1.5 min-w-0 flex-1">
-          <Flag code={match.awayFlagCode} size="xs" />
-          <span className="font-display text-sm sm:text-base uppercase font-black truncate text-white">
-            {match.away}
-          </span>
-        </div>
-
-        {/* Status / time */}
-        <div className="shrink-0 flex items-center gap-1.5 min-w-[70px] justify-end">
-          {state.type === "finished" && (
-            <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full"
-              style={{ background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.4)", border: "1px solid rgba(255,255,255,0.1)" }}>
-              {state.label}
-            </span>
-          )}
-          {state.type === "live" && (
-            <div className="flex flex-col items-end gap-0.5">
-              <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full"
-                style={{ background: "rgba(239,68,68,0.12)", color: "#f87171", border: "1px solid rgba(239,68,68,0.25)" }}>
-                <span className="inline-block w-1.5 h-1.5 rounded-full bg-red-400 animate-pulse" />
-                {state.label}
-              </span>
-              {state.minute != null && (
-                <span className="font-mono text-[10px] font-bold" style={{ color: "#f87171" }}>
-                  {state.minute}&apos;
-                </span>
+              {pred && (
+                <span className="font-barlow font-bold" style={{ fontSize: 9, color: "#00e5a0", marginLeft: 4 }}>✓ Saved</span>
               )}
-            </div>
-          )}
-          {state.type === "upcoming" && (
-            <div className="flex flex-col items-end gap-0.5">
-              {locked && (
-                <Lock size={9} style={{ color: "rgba(255,255,255,0.3)" }} />
-              )}
-              <span className="font-mono text-[11px] sm:text-xs font-bold" style={{ color: "#00D4FF" }}>
-                <span suppressHydrationWarning>{localTime}</span>
-              </span>
-              <span className="text-[9px] hidden sm:block" style={{ color: "rgba(255,255,255,0.3)" }}>
-                <span suppressHydrationWarning>{tzAbbr}</span>
+              <div className="flex-1" />
+              <span className="font-barlow font-bold px-2 py-0.5 rounded-md"
+                style={{ background: "#162a16", border: "1px solid #2a5a2a", color: "#2a7a2a", fontSize: 9 }}>
+                {stageName}
               </span>
             </div>
           )}
-        </div>
-      </div>
-
-      {/* Goal events for live and finished matches */}
-      {(state.type === "live" || state.type === "finished") && state.events.length > 0 && (
-        <GoalEvents events={state.events} />
-      )}
-
-      {/* Prediction row */}
-      {showPred && pred && (
-        <PredRow
-          pred={pred}
-          type={state.type}
-          homeScore={state.type !== "upcoming" ? (state as { homeScore: number }).homeScore : undefined}
-          awayScore={state.type !== "upcoming" ? (state as { awayScore: number }).awayScore : undefined}
-        />
-      )}
-
-      {/* Group predictions — revealed when match goes live */}
-      {state.type === "live" && groupId && (
-        <PredictionDistribution matchId={match.id} groupId={groupId} />
+          {!isToday && !showInputs && !showEditInputs && pred && showPred && (
+            <PredRow pred={pred} type="upcoming" />
+          )}
+        </>
       )}
     </div>
   );
@@ -641,6 +614,11 @@ export function ScheduleClient({
     }
     return Object.entries(map).sort(([a], [b]) => a.localeCompare(b));
   }, [filtered]);
+
+  // ── First upcoming match ID (for "Next" highlight)
+  const nextMatchId = useMemo(() => {
+    return WC2026_MATCHES.find(m => matchStates[m.id]?.type === "upcoming" && !isLocked(m.utcTime))?.id ?? null;
+  }, [matchStates]);
 
   // ── Prediction stats
   const predStats = useMemo(() => {
@@ -884,6 +862,8 @@ export function ScheduleClient({
                         onLocalPredChange={handleLocalPredChange}
                         userId={userId}
                         groupId={groupId}
+                        isToday={m.date === todayStr}
+                        isNext={m.id === nextMatchId}
                       />
                     );
                   })}

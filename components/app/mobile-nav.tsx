@@ -153,7 +153,7 @@ export function MobileNav() {
         <div
           className="flex items-center justify-around px-1"
           style={{
-            height: 68,
+            height: 78,
             paddingTop: 10,
             paddingBottom: "max(10px, env(safe-area-inset-bottom))",
           }}

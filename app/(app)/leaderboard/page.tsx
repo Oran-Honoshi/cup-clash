@@ -5,7 +5,7 @@ import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { LeaderboardTabs } from "@/components/dashboard/leaderboard-tabs";
 import { getMembers, getGroup } from "@/lib/services/groups";
 import { getCurrentUserProfile } from "@/lib/services/user-group";
-import { DashboardGroupPicker } from "@/components/dashboard/dashboard-group-picker";
+import { GroupSwipeSelector } from "@/components/groups/group-swipe-selector";
 import { AdBanner } from "@/components/ads/ad-banner";
 import { GroupPersistRedirect } from "@/components/app/group-persist-redirect";
 import Link from "next/link";
@@ -75,7 +75,7 @@ export default async function LeaderboardPage({ searchParams }: { searchParams: 
           <div className="label-caps mb-1">{group.name}</div>
           <h1 className="font-display text-4xl sm:text-5xl uppercase tracking-tight text-white">Leaderboard</h1>
         </div>
-        {allGroups.length > 1 && <DashboardGroupPicker groups={allGroups} activeGroupId={activeGroupId} basePath="/leaderboard" />}
+        {allGroups.length > 1 && <div className="-mx-4 sm:-mx-6"><GroupSwipeSelector groups={allGroups} activeGroupId={activeGroupId} basePath="/leaderboard" /></div>}
       </div>
       <LeaderboardTabs members={members} currentUserId={userProfile.id} groupId={activeGroupId} isAdFree={isAdFree} isCorporate={isCorporate} />
       <AdBanner isAdFree={isAdFree} isCorporate={isCorporate} />

@@ -2,22 +2,16 @@ import { serverT } from "@/lib/server-locale";
 export const dynamic = "force-dynamic";
 
 import { createClient as createAdminClient } from "@supabase/supabase-js";
-import { Leaderboard }       from "@/components/dashboard/leaderboard";
-import { MatchCarousel }    from "@/components/dashboard/match-carousel";
-import { MiniLeaderboard }  from "@/components/dashboard/mini-leaderboard";
-import { StatCards }        from "@/components/dashboard/stat-cards";
-import { DashboardPopups } from "@/components/dashboard/dashboard-popups";
-import { WallOfShame }     from "@/components/dashboard/wall-of-shame";
-import { DashboardGroupPicker } from "@/components/dashboard/dashboard-group-picker";
-import { TournamentPredictionsSummary } from "@/components/dashboard/tournament-predictions-summary";
-import { GroupStagePrizeCard } from "@/components/dashboard/group-stage-prize-card";
-import { WelcomeModal }    from "@/components/ui/welcome-modal";
+import { DashboardCarousel }  from "@/components/dashboard/dashboard-carousel";
+import { DashboardPopups }   from "@/components/dashboard/dashboard-popups";
+import { GroupSwipeSelector } from "@/components/groups/group-swipe-selector";
+import { WelcomeModal }      from "@/components/ui/welcome-modal";
 import { DashboardEmptyState } from "@/components/dashboard/empty-state";
-import { AdBanner } from "@/components/ads/ad-banner";
+import { AdBanner }          from "@/components/ads/ad-banner";
 import { GroupPersistRedirect } from "@/components/app/group-persist-redirect";
-import { OnboardingTour } from "@/components/onboarding/onboarding-tour";
+import { OnboardingTour }    from "@/components/onboarding/onboarding-tour";
 import { getMembers, getGroup } from "@/lib/services/groups";
-import { getUpcomingMatches } from "@/lib/services/matches";
+import { getUpcomingMatches }   from "@/lib/services/matches";
 import { getCurrentUserProfile } from "@/lib/services/user-group";
 import Link from "next/link";
 
@@ -150,92 +144,33 @@ export default async function DashboardPage({
   const isAdmin       = group.admin === userProfile.id;
 
   return (
-    <div className="w-full max-w-full overflow-x-hidden space-y-6 pb-32">
+    <div className="w-full max-w-full overflow-x-hidden">
       <GroupPersistRedirect groups={allGroups} basePath="/dashboard" />
       <OnboardingTour />
       <WelcomeModal />
       <DashboardPopups groupId={activeGroupId} userId={userProfile.id} />
 
-      <div className="flex items-start justify-between gap-4 flex-wrap">
-        <div>
-          <div
-            style={{
-              fontSize: 9,
-              letterSpacing: "0.12em",
-              textTransform: "uppercase",
-              color: "rgba(255,255,255,0.35)",
-              fontFamily: "var(--font-ui)",
-            }}
-          >
-            {group.name}
-          </div>
-          <h1 className="font-display text-4xl sm:text-5xl uppercase tracking-tight text-white">
-            Dashboard
-          </h1>
-          {isAdmin && (
-            <p className="text-[11px] mt-1" style={{ color: "#94a3b8" }}>
-              Admin · Passkey: <span className="font-mono font-bold">{group.passkey}</span>
-            </p>
-          )}
+      {/* Group swipe selector — shown when user belongs to multiple groups */}
+      {allGroups.length > 1 && (
+        <div id="tour-group-selector" className="-mx-4 sm:-mx-6">
+          <GroupSwipeSelector groups={allGroups} activeGroupId={activeGroupId} basePath="/dashboard" />
         </div>
-        {allGroups.length > 1 && (
-          <div id="tour-group-selector">
-            <DashboardGroupPicker
-              groups={allGroups}
-              activeGroupId={activeGroupId}
-            />
-          </div>
-        )}
-      </div>
+      )}
 
-      <StatCards
-        rank={rank}
-        points={currentMember?.points ?? 0}
-        totalPlayers={members.length}
-        correctPredictions={currentMember?.correctPredictions ?? 0}
-        exactScores={currentMember?.exactScores ?? 0}
-      />
+      {/* 3-panel carousel */}
+      <div className="-mx-4 sm:-mx-6" style={{ height: "calc(100dvh - 52px - 78px - 42px)", minHeight: 480 }}>
+        <DashboardCarousel
+          matches={upcomingMatches}
+          members={members}
+          groupId={activeGroupId}
+          groupName={group.name}
+          currentUserId={userProfile.id}
+          rank={rank}
+          totalPlayers={members.length}
+        />
+      </div>
 
       <AdBanner isAdFree={isAdFree} isCorporate={isCorporate} />
-
-      <div className="grid gap-5 lg:grid-cols-12">
-        {/* Primary action — first on mobile, right column on desktop */}
-        <div className="lg:col-span-5 space-y-5 order-first lg:order-last min-w-0">
-          {upcomingMatches.length > 0 && (
-            <div id="tour-match-card">
-              <MatchCarousel matches={upcomingMatches} groupId={activeGroupId} />
-            </div>
-          )}
-          <div id="tour-group-preds">
-            <MiniLeaderboard
-              members={members}
-              groupId={activeGroupId}
-              currentUserId={userProfile.id}
-            />
-          </div>
-          <TournamentPredictionsSummary groupId={activeGroupId} memberCount={members.length} />
-          {group.enableGroupStagePrize && (
-            <GroupStagePrizeCard
-              groupId={activeGroupId}
-              prizeAmount={group.groupStagePrizeAmount}
-              prizeLabel={group.groupStagePrizeLabel}
-              currencySymbol={group.currencySymbol}
-              isCashGroup={!group.corporatePrize}
-            />
-          )}
-        </div>
-        {/* Secondary — leaderboard + wall, below on mobile, left on desktop */}
-        <div className="lg:col-span-7 space-y-5 min-w-0">
-          <Leaderboard
-            members={members}
-            currentUserId={userProfile.id}
-            groupId={activeGroupId}
-            showGhost
-            scrollable
-          />
-          <WallOfShame members={members} totalMatches={48} />
-        </div>
-      </div>
     </div>
   );
 }

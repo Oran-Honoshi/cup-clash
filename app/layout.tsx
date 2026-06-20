@@ -21,7 +21,7 @@ const barlowCondensed = Barlow_Condensed({ subsets: ["latin"], variable: "--font
   weight: ["400", "600", "700", "900"] });
 
 export const viewport: Viewport = {
-  themeColor: "#0a1b0e",
+  themeColor: "#020804",
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",

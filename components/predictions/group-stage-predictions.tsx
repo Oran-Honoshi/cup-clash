@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect, useCallback, useRef } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Check, Lock, ArrowUpDown, Star, Trophy, Medal,
@@ -96,36 +96,85 @@ function isGroupComplete(group: string, predictions: GroupPredictions): boolean 
   });
 }
 
-// ── Auto-save ─────────────────────────────────────────────────────────────────
-function useAutoSave(predictions: GroupPredictions, userId: string | undefined, groupId: string) {
-  const [saveStatus, setSaveStatus] = useState<"idle"|"saving"|"saved"|"error">("idle");
-  const timerRef  = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const latestRef = useRef(predictions);
-  latestRef.current = predictions;
+// ── Save Group Button ─────────────────────────────────────────────────────────
+function SaveGroupButton({ matchIds, predictions, pendingChanges, userId, groupId, onSaved }: {
+  matchIds: string[];
+  predictions: GroupPredictions;
+  pendingChanges: Record<string, boolean>;
+  userId: string | undefined;
+  groupId: string;
+  onSaved: (savedMatchIds: string[]) => void;
+}) {
+  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
 
-  const saveToDB = useCallback(async (preds: GroupPredictions) => {
-    if (!userId) return;
+  const pendingCount = matchIds.filter(id => pendingChanges[id]).length;
+  const disabled = pendingCount === 0 || saveStatus === "saving";
+
+  const handleSave = useCallback(async () => {
+    if (!userId || disabled) return;
     setSaveStatus("saving");
     try {
-      const sb   = createClient();
-      const rows = Object.entries(preds)
-        .filter(([, p]) => p.home !== "" && p.away !== "")
-        .map(([matchId, p]) => ({ user_id: userId, group_id: groupId, match_id: matchId, home_score: parseInt(p.home, 10), away_score: parseInt(p.away, 10), pred_type: "match", updated_at: new Date().toISOString() }));
+      const sb = createClient();
+      const toSave = matchIds.filter(id => pendingChanges[id]);
+      const rows = toSave
+        .filter(id => {
+          const p = predictions[id];
+          return p && p.home !== "" && p.away !== "";
+        })
+        .map(id => {
+          const p = predictions[id];
+          return {
+            user_id:    userId,
+            group_id:   groupId,
+            match_id:   id,
+            home_score: parseInt(p.home, 10),
+            away_score: parseInt(p.away, 10),
+            pred_type:  "match",
+            updated_at: new Date().toISOString(),
+          };
+        });
       if (!rows.length) { setSaveStatus("idle"); return; }
       const { error } = await sb.from("group_predictions").upsert(rows, { onConflict: "user_id,group_id,match_id" });
       if (error) throw error;
-      setSaveStatus("saved"); setTimeout(() => setSaveStatus("idle"), 2000);
-    } catch { setSaveStatus("error"); setTimeout(() => setSaveStatus("idle"), 3000); }
-  }, [userId, groupId]);
+      onSaved(rows.map(r => r.match_id));
+      setSaveStatus("saved");
+      setTimeout(() => setSaveStatus("idle"), 2000);
+    } catch {
+      setSaveStatus("error");
+      setTimeout(() => setSaveStatus("idle"), 3000);
+    }
+  }, [userId, groupId, matchIds, predictions, pendingChanges, disabled, onSaved]);
 
-  useEffect(() => {
-    if (!userId) return;
-    if (timerRef.current) clearTimeout(timerRef.current);
-    timerRef.current = setTimeout(() => saveToDB(latestRef.current), 800);
-    return () => { if (timerRef.current) clearTimeout(timerRef.current); };
-  }, [predictions, userId, saveToDB]);
+  const label = saveStatus === "saved"
+    ? "✓ SAVED"
+    : saveStatus === "saving"
+    ? "SAVING…"
+    : `SAVE ${pendingCount} PREDICTION${pendingCount !== 1 ? "S" : ""}`;
 
-  return saveStatus;
+  return (
+    <button
+      onClick={handleSave}
+      disabled={disabled}
+      style={{
+        width:        "100%",
+        background:   saveStatus === "saved" ? "rgba(0,229,160,0.15)" : "#162a16",
+        border:       `1px solid ${saveStatus === "error" ? "#f87171" : "#00e5a0"}`,
+        color:        saveStatus === "error" ? "#f87171" : "#00e5a0",
+        borderRadius: 10,
+        padding:      "12px",
+        fontSize:     12,
+        fontWeight:   700,
+        textTransform: "uppercase",
+        letterSpacing: "0.08em",
+        cursor:       disabled ? "not-allowed" : "pointer",
+        opacity:      disabled ? 0.45 : 1,
+        transition:   "opacity 0.2s, background 0.2s",
+        fontFamily:   "var(--font-ui)",
+      }}
+    >
+      {label}
+    </button>
+  );
 }
 
 interface StagePoints { correctOutcome: number; exactScore: number; useProgressive: boolean; }
@@ -461,8 +510,7 @@ export function GroupStagePredictions({ groupId, locked = false, userId, isAdFre
   const [earnedPoints, setEarnedPoints] = useState<Record<string, { pts: number; isExact: boolean }>>({});
 
   const [liveMemberPreds, setLiveMemberPreds] = useState<Record<string, LiveMemberPred[]>>({});
-
-  const saveStatus = useAutoSave(loaded ? predictions : {}, userId, groupId);
+  const [pendingChanges,  setPendingChanges]  = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     const sb = createClient();
@@ -574,8 +622,10 @@ export function GroupStagePredictions({ groupId, locked = false, userId, isAdFre
     });
   }, [userId, groupId]);
 
-  const setScore = (matchId: string, home: string, away: string) =>
+  const setScore = (matchId: string, home: string, away: string) => {
     setPredictions(prev => ({ ...prev, [matchId]: { home, away } }));
+    setPendingChanges(prev => ({ ...prev, [matchId]: true }));
+  };
 
   const groupMatches        = getGroupMatches(activeGroup);
   const groupTeams          = getGroupTeams(activeGroup);
@@ -607,7 +657,6 @@ export function GroupStagePredictions({ groupId, locked = false, userId, isAdFre
               {t("pred_progress")}
             </div>
             <div className="flex items-center gap-2 justify-end">
-              <SaveIndicator status={saveStatus} />
               <span className="text-sm font-black font-mono" style={{ color: "#00D4FF" }}>{completedCount} / 12</span>
             </div>
           </div>
@@ -734,6 +783,22 @@ export function GroupStagePredictions({ groupId, locked = false, userId, isAdFre
                   if (homeVal && awayVal) merged[matchId] = scores;
                 });
                 return merged;
+              })}
+            />
+          )}
+
+          {/* Save group predictions */}
+          {userId && (
+            <SaveGroupButton
+              matchIds={groupMatches.map(m => m.id)}
+              predictions={predictions}
+              pendingChanges={pendingChanges}
+              userId={userId}
+              groupId={groupId}
+              onSaved={(ids) => setPendingChanges(prev => {
+                const next = { ...prev };
+                ids.forEach(id => delete next[id]);
+                return next;
               })}
             />
           )}
