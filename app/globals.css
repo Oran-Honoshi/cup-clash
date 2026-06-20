@@ -535,3 +535,71 @@ h1, h2, h3, h4 {
   border-radius: 1px;
   background: var(--cc-accent);
 }
+
+/* ── Driver.js onboarding tour theme ────────────────────────────────────── */
+.cc-tour-popover {
+  background: rgba(10, 16, 12, 0.97) !important;
+  border: 1px solid rgba(0, 229, 160, 0.3) !important;
+  border-radius: 18px !important;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(0, 229, 160, 0.08) !important;
+  padding: 20px !important;
+  max-width: 280px !important;
+}
+.cc-tour-popover .driver-popover-title {
+  font-family: var(--font-display, 'Barlow Condensed', sans-serif) !important;
+  font-size: 18px !important;
+  font-weight: 900 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.06em !important;
+  color: #00e5a0 !important;
+  margin-bottom: 6px !important;
+}
+.cc-tour-popover .driver-popover-description {
+  font-size: 14px !important;
+  color: rgba(255, 255, 255, 0.75) !important;
+  line-height: 1.5 !important;
+}
+.cc-tour-popover .driver-popover-footer {
+  margin-top: 16px !important;
+  gap: 8px !important;
+}
+.cc-tour-popover .driver-popover-progress-text {
+  font-size: 11px !important;
+  color: rgba(255, 255, 255, 0.35) !important;
+}
+.cc-tour-popover .driver-popover-prev-btn,
+.cc-tour-popover .driver-popover-next-btn,
+.cc-tour-popover .driver-popover-close-btn {
+  background: transparent !important;
+  border: 1px solid rgba(0, 229, 160, 0.25) !important;
+  color: #00e5a0 !important;
+  border-radius: 10px !important;
+  font-size: 12px !important;
+  font-weight: 700 !important;
+  padding: 6px 14px !important;
+  cursor: pointer !important;
+  transition: all 0.15s !important;
+}
+.cc-tour-popover .driver-popover-next-btn {
+  background: rgba(0, 229, 160, 0.12) !important;
+  border-color: rgba(0, 229, 160, 0.4) !important;
+}
+.cc-tour-popover .driver-popover-prev-btn:hover,
+.cc-tour-popover .driver-popover-next-btn:hover {
+  background: rgba(0, 229, 160, 0.2) !important;
+}
+.cc-tour-popover .driver-popover-arrow-side-top.driver-popover-arrow {
+  border-top-color: rgba(0, 229, 160, 0.3) !important;
+}
+.cc-tour-popover .driver-popover-arrow-side-bottom.driver-popover-arrow {
+  border-bottom-color: rgba(0, 229, 160, 0.3) !important;
+}
+.cc-tour-popover .driver-popover-close-btn {
+  border: none !important;
+  color: rgba(255, 255, 255, 0.35) !important;
+  padding: 4px !important;
+}
+.cc-tour-popover .driver-popover-close-btn:hover {
+  color: rgba(255, 255, 255, 0.7) !important;
+  background: transparent !important;
+}

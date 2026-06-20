@@ -15,6 +15,7 @@ import { WelcomeModal }    from "@/components/ui/welcome-modal";
 import { DashboardEmptyState } from "@/components/dashboard/empty-state";
 import { AdBanner } from "@/components/ads/ad-banner";
 import { GroupPersistRedirect } from "@/components/app/group-persist-redirect";
+import { OnboardingTour } from "@/components/onboarding/onboarding-tour";
 import { getMembers, getGroup } from "@/lib/services/groups";
 import { getUpcomingMatches } from "@/lib/services/matches";
 import { getCurrentUserProfile } from "@/lib/services/user-group";
@@ -151,6 +152,7 @@ export default async function DashboardPage({
   return (
     <div className="space-y-6 pb-32">
       <GroupPersistRedirect groups={allGroups} basePath="/dashboard" />
+      <OnboardingTour />
       <WelcomeModal />
       <DashboardPopups groupId={activeGroupId} userId={userProfile.id} />
 
@@ -177,10 +179,12 @@ export default async function DashboardPage({
           )}
         </div>
         {allGroups.length > 1 && (
-          <DashboardGroupPicker
-            groups={allGroups}
-            activeGroupId={activeGroupId}
-          />
+          <div id="tour-group-selector">
+            <DashboardGroupPicker
+              groups={allGroups}
+              activeGroupId={activeGroupId}
+            />
+          </div>
         )}
       </div>
 
@@ -198,13 +202,17 @@ export default async function DashboardPage({
         {/* Primary action — first on mobile, right column on desktop */}
         <div className="lg:col-span-5 space-y-5 order-first lg:order-last">
           {upcomingMatches.length > 0 && (
-            <MatchCarousel matches={upcomingMatches} groupId={activeGroupId} />
+            <div id="tour-match-card">
+              <MatchCarousel matches={upcomingMatches} groupId={activeGroupId} />
+            </div>
           )}
-          <MiniLeaderboard
-            members={members}
-            groupId={activeGroupId}
-            currentUserId={userProfile.id}
-          />
+          <div id="tour-group-preds">
+            <MiniLeaderboard
+              members={members}
+              groupId={activeGroupId}
+              currentUserId={userProfile.id}
+            />
+          </div>
           <TournamentPredictionsSummary groupId={activeGroupId} memberCount={members.length} />
           {group.enableGroupStagePrize && (
             <GroupStagePrizeCard

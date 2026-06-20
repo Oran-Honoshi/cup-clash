@@ -164,10 +164,14 @@ export function MobileNav() {
             const active = pathname === item.href || (item.href !== "/dashboard" && item.href !== "/predictions" && pathname.startsWith(item.href));
             const activeColor   = "#00e5a0";
             const inactiveColor = "#2a5a2a";
+            const tourId = item.href === "/predictions" ? "tour-nav-picks"
+              : item.href === "/schedule" ? "tour-nav-schedule"
+              : undefined;
             return (
               <Link
                 key={item.href}
                 href={item.href}
+                id={tourId}
                 className="flex flex-col items-center gap-[3px] flex-1 min-w-0"
               >
                 <Icon
@@ -200,6 +204,7 @@ export function MobileNav() {
 
           {/* More button */}
           <button
+            id="tour-nav-more"
             onClick={() => setMoreOpen(o => !o)}
             className="flex flex-col items-center gap-[3px] min-w-0 flex-1"
           >

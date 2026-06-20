@@ -9,6 +9,7 @@ import { PayPalScriptLoader } from "@/components/payments/paypal-script-loader";
 import { Analytics } from "@vercel/analytics/react";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import "./globals.css";
+import "driver.js/dist/driver.css";
 
 const bricolage = Bricolage_Grotesque({ subsets: ["latin"], variable: "--font-display", display: "swap",
   weight: ["400", "500", "600", "700", "800"] });

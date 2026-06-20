@@ -106,7 +106,7 @@ export function NextMatchCard({ match, groupId = "", cardLabel }: NextMatchCardP
 
   return (
     <div
-      className="rounded-[22px] overflow-hidden"
+      className="w-full max-w-full rounded-[22px] overflow-hidden"
       style={{
         background: "rgba(18,14,38,0.32)",
         border: "1px solid rgba(0,212,255,0.35)",
@@ -166,17 +166,17 @@ export function NextMatchCard({ match, groupId = "", cardLabel }: NextMatchCardP
         </div>
 
         {/* Teams + score inputs */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 w-full min-w-0">
           {/* Home team */}
-          <div className="flex-1 flex flex-col items-center gap-2">
+          <div className="flex-1 min-w-0 flex flex-col items-center gap-2">
             <Flag code={homeFlagCode} size="md" />
-            <span className="font-display text-sm uppercase font-black text-center leading-tight text-white">
+            <span className="font-display text-sm uppercase font-black text-center leading-tight text-white w-full truncate px-1">
               {match.home}
             </span>
           </div>
 
           {/* Score inputs */}
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-1.5 flex-none">
             {saveState === "saved" ? (
               <>
                 <ScoreDisplay value={homeScore} />
@@ -193,9 +193,9 @@ export function NextMatchCard({ match, groupId = "", cardLabel }: NextMatchCardP
           </div>
 
           {/* Away team */}
-          <div className="flex-1 flex flex-col items-center gap-2">
+          <div className="flex-1 min-w-0 flex flex-col items-center gap-2">
             <Flag code={awayFlagCode} size="md" />
-            <span className="font-display text-sm uppercase font-black text-center leading-tight text-white">
+            <span className="font-display text-sm uppercase font-black text-center leading-tight text-white w-full truncate px-1">
               {match.away}
             </span>
           </div>
