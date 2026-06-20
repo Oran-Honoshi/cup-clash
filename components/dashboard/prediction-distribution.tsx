@@ -56,6 +56,8 @@ export function PredictionDistribution({ matchId, groupId }: PredictionDistribut
         marginTop: 14,
         paddingTop: 12,
         borderTop: "1px solid rgba(255,255,255,0.07)",
+        maxWidth: "100%",
+        overflow: "hidden",
       }}
     >
       <div

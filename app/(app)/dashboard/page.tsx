@@ -90,7 +90,7 @@ export default async function DashboardPage({
   // Guest mode: explore without account
   if (!userProfile) {
     return (
-      <div>
+      <div className="w-full max-w-full overflow-x-hidden">
         <GuestBanner />
         <DashboardEmptyState highlight={searchParams.action} />
       </div>
@@ -114,7 +114,7 @@ export default async function DashboardPage({
   // No groups: show rich empty state with clear paths
   if (!allGroups.length) {
     return (
-      <div className="space-y-6">
+      <div className="w-full max-w-full overflow-x-hidden space-y-6">
         <WelcomeModal forceOpen={false} />
         <DashboardEmptyState />
         <AdBanner isAdFree={false} isCorporate={false} />
@@ -150,7 +150,7 @@ export default async function DashboardPage({
   const isAdmin       = group.admin === userProfile.id;
 
   return (
-    <div className="space-y-6 pb-32">
+    <div className="w-full max-w-full overflow-x-hidden space-y-6 pb-32">
       <GroupPersistRedirect groups={allGroups} basePath="/dashboard" />
       <OnboardingTour />
       <WelcomeModal />
@@ -200,7 +200,7 @@ export default async function DashboardPage({
 
       <div className="grid gap-5 lg:grid-cols-12">
         {/* Primary action — first on mobile, right column on desktop */}
-        <div className="lg:col-span-5 space-y-5 order-first lg:order-last">
+        <div className="lg:col-span-5 space-y-5 order-first lg:order-last min-w-0">
           {upcomingMatches.length > 0 && (
             <div id="tour-match-card">
               <MatchCarousel matches={upcomingMatches} groupId={activeGroupId} />
@@ -225,7 +225,7 @@ export default async function DashboardPage({
           )}
         </div>
         {/* Secondary — leaderboard + wall, below on mobile, left on desktop */}
-        <div className="lg:col-span-7 space-y-5">
+        <div className="lg:col-span-7 space-y-5 min-w-0">
           <Leaderboard
             members={members}
             currentUserId={userProfile.id}

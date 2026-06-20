@@ -118,8 +118,8 @@ export function NextMatchCard({ match, groupId = "", cardLabel }: NextMatchCardP
 
       <div className="p-5">
         {/* Header */}
-        <div className="flex items-center justify-between mb-5">
-          <div>
+        <div className="flex items-center justify-between gap-2 mb-5">
+          <div className="min-w-0">
             <div
               className="flex items-center gap-1.5 mb-0.5"
               style={{
@@ -153,7 +153,7 @@ export function NextMatchCard({ match, groupId = "", cardLabel }: NextMatchCardP
           </div>
           <div
             className={cn(
-              "flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest rounded-full px-2.5 py-1",
+              "flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest rounded-full px-2.5 py-1 shrink-0 whitespace-nowrap",
               isLocked
                 ? "bg-red-500/15 border border-red-500/30 text-red-400"
                 : "border text-slate-400"

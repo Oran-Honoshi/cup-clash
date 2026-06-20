@@ -44,6 +44,7 @@ export function MatchCarousel({ matches, groupId }: MatchCarouselProps) {
         onScroll={onScroll}
         className="carousel-track"
         style={{
+          width: "100%",
           display: "flex",
           overflowX: "auto",
           scrollSnapType: "x mandatory",

@@ -17,6 +17,7 @@ export function MiniLeaderboard({ members, groupId, currentUserId }: MiniLeaderb
 
   return (
     <div
+      className="w-full max-w-full"
       style={{
         borderRadius: 18,
         background: "rgba(12, 18, 32, 0.78)",
