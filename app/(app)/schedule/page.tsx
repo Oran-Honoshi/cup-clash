@@ -91,6 +91,8 @@ export default async function SchedulePage({
     string,
     { homeScore: number; awayScore: number; pointsEarned: number | null; isExact: boolean | null }
   > = {};
+  let isAdFree    = false;
+  let isCorporate = false;
 
   if (user) {
     userId = user.id;
@@ -131,6 +133,18 @@ export default async function SchedulePage({
         isExact:      p.is_exact,
       };
     }
+
+    // Fetch ad status for this user+group
+    type AdStatus = { is_ad_free: boolean; groups: { is_corporate_paid: boolean } | null } | null;
+    const { data: adRaw } = await sbAdmin()
+      .from("group_members")
+      .select("is_ad_free, groups(is_corporate_paid)")
+      .eq("user_id", user.id)
+      .eq("group_id", activeGroupId)
+      .maybeSingle();
+    const adStatus = adRaw as AdStatus;
+    isAdFree    = adStatus?.is_ad_free ?? false;
+    isCorporate = adStatus?.groups?.is_corporate_paid ?? false;
   }
 
   return (
@@ -143,6 +157,8 @@ export default async function SchedulePage({
         allGroups={allGroups}
         matchResults={matchResults}
         initialPredictions={initialPredictions}
+        isAdFree={isAdFree}
+        isCorporate={isCorporate}
       />
     </>
   );

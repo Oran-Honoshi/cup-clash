@@ -4,6 +4,7 @@ import { useRef, useState, useCallback, useEffect } from "react";
 import { Crown } from "lucide-react";
 import { NextMatchCard } from "@/components/dashboard/next-match-card";
 import { PredictionDistribution } from "@/components/dashboard/prediction-distribution";
+import { AdBanner } from "@/components/ads/ad-banner";
 import { MemberAvatar } from "@/components/ui/member-avatar";
 import type { Match, Member } from "@/lib/types";
 
@@ -17,6 +18,8 @@ interface DashboardCarouselProps {
   currentUserId: string;
   rank:          number;
   totalPlayers:  number;
+  isAdFree:      boolean;
+  isCorporate:   boolean;
 }
 
 // ── Panel tabs ────────────────────────────────────────────────────────────────
@@ -42,10 +45,12 @@ const PODIUM_HEIGHTS = [46, 64, 34];
 const PODIUM_AVATAR_SIZES: Array<"sm" | "md"> = ["sm", "md", "sm"];
 const PODIUM_COLORS = ["#a0c8a0", "#ffaa00", "#a0c8a0"];
 
-function LeaderboardPanel({ members, currentUserId, groupName }: {
-  members: Member[];
+function LeaderboardPanel({ members, currentUserId, groupName, isAdFree, isCorporate }: {
+  members:       Member[];
   currentUserId: string;
-  groupName: string;
+  groupName:     string;
+  isAdFree:      boolean;
+  isCorporate:   boolean;
 }) {
   const sorted = [...members].sort((a, b) => b.points - a.points);
   const top3   = sorted.slice(0, 3);
@@ -99,6 +104,9 @@ function LeaderboardPanel({ members, currentUserId, groupName }: {
           })}
         </div>
       )}
+
+      {/* Ad between podium and member list */}
+      <AdBanner isAdFree={isAdFree} isCorporate={isCorporate} />
 
       {/* Remaining rows */}
       {rest.length > 0 && (
@@ -252,6 +260,8 @@ export function DashboardCarousel({
   currentUserId,
   rank,
   totalPlayers,
+  isAdFree,
+  isCorporate,
 }: DashboardCarouselProps) {
   const [panel, setPanel]       = useState(0);
   const trackRef                = useRef<HTMLDivElement>(null);
@@ -397,7 +407,7 @@ export function DashboardCarousel({
           </div>
           {/* Panel 1 — Leaderboard */}
           <div style={{ width: `${100 / PANELS.length}%`, height: "100%", background: PANEL_BG, flexShrink: 0 }}>
-            <LeaderboardPanel members={members} currentUserId={currentUserId} groupName={groupName} />
+            <LeaderboardPanel members={members} currentUserId={currentUserId} groupName={groupName} isAdFree={isAdFree} isCorporate={isCorporate} />
           </div>
           {/* Panel 2 — My Stats */}
           <div style={{ width: `${100 / PANELS.length}%`, height: "100%", background: PANEL_BG, flexShrink: 0 }}>

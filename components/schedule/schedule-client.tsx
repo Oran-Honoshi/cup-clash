@@ -10,6 +10,7 @@ import { Flag } from "@/components/ui/flag";
 import { ScoreInputCC } from "@/components/ui/score-input-cc";
 import { PredictionBadge } from "@/components/predictions/prediction-badge";
 import { PredictionDistribution } from "@/components/dashboard/prediction-distribution";
+import { AdBanner } from "@/components/ads/ad-banner";
 import { createClient } from "@/lib/supabase/client";
 import { WC2026_MATCHES, STAGE_LABELS } from "@/lib/schedule";
 import { cn } from "@/lib/utils";
@@ -52,6 +53,8 @@ export interface ScheduleClientProps {
   allGroups: Array<{ id: string; name: string; passkey: string }>;
   matchResults: Record<string, MatchResult>;
   initialPredictions: Record<string, UserPrediction>;
+  isAdFree: boolean;
+  isCorporate: boolean;
 }
 
 // ── Constants ──────────────────────────────────────────────────────────────────
@@ -437,6 +440,8 @@ export function ScheduleClient({
   allGroups,
   matchResults,
   initialPredictions,
+  isAdFree,
+  isCorporate,
 }: ScheduleClientProps) {
   const router = useRouter();
   const { setSelectedGroupId } = useGroupContext();
@@ -803,6 +808,9 @@ export function ScheduleClient({
           </div>
         </div>
       </div>
+
+      {/* ── Ad between filters and match list ────────────────────── */}
+      <AdBanner isAdFree={isAdFree} isCorporate={isCorporate} />
 
       {/* ── Match count ──────────────────────────────────────────── */}
       <div className="text-[11px] font-bold" style={{ color: "rgba(255,255,255,0.3)" }}>

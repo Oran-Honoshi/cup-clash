@@ -167,6 +167,8 @@ export default async function DashboardPage({
           currentUserId={userProfile.id}
           rank={rank}
           totalPlayers={members.length}
+          isAdFree={isAdFree}
+          isCorporate={isCorporate}
         />
       </div>
 
