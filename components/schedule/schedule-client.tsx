@@ -9,6 +9,7 @@ import {
 import { Flag } from "@/components/ui/flag";
 import { ScoreInputCC } from "@/components/ui/score-input-cc";
 import { PredictionBadge } from "@/components/predictions/prediction-badge";
+import { PredictionDistribution } from "@/components/dashboard/prediction-distribution";
 import { createClient } from "@/lib/supabase/client";
 import { WC2026_MATCHES, STAGE_LABELS } from "@/lib/schedule";
 import { cn } from "@/lib/utils";
@@ -416,6 +417,11 @@ function MatchCard({
           homeScore={state.type !== "upcoming" ? (state as { homeScore: number }).homeScore : undefined}
           awayScore={state.type !== "upcoming" ? (state as { awayScore: number }).awayScore : undefined}
         />
+      )}
+
+      {/* Group predictions — revealed when match goes live */}
+      {state.type === "live" && groupId && (
+        <PredictionDistribution matchId={match.id} groupId={groupId} />
       )}
     </div>
   );

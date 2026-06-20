@@ -16,6 +16,7 @@ interface FinishedMatch {
   kickoff_at: string;
   stage: string;
   group_letter: string | null;
+  status: string;
 }
 
 interface MemberPrediction {
@@ -85,8 +86,8 @@ export function MatchResultsTable({ groupId, members }: Props) {
     return (
       <div className="rounded-2xl p-8 text-center space-y-2" style={glass}>
         <div className="text-3xl">⏳</div>
-        <div className="text-sm font-bold" style={{ color: "rgba(255,255,255,0.5)" }}>No finished matches yet</div>
-        <div className="text-xs" style={{ color: "rgba(255,255,255,0.25)" }}>Results will appear here after matches finish</div>
+        <div className="text-sm font-bold" style={{ color: "rgba(255,255,255,0.5)" }}>No live or finished matches yet</div>
+        <div className="text-xs" style={{ color: "rgba(255,255,255,0.25)" }}>Results appear here once a match kicks off</div>
       </div>
     );
   }
@@ -139,7 +140,7 @@ export function MatchResultsTable({ groupId, members }: Props) {
                     const pred = predMap[match.id]?.[m.user_id];
                     return (
                       <td key={m.user_id} className="px-2 py-3 text-center">
-                        <PredCell pred={pred} />
+                        <PredCell pred={pred} matchStatus={match.status} />
                       </td>
                     );
                   })}
@@ -173,9 +174,16 @@ export function MatchResultsTable({ groupId, members }: Props) {
 function MatchCell({ match }: { match: FinishedMatch }) {
   const date = new Date(match.kickoff_at);
   const dateStr = date.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+  const isLive = match.status === "live";
 
   return (
     <div className="space-y-1">
+      {isLive && (
+        <div className="flex items-center gap-1 mb-1">
+          <span className="inline-block w-1.5 h-1.5 rounded-full bg-red-400 animate-pulse shrink-0" />
+          <span className="text-[9px] font-bold uppercase tracking-wider" style={{ color: "#f87171" }}>Live</span>
+        </div>
+      )}
       <div className="flex items-center gap-1.5">
         {match.home_flag && (
           <div className="relative h-3.5 w-5 rounded-sm overflow-hidden shrink-0">
@@ -194,8 +202,8 @@ function MatchCell({ match }: { match: FinishedMatch }) {
         >
           {match.home}
         </span>
-        <span className="text-xs font-black tabular-nums" style={{ color: "white" }}>
-          {match.home_score}
+        <span className="text-xs font-black tabular-nums" style={{ color: isLive ? "#f87171" : "white" }}>
+          {isLive ? "–" : match.home_score}
         </span>
       </div>
       <div className="flex items-center gap-1.5">
@@ -216,8 +224,8 @@ function MatchCell({ match }: { match: FinishedMatch }) {
         >
           {match.away}
         </span>
-        <span className="text-xs font-black tabular-nums" style={{ color: "white" }}>
-          {match.away_score}
+        <span className="text-xs font-black tabular-nums" style={{ color: isLive ? "#f87171" : "white" }}>
+          {isLive ? "–" : match.away_score}
         </span>
       </div>
       <div className="text-[10px]" style={{ color: "rgba(255,255,255,0.25)" }}>
@@ -232,7 +240,7 @@ function MatchCell({ match }: { match: FinishedMatch }) {
   );
 }
 
-function PredCell({ pred }: { pred: MemberPrediction | undefined }) {
+function PredCell({ pred, matchStatus }: { pred: MemberPrediction | undefined; matchStatus: string }) {
   if (!pred) {
     return (
       <span className="text-lg" style={{ color: "rgba(255,255,255,0.15)" }}>—</span>
@@ -240,6 +248,18 @@ function PredCell({ pred }: { pred: MemberPrediction | undefined }) {
   }
 
   const predStr = `${pred.home_score}-${pred.away_score}`;
+
+  // Live match: show prediction without result badge (points not awarded yet)
+  if (matchStatus === "live") {
+    return (
+      <div className="flex flex-col items-center gap-0.5">
+        <span className="font-mono text-xs font-bold" style={{ color: "rgba(255,255,255,0.65)" }}>
+          {predStr}
+        </span>
+      </div>
+    );
+  }
+
   const pts = pred.points_earned ?? 0;
 
   if (pred.is_exact) {

@@ -11,6 +11,7 @@ import { CopyPredictions } from "@/components/predictions/copy-predictions";
 import { FlaggedTeam } from "@/components/predictions/flagged-team";
 import { PredictionBadge } from "@/components/predictions/prediction-badge";
 import { Flag } from "@/components/ui/flag";
+import { MemberAvatar } from "@/components/ui/member-avatar";
 import { ScoreInputCC } from "@/components/ui/score-input-cc";
 import { WC2026_MATCHES } from "@/lib/schedule";
 import { createClient } from "@/lib/supabase/client";
@@ -132,10 +133,18 @@ interface StagePoints { correctOutcome: number; exactScore: number; useProgressi
 interface MatchResultData {
   homeScore: number;
   awayScore: number;
+  isLive:    boolean;
+}
+
+interface LiveMemberPred {
+  name:      string;
+  avatarUrl: string | null;
+  homeScore: number;
+  awayScore: number;
 }
 
 // ── Match Card Block ──────────────────────────────────────────────────────────
-function MatchCard({ match, prediction, onChange, globalLocked, stagePoints, matchResult, earnedPts }: {
+function MatchCard({ match, prediction, onChange, globalLocked, stagePoints, matchResult, earnedPts, livePreds }: {
   match: typeof WC2026_MATCHES[0];
   prediction: ScorePrediction;
   onChange: (home: string, away: string) => void;
@@ -143,6 +152,7 @@ function MatchCard({ match, prediction, onChange, globalLocked, stagePoints, mat
   stagePoints?: StagePoints;
   matchResult?: MatchResultData;
   earnedPts?: { pts: number; isExact: boolean };
+  livePreds?: LiveMemberPred[];
 }) {
   const { t } = useLocale();
   const filled      = prediction.home !== "" && prediction.away !== "";
@@ -244,8 +254,8 @@ function MatchCard({ match, prediction, onChange, globalLocked, stagePoints, mat
         </div>
       </div>
 
-      {/* Result badge row — only when match is finished */}
-      {matchResult && (
+      {/* Result badge row — finished matches */}
+      {matchResult && !matchResult.isLive && (
         <div className="flex items-center justify-between mt-2 pt-2"
           style={{ borderTop: "1px solid rgba(255,255,255,0.07)" }}>
           <span className="text-[10px] font-mono font-bold" style={{ color: "rgba(255,255,255,0.45)" }}>
@@ -256,6 +266,35 @@ function MatchCard({ match, prediction, onChange, globalLocked, stagePoints, mat
             points={badgeType !== "none" ? badgePoints : undefined}
             size="sm"
           />
+        </div>
+      )}
+
+      {/* Live indicator */}
+      {matchResult?.isLive && (
+        <div className="flex items-center gap-1.5 mt-2 pt-2"
+          style={{ borderTop: "1px solid rgba(255,255,255,0.07)" }}>
+          <span className="inline-block w-1.5 h-1.5 rounded-full bg-red-400 animate-pulse shrink-0" />
+          <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: "#f87171" }}>Live now</span>
+        </div>
+      )}
+
+      {/* Group member predictions revealed when live */}
+      {matchResult?.isLive && livePreds && livePreds.length > 0 && (
+        <div className="mt-2 pt-2 space-y-1.5" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+          <div style={{ fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "rgba(255,255,255,0.3)", fontFamily: "var(--font-ui)", marginBottom: 6 }}>
+            What your group predicted
+          </div>
+          {livePreds.map((m, i) => (
+            <div key={i} style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              <MemberAvatar name={m.name} avatarUrl={m.avatarUrl} size="xs" />
+              <span style={{ fontSize: 11, flex: 1, color: "rgba(255,255,255,0.55)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                {m.name}
+              </span>
+              <span style={{ fontFamily: "var(--font-mono)", fontWeight: 700, fontSize: 11, color: "rgba(255,255,255,0.85)", flexShrink: 0 }}>
+                {m.homeScore}–{m.awayScore}
+              </span>
+            </div>
+          ))}
         </div>
       )}
     </div>
@@ -421,6 +460,8 @@ export function GroupStagePredictions({ groupId, locked = false, userId, isAdFre
   const [matchResults, setMatchResults] = useState<Record<string, MatchResultData>>({});
   const [earnedPoints, setEarnedPoints] = useState<Record<string, { pts: number; isExact: boolean }>>({});
 
+  const [liveMemberPreds, setLiveMemberPreds] = useState<Record<string, LiveMemberPred[]>>({});
+
   const saveStatus = useAutoSave(loaded ? predictions : {}, userId, groupId);
 
   useEffect(() => {
@@ -441,24 +482,65 @@ export function GroupStagePredictions({ groupId, locked = false, userId, isAdFre
       });
   }, [groupId]);
 
-  // Fetch finished match actual scores
+  // Fetch finished AND live match scores, reveal member predictions for live
   useEffect(() => {
     const sb = createClient();
     sb.from("matches")
-      .select("id, home_score, away_score")
-      .eq("status", "finished")
-      .then(({ data }) => {
+      .select("id, home_score, away_score, status")
+      .in("status", ["finished", "live"])
+      .then(async ({ data }) => {
         if (!data?.length) return;
         const results: Record<string, MatchResultData> = {};
-        (data as Array<{ id: string; home_score: number | null; away_score: number | null }>)
+        const liveIds: string[] = [];
+        (data as Array<{ id: string; home_score: number | null; away_score: number | null; status: string }>)
           .forEach(m => {
-            if (m.home_score !== null && m.away_score !== null) {
-              results[m.id] = { homeScore: m.home_score, awayScore: m.away_score };
+            const isLive = m.status === "live";
+            if (isLive) {
+              results[m.id] = { homeScore: 0, awayScore: 0, isLive: true };
+              liveIds.push(m.id);
+            } else if (m.home_score !== null && m.away_score !== null) {
+              results[m.id] = { homeScore: m.home_score, awayScore: m.away_score, isLive: false };
             }
           });
         setMatchResults(results);
+
+        // For live matches, fetch all group member predictions
+        if (liveIds.length > 0) {
+          const [predsRes, membersRes] = await Promise.all([
+            sb.from("group_predictions")
+              .select("user_id, match_id, home_score, away_score")
+              .eq("group_id", groupId)
+              .in("match_id", liveIds)
+              .not("home_score", "is", null),
+            sb.from("group_members")
+              .select("user_id, profiles(name, avatar_url)")
+              .eq("group_id", groupId),
+          ]);
+
+          const memberMap: Record<string, { name: string; avatarUrl: string | null }> = {};
+          ((membersRes.data ?? []) as { user_id: string; profiles: { name: string; avatar_url: string | null } | null }[])
+            .forEach(m => {
+              if (m.profiles) memberMap[m.user_id] = { name: m.profiles.name, avatarUrl: m.profiles.avatar_url };
+            });
+
+          const byMatch: Record<string, LiveMemberPred[]> = {};
+          ((predsRes.data ?? []) as { user_id: string; match_id: string; home_score: number; away_score: number }[])
+            .forEach(p => {
+              const info = memberMap[p.user_id];
+              if (!info) return;
+              if (!byMatch[p.match_id]) byMatch[p.match_id] = [];
+              byMatch[p.match_id].push({
+                name:      info.name,
+                avatarUrl: info.avatarUrl,
+                homeScore: p.home_score,
+                awayScore: p.away_score,
+              });
+            });
+
+          setLiveMemberPreds(byMatch);
+        }
       });
-  }, []);
+  }, [groupId]);
 
   useEffect(() => {
     if (!userId) return;
@@ -616,6 +698,7 @@ export function GroupStagePredictions({ groupId, locked = false, userId, isAdFre
                 stagePoints={stagePoints}
                 matchResult={matchResults[match.id]}
                 earnedPts={earnedPoints[match.id]}
+                livePreds={liveMemberPreds[match.id]}
               />
             ))}
           </div>
