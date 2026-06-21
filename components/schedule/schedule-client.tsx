@@ -238,6 +238,7 @@ function MatchCard({
   onLocalPredChange,
   userId,
   groupId,
+  noGroup,
   isToday,
   isNext,
   saveStatus,
@@ -249,6 +250,7 @@ function MatchCard({
   onLocalPredChange: (matchId: string, home: string, away: string) => void;
   userId: string | undefined;
   groupId: string;
+  noGroup: boolean;
   isToday: boolean;
   isNext: boolean;
   saveStatus?: "success" | "error" | null;
@@ -358,8 +360,8 @@ function MatchCard({
             </div>
           </div>
 
-          {/* Score chips row — only for today / open matches */}
-          {isToday && (showInputs || showEditInputs || pred) && (
+          {/* Score inputs — shown for all upcoming unlocked matches */}
+          {(showInputs || showEditInputs) && (
             <div className="flex items-center gap-1.5 mt-2">
               <div style={{
                 display: "flex", alignItems: "center", gap: 4,
@@ -383,7 +385,7 @@ function MatchCard({
                   disabled={locked}
                 />
               </div>
-              {saveStatus === "success" && <span style={{ fontSize: 10, color: "#00e5a0", fontWeight: 700 }}>✓</span>}
+              {saveStatus === "success" && <span style={{ fontSize: 10, color: "#00e5a0", fontWeight: 700 }}>✓ Saved</span>}
               {!saveStatus && pred && (
                 <span className="font-barlow font-bold" style={{ fontSize: 9, color: "#00e5a0", marginLeft: 2 }}>✓ Saved</span>
               )}
@@ -394,7 +396,13 @@ function MatchCard({
               </span>
             </div>
           )}
-          {!isToday && !showInputs && !showEditInputs && pred && showPred && (
+          {/* No-group nudge for logged-in users not in any group */}
+          {noGroup && !locked && (
+            <div className="mt-2" style={{ fontSize: 10, color: "#3a7a3a" }}>
+              Join a group to predict
+            </div>
+          )}
+          {!showInputs && !showEditInputs && pred && showPred && (
             <PredRow pred={pred} type="upcoming" />
           )}
         </>
@@ -556,7 +564,7 @@ export function ScheduleClient({
     if (timersRef.current[matchId]) clearTimeout(timersRef.current[matchId]);
     timersRef.current[matchId] = setTimeout(() => {
       savePred(matchId, home, away);
-    }, 700);
+    }, 800);
   }, [savePred]);
 
   // ── Today's date string (matches WC2026_MATCHES date format)
@@ -600,6 +608,9 @@ export function ScheduleClient({
     }
     return Object.entries(map).sort(([a], [b]) => a.localeCompare(b));
   }, [filtered]);
+
+  // ── No-group flag: logged-in user with no groups yet
+  const noGroup = !!userId && allGroups.length === 0;
 
   // ── First upcoming match ID (for "Next" highlight)
   const nextMatchId = useMemo(() => {
@@ -794,6 +805,7 @@ export function ScheduleClient({
                         onLocalPredChange={handleLocalPredChange}
                         userId={userId}
                         groupId={groupId}
+                        noGroup={noGroup}
                         isToday={m.date === todayStr}
                         isNext={m.id === nextMatchId}
                         saveStatus={saveFlash[m.id]}
