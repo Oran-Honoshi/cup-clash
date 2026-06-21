@@ -4,8 +4,9 @@ import { useState, useMemo, useRef, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
   Calendar, Lock, Search, X as XIcon,
-  ChevronDown, Users, Zap,
+  Users, Zap,
 } from "lucide-react";
+import { CopyPredictionSheet } from "@/components/predictions/copy-prediction-sheet";
 import { Flag } from "@/components/ui/flag";
 import { ScoreInputCC } from "@/components/ui/score-input-cc";
 import { PredictionBadge } from "@/components/predictions/prediction-badge";
@@ -14,7 +15,6 @@ import { AdBanner } from "@/components/ads/ad-banner";
 import { createClient } from "@/lib/supabase/client";
 import { WC2026_MATCHES, STAGE_LABELS } from "@/lib/schedule";
 import { cn } from "@/lib/utils";
-import { useGroupContext } from "@/lib/contexts/group-context";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -417,7 +417,6 @@ export function ScheduleClient({
   isCorporate,
 }: ScheduleClientProps) {
   const router = useRouter();
-  const { setSelectedGroupId } = useGroupContext();
 
   // ── Auto-refresh every 60s when a match is live
   const hasLive = useMemo(
@@ -485,7 +484,9 @@ export function ScheduleClient({
   // ── Filter state
   const [tabFilter, setTabFilter] = useState<"live" | "today" | "upcoming" | "done">("today");
   const [searchQuery, setSearchQuery]   = useState("");
-  const [groupPickerOpen, setGroupPickerOpen] = useState(false);
+
+  // ── Copy-to-groups sheet
+  const [copySheet, setCopySheet] = useState<{ matchId: string; home: number; away: number } | null>(null);
 
   // ── Prediction state (local editing)
   const [localPreds, setLocalPreds] = useState<Record<string, LocalPred>>(() => {
@@ -539,6 +540,10 @@ export function ScheduleClient({
       }));
       setSaveFlash(prev => ({ ...prev, [matchId]: "success" }));
       setTimeout(() => setSaveFlash(prev => ({ ...prev, [matchId]: null })), 1000);
+      // Offer to copy to other groups when user has multiple groups
+      if (allGroups.length > 1) {
+        setCopySheet({ matchId, home: h, away: a });
+      }
     } else {
       setSaveFlash(prev => ({ ...prev, [matchId]: "error" }));
       setTimeout(() => setSaveFlash(prev => ({ ...prev, [matchId]: null })), 2000);
@@ -612,15 +617,6 @@ export function ScheduleClient({
     return { total, made, unlockable: unlocked.length };
   }, [savedPreds, matchStates]);
 
-  const switchGroup = (id: string) => {
-    setGroupPickerOpen(false);
-    setPredsLoading(true);
-    setSavedPreds({});
-    setLocalPreds({});
-    setSelectedGroupId(id);
-    router.push(`/schedule?group=${id}`);
-  };
-
   const glass = {
     background: "rgba(18,14,38,0.45)",
     backdropFilter: "blur(24px) saturate(160%)",
@@ -644,59 +640,26 @@ export function ScheduleClient({
         </p>
       </div>
 
-      {/* ── Group switcher (if logged in with groups) ──────────── */}
+      {/* ── Predicting-for info card ──────────────────────────── */}
       {userId && allGroups.length > 0 && (
-        <div className="relative">
-          <button
-            onClick={() => setGroupPickerOpen(v => !v)}
-            className="flex items-center gap-3 px-4 py-3 rounded-2xl w-full text-left transition-all"
-            style={glass}
-          >
-            <div className="h-8 w-8 rounded-xl flex items-center justify-center shrink-0"
-              style={{ background: "rgba(0,212,255,0.12)", border: "1px solid rgba(0,212,255,0.25)" }}>
-              <Users size={14} style={{ color: "#00D4FF" }} />
+        <div className="flex items-center gap-3 px-4 py-3 rounded-2xl" style={glass}>
+          <div className="h-8 w-8 rounded-xl flex items-center justify-center shrink-0"
+            style={{ background: "rgba(0,212,255,0.12)", border: "1px solid rgba(0,212,255,0.25)" }}>
+            <Users size={14} style={{ color: "#00D4FF" }} />
+          </div>
+          <div className="flex-1 min-w-0">
+            <div className="text-[10px] font-black uppercase tracking-widest mb-0.5" style={{ color: "#00D4FF" }}>
+              Predicting for
             </div>
-            <div className="flex-1 min-w-0">
-              <div className="text-[10px] font-black uppercase tracking-widest mb-0.5" style={{ color: "#00D4FF" }}>
-                Predicting for
-              </div>
-              <div className="font-display text-base uppercase font-black truncate text-white">
-                {groupName}
-              </div>
+            <div className="font-display text-base uppercase font-black truncate text-white">
+              {groupName}
             </div>
-            <div className="flex items-center gap-2 text-[11px] shrink-0" style={{ color: "rgba(255,255,255,0.35)" }}>
-              {predsLoading ? (
-                <span style={{ color: "#00D4FF" }}>Loading…</span>
-              ) : (
-                <span>{predStats.made}/{predStats.total} picks</span>
-              )}
-              {allGroups.length > 1 && (
-                <ChevronDown size={14} style={{ transform: groupPickerOpen ? "rotate(180deg)" : "none", transition: "transform 0.2s" }} />
-              )}
-            </div>
-          </button>
-
-          {groupPickerOpen && allGroups.length > 1 && (
-            <div className="absolute top-full left-0 right-0 mt-1 rounded-2xl overflow-hidden z-20"
-              style={{ background: "rgba(10,8,24,0.97)", backdropFilter: "blur(40px)", WebkitBackdropFilter: "blur(40px)", border: "1px solid rgba(255,255,255,0.12)", boxShadow: "0 16px 40px rgba(0,0,0,0.5)" }}>
-              {allGroups.map((g, i) => (
-                <button key={g.id} onClick={() => switchGroup(g.id)}
-                  className="w-full flex items-center gap-3 px-4 py-3 text-left"
-                  style={{ borderBottom: i < allGroups.length - 1 ? "1px solid rgba(255,255,255,0.06)" : undefined, background: g.id === groupId ? "rgba(0,212,255,0.08)" : undefined }}>
-                  <div className="flex-1 min-w-0">
-                    <div className="font-bold text-sm truncate text-white">{g.name}</div>
-                    <div className="text-xs font-mono" style={{ color: "rgba(255,255,255,0.35)" }}>{g.passkey}</div>
-                  </div>
-                  {g.id === groupId && (
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0"
-                      style={{ background: "rgba(0,212,255,0.12)", color: "#00D4FF", border: "1px solid rgba(0,212,255,0.25)" }}>
-                      Active
-                    </span>
-                  )}
-                </button>
-              ))}
-            </div>
-          )}
+          </div>
+          <div className="text-[11px] shrink-0" style={{ color: "rgba(255,255,255,0.35)" }}>
+            {predsLoading
+              ? <span style={{ color: "#00D4FF" }}>Loading…</span>
+              : <span>{predStats.made}/{predStats.total} picks</span>}
+          </div>
         </div>
       )}
 
@@ -853,6 +816,19 @@ export function ScheduleClient({
             <span className="font-bold text-white">{predStats.unlockable}</span> matches still open to predict
           </span>
         </div>
+      )}
+
+      {/* ── Copy-to-groups bottom sheet ───────────────────────────── */}
+      {copySheet && userId && (
+        <CopyPredictionSheet
+          matchId={copySheet.matchId}
+          home={copySheet.home}
+          away={copySheet.away}
+          groups={allGroups}
+          currentGroupId={groupId}
+          userId={userId}
+          onDismiss={() => setCopySheet(null)}
+        />
       )}
     </div>
   );

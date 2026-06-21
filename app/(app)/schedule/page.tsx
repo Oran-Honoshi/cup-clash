@@ -3,8 +3,9 @@ export const dynamic = "force-dynamic";
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
-import { ScheduleClient } from "@/components/schedule/schedule-client";
+import { ScheduleClient }      from "@/components/schedule/schedule-client";
 import { GroupPersistRedirect } from "@/components/app/group-persist-redirect";
+import { GroupSwipeSelector }   from "@/components/groups/group-swipe-selector";
 
 export const metadata: Metadata = {
   title: "FIFA World Cup 2026 Schedule — All 104 Matches | Cup Clash",
@@ -150,6 +151,11 @@ export default async function SchedulePage({
   return (
     <>
       {allGroups.length > 0 && <GroupPersistRedirect groups={allGroups} basePath="/schedule" />}
+      {allGroups.length > 1 && (
+        <div className="-mx-4 sm:-mx-6">
+          <GroupSwipeSelector groups={allGroups} activeGroupId={activeGroupId} basePath="/schedule" />
+        </div>
+      )}
       <ScheduleClient
         userId={userId}
         groupId={activeGroupId}

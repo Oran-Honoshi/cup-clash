@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useCallback, useEffect } from "react";
+import { useState } from "react";
 import { Crown } from "lucide-react";
 import { MatchCarousel } from "@/components/dashboard/match-carousel";
 import { AdBanner } from "@/components/ads/ad-banner";
@@ -255,101 +255,7 @@ export function DashboardCarousel({
   isAdFree,
   isCorporate,
 }: DashboardCarouselProps) {
-  const [panel, setPanel]       = useState(0);
-  const trackRef                = useRef<HTMLDivElement>(null);
-  const dragRef                 = useRef<{ startX: number; dragging: boolean; startTime: number }>({ startX: 0, dragging: false, startTime: 0 });
-
-  const snapTo = useCallback((idx: number) => {
-    const el = trackRef.current;
-    if (!el) return;
-    const clamped = Math.max(0, Math.min(idx, PANELS.length - 1));
-    setPanel(clamped);
-    el.style.transition = "transform 0.32s cubic-bezier(0.25, 0.46, 0.45, 0.94)";
-    el.style.transform  = `translateX(${-clamped * 100 / PANELS.length}%)`;
-  }, []);
-
-  // Touch handlers
-  const onTouchStart = useCallback((e: React.TouchEvent) => {
-    const el = trackRef.current;
-    if (!el) return;
-    dragRef.current = { startX: e.touches[0].clientX, dragging: true, startTime: Date.now() };
-    el.style.transition = "none";
-  }, []);
-
-  const onTouchMove = useCallback((e: React.TouchEvent) => {
-    if (!dragRef.current.dragging) return;
-    const el = trackRef.current;
-    if (!el) return;
-    const diff = e.touches[0].clientX - dragRef.current.startX;
-    const base = -panel * 100 / PANELS.length;
-    const pct  = (diff / el.offsetWidth) * 100;
-    const clamped = Math.max(-(PANELS.length - 1) * 100 / PANELS.length, Math.min(0, base + pct));
-    el.style.transform = `translateX(${clamped}%)`;
-  }, [panel]);
-
-  const onTouchEnd = useCallback((e: React.TouchEvent) => {
-    if (!dragRef.current.dragging) return;
-    dragRef.current.dragging = false;
-    const diff = e.changedTouches[0].clientX - dragRef.current.startX;
-    const elapsed = Date.now() - dragRef.current.startTime;
-    const velocity = elapsed > 0 ? diff / elapsed : 0;
-    if (Math.abs(diff) > 80 || Math.abs(velocity) > 0.3) {
-      snapTo(panel + (diff < 0 ? 1 : -1));
-    } else {
-      snapTo(panel);
-    }
-  }, [panel, snapTo]);
-
-  // Mouse drag handlers (desktop)
-  const onMouseDown = useCallback((e: React.MouseEvent) => {
-    const el = trackRef.current;
-    if (!el) return;
-    dragRef.current = { startX: e.clientX, dragging: true, startTime: Date.now() };
-    el.style.transition = "none";
-    document.body.style.cursor  = "grabbing";
-    document.body.style.userSelect = "none";
-  }, []);
-
-  useEffect(() => {
-    const onMouseMove = (e: MouseEvent) => {
-      if (!dragRef.current.dragging) return;
-      const el = trackRef.current;
-      if (!el) return;
-      const diff = e.clientX - dragRef.current.startX;
-      const base = -panel * 100 / PANELS.length;
-      const pct  = (diff / el.offsetWidth) * 100;
-      const clamped = Math.max(-(PANELS.length - 1) * 100 / PANELS.length, Math.min(0, base + pct));
-      el.style.transform = `translateX(${clamped}%)`;
-    };
-    const onMouseUp = (e: MouseEvent) => {
-      if (!dragRef.current.dragging) return;
-      dragRef.current.dragging = false;
-      document.body.style.cursor  = "";
-      document.body.style.userSelect = "";
-      const diff = e.clientX - dragRef.current.startX;
-      const elapsed = Date.now() - dragRef.current.startTime;
-      const velocity = elapsed > 0 ? diff / elapsed : 0;
-      if (Math.abs(diff) > 80 || Math.abs(velocity) > 0.3) {
-        snapTo(panel + (diff < 0 ? 1 : -1));
-      } else {
-        snapTo(panel);
-      }
-    };
-    document.addEventListener("mousemove", onMouseMove);
-    document.addEventListener("mouseup",   onMouseUp);
-    return () => {
-      document.removeEventListener("mousemove", onMouseMove);
-      document.removeEventListener("mouseup",   onMouseUp);
-    };
-  }, [panel, snapTo]);
-
-  // Sync transform when panel changes via pill tap
-  useEffect(() => {
-    const el = trackRef.current;
-    if (!el) return;
-    el.style.transition = "transform 0.32s cubic-bezier(0.25, 0.46, 0.45, 0.94)";
-    el.style.transform  = `translateX(${-panel * 100 / PANELS.length}%)`;
-  }, [panel]);
+  const [panel, setPanel] = useState(0);
 
   return (
     <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}>
@@ -359,18 +265,18 @@ export function DashboardCarousel({
         {PANELS.map((label, i) => (
           <button
             key={label}
-            onClick={() => snapTo(i)}
+            onClick={() => setPanel(i)}
             className="font-barlow font-bold uppercase shrink-0"
             style={{
               padding: "5px 13px",
               borderRadius: 20,
               fontSize: 9,
               letterSpacing: 1,
-              border:      panel === i ? "1px solid #00e5a0" : "1px solid #1a3a1a",
-              background:  panel === i ? "#162a16"           : "transparent",
-              color:       panel === i ? "#00e5a0"           : "#3a7a3a",
-              cursor:      "pointer",
-              transition:  "all 0.15s",
+              border:     panel === i ? "1px solid #00e5a0" : "1px solid #1a3a1a",
+              background: panel === i ? "#162a16"           : "transparent",
+              color:      panel === i ? "#00e5a0"           : "#3a7a3a",
+              cursor:     "pointer",
+              transition: "all 0.15s",
             }}
           >
             {label}
@@ -378,44 +284,17 @@ export function DashboardCarousel({
         ))}
       </div>
 
-      {/* Swipeable track */}
-      <div
-        style={{ overflow: "hidden", flex: 1, minHeight: 0 }}
-        onTouchStart={onTouchStart}
-        onTouchMove={onTouchMove}
-        onTouchEnd={onTouchEnd}
-        onMouseDown={onMouseDown}
-      >
-        <div
-          ref={trackRef}
-          style={{
-            display: "flex",
-            width: `${PANELS.length * 100}%`,
-            height: "100%",
-            willChange: "transform",
-            WebkitTapHighlightColor: "transparent",
-            userSelect: "none",
-          }}
-        >
-          {/* Panel 0 — Match */}
-          <div style={{ width: `${100 / PANELS.length}%`, height: "100%", flexShrink: 0, position: "relative" }}>
-            <div style={{ position: "absolute", inset: 0, background: PANEL_BG, overflowY: "auto", WebkitOverflowScrolling: "touch", overscrollBehavior: "contain" }}>
-              <MatchPanel matches={matches} groupId={groupId} groupName={groupName} />
-            </div>
-          </div>
-          {/* Panel 1 — Leaderboard */}
-          <div style={{ width: `${100 / PANELS.length}%`, height: "100%", flexShrink: 0, position: "relative" }}>
-            <div style={{ position: "absolute", inset: 0, background: PANEL_BG, overflowY: "auto", WebkitOverflowScrolling: "touch", overscrollBehavior: "contain" }}>
-              <LeaderboardPanel members={members} currentUserId={currentUserId} groupName={groupName} isAdFree={isAdFree} isCorporate={isCorporate} />
-            </div>
-          </div>
-          {/* Panel 2 — My Stats */}
-          <div style={{ width: `${100 / PANELS.length}%`, height: "100%", flexShrink: 0, position: "relative" }}>
-            <div style={{ position: "absolute", inset: 0, background: PANEL_BG, overflowY: "auto", WebkitOverflowScrolling: "touch", overscrollBehavior: "contain" }}>
-              <MyStatsPanel members={members} currentUserId={currentUserId} rank={rank} totalPlayers={totalPlayers} />
-            </div>
-          </div>
-        </div>
+      {/* Active panel — vertically scrollable */}
+      <div style={{
+        flex: 1, minHeight: 0,
+        overflowY: "auto",
+        WebkitOverflowScrolling: "touch",
+        overscrollBehavior: "contain",
+        background: PANEL_BG,
+      }}>
+        {panel === 0 && <MatchPanel matches={matches} groupId={groupId} groupName={groupName} />}
+        {panel === 1 && <LeaderboardPanel members={members} currentUserId={currentUserId} groupName={groupName} isAdFree={isAdFree} isCorporate={isCorporate} />}
+        {panel === 2 && <MyStatsPanel members={members} currentUserId={currentUserId} rank={rank} totalPlayers={totalPlayers} />}
       </div>
     </div>
   );

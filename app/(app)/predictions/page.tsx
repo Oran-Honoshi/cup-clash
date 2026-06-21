@@ -4,8 +4,9 @@ import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { createClient }          from "@/lib/supabase/server";
 import { PredictionsClient }     from "@/components/predictions/predictions-client";
 import { GuestPredictionsShell } from "@/components/predictions/guest-predictions-shell";
-import { AdBanner } from "@/components/ads/ad-banner";
-import { GroupPersistRedirect } from "@/components/app/group-persist-redirect";
+import { AdBanner }              from "@/components/ads/ad-banner";
+import { GroupPersistRedirect }  from "@/components/app/group-persist-redirect";
+import { GroupSwipeSelector }    from "@/components/groups/group-swipe-selector";
 import Link from "next/link";
 
 function sbAdmin() {
@@ -128,6 +129,11 @@ export default async function PredictionsPage({
   return (
     <div className="pb-32">
       <GroupPersistRedirect groups={groups} basePath="/predictions" />
+      {groups.length > 1 && (
+        <div className="-mx-4 sm:-mx-6">
+          <GroupSwipeSelector groups={groups} activeGroupId={activeGroupId} basePath="/predictions" />
+        </div>
+      )}
       <PredictionsClient
         groupId={activeGroupId}
         groupName={activeGroup.name}
