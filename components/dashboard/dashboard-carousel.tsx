@@ -265,7 +265,7 @@ export function DashboardCarousel({
     const clamped = Math.max(0, Math.min(idx, PANELS.length - 1));
     setPanel(clamped);
     el.style.transition = "transform 0.32s cubic-bezier(0.25, 0.46, 0.45, 0.94)";
-    el.style.transform  = `translateX(${-clamped * 100}%)`;
+    el.style.transform  = `translateX(${-clamped * 100 / PANELS.length}%)`;
   }, []);
 
   // Touch handlers
@@ -281,9 +281,9 @@ export function DashboardCarousel({
     const el = trackRef.current;
     if (!el) return;
     const diff = e.touches[0].clientX - dragRef.current.startX;
-    const base = -panel * 100;
+    const base = -panel * 100 / PANELS.length;
     const pct  = (diff / el.offsetWidth) * 100;
-    const clamped = Math.max(-(PANELS.length - 1) * 100, Math.min(0, base + pct));
+    const clamped = Math.max(-(PANELS.length - 1) * 100 / PANELS.length, Math.min(0, base + pct));
     el.style.transform = `translateX(${clamped}%)`;
   }, [panel]);
 
@@ -316,9 +316,9 @@ export function DashboardCarousel({
       const el = trackRef.current;
       if (!el) return;
       const diff = e.clientX - dragRef.current.startX;
-      const base = -panel * 100;
+      const base = -panel * 100 / PANELS.length;
       const pct  = (diff / el.offsetWidth) * 100;
-      const clamped = Math.max(-(PANELS.length - 1) * 100, Math.min(0, base + pct));
+      const clamped = Math.max(-(PANELS.length - 1) * 100 / PANELS.length, Math.min(0, base + pct));
       el.style.transform = `translateX(${clamped}%)`;
     };
     const onMouseUp = (e: MouseEvent) => {
@@ -348,7 +348,7 @@ export function DashboardCarousel({
     const el = trackRef.current;
     if (!el) return;
     el.style.transition = "transform 0.32s cubic-bezier(0.25, 0.46, 0.45, 0.94)";
-    el.style.transform  = `translateX(${-panel * 100}%)`;
+    el.style.transform  = `translateX(${-panel * 100 / PANELS.length}%)`;
   }, [panel]);
 
   return (
