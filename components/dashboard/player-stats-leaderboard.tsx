@@ -138,6 +138,10 @@ export function TopScorersLeaderboard() {
         Updated after each match · Live data
       </div>
 
+      <div className="px-5 py-2 border-b text-[11px] font-semibold text-center" style={{ borderColor: "rgba(255,255,255,0.05)", color: "rgb(var(--accent-glow))" }}>
+        Points awarded after the Final
+      </div>
+
       {loading ? (
         <div className="px-5 py-8 text-center text-sm animate-pulse" style={{ color: "rgba(255,255,255,0.3)" }}>
           Loading…
@@ -183,6 +187,10 @@ export function TopAssistersLeaderboard() {
       <div className="px-5 py-2 border-b flex items-center gap-2 text-[11px] text-pitch-500" style={{ borderColor: "rgba(255,255,255,0.05)" }}>
         <TrendingUp size={11} />
         Updated after each match · Live data
+      </div>
+
+      <div className="px-5 py-2 border-b text-[11px] font-semibold text-center" style={{ borderColor: "rgba(255,255,255,0.05)", color: "rgb(var(--accent-glow))" }}>
+        Points awarded after the Final
       </div>
 
       {loading ? (

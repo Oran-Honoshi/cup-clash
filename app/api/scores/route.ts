@@ -232,7 +232,26 @@ async function updateTournamentScorerPoints(sb: SupabaseClient): Promise<void> {
     console.log(`[scores/cron]   player_tournament_stats: ${statsRows.length} player(s) upserted`);
   }
 
-  // ── 4. Determine current leaders ─────────────────────────────────────────
+  // ── 4. Gate on Final being finished ──────────────────────────────────────
+  // Points for top_scorer / top_assister are only awarded once the Final is
+  // over — we never award mid-tournament leads.
+
+  const { data: finalMatch } = await sb
+    .from("matches")
+    .select("id, status")
+    .eq("stage", "Final")
+    .maybeSingle();
+
+  const finalFinished = finalMatch?.status === "finished";
+
+  if (!finalFinished) {
+    console.log("[scores/cron]   Final not yet finished — skipping top_scorer/top_assister point awards");
+    return;
+  }
+
+  console.log("[scores/cron]   Final is finished — proceeding with top_scorer/top_assister scoring");
+
+  // ── 5. Determine tournament winners ───────────────────────────────────────
 
   const maxGoals   = Math.max(...Array.from(tally.values()).map(v => v.goals),   0);
   const maxAssists = Math.max(...Array.from(tally.values()).map(v => v.assists), 0);
@@ -248,7 +267,7 @@ async function updateTournamentScorerPoints(sb: SupabaseClient): Promise<void> {
   console.log(`[scores/cron]   Top scorer(s): ${leadingScorerNames.join(", ")} (${maxGoals}g)`);
   console.log(`[scores/cron]   Top assister(s): ${leadingAssisterNames.join(", ")} (${maxAssists}a)`);
 
-  // ── 5. Score top_scorer / top_assister predictions ───────────────────────
+  // ── 6. Score top_scorer / top_assister predictions ───────────────────────
 
   const [{ data: preds }, { data: rulesRows }] = await Promise.all([
     sb.from("group_predictions")
