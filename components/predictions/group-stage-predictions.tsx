@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect, useCallback } from "react";
+import { useState, useMemo, useEffect, useCallback, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Check, Lock, ArrowUpDown, Star, Trophy, Medal,
@@ -96,86 +96,6 @@ function isGroupComplete(group: string, predictions: GroupPredictions): boolean 
   });
 }
 
-// ── Save Group Button ─────────────────────────────────────────────────────────
-function SaveGroupButton({ matchIds, predictions, pendingChanges, userId, groupId, onSaved }: {
-  matchIds: string[];
-  predictions: GroupPredictions;
-  pendingChanges: Record<string, boolean>;
-  userId: string | undefined;
-  groupId: string;
-  onSaved: (savedMatchIds: string[]) => void;
-}) {
-  const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
-
-  const pendingCount = matchIds.filter(id => pendingChanges[id]).length;
-  const disabled = pendingCount === 0 || saveStatus === "saving";
-
-  const handleSave = useCallback(async () => {
-    if (!userId || disabled) return;
-    setSaveStatus("saving");
-    try {
-      const sb = createClient();
-      const toSave = matchIds.filter(id => pendingChanges[id]);
-      const rows = toSave
-        .filter(id => {
-          const p = predictions[id];
-          return p && p.home !== "" && p.away !== "";
-        })
-        .map(id => {
-          const p = predictions[id];
-          return {
-            user_id:    userId,
-            group_id:   groupId,
-            match_id:   id,
-            home_score: parseInt(p.home, 10),
-            away_score: parseInt(p.away, 10),
-            pred_type:  "match",
-            updated_at: new Date().toISOString(),
-          };
-        });
-      if (!rows.length) { setSaveStatus("idle"); return; }
-      const { error } = await sb.from("group_predictions").upsert(rows, { onConflict: "user_id,group_id,match_id" });
-      if (error) throw error;
-      onSaved(rows.map(r => r.match_id));
-      setSaveStatus("saved");
-      setTimeout(() => setSaveStatus("idle"), 2000);
-    } catch {
-      setSaveStatus("error");
-      setTimeout(() => setSaveStatus("idle"), 3000);
-    }
-  }, [userId, groupId, matchIds, predictions, pendingChanges, disabled, onSaved]);
-
-  const label = saveStatus === "saved"
-    ? "✓ SAVED"
-    : saveStatus === "saving"
-    ? "SAVING…"
-    : `SAVE ${pendingCount} PREDICTION${pendingCount !== 1 ? "S" : ""}`;
-
-  return (
-    <button
-      onClick={handleSave}
-      disabled={disabled}
-      style={{
-        width:        "100%",
-        background:   saveStatus === "saved" ? "rgba(0,229,160,0.15)" : "#162a16",
-        border:       `1px solid ${saveStatus === "error" ? "#f87171" : "#00e5a0"}`,
-        color:        saveStatus === "error" ? "#f87171" : "#00e5a0",
-        borderRadius: 10,
-        padding:      "12px",
-        fontSize:     12,
-        fontWeight:   700,
-        textTransform: "uppercase",
-        letterSpacing: "0.08em",
-        cursor:       disabled ? "not-allowed" : "pointer",
-        opacity:      disabled ? 0.45 : 1,
-        transition:   "opacity 0.2s, background 0.2s",
-        fontFamily:   "var(--font-ui)",
-      }}
-    >
-      {label}
-    </button>
-  );
-}
 
 interface StagePoints { correctOutcome: number; exactScore: number; useProgressive: boolean; }
 
@@ -193,7 +113,7 @@ interface LiveMemberPred {
 }
 
 // ── Match Card Block ──────────────────────────────────────────────────────────
-function MatchCard({ match, prediction, onChange, globalLocked, stagePoints, matchResult, earnedPts, livePreds }: {
+function MatchCard({ match, prediction, onChange, globalLocked, stagePoints, matchResult, earnedPts, livePreds, flashStatus }: {
   match: typeof WC2026_MATCHES[0];
   prediction: ScorePrediction;
   onChange: (home: string, away: string) => void;
@@ -202,6 +122,7 @@ function MatchCard({ match, prediction, onChange, globalLocked, stagePoints, mat
   matchResult?: MatchResultData;
   earnedPts?: { pts: number; isExact: boolean };
   livePreds?: LiveMemberPred[];
+  flashStatus?: "success" | "error" | null;
 }) {
   const { t } = useLocale();
   const filled      = prediction.home !== "" && prediction.away !== "";
@@ -291,9 +212,20 @@ function MatchCard({ match, prediction, onChange, globalLocked, stagePoints, mat
           </span>
         </div>
         <div className="flex items-center gap-1.5 shrink-0">
-          <ScoreInputCC value={prediction.home} onChange={v => onChange(v, prediction.away)} disabled={matchLocked} />
-          <span style={{ fontFamily: "var(--font-mono)", fontSize: 16, fontWeight: 700, color: "rgba(255,255,255,0.25)" }}>:</span>
-          <ScoreInputCC value={prediction.away} onChange={v => onChange(prediction.home, v)} disabled={matchLocked} />
+          <div style={{
+            display: "flex", alignItems: "center", gap: 6,
+            borderRadius: 8,
+            border: flashStatus === "success" ? "1.5px solid #00e5a0" : flashStatus === "error" ? "1.5px solid #f87171" : "1.5px solid transparent",
+            padding: "3px 6px",
+            background: flashStatus === "success" ? "rgba(0,229,160,0.06)" : flashStatus === "error" ? "rgba(248,113,113,0.06)" : "transparent",
+            transition: "border-color 0.3s, background 0.3s",
+          }}>
+            <ScoreInputCC value={prediction.home} onChange={v => onChange(v, prediction.away)} disabled={matchLocked} />
+            <span style={{ fontFamily: "var(--font-mono)", fontSize: 16, fontWeight: 700, color: "rgba(255,255,255,0.25)" }}>:</span>
+            <ScoreInputCC value={prediction.away} onChange={v => onChange(prediction.home, v)} disabled={matchLocked} />
+          </div>
+          {flashStatus === "success" && <span style={{ fontSize: 11, color: "#00e5a0", fontWeight: 700 }}>✓</span>}
+          {flashStatus === "error" && <span style={{ fontSize: 11, color: "#f87171", fontWeight: 700 }}>!</span>}
         </div>
         <div className="flex-1 flex flex-col items-center gap-1">
           <Flag code={match.awayFlagCode ?? "un"} size="sm" />
@@ -511,6 +443,22 @@ export function GroupStagePredictions({ groupId, locked = false, userId, isAdFre
 
   const [liveMemberPreds, setLiveMemberPreds] = useState<Record<string, LiveMemberPred[]>>({});
   const [pendingChanges,  setPendingChanges]  = useState<Record<string, boolean>>({});
+  const [chipFlash,       setChipFlash]       = useState<Record<string, "success" | "error" | null>>({});
+  const autoSaveTimers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
+
+  // Clear timers on unmount
+  useEffect(() => {
+    return () => { Object.values(autoSaveTimers.current).forEach(clearTimeout); };
+  }, []);
+
+  // Warn on navigate-away with unsaved changes
+  useEffect(() => {
+    const handler = (e: BeforeUnloadEvent) => {
+      if (Object.keys(pendingChanges).length > 0) e.preventDefault();
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [pendingChanges]);
 
   useEffect(() => {
     const sb = createClient();
@@ -622,9 +570,34 @@ export function GroupStagePredictions({ groupId, locked = false, userId, isAdFre
     });
   }, [userId, groupId]);
 
+  const doAutoSave = useCallback(async (matchId: string, home: string, away: string) => {
+    if (!userId) return;
+    const h = parseInt(home, 10), a = parseInt(away, 10);
+    if (isNaN(h) || isNaN(a)) return;
+    try {
+      const sb = createClient();
+      const { error } = await sb.from("group_predictions").upsert({
+        user_id: userId, group_id: groupId, match_id: matchId,
+        home_score: h, away_score: a, pred_type: "match",
+        updated_at: new Date().toISOString(),
+      }, { onConflict: "user_id,group_id,match_id" });
+      if (error) throw error;
+      setPendingChanges(prev => { const n = { ...prev }; delete n[matchId]; return n; });
+      setChipFlash(prev => ({ ...prev, [matchId]: "success" }));
+      setTimeout(() => setChipFlash(prev => ({ ...prev, [matchId]: null })), 1000);
+    } catch {
+      setChipFlash(prev => ({ ...prev, [matchId]: "error" }));
+      setTimeout(() => setChipFlash(prev => ({ ...prev, [matchId]: null })), 2000);
+    }
+  }, [userId, groupId]);
+
   const setScore = (matchId: string, home: string, away: string) => {
     setPredictions(prev => ({ ...prev, [matchId]: { home, away } }));
     setPendingChanges(prev => ({ ...prev, [matchId]: true }));
+    if (autoSaveTimers.current[matchId]) clearTimeout(autoSaveTimers.current[matchId]);
+    autoSaveTimers.current[matchId] = setTimeout(() => {
+      doAutoSave(matchId, home, away);
+    }, 800);
   };
 
   const groupMatches        = getGroupMatches(activeGroup);
@@ -748,6 +721,7 @@ export function GroupStagePredictions({ groupId, locked = false, userId, isAdFre
                 matchResult={matchResults[match.id]}
                 earnedPts={earnedPoints[match.id]}
                 livePreds={liveMemberPreds[match.id]}
+                flashStatus={chipFlash[match.id]}
               />
             ))}
           </div>
@@ -783,22 +757,6 @@ export function GroupStagePredictions({ groupId, locked = false, userId, isAdFre
                   if (homeVal && awayVal) merged[matchId] = scores;
                 });
                 return merged;
-              })}
-            />
-          )}
-
-          {/* Save group predictions */}
-          {userId && (
-            <SaveGroupButton
-              matchIds={groupMatches.map(m => m.id)}
-              predictions={predictions}
-              pendingChanges={pendingChanges}
-              userId={userId}
-              groupId={groupId}
-              onSaved={(ids) => setPendingChanges(prev => {
-                const next = { ...prev };
-                ids.forEach(id => delete next[id]);
-                return next;
               })}
             />
           )}

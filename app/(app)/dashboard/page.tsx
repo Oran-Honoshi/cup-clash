@@ -144,7 +144,7 @@ export default async function DashboardPage({
   const isAdmin       = group.admin === userProfile.id;
 
   return (
-    <div className="w-full max-w-full overflow-x-hidden">
+    <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", overflow: "hidden" }}>
       <GroupPersistRedirect groups={allGroups} basePath="/dashboard" />
       <OnboardingTour />
       <WelcomeModal />
@@ -152,13 +152,13 @@ export default async function DashboardPage({
 
       {/* Group swipe selector — shown when user belongs to multiple groups */}
       {allGroups.length > 1 && (
-        <div id="tour-group-selector" className="-mx-4 sm:-mx-6">
+        <div id="tour-group-selector" className="-mx-4 sm:-mx-6" style={{ flexShrink: 0 }}>
           <GroupSwipeSelector groups={allGroups} activeGroupId={activeGroupId} basePath="/dashboard" />
         </div>
       )}
 
-      {/* 3-panel carousel */}
-      <div className="-mx-4 sm:-mx-6" style={{ height: "calc(100dvh - 52px - 78px - 42px)", minHeight: 480 }}>
+      {/* 3-panel carousel — fills remaining space */}
+      <div className="-mx-4 sm:-mx-6" style={{ flex: 1, minHeight: 0, overflow: "hidden", display: "flex", flexDirection: "column" }}>
         <DashboardCarousel
           matches={upcomingMatches}
           members={members}
@@ -171,8 +171,6 @@ export default async function DashboardPage({
           isCorporate={isCorporate}
         />
       </div>
-
-      <AdBanner isAdFree={isAdFree} isCorporate={isCorporate} />
     </div>
   );
 }

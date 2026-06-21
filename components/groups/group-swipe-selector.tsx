@@ -34,8 +34,10 @@ export function GroupSwipeSelector({ groups, activeGroupId, basePath }: GroupSwi
         alignItems: "center",
         padding: "0 14px",
         overflowX: "auto",
+        overflowY: "hidden",
         scrollbarWidth: "none",
         WebkitOverflowScrolling: "touch" as React.CSSProperties["WebkitOverflowScrolling"],
+        touchAction: "pan-x",
         gap: 6,
         top: 0,
       } as React.CSSProperties}

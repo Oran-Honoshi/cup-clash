@@ -92,7 +92,7 @@ export function PredictionsClient({
   void router; void setSelectedGroupId; void allGroups; void groupName; void isPaid; void t;
 
   return (
-    <div className="flex flex-col space-y-3 max-w-2xl mx-auto w-full pb-32">
+    <div className="flex flex-col space-y-3 max-w-2xl mx-auto w-full pb-32 pt-4">
 
       {/* Page header */}
       <div className="pt-2 pb-1">

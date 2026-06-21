@@ -20,6 +20,10 @@ export function PageTransition({ children }: { children: React.ReactNode }) {
     <div
       style={{
         flex: 1,
+        display: "flex",
+        flexDirection: "column",
+        overflowY: "auto",
+        overflowX: "hidden",
         opacity: visible ? 1 : 0,
         transform: `translateY(${visible ? 0 : 6}px)`,
         // Transition only when showing — hide is instant so there's no ghost of the old page

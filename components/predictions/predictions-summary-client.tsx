@@ -303,7 +303,7 @@ export function PredictionsSummaryClient({
   } as const;
 
   return (
-    <div className="flex flex-col gap-4 w-full max-w-full">
+    <div className="flex flex-col gap-4 w-full max-w-full pt-4">
 
       {/* Page header */}
       <div className="pt-2 pb-1 flex items-start justify-between gap-3">

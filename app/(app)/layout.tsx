@@ -9,7 +9,7 @@ import { GroupProvider } from "@/lib/contexts/group-context";
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <GroupProvider>
-    <div className="relative min-h-screen flex overflow-x-clip">
+    <div className="relative flex overflow-hidden" style={{ height: "100dvh" }}>
 
       {/* ── Stadium background ── */}
       <div
@@ -21,10 +21,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
       {/* ── App shell (sits above the background) ── */}
       <AppSidebar />
-      <main className="relative z-10 flex-1 min-w-0 ltr:lg:ml-60 rtl:lg:mr-60 lg:pb-0 flex flex-col app-safe-bottom">
+      <main className="relative z-10 flex-1 min-w-0 ltr:lg:ml-60 rtl:lg:mr-60 lg:pb-0 flex flex-col overflow-hidden app-safe-bottom">
         <AppInstallBanner />
         <AppHeader />
-        <div className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 py-6">
+        <div className="flex flex-col flex-1 min-h-0 overflow-hidden max-w-5xl w-full mx-auto px-4 sm:px-6">
           <PageTransition>{children}</PageTransition>
         </div>
       </main>

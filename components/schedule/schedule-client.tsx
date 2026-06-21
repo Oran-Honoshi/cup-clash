@@ -252,6 +252,7 @@ function MatchCard({
   groupId,
   isToday,
   isNext,
+  saveStatus,
 }: {
   match: typeof WC2026_MATCHES[0];
   state: ReturnType<typeof getMatchState>;
@@ -262,6 +263,7 @@ function MatchCard({
   groupId: string;
   isToday: boolean;
   isNext: boolean;
+  saveStatus?: "success" | "error" | null;
 }) {
   const locked = state.type !== "upcoming" || isLocked(match.utcTime);
   const canPredict = !!userId && !!groupId && !locked && state.type === "upcoming";
@@ -371,21 +373,31 @@ function MatchCard({
           {/* Score chips row — only for today / open matches */}
           {isToday && (showInputs || showEditInputs || pred) && (
             <div className="flex items-center gap-1.5 mt-2">
-              <ScoreInputCC
-                value={localPred?.home ?? ""}
-                onChange={v => onLocalPredChange(match.id, v, localPred?.away ?? "")}
-                size={26}
-                disabled={locked}
-              />
-              <span style={{ fontSize: 11, fontWeight: 700, color: "#1c4a1c" }}>–</span>
-              <ScoreInputCC
-                value={localPred?.away ?? ""}
-                onChange={v => onLocalPredChange(match.id, localPred?.home ?? "", v)}
-                size={26}
-                disabled={locked}
-              />
-              {pred && (
-                <span className="font-barlow font-bold" style={{ fontSize: 9, color: "#00e5a0", marginLeft: 4 }}>✓ Saved</span>
+              <div style={{
+                display: "flex", alignItems: "center", gap: 4,
+                borderRadius: 8,
+                border: saveStatus === "success" ? "1.5px solid #00e5a0" : saveStatus === "error" ? "1.5px solid #f87171" : "1.5px solid transparent",
+                padding: "2px 5px",
+                background: saveStatus === "success" ? "rgba(0,229,160,0.06)" : saveStatus === "error" ? "rgba(248,113,113,0.06)" : "transparent",
+                transition: "border-color 0.3s, background 0.3s",
+              }}>
+                <ScoreInputCC
+                  value={localPred?.home ?? ""}
+                  onChange={v => onLocalPredChange(match.id, v, localPred?.away ?? "")}
+                  size={26}
+                  disabled={locked}
+                />
+                <span style={{ fontSize: 11, fontWeight: 700, color: "#1c4a1c" }}>–</span>
+                <ScoreInputCC
+                  value={localPred?.away ?? ""}
+                  onChange={v => onLocalPredChange(match.id, localPred?.home ?? "", v)}
+                  size={26}
+                  disabled={locked}
+                />
+              </div>
+              {saveStatus === "success" && <span style={{ fontSize: 10, color: "#00e5a0", fontWeight: 700 }}>✓</span>}
+              {!saveStatus && pred && (
+                <span className="font-barlow font-bold" style={{ fontSize: 9, color: "#00e5a0", marginLeft: 2 }}>✓ Saved</span>
               )}
               <div className="flex-1" />
               <span className="font-barlow font-bold px-2 py-0.5 rounded-md"
@@ -531,6 +543,9 @@ export function ScheduleClient({
   // Loading state while fetching predictions for a newly-selected group
   const [predsLoading, setPredsLoading] = useState(false);
 
+  // Per-match save flash status
+  const [saveFlash, setSaveFlash] = useState<Record<string, "success" | "error" | null>>({});
+
   // ── Per-match debounce timers
   const timersRef = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
 
@@ -563,6 +578,11 @@ export function ScheduleClient({
           isExact: prev[matchId]?.isExact ?? null,
         },
       }));
+      setSaveFlash(prev => ({ ...prev, [matchId]: "success" }));
+      setTimeout(() => setSaveFlash(prev => ({ ...prev, [matchId]: null })), 1000);
+    } else {
+      setSaveFlash(prev => ({ ...prev, [matchId]: "error" }));
+      setTimeout(() => setSaveFlash(prev => ({ ...prev, [matchId]: null })), 2000);
     }
   }, [userId, groupId]);
 
@@ -653,7 +673,7 @@ export function ScheduleClient({
   };
 
   return (
-    <div className="max-w-3xl mx-auto w-full pb-32 space-y-4">
+    <div className="max-w-3xl mx-auto w-full pb-32 space-y-4 pt-4">
 
       {/* ── Page header ────────────────────────────────────────── */}
       <div className="pt-2 pb-1">
@@ -872,6 +892,7 @@ export function ScheduleClient({
                         groupId={groupId}
                         isToday={m.date === todayStr}
                         isNext={m.id === nextMatchId}
+                        saveStatus={saveFlash[m.id]}
                       />
                     );
                   })}

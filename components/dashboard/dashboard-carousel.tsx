@@ -2,8 +2,7 @@
 
 import { useRef, useState, useCallback, useEffect } from "react";
 import { Crown } from "lucide-react";
-import { NextMatchCard } from "@/components/dashboard/next-match-card";
-import { PredictionDistribution } from "@/components/dashboard/prediction-distribution";
+import { MatchCarousel } from "@/components/dashboard/match-carousel";
 import { AdBanner } from "@/components/ads/ad-banner";
 import { MemberAvatar } from "@/components/ui/member-avatar";
 import type { Match, Member } from "@/lib/types";
@@ -41,7 +40,7 @@ function ordinal(n: number): string {
 // ── Leaderboard panel ─────────────────────────────────────────────────────────
 
 const PODIUM_ORDER = [1, 0, 2] as const; // left=2nd, center=1st, right=3rd
-const PODIUM_HEIGHTS = [46, 64, 34];
+const PODIUM_HEIGHTS = [80, 110, 60];
 const PODIUM_AVATAR_SIZES: Array<"sm" | "md"> = ["sm", "md", "sm"];
 const PODIUM_COLORS = ["#a0c8a0", "#ffaa00", "#a0c8a0"];
 
@@ -57,7 +56,7 @@ function LeaderboardPanel({ members, currentUserId, groupName, isAdFree, isCorpo
   const rest   = sorted.slice(3);
 
   return (
-    <div className="h-full overflow-y-auto px-4 py-4 space-y-4" style={{ WebkitOverflowScrolling: "touch" }}>
+    <div className="px-4 py-4 space-y-4">
       {/* Meta */}
       <div className="font-barlow font-bold uppercase text-center" style={{ fontSize: 9, letterSpacing: 2, color: "#3a7a3a" }}>
         {groupName} · {members.length} members
@@ -161,7 +160,7 @@ function MyStatsPanel({ members, currentUserId, rank, totalPlayers }: {
   ];
 
   return (
-    <div className="h-full overflow-y-auto px-4 py-4 space-y-4" style={{ WebkitOverflowScrolling: "touch" }}>
+    <div className="px-4 py-4 space-y-4">
       {/* Meta */}
       <div className="font-barlow font-bold uppercase text-center" style={{ fontSize: 9, letterSpacing: 2, color: "#3a7a3a" }}>
         FIFA World Cup 2026
@@ -222,10 +221,9 @@ function MatchPanel({ matches, groupId, groupName }: {
   groupId: string;
   groupName: string;
 }) {
-  const match = matches[0];
-  if (!match) {
+  if (!matches.length) {
     return (
-      <div className="h-full flex items-center justify-center" style={{ color: "#3a7a3a" }}>
+      <div className="flex items-center justify-center px-4 py-8">
         <div className="text-center">
           <div className="font-barlow font-black uppercase" style={{ fontSize: 18, color: "#e0f2e0" }}>All matches played!</div>
           <div className="font-barlow mt-1" style={{ fontSize: 11, color: "#3a7a3a" }}>Check the leaderboard for results</div>
@@ -234,18 +232,12 @@ function MatchPanel({ matches, groupId, groupName }: {
     );
   }
 
-  const matchDate  = new Date(match.time);
-  const stageName  = match.stage === "Group" && match.group ? `Group ${match.group}` : match.stage;
-  const dateStr    = matchDate.toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" });
-
   return (
-    <div className="h-full overflow-y-auto px-4 py-4 space-y-3" style={{ WebkitOverflowScrolling: "touch" }}>
-      {/* Meta */}
+    <div className="px-4 py-4 space-y-3">
       <div className="font-barlow font-bold uppercase text-center" style={{ fontSize: 9, letterSpacing: 1, color: "#3a7a3a" }}>
-        {groupName} · {stageName} · {dateStr}
+        {groupName} · Upcoming Matches
       </div>
-      <NextMatchCard match={match} groupId={groupId} />
-      {groupId && <PredictionDistribution matchId={match.id} groupId={groupId} />}
+      <MatchCarousel matches={matches} groupId={groupId} />
     </div>
   );
 }
@@ -356,7 +348,7 @@ export function DashboardCarousel({
   }, [panel]);
 
   return (
-    <div className="flex flex-col" style={{ minHeight: 0 }}>
+    <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}>
       {/* Panel pill tabs */}
       <div className="flex items-center justify-center gap-1.5 px-4"
         style={{ height: 40, background: "#020c04", borderBottom: "1px solid #091509", flexShrink: 0 }}>
@@ -402,16 +394,22 @@ export function DashboardCarousel({
           }}
         >
           {/* Panel 0 — Match */}
-          <div style={{ width: `${100 / PANELS.length}%`, height: "100%", background: PANEL_BG, flexShrink: 0 }}>
-            <MatchPanel matches={matches} groupId={groupId} groupName={groupName} />
+          <div style={{ width: `${100 / PANELS.length}%`, height: "100%", flexShrink: 0, position: "relative" }}>
+            <div style={{ position: "absolute", inset: 0, background: PANEL_BG, overflowY: "auto", WebkitOverflowScrolling: "touch", overscrollBehavior: "contain" }}>
+              <MatchPanel matches={matches} groupId={groupId} groupName={groupName} />
+            </div>
           </div>
           {/* Panel 1 — Leaderboard */}
-          <div style={{ width: `${100 / PANELS.length}%`, height: "100%", background: PANEL_BG, flexShrink: 0 }}>
-            <LeaderboardPanel members={members} currentUserId={currentUserId} groupName={groupName} isAdFree={isAdFree} isCorporate={isCorporate} />
+          <div style={{ width: `${100 / PANELS.length}%`, height: "100%", flexShrink: 0, position: "relative" }}>
+            <div style={{ position: "absolute", inset: 0, background: PANEL_BG, overflowY: "auto", WebkitOverflowScrolling: "touch", overscrollBehavior: "contain" }}>
+              <LeaderboardPanel members={members} currentUserId={currentUserId} groupName={groupName} isAdFree={isAdFree} isCorporate={isCorporate} />
+            </div>
           </div>
           {/* Panel 2 — My Stats */}
-          <div style={{ width: `${100 / PANELS.length}%`, height: "100%", background: PANEL_BG, flexShrink: 0 }}>
-            <MyStatsPanel members={members} currentUserId={currentUserId} rank={rank} totalPlayers={totalPlayers} />
+          <div style={{ width: `${100 / PANELS.length}%`, height: "100%", flexShrink: 0, position: "relative" }}>
+            <div style={{ position: "absolute", inset: 0, background: PANEL_BG, overflowY: "auto", WebkitOverflowScrolling: "touch", overscrollBehavior: "contain" }}>
+              <MyStatsPanel members={members} currentUserId={currentUserId} rank={rank} totalPlayers={totalPlayers} />
+            </div>
           </div>
         </div>
       </div>
