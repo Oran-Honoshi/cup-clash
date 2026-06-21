@@ -257,7 +257,7 @@ export function DashboardCarousel({
 }: DashboardCarouselProps) {
   const [panel, setPanel]       = useState(0);
   const trackRef                = useRef<HTMLDivElement>(null);
-  const dragRef                 = useRef<{ startX: number; dragging: boolean }>({ startX: 0, dragging: false });
+  const dragRef                 = useRef<{ startX: number; dragging: boolean; startTime: number }>({ startX: 0, dragging: false, startTime: 0 });
 
   const snapTo = useCallback((idx: number) => {
     const el = trackRef.current;
@@ -272,7 +272,7 @@ export function DashboardCarousel({
   const onTouchStart = useCallback((e: React.TouchEvent) => {
     const el = trackRef.current;
     if (!el) return;
-    dragRef.current = { startX: e.touches[0].clientX, dragging: true };
+    dragRef.current = { startX: e.touches[0].clientX, dragging: true, startTime: Date.now() };
     el.style.transition = "none";
   }, []);
 
@@ -291,7 +291,9 @@ export function DashboardCarousel({
     if (!dragRef.current.dragging) return;
     dragRef.current.dragging = false;
     const diff = e.changedTouches[0].clientX - dragRef.current.startX;
-    if (Math.abs(diff) > 50) {
+    const elapsed = Date.now() - dragRef.current.startTime;
+    const velocity = elapsed > 0 ? diff / elapsed : 0;
+    if (Math.abs(diff) > 80 || Math.abs(velocity) > 0.3) {
       snapTo(panel + (diff < 0 ? 1 : -1));
     } else {
       snapTo(panel);
@@ -302,7 +304,7 @@ export function DashboardCarousel({
   const onMouseDown = useCallback((e: React.MouseEvent) => {
     const el = trackRef.current;
     if (!el) return;
-    dragRef.current = { startX: e.clientX, dragging: true };
+    dragRef.current = { startX: e.clientX, dragging: true, startTime: Date.now() };
     el.style.transition = "none";
     document.body.style.cursor  = "grabbing";
     document.body.style.userSelect = "none";
@@ -325,7 +327,9 @@ export function DashboardCarousel({
       document.body.style.cursor  = "";
       document.body.style.userSelect = "";
       const diff = e.clientX - dragRef.current.startX;
-      if (Math.abs(diff) > 50) {
+      const elapsed = Date.now() - dragRef.current.startTime;
+      const velocity = elapsed > 0 ? diff / elapsed : 0;
+      if (Math.abs(diff) > 80 || Math.abs(velocity) > 0.3) {
         snapTo(panel + (diff < 0 ? 1 : -1));
       } else {
         snapTo(panel);

@@ -63,19 +63,7 @@ export interface ScheduleClientProps {
 //   "upcoming" (default) | "live" | "finished"
 const FINISHED_STATUS = "finished";
 const LIVE_STATUS     = "live";
-const GROUPS   = ["A","B","C","D","E","F","G","H","I","J","K","L"];
-const STAGES   = ["All","Group","R32","R16","QF","SF","Final"] as const;
-const STATUSES = ["All","Upcoming","Live","Finished"] as const;
 
-const STAGE_COLORS: Record<string, { bg: string; text: string; border: string }> = {
-  Group: { bg: "rgba(255,255,255,0.06)", text: "rgba(255,255,255,0.55)", border: "rgba(255,255,255,0.12)" },
-  R32:   { bg: "rgba(0,212,255,0.08)",  text: "#00D4FF",                border: "rgba(0,212,255,0.2)"  },
-  R16:   { bg: "rgba(139,92,246,0.1)",  text: "#a78bfa",                border: "rgba(139,92,246,0.2)" },
-  QF:    { bg: "rgba(251,191,36,0.08)", text: "#fbbf24",                border: "rgba(251,191,36,0.2)" },
-  SF:    { bg: "rgba(249,115,22,0.1)",  text: "#fb923c",                border: "rgba(249,115,22,0.2)" },
-  "3rd": { bg: "rgba(148,163,184,0.08)",text: "#94a3b8",                border: "rgba(148,163,184,0.2)"},
-  Final: { bg: "rgba(234,179,8,0.1)",   text: "#facc15",                border: "rgba(234,179,8,0.25)" },
-};
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
@@ -415,33 +403,6 @@ function MatchCard({
   );
 }
 
-// ── Filter chip ────────────────────────────────────────────────────────────────
-
-function Chip({
-  active,
-  onClick,
-  children,
-}: {
-  active: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className="font-barlow shrink-0 px-3 py-1.5 rounded-full font-bold uppercase transition-all"
-      style={{
-        fontSize: 11,
-        letterSpacing: "1px",
-        ...(active
-          ? { background: "#162a16", color: "#00e5a0", border: "1px solid #00e5a0" }
-          : { background: "rgba(255,255,255,0.04)", color: "#3a7a3a", border: "1px solid #1a3a1a" }),
-      }}
-    >
-      {children}
-    </button>
-  );
-}
 
 // ── Main component ─────────────────────────────────────────────────────────────
 
@@ -522,9 +483,7 @@ export function ScheduleClient({
   }, [groupId, userId]);
 
   // ── Filter state
-  const [groupFilter, setGroupFilter]   = useState<string>("All");
-  const [stageFilter, setStageFilter]   = useState<string>("All");
-  const [statusFilter, setStatusFilter] = useState<string>("All");
+  const [tabFilter, setTabFilter] = useState<"live" | "today" | "upcoming" | "done">("today");
   const [searchQuery, setSearchQuery]   = useState("");
   const [groupPickerOpen, setGroupPickerOpen] = useState(false);
 
@@ -614,21 +573,18 @@ export function ScheduleClient({
   const filtered = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
     return WC2026_MATCHES.filter(m => {
-      if (groupFilter !== "All" && m.group !== groupFilter) return false;
-      if (stageFilter !== "All" && m.stage !== stageFilter) return false;
-      if (statusFilter !== "All") {
-        const s = matchStates[m.id];
-        if (statusFilter === "Upcoming" && s.type !== "upcoming") return false;
-        if (statusFilter === "Live"     && s.type !== "live")     return false;
-        if (statusFilter === "Finished" && s.type !== "finished") return false;
-      }
+      const s = matchStates[m.id];
+      if (tabFilter === "live"     && s.type !== "live")     return false;
+      if (tabFilter === "today"    && m.date !== todayStr)   return false;
+      if (tabFilter === "upcoming" && (s.type !== "upcoming" || m.date <= todayStr)) return false;
+      if (tabFilter === "done"     && s.type !== "finished") return false;
       if (q) {
         const haystack = `${m.home} ${m.away}`.toLowerCase();
         if (!haystack.includes(q)) return false;
       }
       return true;
     });
-  }, [groupFilter, stageFilter, statusFilter, searchQuery, matchStates]);
+  }, [tabFilter, searchQuery, matchStates, todayStr]);
 
   // ── Group by date
   const groupedDates = useMemo(() => {
@@ -782,50 +738,35 @@ export function ScheduleClient({
           )}
         </div>
 
-        {/* Stage filter */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
-          <span className="shrink-0 text-[10px] font-black uppercase tracking-widest"
-            style={{ color: "rgba(255,255,255,0.35)" }}>Stage</span>
-          <div className="flex items-center gap-1.5">
-            {STAGES.map(s => (
-              <Chip key={s} active={stageFilter === s} onClick={() => {
-                setStageFilter(s);
-                if (s !== "All" && s !== "Group") setGroupFilter("All");
-              }}>
-                {s === "All" ? "All" : STAGE_LABELS[s] ?? s}
-              </Chip>
-            ))}
-          </div>
-        </div>
-
-        {/* Group filter (only relevant for Group stage) */}
-        {(stageFilter === "All" || stageFilter === "Group") && (
-          <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
-            <span className="shrink-0 text-[10px] font-black uppercase tracking-widest"
-              style={{ color: "rgba(255,255,255,0.35)" }}>Group</span>
-            <div className="flex items-center gap-1.5">
-              <Chip active={groupFilter === "All"} onClick={() => setGroupFilter("All")}>All</Chip>
-              {GROUPS.map(g => (
-                <Chip key={g} active={groupFilter === g} onClick={() => {
-                  setGroupFilter(g);
-                  setStageFilter("Group");
-                }}>
-                  {g}
-                </Chip>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Status filter */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
-          <span className="shrink-0 text-[10px] font-black uppercase tracking-widest"
-            style={{ color: "rgba(255,255,255,0.35)" }}>Status</span>
-          <div className="flex items-center gap-1.5">
-            {STATUSES.map(s => (
-              <Chip key={s} active={statusFilter === s} onClick={() => setStatusFilter(s)}>{s}</Chip>
-            ))}
-          </div>
+        {/* Status tab row */}
+        <div style={{ background: "#091409", borderRadius: 10, border: "1px solid #162a16", overflow: "hidden", padding: 3, gap: 2, display: "flex" }}>
+          {(["live", "today", "upcoming", "done"] as const).map(tab => {
+            const active = tabFilter === tab;
+            const isLive = tab === "live";
+            const labels = { live: "LIVE", today: "TODAY", upcoming: "UPCOMING", done: "DONE" } as const;
+            return (
+              <button
+                key={tab}
+                onClick={() => setTabFilter(tab)}
+                className="font-barlow font-bold uppercase"
+                style={{
+                  flex: 1,
+                  padding: "7px 0",
+                  textAlign: "center",
+                  borderRadius: 7,
+                  fontSize: 10,
+                  letterSpacing: 0.5,
+                  background: active ? (isLive ? "#2a1010" : "#162a16") : "transparent",
+                  color: active ? (isLive ? "#ff6666" : "#00e5a0") : "#3a6a3a",
+                  border: "none",
+                  cursor: "pointer",
+                  transition: "all 0.15s",
+                }}
+              >
+                {labels[tab]}
+              </button>
+            );
+          })}
         </div>
       </div>
 
