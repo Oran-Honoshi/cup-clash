@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useRef, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useGroupContext } from "@/lib/contexts/group-context";
 import {
   Calendar, Lock, Search, X as XIcon,
   Users, Zap,
@@ -425,6 +426,12 @@ export function ScheduleClient({
   isCorporate,
 }: ScheduleClientProps) {
   const router = useRouter();
+  const { setPrediction, refreshPredictions, setActiveUserId } = useGroupContext();
+
+  // ── Register userId so GroupSwipeSelector can refresh predictions ──────────
+  useEffect(() => {
+    if (userId) setActiveUserId(userId);
+  }, [userId, setActiveUserId]);
 
   // ── Auto-refresh every 60s when a match is live
   const hasLive = useMemo(
@@ -484,10 +491,11 @@ export function ScheduleClient({
         setSavedPreds(newSaved);
         setLocalPreds(newLocal);
         setPredsLoading(false);
+        refreshPredictions(groupId, userId);
       });
 
     return () => { cancelled = true; };
-  }, [groupId, userId]);
+  }, [groupId, userId, refreshPredictions]);
 
   // ── Filter state
   const [tabFilter, setTabFilter] = useState<"live" | "today" | "upcoming" | "done">("today");
@@ -546,6 +554,7 @@ export function ScheduleClient({
           isExact: prev[matchId]?.isExact ?? null,
         },
       }));
+      setPrediction(matchId, h, a);
       setSaveFlash(prev => ({ ...prev, [matchId]: "success" }));
       setTimeout(() => setSaveFlash(prev => ({ ...prev, [matchId]: null })), 1000);
       // Offer to copy to other groups when user has multiple groups
@@ -556,7 +565,7 @@ export function ScheduleClient({
       setSaveFlash(prev => ({ ...prev, [matchId]: "error" }));
       setTimeout(() => setSaveFlash(prev => ({ ...prev, [matchId]: null })), 2000);
     }
-  }, [userId, groupId]);
+  }, [userId, groupId, setPrediction]);
 
   const handleLocalPredChange = useCallback((matchId: string, home: string, away: string) => {
     setLocalPreds(prev => ({ ...prev, [matchId]: { home, away } }));

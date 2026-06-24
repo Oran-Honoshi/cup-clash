@@ -5,7 +5,7 @@ import { GroupStagePredictions } from "@/components/predictions/group-stage-pred
 import { TournamentPicks } from "@/components/dashboard/tournament-picks";
 import { BonusQuestions } from "@/components/predictions/bonus-questions";
 import { GuestStore } from "@/components/ui/guest-signup-modal";
-import { createClient } from "@/lib/supabase/client";
+import { useGroupContext } from "@/lib/contexts/group-context";
 import { WC2026_MATCHES } from "@/lib/schedule";
 
 interface PredictionsClientProps {
@@ -34,9 +34,12 @@ export function PredictionsClient({
 }: PredictionsClientProps) {
   void isPaid; void allGroups;
 
-  const [activeTab,      setActiveTab]      = useState<SectionKey>("group");
-  const [predictedCount, setPredictedCount] = useState(0);
-  const [migrated,       setMigrated]       = useState(false);
+  const { predictions: ctxPredictions, refreshPredictions, setActiveUserId } = useGroupContext();
+
+  const [activeTab, setActiveTab] = useState<SectionKey>("group");
+  const [migrated,  setMigrated]  = useState(false);
+
+  const predictedCount = GROUP_STAGE_MATCH_IDS.filter(id => ctxPredictions[id] != null).length;
 
   const carouselRef  = useRef<HTMLDivElement>(null);
   const sectionRefs  = useRef<(HTMLDivElement | null)[]>([null, null, null]);
@@ -63,16 +66,11 @@ export function PredictionsClient({
     }).catch(err => console.error("[migrate guest picks]", err));
   }, [migrateGuestPicks, migrated, groupId, userId]);
 
-  // ── Predicted count for progress display ────────────────────────────────────
+  // ── Populate context predictions so count stays in sync with other pages ─────
   useEffect(() => {
-    createClient()
-      .from("group_predictions")
-      .select("match_id", { count: "exact", head: true })
-      .eq("group_id", groupId)
-      .eq("user_id", userId)
-      .in("match_id", GROUP_STAGE_MATCH_IDS)
-      .then(({ count }) => setPredictedCount(count ?? 0));
-  }, [groupId, userId]);
+    setActiveUserId(userId);
+    refreshPredictions(groupId, userId);
+  }, [groupId, userId, refreshPredictions, setActiveUserId]);
 
   // ── Scroll carousel to section by index ─────────────────────────────────────
   const scrollToSection = useCallback((index: number) => {

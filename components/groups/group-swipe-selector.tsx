@@ -11,13 +11,14 @@ interface GroupSwipeSelectorProps {
 }
 
 export function GroupSwipeSelector({ groups, activeGroupId, basePath }: GroupSwipeSelectorProps) {
-  const { setSelectedGroupId } = useGroupContext();
+  const { setSelectedGroupId, refreshPredictions } = useGroupContext();
   const router = useRouter();
   const containerRef = useRef<HTMLDivElement>(null);
   const activeRef   = useRef<HTMLButtonElement>(null);
 
   function handleSelect(id: string) {
     setSelectedGroupId(id);
+    refreshPredictions(id);
     router.push(basePath + "?group=" + id);
   }
 

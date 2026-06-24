@@ -1,11 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Crown } from "lucide-react";
 import { MatchCarousel } from "@/components/dashboard/match-carousel";
 import { AdBanner } from "@/components/ads/ad-banner";
 import { MemberAvatar } from "@/components/ui/member-avatar";
+import { PlayerDrawer } from "@/components/dashboard/player-drawer";
 import type { Match, Member } from "@/lib/types";
+import type { MemberPredictionsResponse } from "@/app/api/member-predictions/route";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -44,9 +46,10 @@ const PODIUM_HEIGHTS = [80, 110, 60];
 const PODIUM_AVATAR_SIZES: Array<"sm" | "md"> = ["sm", "md", "sm"];
 const PODIUM_COLORS = ["#a0c8a0", "#ffaa00", "#a0c8a0"];
 
-function LeaderboardPanel({ members, currentUserId, groupName, isAdFree, isCorporate }: {
+function LeaderboardPanel({ members, currentUserId, groupId, groupName, isAdFree, isCorporate }: {
   members:       Member[];
   currentUserId: string;
+  groupId:       string;
   groupName:     string;
   isAdFree:      boolean;
   isCorporate:   boolean;
@@ -54,6 +57,8 @@ function LeaderboardPanel({ members, currentUserId, groupName, isAdFree, isCorpo
   const sorted = [...members].sort((a, b) => b.points - a.points);
   const top3   = sorted.slice(0, 3);
   const rest   = sorted.slice(3);
+
+  const [selectedMember, setSelectedMember] = useState<Member | null>(null);
 
   return (
     <div className="px-4 py-4 space-y-4">
@@ -75,7 +80,11 @@ function LeaderboardPanel({ members, currentUserId, groupName, isAdFree, isCorpo
             const isMe = member.id === currentUserId;
             const rank = srcIdx + 1;
             return (
-              <div key={member.id} style={{ width: 96, display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
+              <button
+                key={member.id}
+                onClick={() => setSelectedMember(member)}
+                style={{ width: 96, display: "flex", flexDirection: "column", alignItems: "center", gap: 4, background: "none", border: "none", cursor: "pointer", padding: 0 }}
+              >
                 {rank === 1 && <Crown size={14} fill="#ffaa00" style={{ color: "#ffaa00" }} />}
                 <div style={{
                   borderRadius: "50%",
@@ -98,7 +107,7 @@ function LeaderboardPanel({ members, currentUserId, groupName, isAdFree, isCorpo
                   <span className="font-barlow font-black" style={{ fontSize: 18, color: PODIUM_COLORS[pos] }}>{member.points}</span>
                   <span className="font-barlow font-bold" style={{ fontSize: 9, color: "#5a9a5a" }}>{ordinal(rank)}</span>
                 </div>
-              </div>
+              </button>
             );
           })}
         </div>
@@ -114,20 +123,40 @@ function LeaderboardPanel({ members, currentUserId, groupName, isAdFree, isCorpo
             const rank    = i + 4;
             const isMe    = member.id === currentUserId;
             return (
-              <div key={member.id} className="flex items-center gap-3 px-3.5 py-3"
+              <button
+                key={member.id}
+                onClick={() => setSelectedMember(member)}
+                className="flex items-center gap-3 px-3.5 py-3 w-full text-left"
                 style={{
-                  borderBottom: i < rest.length - 1 ? "1px solid #162a16" : undefined,
-                  background: isMe ? "rgba(0,229,160,0.05)" : undefined,
+                  borderTop: "none",
+                  borderLeft: "none",
+                  borderRight: "none",
+                  borderBottom: i < rest.length - 1 ? "1px solid #162a16" : "none",
+                  background: isMe ? "rgba(0,229,160,0.05)" : "none",
                   outline: isMe ? "1px solid #00e5a0" : undefined,
+                  cursor: "pointer",
                 }}>
                 <span className="font-barlow font-bold" style={{ fontSize: 12, color: "#5a9a5a", width: 20, textAlign: "center", flexShrink: 0 }}>{rank}</span>
                 <MemberAvatar name={member.name} avatarUrl={member.avatarUrl} size="xs" />
                 <span className="font-barlow font-bold truncate flex-1" style={{ fontSize: 13, color: isMe ? "#00e5a0" : "#a0c8a0" }}>{member.name}</span>
                 <span className="font-barlow font-bold" style={{ fontSize: 13, color: isMe ? "#00e5a0" : "#7ab07a", flexShrink: 0 }}>{member.points}</span>
-              </div>
+              </button>
             );
           })}
         </div>
+      )}
+
+      {selectedMember && (
+        <PlayerDrawer
+          userId={selectedMember.id}
+          groupId={groupId}
+          name={selectedMember.name}
+          country={selectedMember.country ?? ""}
+          points={selectedMember.points}
+          rank={sorted.findIndex(m => m.id === selectedMember.id) + 1}
+          open={true}
+          onClose={() => setSelectedMember(null)}
+        />
       )}
     </div>
   );
@@ -135,29 +164,32 @@ function LeaderboardPanel({ members, currentUserId, groupName, isAdFree, isCorpo
 
 // ── My Stats panel ────────────────────────────────────────────────────────────
 
-function MyStatsPanel({ members, currentUserId, rank, totalPlayers }: {
-  members: Member[];
+function MyStatsPanel({ members, currentUserId, rank, totalPlayers, groupId }: {
+  members:       Member[];
   currentUserId: string;
-  rank: number;
-  totalPlayers: number;
+  rank:          number;
+  totalPlayers:  number;
+  groupId:       string;
 }) {
   const me = members.find(m => m.id === currentUserId) ?? members[0];
+  const [stats, setStats] = useState<MemberPredictionsResponse["stats"] | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!currentUserId || !groupId) return;
+    setLoading(true);
+    fetch(`/api/member-predictions?userId=${encodeURIComponent(currentUserId)}&groupId=${encodeURIComponent(groupId)}`)
+      .then(r => r.json() as Promise<MemberPredictionsResponse>)
+      .then(data => { setStats(data.stats); setLoading(false); })
+      .catch(() => setLoading(false));
+  }, [currentUserId, groupId]);
+
   if (!me) return null;
 
-  const exact   = me.exactScores ?? 0;
-  const correct = me.correctPredictions ?? 0;
-  const totalPredicted = exact + correct + Math.max(0, (me.points - exact * 25 - correct * 10) / 10);
-
-  const exactPct   = totalPredicted > 0 ? Math.round((exact / totalPredicted) * 100)   : 0;
-  const correctPct = totalPredicted > 0 ? Math.round((correct / totalPredicted) * 100)  : 0;
-  const missPct    = Math.max(0, 100 - exactPct - correctPct);
-
-  const STATS: Array<{ label: string; value: string | number; color: string }> = [
-    { label: "Total Points",  value: me.points, color: "#00e5a0"  },
-    { label: "Exact Scores",  value: exact,     color: "#ffaa00"  },
-    { label: "Correct",       value: correct,   color: "#5aaa6a"  },
-    { label: "My Rank",       value: ordinal(rank), color: "#e0f2e0" },
-  ];
+  const totalPts   = loading ? "…" : (stats?.totalPoints ?? me.points);
+  const exactCount = loading ? "…" : (stats?.exactCount  ?? me.exactScores  ?? 0);
+  const correct    = loading ? "…" : (stats?.outcomeCount ?? me.correctPredictions ?? 0);
+  const wrong      = loading ? "…" : (stats?.missedCount  ?? 0);
 
   return (
     <div className="px-4 py-4 space-y-4">
@@ -169,47 +201,37 @@ function MyStatsPanel({ members, currentUserId, rank, totalPlayers }: {
         My Stats
       </div>
 
-      {/* Rank card */}
-      <div className="text-center rounded-2xl px-5 py-5" style={{ background: "#0c1c0c", border: "1px solid #1a3a1a" }}>
-        <div className="font-barlow font-black" style={{ fontSize: 64, lineHeight: 1, color: "#00e5a0" }}>{ordinal(rank)}</div>
-        <div className="font-barlow uppercase mt-1" style={{ fontSize: 11, color: "#3a7a3a", letterSpacing: 1 }}>of {totalPlayers} members</div>
-      </div>
-
-      {/* 2×2 stat grid */}
+      {/* 2×2 grid */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-        {STATS.map(({ label, value, color }) => (
-          <div key={label} className="rounded-xl px-3.5 py-3.5" style={{ background: "#0c1c0c", border: "1px solid #1a3a1a" }}>
-            <div className="font-barlow font-black" style={{ fontSize: 32, lineHeight: 1, color }}>{value}</div>
-            <div className="font-barlow uppercase mt-1" style={{ fontSize: 9, color: "#3a7a3a", letterSpacing: 1 }}>{label}</div>
-          </div>
-        ))}
+        <div className="rounded-xl px-3.5 py-3.5" style={{ background: "#0c1c0c", border: "1px solid #1a3a1a" }}>
+          <div className="font-barlow font-black" style={{ fontSize: 32, lineHeight: 1, color: "#00e5a0" }}>{totalPts}</div>
+          <div className="font-barlow uppercase mt-1" style={{ fontSize: 9, color: "#3a7a3a", letterSpacing: 1 }}>TOTAL PTS</div>
+        </div>
+        <div className="rounded-xl px-3.5 py-3.5" style={{ background: "#0c1c0c", border: "1px solid #1a3a1a" }}>
+          <div className="font-barlow font-black" style={{ fontSize: 32, lineHeight: 1, color: "#e0f2e0" }}>#{rank}</div>
+          <div className="font-barlow uppercase mt-1" style={{ fontSize: 9, color: "#3a7a3a", letterSpacing: 1 }}>MY RANK</div>
+        </div>
+        <div className="rounded-xl px-3.5 py-3.5" style={{ background: "#0c1c0c", border: "1px solid #1a3a1a" }}>
+          <div className="font-barlow font-black" style={{ fontSize: 32, lineHeight: 1, color: "#ffaa00" }}>{exactCount}</div>
+          <div className="font-barlow uppercase mt-1" style={{ fontSize: 9, color: "#3a7a3a", letterSpacing: 1 }}>EXACT ⭐</div>
+        </div>
+        <div className="rounded-xl px-3.5 py-3.5" style={{ background: "#0c1c0c", border: "1px solid #1a3a1a" }}>
+          <div className="font-barlow font-black" style={{ fontSize: 32, lineHeight: 1, color: "#5aaa6a" }}>{correct}</div>
+          <div className="font-barlow uppercase mt-1" style={{ fontSize: 9, color: "#3a7a3a", letterSpacing: 1 }}>CORRECT ✓</div>
+        </div>
       </div>
 
-      {/* Accuracy bar */}
-      {totalPredicted > 0 && (
-        <div className="rounded-xl px-3.5 py-3.5" style={{ background: "#0c1c0c", border: "1px solid #1a3a1a" }}>
-          <div className="font-barlow uppercase mb-2.5" style={{ fontSize: 9, color: "#2a6a2a", letterSpacing: 1 }}>
-            Accuracy · {Math.round(totalPredicted)} predicted
-          </div>
-          <div className="flex overflow-hidden rounded-full" style={{ height: 8, background: "#091509" }}>
-            <div style={{ width: `${exactPct}%`,   background: "#00e5a0" }} />
-            <div style={{ width: `${correctPct}%`, background: "#5aaa6a" }} />
-            <div style={{ width: `${missPct}%`,    background: "#1c3a1c" }} />
-          </div>
-          <div className="flex gap-3.5 mt-2.5">
-            {[
-              { color: "#00e5a0", label: `Exact (${exactPct}%)` },
-              { color: "#5aaa6a", label: `Correct (${correctPct}%)` },
-              { color: "#1c3a1c", label: `Miss (${missPct}%)` },
-            ].map(({ color, label }) => (
-              <div key={label} className="flex items-center gap-1.5">
-                <div style={{ width: 8, height: 8, borderRadius: 2, background: color, flexShrink: 0 }} />
-                <span className="font-barlow" style={{ fontSize: 9, color: "#3a7a3a" }}>{label}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+      {/* Wrong count */}
+      <div className="rounded-xl px-3.5 py-3 flex items-center justify-between"
+        style={{ background: "#0c1c0c", border: "1px solid #1a3a1a" }}>
+        <span className="font-barlow font-bold uppercase" style={{ fontSize: 10, color: "#cc4444", letterSpacing: 1 }}>WRONG ✗</span>
+        <span className="font-barlow font-black" style={{ fontSize: 28, color: "#cc4444" }}>{wrong}</span>
+      </div>
+
+      {/* Member count footer */}
+      <div className="text-center font-barlow" style={{ fontSize: 10, color: "#3a7a3a" }}>
+        {ordinal(rank)} of {totalPlayers} members
+      </div>
     </div>
   );
 }
@@ -293,8 +315,8 @@ export function DashboardCarousel({
         background: PANEL_BG,
       }}>
         {panel === 0 && <MatchPanel matches={matches} groupId={groupId} groupName={groupName} />}
-        {panel === 1 && <LeaderboardPanel members={members} currentUserId={currentUserId} groupName={groupName} isAdFree={isAdFree} isCorporate={isCorporate} />}
-        {panel === 2 && <MyStatsPanel members={members} currentUserId={currentUserId} rank={rank} totalPlayers={totalPlayers} />}
+        {panel === 1 && <LeaderboardPanel members={members} currentUserId={currentUserId} groupId={groupId} groupName={groupName} isAdFree={isAdFree} isCorporate={isCorporate} />}
+        {panel === 2 && <MyStatsPanel members={members} currentUserId={currentUserId} rank={rank} totalPlayers={totalPlayers} groupId={groupId} />}
       </div>
     </div>
   );

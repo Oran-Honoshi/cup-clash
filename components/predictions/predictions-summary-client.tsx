@@ -228,7 +228,7 @@ function ScoreCell({
 export function PredictionsSummaryClient({
   userId, groups, matches, initialPredictions, initialTournamentPicks,
 }: Props) {
-  const { setSelectedGroupId } = useGroupContext();
+  const { setSelectedGroupId, selectedGroupId, setPrediction } = useGroupContext();
   const [predictions, setPredictions] = useState(initialPredictions);
   const [filterGroup, setFilterGroup] = useState<string | "all">("all");
 
@@ -254,7 +254,10 @@ export function PredictionsSummaryClient({
         },
       },
     }));
-  }, []);
+    if (groupId === selectedGroupId) {
+      setPrediction(matchId, home, away);
+    }
+  }, [selectedGroupId, setPrediction]);
 
   // Build ordered match rows with stage separators
   const sortedMatches = useMemo(() => {
