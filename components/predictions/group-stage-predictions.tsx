@@ -13,7 +13,7 @@ import { PredictionBadge } from "@/components/predictions/prediction-badge";
 import { Flag } from "@/components/ui/flag";
 import { MemberAvatar } from "@/components/ui/member-avatar";
 import { ScoreInputCC } from "@/components/ui/score-input-cc";
-import { WC2026_MATCHES } from "@/lib/schedule";
+import { WC2026_MATCHES, type ScheduleMatch } from "@/lib/schedule";
 import { createClient } from "@/lib/supabase/client";
 import { useLocale } from "@/components/i18n/locale-provider";
 import { interpolate, type Translations } from "@/lib/i18n";
@@ -51,15 +51,13 @@ interface TeamStanding {
 }
 
 const GROUPS = ["A","B","C","D","E","F","G","H","I","J","K","L"];
-const GROUP_MATCH_IDS = new Set(WC2026_MATCHES.filter(m => m.stage === "Group").map(m => m.id));
-const TOTAL_GROUP_MATCHES = GROUP_MATCH_IDS.size;
 
-function getGroupMatches(group: string) {
-  return WC2026_MATCHES.filter(m => m.group === group && m.stage === "Group");
+function getGroupMatches(group: string, src: ScheduleMatch[]) {
+  return src.filter(m => m.group === group && m.stage === "Group");
 }
 
-function getGroupTeams(group: string): Array<{ name: string; flagCode: string }> {
-  const matches = getGroupMatches(group);
+function getGroupTeams(group: string, src: ScheduleMatch[]): Array<{ name: string; flagCode: string }> {
+  const matches = getGroupMatches(group, src);
   const teams: Record<string, string> = {};
   matches.forEach(m => {
     if (m.home !== "TBD") teams[m.home] = m.homeFlagCode ?? "";
@@ -68,9 +66,9 @@ function getGroupTeams(group: string): Array<{ name: string; flagCode: string }>
   return Object.entries(teams).map(([name, flagCode]) => ({ name, flagCode }));
 }
 
-function calcStandings(group: string, predictions: GroupPredictions): TeamStanding[] {
-  const matches = getGroupMatches(group);
-  const teams   = getGroupTeams(group);
+function calcStandings(group: string, predictions: GroupPredictions, src: ScheduleMatch[]): TeamStanding[] {
+  const matches = getGroupMatches(group, src);
+  const teams   = getGroupTeams(group, src);
   const table: Record<string, TeamStanding> = {};
   teams.forEach(t => { table[t.name] = { name: t.name, flagCode: t.flagCode, played: 0, won: 0, drawn: 0, lost: 0, gf: 0, ga: 0, gd: 0, pts: 0 }; });
   matches.forEach(m => {
@@ -90,8 +88,8 @@ function calcStandings(group: string, predictions: GroupPredictions): TeamStandi
   return Object.values(table).sort((a, b) => b.pts - a.pts || b.gd - a.gd || b.gf - a.gf || a.name.localeCompare(b.name));
 }
 
-function isGroupComplete(group: string, predictions: GroupPredictions): boolean {
-  return getGroupMatches(group).every(m => {
+function isGroupComplete(group: string, predictions: GroupPredictions, src: ScheduleMatch[]): boolean {
+  return getGroupMatches(group, src).every(m => {
     const p = predictions[m.id]; return p && p.home !== "" && p.away !== "";
   });
 }
@@ -114,7 +112,7 @@ interface LiveMemberPred {
 
 // ── Match Card Block ──────────────────────────────────────────────────────────
 function MatchCard({ match, prediction, onChange, globalLocked, stagePoints, matchResult, earnedPts, livePreds, flashStatus }: {
-  match: typeof WC2026_MATCHES[0];
+  match: ScheduleMatch;
   prediction: ScorePrediction;
   onChange: (home: string, away: string) => void;
   globalLocked: boolean;
@@ -126,19 +124,20 @@ function MatchCard({ match, prediction, onChange, globalLocked, stagePoints, mat
 }) {
   const { t } = useLocale();
   const filled      = prediction.home !== "" && prediction.away !== "";
-  const matchLocked = globalLocked || isMatchLocked(match.utcTime);
-  const countdown   = !matchLocked ? getCountdown(match.utcTime, t) : "";
+  const kickoff     = match.kickoff_at;
+  const matchLocked = globalLocked || isMatchLocked(kickoff);
+  const countdown   = !matchLocked ? getCountdown(kickoff, t) : "";
 
   const [localTimeStr, setLocalTimeStr] = useState("");
   useEffect(() => {
-    const d = new Date(match.utcTime);
+    const d = new Date(kickoff);
     const dateStr = d.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
     const timeStr = d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", hour12: false });
     const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
     const tzAbbr = new Intl.DateTimeFormat("en-GB", { timeZoneName: "short", timeZone: tz })
       .formatToParts(d).find(p => p.type === "timeZoneName")?.value ?? "";
     setLocalTimeStr(`${dateStr} · ${timeStr}${tzAbbr ? ` ${tzAbbr}` : ""}`);
-  }, [match.utcTime]);
+  }, [kickoff]);
   const status = matchLocked ? "locked" : filled ? "saved" : "open";
 
   // Result badge (only for finished matches with a prediction)
@@ -326,12 +325,12 @@ function GroupTable({ standings }: { standings: TeamStanding[] }) {
 }
 
 // ── Qualifiers Summary ────────────────────────────────────────────────────────
-function QualifiersSummary({ predictions, allComplete }: { predictions: GroupPredictions; allComplete: boolean }) {
+function QualifiersSummary({ predictions, allComplete, allMatches }: { predictions: GroupPredictions; allComplete: boolean; allMatches: ScheduleMatch[] }) {
   const { t } = useLocale();
   const qualifiers = useMemo(() => {
     const q: { group: string; pos: 1|2|3; team: TeamStanding }[] = [];
     GROUPS.forEach(g => {
-      const s = calcStandings(g, predictions);
+      const s = calcStandings(g, predictions, allMatches);
       if (s[0]?.played > 0) q.push({ group: g, pos: 1, team: s[0] });
       if (s[1]?.played > 0) q.push({ group: g, pos: 2, team: s[1] });
       if (s[2]?.played > 0) q.push({ group: g, pos: 3, team: s[2] });
@@ -429,9 +428,10 @@ interface GroupStagePredictionsProps {
   locked?:      boolean;
   isAdFree?:    boolean;
   isCorporate?: boolean;
+  allMatches?:  ScheduleMatch[];
 }
 
-export function GroupStagePredictions({ groupId, locked = false, userId, isAdFree, isCorporate }: GroupStagePredictionsProps) {
+export function GroupStagePredictions({ groupId, locked = false, userId, isAdFree, isCorporate, allMatches = WC2026_MATCHES }: GroupStagePredictionsProps) {
   const { t } = useLocale();
   const [activeGroup,  setActiveGroup]  = useState("A");
   const [predictions,  setPredictions]  = useState<GroupPredictions>({});
@@ -599,14 +599,16 @@ export function GroupStagePredictions({ groupId, locked = false, userId, isAdFre
     }, 800);
   };
 
-  const groupMatches        = getGroupMatches(activeGroup);
-  const groupTeams          = getGroupTeams(activeGroup);
-  const standings           = calcStandings(activeGroup, predictions);
-  const groupComplete       = isGroupComplete(activeGroup, predictions);
-  const allComplete         = GROUPS.every(g => isGroupComplete(g, predictions));
-  const completedCount      = GROUPS.filter(g => isGroupComplete(g, predictions)).length;
+  const groupStageMatchIds  = useMemo(() => new Set(allMatches.filter(m => m.stage === "Group").map(m => m.id)), [allMatches]);
+  const totalGroupMatches   = groupStageMatchIds.size;
+  const groupMatches        = getGroupMatches(activeGroup, allMatches);
+  const groupTeams          = getGroupTeams(activeGroup, allMatches);
+  const standings           = calcStandings(activeGroup, predictions, allMatches);
+  const groupComplete       = isGroupComplete(activeGroup, predictions, allMatches);
+  const allComplete         = GROUPS.every(g => isGroupComplete(g, predictions, allMatches));
+  const completedCount      = GROUPS.filter(g => isGroupComplete(g, predictions, allMatches)).length;
   const activeIdx           = GROUPS.indexOf(activeGroup);
-  const predictedMatchCount = Object.keys(predictions).filter(id => GROUP_MATCH_IDS.has(id)).length;
+  const predictedMatchCount = Object.keys(predictions).filter(id => groupStageMatchIds.has(id)).length;
 
   return (
     <div className="w-full max-w-full space-y-4 overflow-x-clip">
@@ -621,7 +623,7 @@ export function GroupStagePredictions({ groupId, locked = false, userId, isAdFre
             </div>
             <div className="flex items-baseline gap-1">
               <span className="text-2xl font-black font-mono" style={{ color: "#00FF88" }}>{predictedMatchCount}</span>
-              <span className="text-sm font-bold" style={{ color: "rgba(255,255,255,0.3)" }}>/ {TOTAL_GROUP_MATCHES}</span>
+              <span className="text-sm font-bold" style={{ color: "rgba(255,255,255,0.3)" }}>/ {totalGroupMatches}</span>
             </div>
           </div>
           <div className="text-right">
@@ -635,7 +637,7 @@ export function GroupStagePredictions({ groupId, locked = false, userId, isAdFre
         </div>
         <div className="overflow-hidden" style={{ height: 6, borderRadius: 3, background: "rgba(255,255,255,0.08)" }}>
           <div className="h-full transition-all duration-500"
-            style={{ width: `${(predictedMatchCount / TOTAL_GROUP_MATCHES) * 100}%`, background: "linear-gradient(90deg, #00D4FF, #00FF88)", borderRadius: 3 }} />
+            style={{ width: `${(predictedMatchCount / totalGroupMatches) * 100}%`, background: "linear-gradient(90deg, #00D4FF, #00FF88)", borderRadius: 3 }} />
         </div>
         <p className="text-[10px] mt-1.5" style={{ color: "rgba(255,255,255,0.25)" }}>
           {t("pred_autosave_hint")}
@@ -646,9 +648,9 @@ export function GroupStagePredictions({ groupId, locked = false, userId, isAdFre
       <div className="flex gap-1.5 overflow-x-auto pb-1 w-full max-w-full min-w-0"
         style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
         {GROUPS.map(g => {
-          const complete = isGroupComplete(g, predictions);
+          const complete = isGroupComplete(g, predictions, allMatches);
           const isActive = g === activeGroup;
-          const teams    = getGroupTeams(g);
+          const teams    = getGroupTeams(g, allMatches);
           return (
             <button key={g} onClick={() => setActiveGroup(g)}
               className="flex items-center gap-1.5 px-3 py-2 min-h-[44px] text-xs font-bold uppercase tracking-wider transition-all shrink-0"
@@ -780,7 +782,7 @@ export function GroupStagePredictions({ groupId, locked = false, userId, isAdFre
         </motion.div>
       </AnimatePresence>
 
-      <QualifiersSummary predictions={predictions} allComplete={allComplete} />
+      <QualifiersSummary predictions={predictions} allComplete={allComplete} allMatches={allMatches} />
     </div>
   );
 }

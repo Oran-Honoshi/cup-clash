@@ -4,7 +4,7 @@ import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/server";
 import { redirect } from "next/navigation";
 import { PredictionsSummaryClient } from "@/components/predictions/predictions-summary-client";
-import { WC2026_MATCHES } from "@/lib/schedule";
+import { getAllMatches } from "@/lib/services/matches";
 import type { ScheduleMatch } from "@/lib/schedule";
 import Link from "next/link";
 
@@ -63,7 +63,7 @@ export default async function PredictionsSummaryPage() {
 
   const groupIds = groups.map(g => g.id);
 
-  const [memberCountResults, leaderboardResult, predictionsResult, tournamentResult, dbMatchResult] = await Promise.all([
+  const [memberCountResults, leaderboardResult, predictionsResult, tournamentResult, allMatchesData] = await Promise.all([
     Promise.all(
       groupIds.map(gid =>
         admin.from("group_members").select("id", { count: "exact", head: true }).eq("group_id", gid)
@@ -85,9 +85,7 @@ export default async function PredictionsSummaryPage() {
       .eq("user_id", user.id)
       .in("group_id", groupIds)
       .not("pred_type", "eq", "match"),
-    admin
-      .from("matches")
-      .select("id, home, away, home_flag, away_flag, home_score, away_score, status"),
+    getAllMatches(),
   ]);
 
   const totalPointsMap: Record<string, number> = {};
@@ -129,39 +127,12 @@ export default async function PredictionsSummaryPage() {
     tournamentPicks[t.group_id][t.pred_type] = { value: t.pred_value ?? "", points: t.points_earned ?? 0 };
   }
 
-  // Merge schedule with DB scores and team names (DB team names override placeholders for knockout stages)
-  const dbMatchData: Record<string, {
-    home: string; away: string; homeFlagCode?: string; awayFlagCode?: string;
-    homeScore: number | null; awayScore: number | null; matchStatus: string | null;
-  }> = {};
-  for (const row of (dbMatchResult.data ?? []) as Array<{
-    id: string; home: string; away: string;
-    home_flag: string | null; away_flag: string | null;
-    home_score: number | null; away_score: number | null; status: string | null;
-  }>) {
-    dbMatchData[row.id] = {
-      home:         row.home,
-      away:         row.away,
-      homeFlagCode: row.home_flag ?? undefined,
-      awayFlagCode: row.away_flag ?? undefined,
-      homeScore:    row.home_score,
-      awayScore:    row.away_score,
-      matchStatus:  row.status,
-    };
-  }
-  const matches: SummaryMatch[] = WC2026_MATCHES.map(m => {
-    const db = dbMatchData[m.id];
-    return {
-      ...m,
-      home:         db?.home         ?? m.home,
-      away:         db?.away         ?? m.away,
-      homeFlagCode: db?.homeFlagCode ?? m.homeFlagCode,
-      awayFlagCode: db?.awayFlagCode ?? m.awayFlagCode,
-      homeScore:    db?.homeScore    ?? null,
-      awayScore:    db?.awayScore    ?? null,
-      matchStatus:  db?.matchStatus  ?? null,
-    };
-  });
+  const matches: SummaryMatch[] = allMatchesData.map(m => ({
+    ...m,
+    homeScore:   m.home_score   ?? null,
+    awayScore:   m.away_score   ?? null,
+    matchStatus: m.status       ?? null,
+  }));
 
   return (
     <div className="pb-32">

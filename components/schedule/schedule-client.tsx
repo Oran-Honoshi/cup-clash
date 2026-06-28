@@ -14,7 +14,7 @@ import { PredictionBadge } from "@/components/predictions/prediction-badge";
 import { PredictionDistribution } from "@/components/dashboard/prediction-distribution";
 import { AdBanner } from "@/components/ads/ad-banner";
 import { createClient } from "@/lib/supabase/client";
-import { WC2026_MATCHES, STAGE_LABELS } from "@/lib/schedule";
+import { WC2026_MATCHES, STAGE_LABELS, type ScheduleMatch } from "@/lib/schedule";
 import { cn } from "@/lib/utils";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
@@ -52,8 +52,10 @@ export interface ScheduleClientProps {
   groupId: string;
   groupName: string;
   allGroups: Array<{ id: string; name: string; passkey: string }>;
+  allMatches?: ScheduleMatch[];
   matchResults: Record<string, MatchResult>;
   matchTeams?: Record<string, { home: string; away: string; homeFlagCode?: string; awayFlagCode?: string }>;
+  matchKickoffs?: Record<string, string>;
   initialPredictions: Record<string, UserPrediction>;
   isAdFree: boolean;
   isCorporate: boolean;
@@ -245,8 +247,9 @@ function MatchCard({
   isNext,
   saveStatus,
   teamOverride,
+  kickoff,
 }: {
-  match: typeof WC2026_MATCHES[0];
+  match: ScheduleMatch;
   state: ReturnType<typeof getMatchState>;
   pred: UserPrediction | undefined;
   localPred: LocalPred | undefined;
@@ -258,17 +261,18 @@ function MatchCard({
   isNext: boolean;
   saveStatus?: "success" | "error" | null;
   teamOverride?: { home: string; away: string; homeFlagCode?: string; awayFlagCode?: string };
+  kickoff: string;
 }) {
-  const locked = state.type !== "upcoming" || isLocked(match.utcTime);
+  const locked = state.type !== "upcoming" || isLocked(kickoff);
   const canPredict = !!userId && !!groupId && !locked && state.type === "upcoming";
 
   const [localTime, setLocalTime] = useState("");
   useEffect(() => {
-    const d = new Date(match.utcTime);
+    const d = new Date(kickoff);
     const time = d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", hour12: false });
-    const tz = getTzAbbr(match.utcTime);
+    const tz = getTzAbbr(kickoff);
     setLocalTime(tz ? `${time} ${tz}` : time);
-  }, [match.utcTime]);
+  }, [kickoff]);
 
   const displayHome        = teamOverride?.home        ?? match.home;
   const displayAway        = teamOverride?.away        ?? match.away;
@@ -429,8 +433,10 @@ export function ScheduleClient({
   groupId,
   groupName,
   allGroups,
+  allMatches = WC2026_MATCHES,
   matchResults,
   matchTeams,
+  matchKickoffs,
   initialPredictions,
   isAdFree,
   isCorporate,
@@ -595,21 +601,22 @@ export function ScheduleClient({
   // ── Derive match state for each match
   const matchStates = useMemo(() => {
     const map: Record<string, ReturnType<typeof getMatchState>> = {};
-    for (const m of WC2026_MATCHES) {
+    for (const m of allMatches) {
       map[m.id] = getMatchState(m.id, matchResults);
     }
     return map;
-  }, [matchResults]);
+  }, [allMatches, matchResults]);
 
   // ── Filtered matches
   const filtered = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
-    return WC2026_MATCHES.filter(m => {
+    return allMatches.filter(m => {
       const s = matchStates[m.id];
-      if (tabFilter === "live"     && s.type !== "live")     return false;
-      if (tabFilter === "today"    && m.date !== todayStr)   return false;
-      if (tabFilter === "upcoming" && (s.type !== "upcoming" || m.date <= todayStr)) return false;
-      if (tabFilter === "done"     && s.type !== "finished") return false;
+      const matchDate = m.date ?? m.kickoff_at.slice(0, 10);
+      if (tabFilter === "live"     && s.type !== "live")            return false;
+      if (tabFilter === "today"    && matchDate !== todayStr)        return false;
+      if (tabFilter === "upcoming" && (s.type !== "upcoming" || matchDate <= todayStr)) return false;
+      if (tabFilter === "done"     && s.type !== "finished")        return false;
       if (q) {
         const t = matchTeams?.[m.id];
         const haystack = `${t?.home ?? m.home} ${t?.away ?? m.away}`.toLowerCase();
@@ -617,14 +624,15 @@ export function ScheduleClient({
       }
       return true;
     });
-  }, [tabFilter, searchQuery, matchStates, todayStr]);
+  }, [allMatches, tabFilter, searchQuery, matchStates, todayStr, matchTeams]);
 
   // ── Group by date
   const groupedDates = useMemo(() => {
-    const map: Record<string, typeof WC2026_MATCHES> = {};
+    const map: Record<string, ScheduleMatch[]> = {};
     for (const m of filtered) {
-      if (!map[m.date]) map[m.date] = [];
-      map[m.date].push(m);
+      const key = m.date ?? m.kickoff_at.slice(0, 10);
+      if (!map[key]) map[key] = [];
+      map[key].push(m);
     }
     return Object.entries(map).sort(([a], [b]) => a.localeCompare(b));
   }, [filtered]);
@@ -634,19 +642,19 @@ export function ScheduleClient({
 
   // ── First upcoming match ID (for "Next" highlight)
   const nextMatchId = useMemo(() => {
-    return WC2026_MATCHES.find(m => matchStates[m.id]?.type === "upcoming" && !isLocked(m.utcTime))?.id ?? null;
-  }, [matchStates]);
+    return allMatches.find(m => matchStates[m.id]?.type === "upcoming" && !isLocked(matchKickoffs?.[m.id] ?? m.kickoff_at))?.id ?? null;
+  }, [allMatches, matchStates, matchKickoffs]);
 
   // ── Prediction stats
   const predStats = useMemo(() => {
-    const total   = WC2026_MATCHES.length;
+    const total   = allMatches.length;
     const made    = Object.keys(savedPreds).length;
-    const unlocked = WC2026_MATCHES.filter(m => {
+    const unlocked = allMatches.filter(m => {
       const s = matchStates[m.id];
-      return s.type === "upcoming" && !isLocked(m.utcTime);
+      return s.type === "upcoming" && !isLocked(matchKickoffs?.[m.id] ?? m.kickoff_at);
     });
     return { total, made, unlockable: unlocked.length };
-  }, [savedPreds, matchStates]);
+  }, [allMatches, savedPreds, matchStates, matchKickoffs]);
 
   const glass = {
     background: "rgba(18,14,38,0.45)",
@@ -784,7 +792,7 @@ export function ScheduleClient({
             // Use the first match's UTC kickoff as the date source — no string
             // manipulation, no appended T12:00:00Z. toLocaleDateString converts
             // directly to the viewer's local timezone.
-            const refDate  = new Date(matches[0].utcTime);
+            const refDate  = new Date(matches[0].kickoff_at);
             const dayLabel = refDate.toLocaleDateString("en-GB", { weekday: "long" });
             const dateLabel = refDate.toLocaleDateString("en-GB", { month: "long", day: "numeric", year: "numeric" });
 
@@ -830,10 +838,11 @@ export function ScheduleClient({
                         userId={userId}
                         groupId={groupId}
                         noGroup={noGroup}
-                        isToday={m.date === todayStr}
+                        isToday={(m.date ?? m.kickoff_at.slice(0, 10)) === todayStr}
                         isNext={m.id === nextMatchId}
                         saveStatus={saveFlash[m.id]}
                         teamOverride={matchTeams?.[m.id]}
+                        kickoff={matchKickoffs?.[m.id] ?? m.kickoff_at}
                       />
                     );
                   })}

@@ -1,6 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
 import type { Match } from "@/lib/types";
 import { WC2026_MATCHES } from "@/lib/schedule";
+import type { ScheduleMatch } from "@/lib/schedule";
 
 function sb() {
   return createClient(
@@ -47,10 +48,10 @@ export async function getUpcomingMatches(limit = 20): Promise<Match[]> {
     }
   } catch { /* fall through to schedule fallback */ }
 
-  // Fallback — read directly from schedule.ts
+  // Fallback — WC2026_MATCHES is now empty; returns [] if DB unreachable
   const now = Date.now();
   return WC2026_MATCHES
-    .filter(m => new Date(m.utcTime).getTime() > now)
+    .filter(m => new Date(m.kickoff_at).getTime() > now)
     .slice(0, limit)
     .map(m => ({
       id:          m.id,
@@ -58,8 +59,8 @@ export async function getUpcomingMatches(limit = 20): Promise<Match[]> {
       away:        m.away,
       homeFlagCode:m.homeFlagCode,
       awayFlagCode:m.awayFlagCode,
-      time:        m.utcTime,
-      utcTime:     m.utcTime,
+      time:        m.kickoff_at,
+      utcTime:     m.kickoff_at,
       stage:       m.stage as Match["stage"],
       group:       m.group,
       stadium:     m.stadium,
@@ -103,18 +104,62 @@ export async function getMatch(matchId: string): Promise<Match | null> {
     }
   } catch { /* fall through */ }
 
-  // Fallback — find in schedule
+  // Fallback — find in schedule (WC2026_MATCHES is now empty)
   const found = WC2026_MATCHES.find(m => m.id === matchId);
   if (!found) return null;
   return {
     id: found.id, home: found.home, away: found.away,
     homeFlagCode: found.homeFlagCode,
     awayFlagCode: found.awayFlagCode,
-    time: found.utcTime, utcTime: found.utcTime,
+    time: found.kickoff_at, utcTime: found.kickoff_at,
     stage: found.stage as Match["stage"],
     group: found.group,
     stadium: found.stadium, city: found.city,
   };
+}
+
+// ── All matches (for schedule / summary / predictions) ───────────────────────
+
+type DbAllMatch = {
+  id: string;
+  home: string; away: string;
+  home_flag: string | null; away_flag: string | null;
+  kickoff_at: string;
+  stage: string;
+  group_letter: string | null;
+  stadium: string | null; city: string | null;
+  home_score: number | null; away_score: number | null;
+  status: string;
+};
+
+export async function getAllMatches(): Promise<ScheduleMatch[]> {
+  try {
+    const { data, error } = await sb()
+      .from("matches")
+      .select("id, home, away, home_flag, away_flag, kickoff_at, stage, group_letter, stadium, city, home_score, away_score, status")
+      .order("kickoff_at", { ascending: true });
+
+    if (!error && data?.length) {
+      return (data as DbAllMatch[]).map(m => ({
+        id:           m.id,
+        kickoff_at:   m.kickoff_at,
+        date:         m.kickoff_at.slice(0, 10),
+        home:         m.home,
+        away:         m.away,
+        homeFlagCode: m.home_flag  ?? undefined,
+        awayFlagCode: m.away_flag  ?? undefined,
+        group:        m.group_letter ?? undefined,
+        stage:        m.stage as ScheduleMatch["stage"],
+        stadium:      m.stadium ?? undefined,
+        city:         m.city    ?? undefined,
+        home_score:   m.home_score,
+        away_score:   m.away_score,
+        status:       m.status,
+      }));
+    }
+  } catch { /* fall through */ }
+
+  return WC2026_MATCHES; // empty fallback
 }
 
 // ── Played matches (for scoring) ─────────────────────────────────────────────

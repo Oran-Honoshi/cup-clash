@@ -6,6 +6,7 @@ import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { ScheduleClient }      from "@/components/schedule/schedule-client";
 import { GroupPersistRedirect } from "@/components/app/group-persist-redirect";
 import { GroupSwipeSelector }   from "@/components/groups/group-swipe-selector";
+import { getAllMatches }         from "@/lib/services/matches";
 
 export const metadata: Metadata = {
   title: "FIFA World Cup 2026 Schedule — All 104 Matches | Cup Clash",
@@ -45,6 +46,7 @@ type DbMatch = {
   away: string;
   home_flag: string | null;
   away_flag: string | null;
+  kickoff_at: string | null;
 };
 
 type DbPred = {
@@ -65,10 +67,13 @@ export default async function SchedulePage({
     data: { user },
   } = await sb.auth.getUser();
 
-  // ── Fetch all match statuses, scores, and team names ──────────────────────
-  const { data: dbMatchRows } = await sbAdmin()
-    .from("matches")
-    .select("id, status, home_score, away_score, minute, match_events, home, away, home_flag, away_flag");
+  // ── Fetch all matches and live state ──────────────────────────────────────
+  const [allMatches, { data: dbMatchRows }] = await Promise.all([
+    getAllMatches(),
+    sbAdmin()
+      .from("matches")
+      .select("id, status, home_score, away_score, minute, match_events, home, away, home_flag, away_flag, kickoff_at"),
+  ]);
 
   const matchResults: Record<string, {
     status: string;
@@ -78,6 +83,7 @@ export default async function SchedulePage({
     matchEvents: DbMatchEvent[] | null;
   }> = {};
   const matchTeams: Record<string, { home: string; away: string; homeFlagCode?: string; awayFlagCode?: string }> = {};
+  const matchKickoffs: Record<string, string> = {};
 
   for (const m of (dbMatchRows ?? []) as DbMatch[]) {
     matchResults[m.id] = {
@@ -94,6 +100,9 @@ export default async function SchedulePage({
         homeFlagCode: m.home_flag ?? undefined,
         awayFlagCode: m.away_flag ?? undefined,
       };
+    }
+    if (m.kickoff_at) {
+      matchKickoffs[m.id] = m.kickoff_at;
     }
   }
 
@@ -175,8 +184,10 @@ export default async function SchedulePage({
         groupId={activeGroupId}
         groupName={groupName}
         allGroups={allGroups}
+        allMatches={allMatches}
         matchResults={matchResults}
         matchTeams={matchTeams}
+        matchKickoffs={matchKickoffs}
         initialPredictions={initialPredictions}
         isAdFree={isAdFree}
         isCorporate={isCorporate}

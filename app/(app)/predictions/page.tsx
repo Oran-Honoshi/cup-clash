@@ -7,6 +7,7 @@ import { GuestPredictionsShell } from "@/components/predictions/guest-prediction
 import { AdBanner }              from "@/components/ads/ad-banner";
 import { GroupPersistRedirect }  from "@/components/app/group-persist-redirect";
 import { GroupSwipeSelector }    from "@/components/groups/group-swipe-selector";
+import { getAllMatches }          from "@/lib/services/matches";
 import Link from "next/link";
 
 function sbAdmin() {
@@ -56,7 +57,10 @@ export default async function PredictionsPage({
   searchParams: { group?: string; migrate?: string };
 }) {
   const sb = createClient();
-  const { data: { user } } = await sb.auth.getUser();
+  const [{ data: { user } }, allMatches] = await Promise.all([
+    sb.auth.getUser(),
+    getAllMatches(),
+  ]);
 
   // ── GUEST MODE ────────────────────────────────────────────────────────────
   if (!user) {
@@ -101,6 +105,7 @@ export default async function PredictionsPage({
           migrateGuestPicks={shouldMigrate}
           isAdFree={false}
           isCorporate={false}
+          allMatches={allMatches}
         />
         <AdBanner isAdFree={false} isCorporate={false} />
       </>
@@ -143,6 +148,7 @@ export default async function PredictionsPage({
         migrateGuestPicks={shouldMigrate}
         isAdFree={isAdFree}
         isCorporate={isCorporate}
+        allMatches={allMatches}
       />
       <AdBanner isAdFree={isAdFree} isCorporate={isCorporate} />
     </div>

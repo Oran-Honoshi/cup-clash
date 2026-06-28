@@ -68,7 +68,7 @@ function isMatchFinished(m: SummaryMatch) {
 
 function isMatchLocked(m: SummaryMatch) {
   if (isMatchFinished(m)) return false;
-  const kickoff = new Date(m.utcTime).getTime();
+  const kickoff = new Date(m.kickoff_at).getTime();
   return Date.now() >= kickoff - 5 * 60 * 1000;
 }
 
@@ -262,7 +262,7 @@ export function PredictionsSummaryClient({
     return [...matches].sort((a, b) => {
       const stageDiff = STAGE_ORDER[a.stage] - STAGE_ORDER[b.stage];
       if (stageDiff !== 0) return stageDiff;
-      return new Date(a.utcTime).getTime() - new Date(b.utcTime).getTime();
+      return new Date(a.kickoff_at).getTime() - new Date(b.kickoff_at).getTime();
     });
   }, [matches]);
 
@@ -518,7 +518,7 @@ export function PredictionsSummaryClient({
                         {/* Date / time / result */}
                         <div className="flex items-center gap-1.5 flex-wrap">
                           <span className="text-[9px]" style={{ color: "rgba(255,255,255,0.35)" }}>
-                            <MatchDateTime utcTime={m.utcTime} />
+                            <MatchDateTime utcTime={m.kickoff_at} />
                           </span>
                           {finished && (
                             <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full"

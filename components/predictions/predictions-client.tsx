@@ -6,7 +6,7 @@ import { TournamentPicks } from "@/components/dashboard/tournament-picks";
 import { BonusQuestions } from "@/components/predictions/bonus-questions";
 import { GuestStore } from "@/components/ui/guest-signup-modal";
 import { useGroupContext } from "@/lib/contexts/group-context";
-import { WC2026_MATCHES } from "@/lib/schedule";
+import type { ScheduleMatch } from "@/lib/schedule";
 
 interface PredictionsClientProps {
   groupId:            string;
@@ -17,6 +17,7 @@ interface PredictionsClientProps {
   migrateGuestPicks?: boolean;
   isAdFree?:          boolean;
   isCorporate?:       boolean;
+  allMatches?:        ScheduleMatch[];
 }
 
 type SectionKey = "group" | "tournament" | "bonus";
@@ -27,10 +28,8 @@ const TABS: { key: SectionKey; label: string }[] = [
   { key: "bonus",      label: "BONUS QUESTIONS" },
 ];
 
-const GROUP_STAGE_MATCH_IDS = WC2026_MATCHES.filter(m => m.stage === "Group").map(m => m.id);
-
 export function PredictionsClient({
-  groupId, groupName, allGroups, userId, isPaid, migrateGuestPicks = false, isAdFree, isCorporate,
+  groupId, groupName, allGroups, userId, isPaid, migrateGuestPicks = false, isAdFree, isCorporate, allMatches = [],
 }: PredictionsClientProps) {
   void isPaid; void allGroups;
 
@@ -39,7 +38,8 @@ export function PredictionsClient({
   const [activeTab, setActiveTab] = useState<SectionKey>("group");
   const [migrated,  setMigrated]  = useState(false);
 
-  const predictedCount = GROUP_STAGE_MATCH_IDS.filter(id => ctxPredictions[id] != null).length;
+  const groupStageMatchIds = allMatches.filter(m => m.stage === "Group").map(m => m.id);
+  const predictedCount = groupStageMatchIds.filter(id => ctxPredictions[id] != null).length;
 
   const carouselRef  = useRef<HTMLDivElement>(null);
   const sectionRefs  = useRef<(HTMLDivElement | null)[]>([null, null, null]);
@@ -181,7 +181,7 @@ export function PredictionsClient({
           className="font-barlow font-bold pb-2"
           style={{ fontSize: 9, color: "#3a7a3a", letterSpacing: 1 }}
         >
-          {predictedCount}/{GROUP_STAGE_MATCH_IDS.length} MATCHES PREDICTED
+          {predictedCount}/{groupStageMatchIds.length} MATCHES PREDICTED
         </div>
       </div>
 
@@ -204,7 +204,7 @@ export function PredictionsClient({
               Group Stage
             </span>
             <span className="font-barlow font-bold" style={{ fontSize: 10, color: "#3a7a3a" }}>
-              {predictedCount}/{GROUP_STAGE_MATCH_IDS.length} PREDICTED
+              {predictedCount}/{groupStageMatchIds.length} PREDICTED
             </span>
           </div>
           <GroupStagePredictions
@@ -213,6 +213,7 @@ export function PredictionsClient({
             locked={false}
             isAdFree={isAdFree}
             isCorporate={isCorporate}
+            allMatches={allMatches}
           />
         </div>
 
