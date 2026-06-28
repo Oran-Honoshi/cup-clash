@@ -75,6 +75,14 @@ function isLocked(utcTime: string): boolean {
   return Date.now() >= new Date(utcTime).getTime() - 5 * 60 * 1000;
 }
 
+// Returns YYYY-MM-DD in the viewer's local timezone — used as a sortable
+// group key and for "today" comparisons. kickoff_at.slice(0,10) is UTC and
+// puts midnight-crossing matches (e.g. 21:00 UTC = 00:00 IL) on the wrong day.
+function localDateKey(isoStr: string): string {
+  const d = new Date(isoStr);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
 function getLocalTime(utcTime: string): string {
   try {
     return new Date(utcTime).toLocaleTimeString("en-GB", {
@@ -612,7 +620,7 @@ export function ScheduleClient({
     const q = searchQuery.trim().toLowerCase();
     return allMatches.filter(m => {
       const s = matchStates[m.id];
-      const matchDate = m.date ?? m.kickoff_at.slice(0, 10);
+      const matchDate = localDateKey(m.kickoff_at);
       if (tabFilter === "live"     && s.type !== "live")            return false;
       if (tabFilter === "today"    && matchDate !== todayStr)        return false;
       if (tabFilter === "upcoming" && (s.type !== "upcoming" || matchDate <= todayStr)) return false;
@@ -630,7 +638,7 @@ export function ScheduleClient({
   const groupedDates = useMemo(() => {
     const map: Record<string, ScheduleMatch[]> = {};
     for (const m of filtered) {
-      const key = m.date ?? m.kickoff_at.slice(0, 10);
+      const key = localDateKey(m.kickoff_at);
       if (!map[key]) map[key] = [];
       map[key].push(m);
     }
@@ -789,9 +797,6 @@ export function ScheduleClient({
         <div className="space-y-6">
           {groupedDates.map(([date, matches]) => {
             const isToday = date === todayStr;
-            // Use the first match's UTC kickoff as the date source — no string
-            // manipulation, no appended T12:00:00Z. toLocaleDateString converts
-            // directly to the viewer's local timezone.
             const refDate  = new Date(matches[0].kickoff_at);
             const dayLabel = refDate.toLocaleDateString("en-GB", { weekday: "long" });
             const dateLabel = refDate.toLocaleDateString("en-GB", { month: "long", day: "numeric", year: "numeric" });
@@ -838,7 +843,7 @@ export function ScheduleClient({
                         userId={userId}
                         groupId={groupId}
                         noGroup={noGroup}
-                        isToday={(m.date ?? m.kickoff_at.slice(0, 10)) === todayStr}
+                        isToday={localDateKey(m.kickoff_at) === todayStr}
                         isNext={m.id === nextMatchId}
                         saveStatus={saveFlash[m.id]}
                         teamOverride={matchTeams?.[m.id]}
