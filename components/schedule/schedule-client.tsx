@@ -53,6 +53,7 @@ export interface ScheduleClientProps {
   groupName: string;
   allGroups: Array<{ id: string; name: string; passkey: string }>;
   matchResults: Record<string, MatchResult>;
+  matchTeams?: Record<string, { home: string; away: string; homeFlagCode?: string; awayFlagCode?: string }>;
   initialPredictions: Record<string, UserPrediction>;
   isAdFree: boolean;
   isCorporate: boolean;
@@ -243,6 +244,7 @@ function MatchCard({
   isToday,
   isNext,
   saveStatus,
+  teamOverride,
 }: {
   match: typeof WC2026_MATCHES[0];
   state: ReturnType<typeof getMatchState>;
@@ -255,6 +257,7 @@ function MatchCard({
   isToday: boolean;
   isNext: boolean;
   saveStatus?: "success" | "error" | null;
+  teamOverride?: { home: string; away: string; homeFlagCode?: string; awayFlagCode?: string };
 }) {
   const locked = state.type !== "upcoming" || isLocked(match.utcTime);
   const canPredict = !!userId && !!groupId && !locked && state.type === "upcoming";
@@ -265,6 +268,11 @@ function MatchCard({
     setLocalTime(getLocalTime(match.utcTime));
     setTzAbbr(getTzAbbr(match.utcTime));
   }, [match.utcTime]);
+
+  const displayHome        = teamOverride?.home        ?? match.home;
+  const displayAway        = teamOverride?.away        ?? match.away;
+  const displayHomeFlagCode = teamOverride?.homeFlagCode ?? match.homeFlagCode;
+  const displayAwayFlagCode = teamOverride?.awayFlagCode ?? match.awayFlagCode;
 
   const stageName = match.group ? `Grp ${match.group}` : STAGE_LABELS[match.stage] ?? match.stage;
 
@@ -294,7 +302,7 @@ function MatchCard({
         <>
           <div className="flex items-center justify-between gap-2">
             <span className="font-barlow text-xs font-bold uppercase tracking-wide truncate" style={{ color: "#c8a0a0" }}>
-              {match.home} vs {match.away}
+              {displayHome} vs {displayAway}
             </span>
             <div className="flex items-center gap-1.5 shrink-0 px-2.5 py-1 rounded-md"
               style={{ background: "#3a1010", border: "1px solid #5a1a1a" }}>
@@ -321,11 +329,11 @@ function MatchCard({
         <>
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2 min-w-0">
-              <Flag code={match.homeFlagCode} size="xs" />
-              <span className="font-barlow font-bold uppercase truncate text-xs" style={{ color: "#a0c8a0" }}>{match.home}</span>
+              <Flag code={displayHomeFlagCode} size="xs" />
+              <span className="font-barlow font-bold uppercase truncate text-xs" style={{ color: "#a0c8a0" }}>{displayHome}</span>
               <span className="font-barlow font-black text-base tabular-nums" style={{ color: "#ffaa00" }}>{state.homeScore}–{state.awayScore}</span>
-              <span className="font-barlow font-bold uppercase truncate text-xs" style={{ color: "#a0c8a0" }}>{match.away}</span>
-              <Flag code={match.awayFlagCode} size="xs" />
+              <span className="font-barlow font-bold uppercase truncate text-xs" style={{ color: "#a0c8a0" }}>{displayAway}</span>
+              <Flag code={displayAwayFlagCode} size="xs" />
             </div>
             <span className="shrink-0 font-barlow font-bold px-2 py-0.5 rounded-md"
               style={{ background: "#162a10", border: "1px solid #2a4a10", color: "#ffaa00", fontSize: 9 }}>
@@ -347,13 +355,13 @@ function MatchCard({
           {/* Teams + time row */}
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-1.5 flex-1 min-w-0">
-              <Flag code={match.homeFlagCode} size="xs" />
-              <span className="font-barlow font-bold uppercase text-xs truncate" style={{ color: teamColor }}>{match.home}</span>
+              <Flag code={displayHomeFlagCode} size="xs" />
+              <span className="font-barlow font-bold uppercase text-xs truncate" style={{ color: teamColor }}>{displayHome}</span>
             </div>
             <span className="font-barlow font-bold text-xs shrink-0" style={{ color: "#3a7a3a" }}>vs</span>
             <div className="flex items-center gap-1.5 flex-1 min-w-0 justify-end">
-              <span className="font-barlow font-bold uppercase text-xs truncate" style={{ color: teamColor }}>{match.away}</span>
-              <Flag code={match.awayFlagCode} size="xs" />
+              <span className="font-barlow font-bold uppercase text-xs truncate" style={{ color: teamColor }}>{displayAway}</span>
+              <Flag code={displayAwayFlagCode} size="xs" />
             </div>
             <div className="flex flex-col items-end shrink-0 ml-2">
               {locked && <Lock size={8} style={{ color: "rgba(255,255,255,0.25)" }} />}
@@ -421,6 +429,7 @@ export function ScheduleClient({
   groupName,
   allGroups,
   matchResults,
+  matchTeams,
   initialPredictions,
   isAdFree,
   isCorporate,
@@ -601,7 +610,8 @@ export function ScheduleClient({
       if (tabFilter === "upcoming" && (s.type !== "upcoming" || m.date <= todayStr)) return false;
       if (tabFilter === "done"     && s.type !== "finished") return false;
       if (q) {
-        const haystack = `${m.home} ${m.away}`.toLowerCase();
+        const t = matchTeams?.[m.id];
+        const haystack = `${t?.home ?? m.home} ${t?.away ?? m.away}`.toLowerCase();
         if (!haystack.includes(q)) return false;
       }
       return true;
@@ -818,6 +828,7 @@ export function ScheduleClient({
                         isToday={m.date === todayStr}
                         isNext={m.id === nextMatchId}
                         saveStatus={saveFlash[m.id]}
+                        teamOverride={matchTeams?.[m.id]}
                       />
                     );
                   })}

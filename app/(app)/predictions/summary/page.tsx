@@ -87,8 +87,7 @@ export default async function PredictionsSummaryPage() {
       .not("pred_type", "eq", "match"),
     admin
       .from("matches")
-      .select("id, home_score, away_score, status")
-      .not("home_score", "is", null),
+      .select("id, home, away, home_flag, away_flag, home_score, away_score, status"),
   ]);
 
   const totalPointsMap: Record<string, number> = {};
@@ -130,17 +129,39 @@ export default async function PredictionsSummaryPage() {
     tournamentPicks[t.group_id][t.pred_type] = { value: t.pred_value ?? "", points: t.points_earned ?? 0 };
   }
 
-  // Merge schedule with actual DB scores
-  const dbScores: Record<string, { homeScore: number | null; awayScore: number | null; matchStatus: string | null }> = {};
-  for (const row of (dbMatchResult.data ?? []) as Array<{ id: string; home_score: number | null; away_score: number | null; status: string | null }>) {
-    dbScores[row.id] = { homeScore: row.home_score, awayScore: row.away_score, matchStatus: row.status };
+  // Merge schedule with DB scores and team names (DB team names override placeholders for knockout stages)
+  const dbMatchData: Record<string, {
+    home: string; away: string; homeFlagCode?: string; awayFlagCode?: string;
+    homeScore: number | null; awayScore: number | null; matchStatus: string | null;
+  }> = {};
+  for (const row of (dbMatchResult.data ?? []) as Array<{
+    id: string; home: string; away: string;
+    home_flag: string | null; away_flag: string | null;
+    home_score: number | null; away_score: number | null; status: string | null;
+  }>) {
+    dbMatchData[row.id] = {
+      home:         row.home,
+      away:         row.away,
+      homeFlagCode: row.home_flag ?? undefined,
+      awayFlagCode: row.away_flag ?? undefined,
+      homeScore:    row.home_score,
+      awayScore:    row.away_score,
+      matchStatus:  row.status,
+    };
   }
-  const matches: SummaryMatch[] = WC2026_MATCHES.map(m => ({
-    ...m,
-    homeScore:   dbScores[m.id]?.homeScore   ?? null,
-    awayScore:   dbScores[m.id]?.awayScore   ?? null,
-    matchStatus: dbScores[m.id]?.matchStatus ?? null,
-  }));
+  const matches: SummaryMatch[] = WC2026_MATCHES.map(m => {
+    const db = dbMatchData[m.id];
+    return {
+      ...m,
+      home:         db?.home         ?? m.home,
+      away:         db?.away         ?? m.away,
+      homeFlagCode: db?.homeFlagCode ?? m.homeFlagCode,
+      awayFlagCode: db?.awayFlagCode ?? m.awayFlagCode,
+      homeScore:    db?.homeScore    ?? null,
+      awayScore:    db?.awayScore    ?? null,
+      matchStatus:  db?.matchStatus  ?? null,
+    };
+  });
 
   return (
     <div className="pb-32">

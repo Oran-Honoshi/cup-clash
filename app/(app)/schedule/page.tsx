@@ -41,6 +41,10 @@ type DbMatch = {
   away_score: number | null;
   minute: number | null;
   match_events: DbMatchEvent[] | null;
+  home: string;
+  away: string;
+  home_flag: string | null;
+  away_flag: string | null;
 };
 
 type DbPred = {
@@ -61,10 +65,10 @@ export default async function SchedulePage({
     data: { user },
   } = await sb.auth.getUser();
 
-  // ── Fetch all match statuses + scores ──────────────────────────────────────
+  // ── Fetch all match statuses, scores, and team names ──────────────────────
   const { data: dbMatchRows } = await sbAdmin()
     .from("matches")
-    .select("id, status, home_score, away_score, minute, match_events");
+    .select("id, status, home_score, away_score, minute, match_events, home, away, home_flag, away_flag");
 
   const matchResults: Record<string, {
     status: string;
@@ -73,6 +77,8 @@ export default async function SchedulePage({
     minute: number | null;
     matchEvents: DbMatchEvent[] | null;
   }> = {};
+  const matchTeams: Record<string, { home: string; away: string; homeFlagCode?: string; awayFlagCode?: string }> = {};
+
   for (const m of (dbMatchRows ?? []) as DbMatch[]) {
     matchResults[m.id] = {
       status:      m.status ?? "",
@@ -81,6 +87,14 @@ export default async function SchedulePage({
       minute:      m.minute ?? null,
       matchEvents: m.match_events ?? null,
     };
+    if (m.home && m.away) {
+      matchTeams[m.id] = {
+        home:         m.home,
+        away:         m.away,
+        homeFlagCode: m.home_flag ?? undefined,
+        awayFlagCode: m.away_flag ?? undefined,
+      };
+    }
   }
 
   // ── Auth-only data ──────────────────────────────────────────────────────────
@@ -162,6 +176,7 @@ export default async function SchedulePage({
         groupName={groupName}
         allGroups={allGroups}
         matchResults={matchResults}
+        matchTeams={matchTeams}
         initialPredictions={initialPredictions}
         isAdFree={isAdFree}
         isCorporate={isCorporate}

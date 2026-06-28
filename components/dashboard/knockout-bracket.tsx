@@ -1,7 +1,8 @@
 "use client";
 
-import { useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
+import { createClient } from "@/lib/supabase/client";
 import { Trophy, MapPin, Clock, ChevronRight } from "lucide-react";
 import Image from "next/image";
 import { flagUrl } from "@/lib/countries";
@@ -175,8 +176,40 @@ function StageColumn({ title, matches, color, highlight = false, id }: {
 }
 
 export function KnockoutBracket({ groupId: _groupId }: { groupId?: string }) {
-  const allUnconfirmed = R32_MATCHES.every(m => !m.home.isConfirmed && !m.away.isConfirmed);
+  const [r32Matches, setR32Matches] = useState<BracketMatch[]>(R32_MATCHES);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    createClient()
+      .from("matches")
+      .select("id, home, away, home_flag, away_flag, kickoff_at, stadium, city")
+      .eq("stage", "R32")
+      .order("kickoff_at", { ascending: true })
+      .then(({ data }) => {
+        if (!data?.length) return;
+        setR32Matches(
+          (data as Array<{
+            id: string; home: string; away: string;
+            home_flag: string | null; away_flag: string | null;
+            kickoff_at: string; stadium: string | null; city: string | null;
+          }>).map(m => {
+            const kickoff = new Date(m.kickoff_at);
+            return {
+              id: m.id,
+              home: { label: m.home, flagCode: m.home_flag ?? undefined, isConfirmed: !!m.home_flag },
+              away: { label: m.away, flagCode: m.away_flag ?? undefined, isConfirmed: !!m.away_flag },
+              date: kickoff.toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "America/New_York" }),
+              time: kickoff.toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: "America/New_York" }) + " ET",
+              stadium: m.stadium ?? "TBD",
+              city: m.city ?? "TBD",
+              stage: "Round of 32",
+            };
+          })
+        );
+      });
+  }, []);
+
+  const allUnconfirmed = r32Matches.every(m => !m.home.isConfirmed && !m.away.isConfirmed);
 
   const scrollToRound = (roundId: string) => {
     const container = scrollRef.current;
@@ -249,7 +282,7 @@ export function KnockoutBracket({ groupId: _groupId }: { groupId?: string }) {
           style={{ background: "linear-gradient(to left, rgba(8,12,22,0.95) 0%, transparent 100%)" }} />
         <div ref={scrollRef} className="overflow-x-auto w-full pb-4" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
           <div className="flex gap-4 min-w-max">
-            <StageColumn id="round-r32" title="Round of 32" matches={R32_MATCHES} color="#8B5CF6" />
+            <StageColumn id="round-r32" title="Round of 32" matches={r32Matches} color="#8B5CF6" />
             <div className="flex flex-col justify-center">
               <ChevronRight size={20} style={{ color: "rgba(255,255,255,0.25)" }} />
             </div>
