@@ -262,11 +262,12 @@ function MatchCard({
   const locked = state.type !== "upcoming" || isLocked(match.utcTime);
   const canPredict = !!userId && !!groupId && !locked && state.type === "upcoming";
 
-  const [localTime, setLocalTime] = useState(`${match.time} ET`);
-  const [tzAbbr, setTzAbbr] = useState("ET");
+  const [localTime, setLocalTime] = useState("");
   useEffect(() => {
-    setLocalTime(getLocalTime(match.utcTime));
-    setTzAbbr(getTzAbbr(match.utcTime));
+    const d = new Date(match.utcTime);
+    const time = d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", hour12: false });
+    const tz = getTzAbbr(match.utcTime);
+    setLocalTime(tz ? `${time} ${tz}` : time);
   }, [match.utcTime]);
 
   const displayHome        = teamOverride?.home        ?? match.home;

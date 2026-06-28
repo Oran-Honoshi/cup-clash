@@ -86,7 +86,7 @@ function MatchDateTime({ utcTime }: { utcTime: string }) {
     const time = d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", hour12: false });
     setLabel(`${date} · ${time}`);
   }, [utcTime]);
-  return <>{label}</>;
+  return <span suppressHydrationWarning>{label}</span>;
 }
 
 // ── Result badge ──────────────────────────────────────────────────────────────
