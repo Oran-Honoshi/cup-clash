@@ -129,16 +129,15 @@ function MatchCard({ match, prediction, onChange, globalLocked, stagePoints, mat
   const matchLocked = globalLocked || isMatchLocked(match.utcTime);
   const countdown   = !matchLocked ? getCountdown(match.utcTime, t) : "";
 
-  const etFallback = `${new Date(match.utcTime).toLocaleDateString("en-US", { timeZone: "America/New_York", day: "numeric", month: "short" })} · ${match.time} ET`;
-  const [localTimeStr, setLocalTimeStr] = useState(etFallback);
+  const [localTimeStr, setLocalTimeStr] = useState("");
   useEffect(() => {
-    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
     const d = new Date(match.utcTime);
-    const dateStr = d.toLocaleDateString(undefined, { timeZone: tz, day: "numeric", month: "short" });
-    const timeStr = d.toLocaleTimeString(undefined, { timeZone: tz, hour: "numeric", minute: "2-digit", hour12: true });
-    const tzAbbr = new Intl.DateTimeFormat("en", { timeZoneName: "short", timeZone: tz })
-      .formatToParts(d).find(p => p.type === "timeZoneName")?.value ?? tz;
-    setLocalTimeStr(`${dateStr} · ${timeStr} ${tzAbbr}`);
+    const dateStr = d.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+    const timeStr = d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", hour12: false });
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const tzAbbr = new Intl.DateTimeFormat("en-GB", { timeZoneName: "short", timeZone: tz })
+      .formatToParts(d).find(p => p.type === "timeZoneName")?.value ?? "";
+    setLocalTimeStr(`${dateStr} · ${timeStr}${tzAbbr ? ` ${tzAbbr}` : ""}`);
   }, [match.utcTime]);
   const status = matchLocked ? "locked" : filled ? "saved" : "open";
 

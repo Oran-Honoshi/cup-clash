@@ -266,7 +266,7 @@ export function BonusQuestions({ groupId, userId }: BonusQuestionsProps) {
                 {q.lock_at && !isLocked && (
                   <div className="flex items-center gap-1.5 mt-2 text-xs" style={{ color: "rgba(255,255,255,0.35)" }}>
                     <Lock size={10} />
-                    Locks {new Date(q.lock_at).toLocaleString()}
+                    Locks {new Date(q.lock_at).toLocaleString("en-GB")}
                   </div>
                 )}
               </>

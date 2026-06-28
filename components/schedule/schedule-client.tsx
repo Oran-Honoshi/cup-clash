@@ -75,8 +75,8 @@ function isLocked(utcTime: string): boolean {
 
 function getLocalTime(utcTime: string): string {
   try {
-    return new Date(utcTime).toLocaleTimeString(undefined, {
-      hour: "numeric", minute: "2-digit", hour12: true,
+    return new Date(utcTime).toLocaleTimeString("en-GB", {
+      hour: "2-digit", minute: "2-digit", hour12: false,
     });
   } catch { return ""; }
 }
@@ -781,8 +781,8 @@ export function ScheduleClient({
           {groupedDates.map(([date, matches]) => {
             const isToday = date === todayStr;
             const dateObj = new Date(date + "T12:00:00Z");
-            const dayLabel = dateObj.toLocaleDateString("en-US", { weekday: "long", timeZone: "UTC" });
-            const dateLabel = dateObj.toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric", timeZone: "UTC" });
+            const dayLabel = dateObj.toLocaleDateString("en-GB", { weekday: "long" });
+            const dateLabel = dateObj.toLocaleDateString("en-GB", { month: "long", day: "numeric", year: "numeric" });
 
             return (
               <section key={date}>

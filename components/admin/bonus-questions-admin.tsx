@@ -405,7 +405,7 @@ export function BonusQuestionsAdmin({ groupId }: BonusQuestionsAdminProps) {
                     </span>
                     {q.lock_at && (
                       <span className="flex items-center gap-1 text-[10px]" style={{ color: "rgba(255,255,255,0.3)" }}>
-                        <Clock size={10} /> Locks {new Date(q.lock_at).toLocaleDateString()}
+                        <Clock size={10} /> Locks {new Date(q.lock_at).toLocaleDateString("en-GB")}
                       </span>
                     )}
                     {q.is_resolved && (

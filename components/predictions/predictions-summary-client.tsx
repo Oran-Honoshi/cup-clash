@@ -75,17 +75,15 @@ function isMatchLocked(m: SummaryMatch) {
 function fmtScore(h: number, a: number) { return `${h}–${a}`; }
 
 function fmtDate(m: SummaryMatch) {
-  return new Date(m.utcTime).toLocaleDateString(undefined, {
-    timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+  return new Date(m.utcTime).toLocaleDateString("en-GB", {
     day: "numeric",
     month: "short",
   });
 }
 
 function fmtTime(m: SummaryMatch) {
-  return new Date(m.utcTime).toLocaleTimeString(undefined, {
-    timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-    hour: "numeric",
+  return new Date(m.utcTime).toLocaleTimeString("en-GB", {
+    hour: "2-digit",
     minute: "2-digit",
     hour12: false,
   });

@@ -171,7 +171,7 @@ export function AdminFinancePanel({ group, members, onTogglePaid }: AdminFinance
       "FINAL PAYOUT REPORT",
       `Group: ${group.name}`,
       `Total Pool: $${pool}`,
-      `Date: ${new Date().toLocaleDateString()}`,
+      `Date: ${new Date().toLocaleDateString("en-GB")}`,
       "",
       rows,
       "",
