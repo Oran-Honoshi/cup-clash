@@ -236,3 +236,32 @@ export const SCORING_EXAMPLES = [
     ]
   }
 ];
+
+// ── CupContest simple scoring (25 / 10 / 0) ───────────────────────────────────
+//
+// TIE_BREAKER order:
+//   1. Most exact scores (highest exactCount wins)
+//   2. Closest Final goal minute prediction (tiebreaker input, not implemented here)
+//   3. Correct tournament winner pick
+//   4. Admin split
+
+/**
+ * Score a single prediction under the CupContest 25/10/0 system.
+ *   25 pts — exact score match
+ *   10 pts — correct outcome (W/D/L) but wrong score
+ *    0 pts — wrong outcome
+ */
+export function calcMatchPoints(
+  prediction: { home: number; away: number },
+  result:     { home: number; away: number }
+): number {
+  const isExact =
+    prediction.home === result.home && prediction.away === result.away;
+  if (isExact) return 25;
+
+  const predOutcome = Math.sign(prediction.home - prediction.away);
+  const realOutcome = Math.sign(result.home - result.away);
+  if (predOutcome === realOutcome) return 10;
+
+  return 0;
+}

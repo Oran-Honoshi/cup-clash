@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
 import { Hero }             from "@/components/landing/hero";
+import { CountdownHero }    from "@/components/CountdownHero";
+import { Leaderboard }      from "@/components/Leaderboard";
+import { MOCK_MEMBERS, MOCK_MATCHES } from "@/lib/mocks/data";
 
 export const metadata: Metadata = {
   title: "Cup Clash — Free Social Prediction Game for World Cup 2026",
@@ -21,6 +24,9 @@ import { Faq }              from "@/components/landing/faq";
 import { CtaAndFooter }     from "@/components/landing/cta-and-footer";
 import { Navbar }           from "@/components/landing/navbar";
 
+const nextMatch = MOCK_MATCHES[0];
+const top3 = [...MOCK_MEMBERS].sort((a, b) => b.points - a.points).slice(0, 3);
+
 export default function LandingPage() {
   return (
     <>
@@ -39,6 +45,22 @@ export default function LandingPage() {
       <Navbar />
       <main id="main" tabIndex={-1} className="focus:outline-none">
         <Hero />
+
+        {/* Live countdown to next match */}
+        <CountdownHero
+          nextMatchIso={nextMatch.time}
+          homeTeam={nextMatch.home}
+          awayTeam={nextMatch.away}
+        />
+
+        {/* Top-3 preview leaderboard */}
+        <section className="max-w-xl mx-auto px-4 sm:px-6 py-10">
+          <p className="text-xs uppercase tracking-widest text-white/40 font-bold mb-4 text-center">
+            Top 3 this week
+          </p>
+          <Leaderboard members={top3} />
+        </section>
+
         <StatsStrip />
         <HowItWorks />
         <Features />
