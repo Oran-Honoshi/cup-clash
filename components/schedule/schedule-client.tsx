@@ -780,9 +780,12 @@ export function ScheduleClient({
         <div className="space-y-6">
           {groupedDates.map(([date, matches]) => {
             const isToday = date === todayStr;
-            const dateObj = new Date(date + "T12:00:00Z");
-            const dayLabel = dateObj.toLocaleDateString("en-GB", { weekday: "long" });
-            const dateLabel = dateObj.toLocaleDateString("en-GB", { month: "long", day: "numeric", year: "numeric" });
+            // Use the first match's UTC kickoff as the date source — no string
+            // manipulation, no appended T12:00:00Z. toLocaleDateString converts
+            // directly to the viewer's local timezone.
+            const refDate  = new Date(matches[0].utcTime);
+            const dayLabel = refDate.toLocaleDateString("en-GB", { weekday: "long" });
+            const dateLabel = refDate.toLocaleDateString("en-GB", { month: "long", day: "numeric", year: "numeric" });
 
             return (
               <section key={date}>
@@ -792,7 +795,8 @@ export function ScheduleClient({
                   <Calendar size={13} style={{ color: isToday ? "#00FF88" : "rgba(255,255,255,0.3)" }} />
                   <div className="flex items-center gap-2">
                     <span className="font-display text-xl uppercase font-black tracking-tight"
-                      style={{ color: isToday ? "#00e5a0" : "rgba(255,255,255,0.9)" }}>
+                      style={{ color: isToday ? "#00e5a0" : "rgba(255,255,255,0.9)" }}
+                      suppressHydrationWarning>
                       {dayLabel}
                     </span>
                     {isToday && (
@@ -801,7 +805,7 @@ export function ScheduleClient({
                         Today
                       </span>
                     )}
-                    <span className="text-sm" style={{ color: "rgba(255,255,255,0.35)" }}>{dateLabel}</span>
+                    <span className="text-sm" style={{ color: "rgba(255,255,255,0.35)" }} suppressHydrationWarning>{dateLabel}</span>
                   </div>
                   <div className="flex-1 h-px" style={{ background: "rgba(255,255,255,0.06)" }} />
                   <span className="text-[10px]" style={{ color: "rgba(255,255,255,0.25)" }}>

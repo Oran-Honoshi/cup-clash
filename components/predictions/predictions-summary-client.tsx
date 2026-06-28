@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useRef, useMemo } from "react";
+import { useState, useCallback, useRef, useMemo, useEffect } from "react";
 import {
   Trophy, Check, X, Minus, Lock, Filter,
   ChevronDown, LayoutGrid, Star,
@@ -74,19 +74,19 @@ function isMatchLocked(m: SummaryMatch) {
 
 function fmtScore(h: number, a: number) { return `${h}–${a}`; }
 
-function fmtDate(m: SummaryMatch) {
-  return new Date(m.utcTime).toLocaleDateString("en-GB", {
-    day: "numeric",
-    month: "short",
-  });
-}
-
-function fmtTime(m: SummaryMatch) {
-  return new Date(m.utcTime).toLocaleTimeString("en-GB", {
-    hour: "2-digit",
-    minute: "2-digit",
-    hour12: false,
-  });
+// Renders local date · time entirely on the client to avoid SSR timezone mismatch.
+// Server timezone (UTC) ≠ viewer timezone, so any synchronous toLocaleTimeString
+// call produces the wrong time during SSR. useState("") ensures the SSR HTML is
+// neutral and the useEffect sets the correct local value after hydration.
+function MatchDateTime({ utcTime }: { utcTime: string }) {
+  const [label, setLabel] = useState("");
+  useEffect(() => {
+    const d    = new Date(utcTime);
+    const date = d.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
+    const time = d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", hour12: false });
+    setLabel(`${date} · ${time}`);
+  }, [utcTime]);
+  return <>{label}</>;
 }
 
 // ── Result badge ──────────────────────────────────────────────────────────────
@@ -518,7 +518,7 @@ export function PredictionsSummaryClient({
                         {/* Date / time / result */}
                         <div className="flex items-center gap-1.5 flex-wrap">
                           <span className="text-[9px]" style={{ color: "rgba(255,255,255,0.35)" }}>
-                            {fmtDate(m)} · {fmtTime(m)}
+                            <MatchDateTime utcTime={m.utcTime} />
                           </span>
                           {finished && (
                             <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full"
