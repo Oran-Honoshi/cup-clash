@@ -195,8 +195,11 @@ export async function GET(req: NextRequest) {
   for (const p of preds) {
     const m = matchMap[p.match_id];
     if (!m || m.status !== "finished") continue;
+    // Skip predictions not yet scored by the cron (match just finished, scoring step pending).
+    // points_earned=null means unscored; =0 means genuinely wrong.
+    if (p.points_earned === null) continue;
 
-    const pts  = p.points_earned ?? 0;
+    const pts  = p.points_earned;
     const isEx = p.is_exact ?? false;
     const stage = m.stage ?? "Group";
 
