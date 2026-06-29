@@ -116,24 +116,30 @@ export async function getGroupByInviteCode(code: string): Promise<Group | null> 
 // ── Members / Leaderboard ────────────────────────────────────────────────────
 
 export async function getMembers(groupId: string): Promise<Member[]> {
-  const [membersRes, ptRes, statsRes] = await Promise.all([
+  const [membersRes, ptRes, matchPredsRes, tournamentRes, bonusRes] = await Promise.all([
     sbAdmin()
       .from("group_members")
-      .select(`
-        user_id, payment_status, can_predict, joined_at, role,
-        profiles ( id, name, country, avatar_url )
-      `)
+      .select(`user_id, payment_status, can_predict, joined_at, role, profiles ( id, name, country, avatar_url )`)
       .eq("group_id", groupId),
 
-    // Aggregate total points via SQL function
     sbAdmin().rpc("get_group_member_points", { p_group_id: groupId }),
 
-    // Fetch match prediction outcomes for exact/correct counts
     sbAdmin()
       .from("group_predictions")
-      .select("user_id, is_exact, points_earned")
+      .select("user_id, match_id, is_exact, points_earned")
       .eq("group_id", groupId)
       .eq("pred_type", "match"),
+
+    sbAdmin()
+      .from("group_predictions")
+      .select("user_id, pred_type, points_earned")
+      .eq("group_id", groupId)
+      .neq("pred_type", "match"),
+
+    sbAdmin()
+      .from("bonus_answers")
+      .select("user_id, points_earned")
+      .eq("group_id", groupId),
   ]);
 
   if (membersRes.error) throw membersRes.error;
@@ -144,15 +150,63 @@ export async function getMembers(groupId: string): Promise<Member[]> {
     pointsMap[r.user_id] = Number(r.total_points ?? 0);
   });
 
-  type StatRow = { user_id: string; is_exact: boolean | null; points_earned: number | null };
+  // Get match stages for gs/knockout breakdown
+  const allMatchIds = [...new Set(
+    ((matchPredsRes.data ?? []) as { match_id: string; points_earned: number | null }[])
+      .filter(r => (r.points_earned ?? 0) > 0)
+      .map(r => r.match_id)
+  )];
+  const matchStageMap: Record<string, string> = {};
+  if (allMatchIds.length > 0) {
+    const { data: stageRows } = await sbAdmin()
+      .from("matches")
+      .select("id, stage")
+      .in("id", allMatchIds);
+    for (const m of (stageRows ?? []) as { id: string; stage: string }[]) {
+      matchStageMap[m.id] = m.stage;
+    }
+  }
+
+  type MatchPredRow = { user_id: string; match_id: string; is_exact: boolean | null; points_earned: number | null };
+  type TournRow2   = { user_id: string; pred_type: string; points_earned: number | null };
+  type BonusRow    = { user_id: string; points_earned: number | null };
+
   const statsMap: Record<string, { exactScores: number; correctPredictions: number }> = {};
-  for (const row of (statsRes.data ?? []) as StatRow[]) {
+  const breakdownMap: Record<string, { gsPts: number; knockoutPts: number; bestThirdPts: number; bonusPts: number }> = {};
+
+  const getBreakdown = (uid: string) => {
+    if (!breakdownMap[uid]) breakdownMap[uid] = { gsPts: 0, knockoutPts: 0, bestThirdPts: 0, bonusPts: 0 };
+    return breakdownMap[uid];
+  };
+
+  for (const row of (matchPredsRes.data ?? []) as MatchPredRow[]) {
     if (!statsMap[row.user_id]) statsMap[row.user_id] = { exactScores: 0, correctPredictions: 0 };
     if (row.is_exact) {
       statsMap[row.user_id].exactScores++;
     } else if ((row.points_earned ?? 0) > 0) {
       statsMap[row.user_id].correctPredictions++;
     }
+    const pts = row.points_earned ?? 0;
+    if (pts > 0) {
+      const stage = matchStageMap[row.match_id] ?? "Group";
+      const b = getBreakdown(row.user_id);
+      if (stage === "Group") b.gsPts += pts;
+      else b.knockoutPts += pts;
+    }
+  }
+
+  for (const r of (tournamentRes.data ?? []) as TournRow2[]) {
+    const pts = r.points_earned ?? 0;
+    if (pts <= 0) continue;
+    const b = getBreakdown(r.user_id);
+    if (r.pred_type?.startsWith("best_third_")) b.bestThirdPts += pts;
+    else b.bonusPts += pts;
+  }
+
+  for (const r of (bonusRes.data ?? []) as BonusRow[]) {
+    const pts = r.points_earned ?? 0;
+    if (pts <= 0) continue;
+    getBreakdown(r.user_id).bonusPts += pts;
   }
 
   return (membersRes.data as unknown as Array<{
@@ -177,6 +231,10 @@ export async function getMembers(groupId: string): Promise<Member[]> {
       role:                row.role ?? 'member',
       exactScores:         statsMap[row.user_id]?.exactScores ?? 0,
       correctPredictions:  statsMap[row.user_id]?.correctPredictions ?? 0,
+      gsPts:               breakdownMap[row.user_id]?.gsPts        ?? 0,
+      knockoutPts:         breakdownMap[row.user_id]?.knockoutPts  ?? 0,
+      bestThirdPts:        breakdownMap[row.user_id]?.bestThirdPts ?? 0,
+      bonusPts:            breakdownMap[row.user_id]?.bonusPts     ?? 0,
     }))
     .sort((a, b) => b.points - a.points);
 }

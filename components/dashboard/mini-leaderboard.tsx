@@ -130,20 +130,49 @@ export function MiniLeaderboard({ members, groupId, currentUserId }: MiniLeaderb
             {/* Avatar */}
             <MemberAvatar name={member.name} avatarUrl={member.avatarUrl} size="sm" ring={isMe} />
 
-            {/* Name */}
-            <span
-              style={{
-                flex: 1,
-                fontWeight: 700,
-                fontSize: 13,
-                color: isMe ? "#00FF88" : "rgba(255,255,255,0.85)",
-                overflow: "hidden",
-                textOverflow: "ellipsis",
-                whiteSpace: "nowrap",
-              }}
-            >
-              {member.name}
-            </span>
+            {/* Name + chips */}
+            <div style={{ flex: 1, minWidth: 0, overflow: "hidden" }}>
+              <span
+                style={{
+                  display: "block",
+                  fontWeight: 700,
+                  fontSize: 13,
+                  color: isMe ? "#00FF88" : "rgba(255,255,255,0.85)",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  whiteSpace: "nowrap",
+                }}
+              >
+                {member.name}
+              </span>
+              {(member.gsPts || member.knockoutPts || member.bestThirdPts || member.bonusPts) ? (
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 3, marginTop: 2 }}>
+                  {[
+                    { emoji: "⚽", label: "GS",    value: member.gsPts        ?? 0 },
+                    { emoji: "🏆", label: "KO",    value: member.knockoutPts  ?? 0 },
+                    { emoji: "🥉", label: "3rd",   value: member.bestThirdPts ?? 0 },
+                    { emoji: "🌟", label: "Bonus", value: member.bonusPts     ?? 0 },
+                  ].map(({ emoji, label, value }) => (
+                    <div
+                      key={label}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 2,
+                        borderRadius: 999,
+                        padding: "1px 5px",
+                        background: "rgba(255,255,255,0.05)",
+                        border: "1px solid rgba(255,255,255,0.08)",
+                      }}
+                    >
+                      <span style={{ fontSize: 8 }}>{emoji}</span>
+                      <span style={{ fontSize: 8, fontWeight: 700, color: "rgba(255,255,255,0.35)" }}>{label}:</span>
+                      <span style={{ fontSize: 8, fontWeight: 900, color: value > 0 ? "rgba(255,255,255,0.7)" : "rgba(255,255,255,0.2)", fontFamily: "var(--font-mono)" }}>{value}</span>
+                    </div>
+                  ))}
+                </div>
+              ) : null}
+            </div>
 
             {/* Points */}
             <span

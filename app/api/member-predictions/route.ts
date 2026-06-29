@@ -19,14 +19,23 @@ export interface MemberPrediction {
   predicted:    string;
   actual:       string;
   pts:          number;
-  type:         "exact" | "correct";
+  type:         "exact" | "correct" | "wrong";
+  stage:        string;
+  groupLetter:  string | null;
 }
 
 export interface BestThirdPick {
-  slot:         number;   // 1–8
+  slot:         number;
   team:         string;
   pointsEarned: number;
-  correct:      boolean;  // true if points_earned > 0
+  correct:      boolean;
+}
+
+export interface TournamentPick {
+  predType:     string;
+  predValue:    string | null;
+  pointsEarned: number;
+  status:       "pending" | "correct" | "wrong";
 }
 
 export interface MemberPredictionsResponse {
@@ -35,14 +44,19 @@ export interface MemberPredictionsResponse {
     exactCount:    number;
     outcomeCount:  number;
     missedCount:   number;
+    gsPts:         number;
+    knockoutPts:   number;
+    bestThirdPts:  number;
+    bonusPts:      number;
   };
   history: MemberPrediction[];
   bestThird: {
-    picks:            BestThirdPick[];
-    correctCount:     number;
-    pointsPerPick:    number;
-    enabled:          boolean;
+    picks:         BestThirdPick[];
+    correctCount:  number;
+    pointsPerPick: number;
+    enabled:       boolean;
   };
+  tournamentPicks: TournamentPick[];
 }
 
 type PredRow = {
@@ -64,6 +78,8 @@ type MatchRow = {
   home_score_et: number | null;
   away_score_et: number | null;
   status:        string;
+  stage:         string;
+  group_letter:  string | null;
 };
 
 type TournamentRow = {
@@ -87,7 +103,6 @@ export async function GET(req: NextRequest) {
 
   const sb = sbAdmin();
 
-  // Fetch match predictions and tournament picks in parallel
   const [predRes, tournamentRes, bonusRes, rulesRes] = await Promise.all([
     sb
       .from("group_predictions")
@@ -121,25 +136,27 @@ export async function GET(req: NextRequest) {
   const bonusRows      = (bonusRes.data ?? []) as { points_earned: number | null }[];
   const rules          = (rulesRes.data ?? null) as RulesRow | null;
 
-  // Fetch match metadata for scored match predictions
+  // Fetch match metadata for all match predictions
   const matchIds = [...new Set(preds.map(p => p.match_id).filter(Boolean))];
   const matchMap: Record<string, MatchRow> = {};
   if (matchIds.length > 0) {
     const { data: matchRows } = await sb
       .from("matches")
-      .select("id, home, away, home_flag, away_flag, home_score, away_score, home_score_et, away_score_et, status")
+      .select("id, home, away, home_flag, away_flag, home_score, away_score, home_score_et, away_score_et, status, stage, group_letter")
       .in("id", matchIds);
     for (const m of (matchRows ?? []) as MatchRow[]) {
       matchMap[m.id] = m;
     }
   }
 
-  // Tally points from each source
-  const bonusPoints      = bonusRows.reduce((s, b) => s + (b.points_earned ?? 0), 0);
-  const tournamentPoints = tournamentRows.reduce((s, r) => s + (r.points_earned ?? 0), 0);
+  // Tally bonus points
+  const bonusPoints = bonusRows.reduce((s, b) => s + (b.points_earned ?? 0), 0);
+
+  // Separate best_third from other tournament picks
+  const bestThirdRows = tournamentRows.filter(r => r.pred_type?.startsWith("best_third_"));
+  const otherTournamentRows = tournamentRows.filter(r => !r.pred_type?.startsWith("best_third_"));
 
   // Build best_third section
-  const bestThirdRows = tournamentRows.filter(r => r.pred_type?.startsWith("best_third_"));
   const bestThirdPicks: BestThirdPick[] = bestThirdRows
     .map(r => ({
       slot:         parseInt(r.pred_type.replace("best_third_", ""), 10),
@@ -149,13 +166,27 @@ export async function GET(req: NextRequest) {
     }))
     .sort((a, b) => a.slot - b.slot);
   const bestThirdCorrectCount = bestThirdPicks.filter(p => p.correct).length;
+  const bestThirdPts = bestThirdRows.reduce((s, r) => s + (r.points_earned ?? 0), 0);
 
-  // Build match prediction history
-  console.log("[member-predictions] userId:", userId, "groupId:", groupId,
-    "matchPreds:", preds.length, "tournamentPicks:", tournamentRows.length,
-    "bonusPoints:", bonusPoints);
+  // Build tournament picks section (winner, top_scorer, top_assister, etc.)
+  const tournamentPicks: TournamentPick[] = otherTournamentRows
+    .filter(r => ["winner", "top_scorer", "top_assister"].includes(r.pred_type))
+    .map(r => ({
+      predType:     r.pred_type,
+      predValue:    r.pred_value,
+      pointsEarned: r.points_earned ?? 0,
+      status:       r.points_earned === null
+        ? "pending"
+        : r.points_earned > 0
+          ? "correct"
+          : "wrong",
+    }));
 
-  let matchPoints  = 0;
+  const bonusPts = otherTournamentRows.reduce((s, r) => s + (r.points_earned ?? 0), 0) + bonusPoints;
+
+  // Build match prediction history (ALL finished matches)
+  let gsPts        = 0;
+  let knockoutPts  = 0;
   let exactCount   = 0;
   let outcomeCount = 0;
   let missedCount  = 0;
@@ -167,8 +198,10 @@ export async function GET(req: NextRequest) {
 
     const pts  = p.points_earned ?? 0;
     const isEx = p.is_exact ?? false;
+    const stage = m.stage ?? "Group";
 
-    matchPoints += pts;
+    if (stage === "Group") gsPts += pts;
+    else knockoutPts += pts;
 
     if (isEx) {
       exactCount++;
@@ -178,27 +211,35 @@ export async function GET(req: NextRequest) {
       missedCount++;
     }
 
-    if (pts > 0) {
-      history.push({
-        matchId:      p.match_id,
-        home:         m.home,
-        away:         m.away,
-        homeFlagCode: m.home_flag ?? "",
-        awayFlagCode: m.away_flag ?? "",
-        predicted:    `${p.home_score ?? 0}–${p.away_score ?? 0}`,
-        actual:       `${m.home_score_et ?? m.home_score ?? 0}–${m.away_score_et ?? m.away_score ?? 0}`,
-        pts,
-        type:         isEx ? "exact" : "correct",
-      });
-    }
+    const type: MemberPrediction["type"] = isEx ? "exact" : pts > 0 ? "correct" : "wrong";
+
+    history.push({
+      matchId:      p.match_id,
+      home:         m.home,
+      away:         m.away,
+      homeFlagCode: m.home_flag ?? "",
+      awayFlagCode: m.away_flag ?? "",
+      predicted:    `${p.home_score ?? 0}–${p.away_score ?? 0}`,
+      actual:       `${m.home_score_et ?? m.home_score ?? 0}–${m.away_score_et ?? m.away_score ?? 0}`,
+      pts,
+      type,
+      stage,
+      groupLetter:  m.group_letter ?? null,
+    });
   }
+
+  const totalPoints = gsPts + knockoutPts + bestThirdPts + bonusPts;
 
   const body: MemberPredictionsResponse = {
     stats: {
-      totalPoints:  matchPoints + tournamentPoints + bonusPoints,
+      totalPoints,
       exactCount,
       outcomeCount,
       missedCount,
+      gsPts,
+      knockoutPts,
+      bestThirdPts,
+      bonusPts,
     },
     history,
     bestThird: {
@@ -207,6 +248,7 @@ export async function GET(req: NextRequest) {
       pointsPerPick: rules?.best_third ?? 0,
       enabled:       rules?.enable_best_third ?? false,
     },
+    tournamentPicks,
   };
 
   return NextResponse.json(body, { headers: { "Cache-Control": "no-store" } });

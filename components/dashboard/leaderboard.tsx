@@ -389,6 +389,26 @@ export function Leaderboard({ members, currentUserId, groupId, showGhost = true,
                   <div className="text-[11px] truncate" style={{ color: "rgba(255,255,255,0.3)" }}>
                     {member.country}
                   </div>
+                  {!isGhost && (member.gsPts || member.knockoutPts || member.bestThirdPts || member.bonusPts) ? (
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {[
+                        { emoji: "⚽", label: "GS",    value: member.gsPts        ?? 0 },
+                        { emoji: "🏆", label: "KO",    value: member.knockoutPts  ?? 0 },
+                        { emoji: "🥉", label: "3rd",   value: member.bestThirdPts ?? 0 },
+                        { emoji: "🌟", label: "Bonus", value: member.bonusPts     ?? 0 },
+                      ].map(({ emoji, label, value }) => (
+                        <div
+                          key={label}
+                          className="flex items-center gap-0.5 rounded-full px-1.5 py-0.5"
+                          style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}
+                        >
+                          <span className="text-[9px]">{emoji}</span>
+                          <span className="text-[9px] font-bold" style={{ color: "rgba(255,255,255,0.35)" }}>{label}:</span>
+                          <span className="text-[9px] font-black" style={{ color: value > 0 ? "rgba(255,255,255,0.7)" : "rgba(255,255,255,0.2)", fontFamily: "var(--font-mono)" }}>{value}</span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : null}
                 </div>
 
                 {/* Delta */}

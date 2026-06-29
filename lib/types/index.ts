@@ -54,6 +54,10 @@ export interface Member {
   rankDelta?:          number;
   exactScores?:        number;
   correctPredictions?: number;
+  gsPts?:              number;
+  knockoutPts?:        number;
+  bestThirdPts?:       number;
+  bonusPts?:           number;
   isGhost?:            boolean;
   canPredict?:         boolean;
   stakePaid?:          boolean;
