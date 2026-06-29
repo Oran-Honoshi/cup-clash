@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type KeyboardEvent } from "react";
-import { Crown, Trophy, TrendingUp, TrendingDown, Minus, ChevronRight, Ghost } from "lucide-react";
+import { Crown, Trophy, TrendingUp, TrendingDown, Minus, ChevronRight, Ghost, Target, Star } from "lucide-react";
 import { PlayerDrawer } from "@/components/dashboard/player-drawer";
 import { MemberAvatar } from "@/components/ui/member-avatar";
 import { AdBanner } from "@/components/ads/ad-banner";
@@ -21,13 +21,14 @@ function activateOnEnterOrSpace(handler: () => void) {
 }
 
 interface LeaderboardProps {
-  members:        Member[];
-  currentUserId?: string;
-  groupId?:       string;
-  showGhost?:     boolean;
-  scrollable?:    boolean; // inner scroll for embedded tiles (dashboard); false = page scrolls
-  isAdFree?:      boolean;
-  isCorporate?:   boolean;
+  members:           Member[];
+  currentUserId?:    string;
+  groupId?:          string;
+  showGhost?:        boolean;
+  scrollable?:       boolean; // inner scroll for embedded tiles (dashboard); false = page scrolls
+  isAdFree?:         boolean;
+  isCorporate?:      boolean;
+  showBestThird?:    boolean; // show best-3rd-place stat chip
 }
 
 const RANK_LABELS = ["1st", "2nd", "3rd"];
@@ -67,11 +68,15 @@ const PODIUM_BAR_HEIGHTS = [64, 80, 50]; // 2nd, 1st, 3rd
 const PODIUM_ACTUAL_RANKS = [2, 1, 3];
 const PODIUM_POINT_COLORS = ["rgba(255,255,255,0.7)", "#fbbf24", "#f97316"];
 
-export function Leaderboard({ members, currentUserId, groupId, showGhost = true, scrollable = false, isAdFree, isCorporate }: LeaderboardProps) {
+export function Leaderboard({ members, currentUserId, groupId, showGhost = true, scrollable = false, isAdFree, isCorporate, showBestThird = false }: LeaderboardProps) {
   const [selected, setSelected] = useState<Member | null>(null);
 
   const sorted = [...members].sort((a, b) => b.points - a.points);
   const ghost  = buildGhostPlayer(members);
+
+  const realMembers   = sorted.filter(m => !m.isGhost);
+  const totalExact    = realMembers.reduce((s, m) => s + (m.exactScores        ?? 0), 0);
+  const totalCorrect  = realMembers.reduce((s, m) => s + (m.correctPredictions ?? 0), 0);
 
   let display: Member[] = sorted;
   if (showGhost && sorted.length > 0) {
@@ -91,6 +96,45 @@ export function Leaderboard({ members, currentUserId, groupId, showGhost = true,
 
   return (
     <>
+      {/* ── Group stat chips ────────────────────────────── */}
+      {(totalExact > 0 || totalCorrect > 0) && (
+        <div className="flex items-center gap-2 px-1 pb-2 flex-wrap">
+          {totalExact > 0 && (
+            <div
+              className="flex items-center gap-1.5 rounded-full px-3 py-1"
+              style={{ background: "rgba(250,204,21,0.1)", border: "1px solid rgba(250,204,21,0.2)" }}
+            >
+              <Target size={11} style={{ color: "#facc15" }} />
+              <span className="text-[10px] font-bold" style={{ color: "rgba(255,255,255,0.7)" }}>
+                {totalExact} exact
+              </span>
+            </div>
+          )}
+          {totalCorrect > 0 && (
+            <div
+              className="flex items-center gap-1.5 rounded-full px-3 py-1"
+              style={{ background: "rgba(0,255,136,0.08)", border: "1px solid rgba(0,255,136,0.2)" }}
+            >
+              <TrendingUp size={11} style={{ color: "#00FF88" }} />
+              <span className="text-[10px] font-bold" style={{ color: "rgba(255,255,255,0.7)" }}>
+                {totalCorrect} correct
+              </span>
+            </div>
+          )}
+          {showBestThird && (
+            <div
+              className="flex items-center gap-1.5 rounded-full px-3 py-1"
+              style={{ background: "rgba(251,191,36,0.08)", border: "1px solid rgba(251,191,36,0.15)" }}
+            >
+              <Star size={11} style={{ color: "#fbbf24" }} />
+              <span className="text-[10px] font-bold" style={{ color: "rgba(255,255,255,0.5)" }}>
+                best 3rd scoring pending
+              </span>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* ── Podium ──────────────────────────────────────── */}
       {top3.length >= 2 && (
         <div

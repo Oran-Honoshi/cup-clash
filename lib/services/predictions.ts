@@ -143,13 +143,9 @@ export async function scoreMatchResult(params: {
       : effectiveHome < effectiveAway ? "A" : "D";
     const isOutcome = !isExact && predWinner === realWinner;
 
-    // Flat groups:        exactScore = TOTAL points (already includes outcome)
-    // Progressive groups: exactScore = BONUS on top of correctOutcome
-    const pts = isExact
-      ? params.rules.useProgressiveScoring
-        ? correctOutcome + exactScore
-        : exactScore
-      : isOutcome ? correctOutcome : 0;
+    // exactScore is always the TOTAL for an exact prediction (flat or progressive).
+    // getStagePoints() already selects the stage-specific value when progressive.
+    const pts = isExact ? exactScore : isOutcome ? correctOutcome : 0;
 
     return {
       user_id:       pred.user_id,

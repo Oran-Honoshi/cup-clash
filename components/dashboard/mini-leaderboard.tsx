@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Trophy } from "lucide-react";
+import { Trophy, Target, TrendingUp } from "lucide-react";
 import { MemberAvatar } from "@/components/ui/member-avatar";
 import type { Member } from "@/lib/types";
 
@@ -12,7 +12,9 @@ interface MiniLeaderboardProps {
 const RANK_COLORS = ["#fbbf24", "#94a3b8", "#f97316", "rgba(255,255,255,0.3)", "rgba(255,255,255,0.3)"];
 
 export function MiniLeaderboard({ members, groupId, currentUserId }: MiniLeaderboardProps) {
-  const top5 = members.slice(0, 5);
+  const top5        = members.slice(0, 5);
+  const totalExact  = members.reduce((s, m) => s + (m.exactScores        ?? 0), 0);
+  const totalCorrect = members.reduce((s, m) => s + (m.correctPredictions ?? 0), 0);
   if (!top5.length) return null;
 
   return (
@@ -43,6 +45,57 @@ export function MiniLeaderboard({ members, groupId, currentUserId }: MiniLeaderb
           Top Players
         </span>
       </div>
+
+      {/* Stat chips */}
+      {(totalExact > 0 || totalCorrect > 0) && (
+        <div
+          style={{
+            display: "flex",
+            gap: 8,
+            padding: "8px 18px",
+            borderBottom: "1px solid rgba(255,255,255,0.05)",
+            background: "rgba(255,255,255,0.02)",
+            flexWrap: "wrap",
+          }}
+        >
+          {totalExact > 0 && (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 5,
+                borderRadius: 999,
+                padding: "3px 10px",
+                background: "rgba(250,204,21,0.1)",
+                border: "1px solid rgba(250,204,21,0.2)",
+              }}
+            >
+              <Target size={10} style={{ color: "#facc15" }} />
+              <span style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.7)" }}>
+                {totalExact} exact
+              </span>
+            </div>
+          )}
+          {totalCorrect > 0 && (
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 5,
+                borderRadius: 999,
+                padding: "3px 10px",
+                background: "rgba(0,255,136,0.08)",
+                border: "1px solid rgba(0,255,136,0.2)",
+              }}
+            >
+              <TrendingUp size={10} style={{ color: "#00FF88" }} />
+              <span style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.7)" }}>
+                {totalCorrect} correct
+              </span>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Rows */}
       {top5.map((member, i) => {

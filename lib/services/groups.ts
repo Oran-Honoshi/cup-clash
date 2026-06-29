@@ -116,28 +116,46 @@ export async function getGroupByInviteCode(code: string): Promise<Group | null> 
 // ── Members / Leaderboard ────────────────────────────────────────────────────
 
 export async function getMembers(groupId: string): Promise<Member[]> {
-  const { data, error } = await sbAdmin()
-    .from("group_members")
-    .select(`
-      user_id, payment_status, can_predict, joined_at, role,
-      profiles ( id, name, country, avatar_url )
-    `)
-    .eq("group_id", groupId);
+  const [membersRes, ptRes, statsRes] = await Promise.all([
+    sbAdmin()
+      .from("group_members")
+      .select(`
+        user_id, payment_status, can_predict, joined_at, role,
+        profiles ( id, name, country, avatar_url )
+      `)
+      .eq("group_id", groupId),
 
-  if (error) throw error;
-  if (!data?.length) return [];
+    // Aggregate total points via SQL function
+    sbAdmin().rpc("get_group_member_points", { p_group_id: groupId }),
 
-  // Aggregate via SQL function — avoids PostgREST's server-side row cap
-  // which silently truncates large groups when fetching raw rows.
-  const { data: ptRows } = await sbAdmin()
-    .rpc("get_group_member_points", { p_group_id: groupId });
+    // Fetch match prediction outcomes for exact/correct counts
+    sbAdmin()
+      .from("group_predictions")
+      .select("user_id, is_exact, points_earned")
+      .eq("group_id", groupId)
+      .eq("pred_type", "match"),
+  ]);
+
+  if (membersRes.error) throw membersRes.error;
+  if (!membersRes.data?.length) return [];
 
   const pointsMap: Record<string, number> = {};
-  ((ptRows ?? []) as { user_id: string; total_points: number }[]).forEach(r => {
+  ((ptRes.data ?? []) as { user_id: string; total_points: number }[]).forEach(r => {
     pointsMap[r.user_id] = Number(r.total_points ?? 0);
   });
 
-  return (data as unknown as Array<{
+  type StatRow = { user_id: string; is_exact: boolean | null; points_earned: number | null };
+  const statsMap: Record<string, { exactScores: number; correctPredictions: number }> = {};
+  for (const row of (statsRes.data ?? []) as StatRow[]) {
+    if (!statsMap[row.user_id]) statsMap[row.user_id] = { exactScores: 0, correctPredictions: 0 };
+    if (row.is_exact) {
+      statsMap[row.user_id].exactScores++;
+    } else if ((row.points_earned ?? 0) > 0) {
+      statsMap[row.user_id].correctPredictions++;
+    }
+  }
+
+  return (membersRes.data as unknown as Array<{
     user_id: string;
     payment_status: string;
     can_predict: boolean;
@@ -147,16 +165,18 @@ export async function getMembers(groupId: string): Promise<Member[]> {
   }>)
     .filter(row => row.profiles !== null)
     .map(row => ({
-      id:         row.user_id,
-      name:       row.profiles!.name,
-      country:    row.profiles!.country ?? "",
-      avatarUrl:  row.profiles!.avatar_url ?? null,
-      points:     pointsMap[row.user_id] ?? 0,
-      paid:       row.payment_status === "paid",
-      canPredict: row.can_predict,
-      stakePaid:  false,
-      joinedAt:   row.joined_at,
-      role:       row.role ?? 'member',
+      id:                  row.user_id,
+      name:                row.profiles!.name,
+      country:             row.profiles!.country ?? "",
+      avatarUrl:           row.profiles!.avatar_url ?? null,
+      points:              pointsMap[row.user_id] ?? 0,
+      paid:                row.payment_status === "paid",
+      canPredict:          row.can_predict,
+      stakePaid:           false,
+      joinedAt:            row.joined_at,
+      role:                row.role ?? 'member',
+      exactScores:         statsMap[row.user_id]?.exactScores ?? 0,
+      correctPredictions:  statsMap[row.user_id]?.correctPredictions ?? 0,
     }))
     .sort((a, b) => b.points - a.points);
 }

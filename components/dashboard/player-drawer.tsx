@@ -2,12 +2,12 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Target, Trophy, TrendingUp, Zap, XCircle } from "lucide-react";
+import { X, Target, Trophy, TrendingUp, Zap, XCircle, Star } from "lucide-react";
 import Image from "next/image";
 import { flagUrl, countryFlagCode } from "@/lib/countries";
 import { FOCUS_RING } from "@/lib/a11y";
 import { PredictionBadge } from "@/components/predictions/prediction-badge";
-import type { MemberPrediction, MemberPredictionsResponse } from "@/app/api/member-predictions/route";
+import type { MemberPrediction, BestThirdPick, MemberPredictionsResponse } from "@/app/api/member-predictions/route";
 
 interface PlayerDrawerProps {
   userId:    string;
@@ -22,24 +22,26 @@ interface PlayerDrawerProps {
 
 export function PlayerDrawer({ userId, groupId, name, country, points, rank, open, onClose }: PlayerDrawerProps) {
   const [history,      setHistory]      = useState<MemberPrediction[]>([]);
+  const [bestThird,    setBestThird]    = useState<MemberPredictionsResponse["bestThird"] | null>(null);
   const [loading,      setLoading]      = useState(false);
   const [dataLoaded,   setDataLoaded]   = useState(false);
   const [exactCount,   setExactCount]   = useState(0);
   const [outcomeCount, setOutcomeCount] = useState(0);
   const [missedCount,  setMissedCount]  = useState(0);
+  const [apiTotal,     setApiTotal]     = useState<number | null>(null);
   const [closeHover,   setCloseHover]   = useState(false);
 
-  // Derive total directly from history so tile and list are always in sync.
+  // Use the API's total (which includes match + tournament + bonus points).
   // Fall back to the leaderboard prop while loading or on API failure.
-  const totalPoints = dataLoaded
-    ? history.reduce((s, i) => s + i.pts, 0)
-    : points;
+  const totalPoints = dataLoaded && apiTotal !== null ? apiTotal : points;
 
   useEffect(() => {
     if (!open || !userId || !groupId) return;
     setLoading(true);
     setDataLoaded(false);
     setHistory([]);
+    setBestThird(null);
+    setApiTotal(null);
 
     fetch(`/api/member-predictions?userId=${encodeURIComponent(userId)}&groupId=${encodeURIComponent(groupId)}`)
       .then(r => r.json())
@@ -48,6 +50,8 @@ export function PlayerDrawer({ userId, groupId, name, country, points, rank, ope
         setExactCount(data.stats.exactCount);
         setOutcomeCount(data.stats.outcomeCount);
         setMissedCount(data.stats.missedCount);
+        setApiTotal(data.stats.totalPoints);
+        setBestThird(data.bestThird ?? null);
         setDataLoaded(true);
       })
       .catch(() => { /* silently fail — UI already shows empty state */ })
@@ -148,6 +152,46 @@ export function PlayerDrawer({ userId, groupId, name, country, points, rank, ope
                 </div>
               ))}
             </div>
+
+            {/* Best 3rd place picks */}
+            {bestThird?.enabled && bestThird.picks.length > 0 && (
+              <div className="px-5 pb-5">
+                <div className="rounded-xl overflow-hidden" style={{ background: "rgba(18,14,38,0.4)", border: "1px solid rgba(255,255,255,0.08)" }}>
+                  <div className="flex items-center justify-between px-4 py-2.5 border-b" style={{ borderColor: "rgba(255,255,255,0.07)" }}>
+                    <div className="flex items-center gap-2">
+                      <Star size={13} style={{ color: "#fbbf24" }} />
+                      <span className="text-[11px] font-bold uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.6)" }}>
+                        Best 3rd Place
+                      </span>
+                    </div>
+                    <span className="text-[11px] font-bold" style={{ color: bestThird.correctCount > 0 ? "#00FF88" : "rgba(255,255,255,0.4)" }}>
+                      {bestThird.correctCount}/{bestThird.picks.length} correct
+                      {bestThird.correctCount > 0 && bestThird.pointsPerPick > 0 && (
+                        <span style={{ color: "rgba(255,255,255,0.4)" }}> · +{bestThird.correctCount * bestThird.pointsPerPick}pts</span>
+                      )}
+                    </span>
+                  </div>
+                  <div className="divide-y" style={{ borderColor: "rgba(255,255,255,0.05)" }}>
+                    {bestThird.picks.map(pick => (
+                      <div key={pick.slot} className="flex items-center justify-between px-4 py-2">
+                        <span className="text-sm" style={{ color: "rgba(255,255,255,0.8)" }}>{pick.team}</span>
+                        <div className="flex items-center gap-2">
+                          {pick.pointsEarned > 0 && (
+                            <span className="text-[10px] font-bold" style={{ color: "#00FF88" }}>+{pick.pointsEarned}pts</span>
+                          )}
+                          <span
+                            className="text-base font-bold"
+                            style={{ color: pick.correct ? "#00FF88" : "rgba(255,255,255,0.2)" }}
+                          >
+                            {pick.correct ? "✓" : "✗"}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Point history — only pts > 0 matches */}
             <div className="px-5 pb-8">
