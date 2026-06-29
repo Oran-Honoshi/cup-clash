@@ -98,14 +98,18 @@ export async function getMatchPredictions(
 
 // ── Score a match result (called after match ends) ───────────────────────────
 // Pass sbClient (service role) when calling from server-side cron to bypass RLS.
+// homeScore/awayScore are the 90-minute scores.
+// homeScoreET/awayScoreET are the scores after extra time (null if no ET).
 
 export async function scoreMatchResult(params: {
-  matchId:    string;
-  groupId:    string;
-  homeScore:  number;
-  awayScore:  number;
-  rules:      ScoringRules;
-  sbClient?:  SupabaseClient;
+  matchId:     string;
+  groupId:     string;
+  homeScore:   number;
+  awayScore:   number;
+  homeScoreET?: number | null;
+  awayScoreET?: number | null;
+  rules:       ScoringRules;
+  sbClient?:   SupabaseClient;
 }): Promise<void> {
   const c = params.sbClient ?? defaultSb();
   const predictions = await getMatchPredictions(params.matchId, params.groupId, c);
@@ -129,8 +133,21 @@ export async function scoreMatchResult(params: {
     .eq("group_id", params.groupId)
     .maybeSingle();
 
-  const effectiveHome = (overrideRow as { home_score: number } | null)?.home_score ?? params.homeScore;
-  const effectiveAway = (overrideRow as { away_score: number } | null)?.away_score ?? params.awayScore;
+  // Admin overrides always take precedence over policy-based score selection.
+  // For knockout matches without an override, apply the group's knockout_policy:
+  //   inc_extra_time → use ET score if available, else fall back to 90-min
+  //   regular_90     → always use the 90-min score
+  const isKnockoutStage = stage !== "Group";
+  const policy = params.rules.knockoutPolicy ?? 'regular_90';
+  let policyHome = params.homeScore;
+  let policyAway = params.awayScore;
+  if (isKnockoutStage && policy === 'inc_extra_time' && params.homeScoreET != null && params.awayScoreET != null) {
+    policyHome = params.homeScoreET;
+    policyAway = params.awayScoreET;
+  }
+
+  const effectiveHome = (overrideRow as { home_score: number } | null)?.home_score ?? policyHome;
+  const effectiveAway = (overrideRow as { away_score: number } | null)?.away_score ?? policyAway;
 
   const updates = predictions.map(pred => {
     const isExact =

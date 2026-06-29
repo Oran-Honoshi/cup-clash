@@ -27,6 +27,7 @@ const SCORING_RULES_SELECT = [
   "third_exact_score", "third_correct_outcome",
   "final_exact_score", "final_correct_outcome",
   "use_progressive_scoring",
+  "knockout_policy",
 ].join(", ");
 
 type ScoringRulesRow = {
@@ -39,9 +40,11 @@ type ScoringRulesRow = {
   third_exact_score: number; third_correct_outcome: number;
   final_exact_score: number; final_correct_outcome: number;
   use_progressive_scoring: boolean;
+  knockout_policy: string | null;
 };
 
 function buildScoringRules(r: ScoringRulesRow | null): ScoringRules {
+  const kp = r?.knockout_policy;
   return {
     exactScore:            r?.exact_score            ?? 25,
     correctOutcome:        r?.correct_outcome        ?? 10,
@@ -60,6 +63,7 @@ function buildScoringRules(r: ScoringRulesRow | null): ScoringRules {
     finalExactScore:       r?.final_exact_score      ?? 25,
     finalCorrectOutcome:   r?.final_correct_outcome  ?? 10,
     useProgressiveScoring: Boolean(r?.use_progressive_scoring),
+    knockoutPolicy:        (kp === 'inc_extra_time' || kp === 'to_qualify') ? kp : 'regular_90',
   };
 }
 
@@ -118,7 +122,7 @@ export async function POST(req: NextRequest) {
 
     const { data: match } = await sb
       .from("matches")
-      .select("home_score, away_score")
+      .select("home_score, away_score, home_score_et, away_score_et")
       .eq("id", matchId)
       .maybeSingle();
 
@@ -128,15 +132,20 @@ export async function POST(req: NextRequest) {
       .eq("group_id", groupId)
       .maybeSingle();
 
-    const m = match as { home_score: number | null; away_score: number | null } | null;
+    const m = match as {
+      home_score: number | null; away_score: number | null;
+      home_score_et: number | null; away_score_et: number | null;
+    } | null;
 
     if (m?.home_score != null && m?.away_score != null) {
       await scoreMatchResult({
         matchId,
         groupId,
-        homeScore: m.home_score,
-        awayScore: m.away_score,
-        rules:     buildScoringRules(rulesRow as ScoringRulesRow | null),
+        homeScore:   m.home_score,
+        awayScore:   m.away_score,
+        homeScoreET: m.home_score_et ?? null,
+        awayScoreET: m.away_score_et ?? null,
+        rules:       buildScoringRules(rulesRow as ScoringRulesRow | null),
       });
     }
 

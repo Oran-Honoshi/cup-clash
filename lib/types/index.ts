@@ -105,6 +105,7 @@ export interface ScoringRules {
   finalCorrectOutcome:   number;
   finalExactScore:       number;
   useProgressiveScoring: boolean;
+  knockoutPolicy:        'regular_90' | 'inc_extra_time' | 'to_qualify';
 }
 
 export interface Payment {

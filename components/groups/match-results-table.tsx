@@ -11,6 +11,8 @@ interface FinishedMatch {
   away: string;
   home_score: number;
   away_score: number;
+  home_score_et: number | null;
+  away_score_et: number | null;
   home_flag: string | null;
   away_flag: string | null;
   kickoff_at: string;
@@ -203,7 +205,7 @@ function MatchCell({ match }: { match: FinishedMatch }) {
           {match.home}
         </span>
         <span className="text-xs font-black tabular-nums" style={{ color: isLive ? "#f87171" : "white" }}>
-          {isLive ? "–" : match.home_score}
+          {isLive ? "–" : (match.home_score_et ?? match.home_score)}
         </span>
       </div>
       <div className="flex items-center gap-1.5">
@@ -225,7 +227,7 @@ function MatchCell({ match }: { match: FinishedMatch }) {
           {match.away}
         </span>
         <span className="text-xs font-black tabular-nums" style={{ color: isLive ? "#f87171" : "white" }}>
-          {isLive ? "–" : match.away_score}
+          {isLive ? "–" : (match.away_score_et ?? match.away_score)}
         </span>
       </div>
       <div className="text-[10px]" style={{ color: "rgba(255,255,255,0.25)" }}>

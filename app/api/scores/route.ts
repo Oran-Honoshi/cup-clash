@@ -65,6 +65,7 @@ const SCORING_RULES_SELECT = [
   "third_exact_score", "third_correct_outcome",
   "final_exact_score", "final_correct_outcome",
   "use_progressive_scoring",
+  "knockout_policy",
 ].join(", ");
 
 type ScoringRulesRow = {
@@ -78,9 +79,11 @@ type ScoringRulesRow = {
   third_exact_score: number; third_correct_outcome: number;
   final_exact_score: number; final_correct_outcome: number;
   use_progressive_scoring: boolean;
+  knockout_policy: string | null;
 };
 
 function buildScoringRules(r: ScoringRulesRow | null): ScoringRules {
+  const kp = r?.knockout_policy;
   return {
     exactScore:            r?.exact_score            ?? 25,
     correctOutcome:        r?.correct_outcome        ?? 10,
@@ -99,6 +102,7 @@ function buildScoringRules(r: ScoringRulesRow | null): ScoringRules {
     finalExactScore:       r?.final_exact_score      ?? 25,
     finalCorrectOutcome:   r?.final_correct_outcome  ?? 10,
     useProgressiveScoring: Boolean(r?.use_progressive_scoring),
+    knockoutPolicy:        (kp === 'inc_extra_time' || kp === 'to_qualify') ? kp : 'regular_90',
   };
 }
 
@@ -683,7 +687,13 @@ export async function POST(request: NextRequest) {
     if (dbMatchErr) console.error("[scores/cron]   matches fetch error:", dbMatchErr);
     console.log(`[scores/cron]   DB matches in 3-day window: ${dbMatches?.length ?? 0}`);
 
-    const newlyFinished: Array<{ matchId: string; homeScore: number; awayScore: number }> = [];
+    const newlyFinished: Array<{
+      matchId:     string;
+      homeScore:   number;       // 90-min score
+      awayScore:   number;
+      homeScoreET: number | null; // score after extra time (null if no ET)
+      awayScoreET: number | null;
+    }> = [];
 
     for (const f of fixtures) {
       const apiHome = normTeam(f.teams.home.name);
@@ -722,11 +732,21 @@ export async function POST(request: NextRequest) {
           }))
         : null;
 
+      // For AET/PEN matches: home_score = 90-min result, home_score_et = after-ET result.
+      // For FT matches: home_score = final result, home_score_et = null.
+      const isAET = f.fixture.status.short === "AET" || f.fixture.status.short === "PEN";
+      const home90 = isAET && f.score.fulltime.home != null ? f.score.fulltime.home : (f.goals.home ?? 0);
+      const away90 = isAET && f.score.fulltime.away != null ? f.score.fulltime.away : (f.goals.away ?? 0);
+      const homeET = isAET ? (f.goals.home ?? 0) : null;
+      const awayET = isAET ? (f.goals.away ?? 0) : null;
+
       const { error: updErr } = await sb
         .from("matches")
         .update({
-          home_score:     f.goals.home ?? 0,
-          away_score:     f.goals.away ?? 0,
+          home_score:     home90,
+          away_score:     away90,
+          home_score_et:  homeET,
+          away_score_et:  awayET,
           status:         newStatus,
           api_fixture_id: f.fixture.id,
           minute:         f.fixture.status.elapsed ?? null,
@@ -737,14 +757,17 @@ export async function POST(request: NextRequest) {
       if (updErr) {
         console.error(`[scores/cron]   FAILED to update match ${dbMatch.id}:`, JSON.stringify(updErr));
       } else {
-        console.log(`[scores/cron]   Updated match ${dbMatch.id} (${dbMatch.home} vs ${dbMatch.away}): ${f.goals.home ?? 0}-${f.goals.away ?? 0} [${newStatus}]`);
+        const scoreLabel = homeET != null ? `${home90}-${away90} (AET: ${homeET}-${awayET})` : `${home90}-${away90}`;
+        console.log(`[scores/cron]   Updated match ${dbMatch.id} (${dbMatch.home} vs ${dbMatch.away}): ${scoreLabel} [${newStatus}]`);
       }
 
       if (!wasFinished && newStatus === "finished") {
         newlyFinished.push({
-          matchId:   dbMatch.id,
-          homeScore: f.goals.home ?? 0,
-          awayScore: f.goals.away ?? 0,
+          matchId:     dbMatch.id,
+          homeScore:   home90,
+          awayScore:   away90,
+          homeScoreET: homeET,
+          awayScoreET: awayET,
         });
         console.log(`[scores/cron]   Match ${dbMatch.id} just finished — queued for scoring`);
       }
@@ -912,7 +935,8 @@ export async function POST(request: NextRequest) {
             } else {
               const label = isHardFallback ? "Hard-forced" : "Force-finished";
               console.log(`[scores/cron] STEP 3b:   ${label} match ${m.id} → finished (${resolvedHome}-${resolvedAway})`);
-              newlyFinished.push({ matchId: m.id, homeScore: resolvedHome, awayScore: resolvedAway });
+              // ET score not available in stuck-match recovery; admin can use score override if needed.
+              newlyFinished.push({ matchId: m.id, homeScore: resolvedHome, awayScore: resolvedAway, homeScoreET: null, awayScoreET: null });
             }
           }
         }
@@ -938,18 +962,21 @@ export async function POST(request: NextRequest) {
       const { data: allGroups } = await sb.from("groups").select("id");
       console.log(`[scores/cron]   Groups to score: ${allGroups?.length ?? 0}`);
 
-      for (const { matchId, homeScore, awayScore } of newlyFinished) {
-        console.log(`[scores/cron]   Scoring match ${matchId}: ${homeScore}-${awayScore} across ${allGroups?.length ?? 0} group(s)`);
+      for (const { matchId, homeScore, awayScore, homeScoreET, awayScoreET } of newlyFinished) {
+        const etLabel = homeScoreET != null ? ` (AET: ${homeScoreET}-${awayScoreET})` : "";
+        console.log(`[scores/cron]   Scoring match ${matchId}: ${homeScore}-${awayScore}${etLabel} across ${allGroups?.length ?? 0} group(s)`);
 
         await Promise.allSettled(
           (allGroups ?? []).map(group =>
             scoreMatchResult({
               matchId,
-              groupId:  group.id,
+              groupId:    group.id,
               homeScore,
               awayScore,
-              rules:    buildScoringRules(rulesMap.get(group.id) ?? null),
-              sbClient: sb,
+              homeScoreET,
+              awayScoreET,
+              rules:      buildScoringRules(rulesMap.get(group.id) ?? null),
+              sbClient:   sb,
             })
           )
         );

@@ -54,14 +54,16 @@ type PredRow = {
 };
 
 type MatchRow = {
-  id:         string;
-  home:       string;
-  away:       string;
-  home_flag:  string | null;
-  away_flag:  string | null;
-  home_score: number | null;
-  away_score: number | null;
-  status:     string;
+  id:            string;
+  home:          string;
+  away:          string;
+  home_flag:     string | null;
+  away_flag:     string | null;
+  home_score:    number | null;
+  away_score:    number | null;
+  home_score_et: number | null;
+  away_score_et: number | null;
+  status:        string;
 };
 
 type TournamentRow = {
@@ -125,7 +127,7 @@ export async function GET(req: NextRequest) {
   if (matchIds.length > 0) {
     const { data: matchRows } = await sb
       .from("matches")
-      .select("id, home, away, home_flag, away_flag, home_score, away_score, status")
+      .select("id, home, away, home_flag, away_flag, home_score, away_score, home_score_et, away_score_et, status")
       .in("id", matchIds);
     for (const m of (matchRows ?? []) as MatchRow[]) {
       matchMap[m.id] = m;
@@ -184,7 +186,7 @@ export async function GET(req: NextRequest) {
         homeFlagCode: m.home_flag ?? "",
         awayFlagCode: m.away_flag ?? "",
         predicted:    `${p.home_score ?? 0}–${p.away_score ?? 0}`,
-        actual:       `${m.home_score ?? 0}–${m.away_score ?? 0}`,
+        actual:       `${m.home_score_et ?? m.home_score ?? 0}–${m.away_score_et ?? m.away_score ?? 0}`,
         pts,
         type:         isEx ? "exact" : "correct",
       });

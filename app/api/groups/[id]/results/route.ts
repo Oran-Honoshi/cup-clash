@@ -19,7 +19,7 @@ export async function GET(
 
   const { data: matches, error: matchErr } = await sb
     .from("matches")
-    .select("id, home, away, home_score, away_score, home_flag, away_flag, kickoff_at, stage, group_letter, status")
+    .select("id, home, away, home_score, away_score, home_score_et, away_score_et, home_flag, away_flag, kickoff_at, stage, group_letter, status")
     .in("status", ["finished", "live"])
     .order("kickoff_at", { ascending: false });
 

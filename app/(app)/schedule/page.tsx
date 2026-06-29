@@ -40,6 +40,8 @@ type DbMatch = {
   status: string;
   home_score: number | null;
   away_score: number | null;
+  home_score_et: number | null;
+  away_score_et: number | null;
   minute: number | null;
   match_events: DbMatchEvent[] | null;
   home: string;
@@ -72,7 +74,7 @@ export default async function SchedulePage({
     getAllMatches(),
     sbAdmin()
       .from("matches")
-      .select("id, status, home_score, away_score, minute, match_events, home, away, home_flag, away_flag, kickoff_at"),
+      .select("id, status, home_score, away_score, home_score_et, away_score_et, minute, match_events, home, away, home_flag, away_flag, kickoff_at"),
   ]);
 
   const matchResults: Record<string, {
@@ -88,10 +90,10 @@ export default async function SchedulePage({
   for (const m of (dbMatchRows ?? []) as DbMatch[]) {
     matchResults[m.id] = {
       status:      m.status ?? "",
-      homeScore:   m.home_score,
-      awayScore:   m.away_score,
-      minute:      m.minute ?? null,
-      matchEvents: m.match_events ?? null,
+      homeScore:   m.home_score_et ?? m.home_score,
+      awayScore:   m.away_score_et ?? m.away_score,
+      minute:      m.minute        ?? null,
+      matchEvents: m.match_events  ?? null,
     };
     if (m.home && m.away) {
       matchTeams[m.id] = {
