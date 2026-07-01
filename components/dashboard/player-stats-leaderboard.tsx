@@ -5,6 +5,7 @@ import { createClient } from "@supabase/supabase-js";
 import { Star, Users, TrendingUp } from "lucide-react";
 import Image from "next/image";
 import { flagUrl } from "@/lib/countries";
+import { BallLoader } from "@/components/ui/BallLoader";
 
 function createSb() {
   return createClient(
@@ -143,8 +144,8 @@ export function TopScorersLeaderboard() {
       </div>
 
       {loading ? (
-        <div className="px-5 py-8 text-center text-sm animate-pulse" style={{ color: "rgba(255,255,255,0.3)" }}>
-          Loading…
+        <div className="px-5 py-8 flex justify-center">
+          <BallLoader size="md" label={null} />
         </div>
       ) : players.length === 0 ? (
         <EmptyState />
@@ -194,8 +195,8 @@ export function TopAssistersLeaderboard() {
       </div>
 
       {loading ? (
-        <div className="px-5 py-8 text-center text-sm animate-pulse" style={{ color: "rgba(255,255,255,0.3)" }}>
-          Loading…
+        <div className="px-5 py-8 flex justify-center">
+          <BallLoader size="md" label={null} />
         </div>
       ) : players.length === 0 ? (
         <EmptyState />

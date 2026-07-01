@@ -1,8 +1,9 @@
 "use client";
 
-import { useRef, useEffect } from "react";
+import { useRef, useEffect, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useGroupContext } from "@/lib/contexts/group-context";
+import { BallLoader } from "@/components/ui/BallLoader";
 
 interface GroupSwipeSelectorProps {
   groups: Array<{ id: string; name: string; passkey: string }>;
@@ -15,11 +16,14 @@ export function GroupSwipeSelector({ groups, activeGroupId, basePath }: GroupSwi
   const router = useRouter();
   const containerRef = useRef<HTMLDivElement>(null);
   const activeRef   = useRef<HTMLButtonElement>(null);
+  const [isPending, startTransition] = useTransition();
 
   function handleSelect(id: string) {
     setSelectedGroupId(id);
     refreshPredictions(id);
-    router.push(basePath + "?group=" + id);
+    startTransition(() => {
+      router.push(basePath + "?group=" + id);
+    });
   }
 
   // Scroll active tile into view on mount and when activeGroupId changes
@@ -31,6 +35,7 @@ export function GroupSwipeSelector({ groups, activeGroupId, basePath }: GroupSwi
   }, [activeGroupId]);
 
   return (
+    <>
     <div
       ref={containerRef}
       style={{
@@ -88,5 +93,11 @@ export function GroupSwipeSelector({ groups, activeGroupId, basePath }: GroupSwi
         );
       })}
     </div>
+    {isPending && (
+      <div style={{ display: "flex", justifyContent: "center", padding: "10px 0", backgroundColor: "#020804" }}>
+        <BallLoader size="md" label={null} />
+      </div>
+    )}
+    </>
   );
 }

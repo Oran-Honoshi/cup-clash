@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { CopyPredictionSheet } from "@/components/predictions/copy-prediction-sheet";
 import { Flag } from "@/components/ui/flag";
+import { BallLoader } from "@/components/ui/BallLoader";
 import { ScoreInputCC } from "@/components/ui/score-input-cc";
 import { PredictionBadge } from "@/components/predictions/prediction-badge";
 import { PredictionDistribution } from "@/components/dashboard/prediction-distribution";
@@ -704,7 +705,7 @@ export function ScheduleClient({
           </div>
           <div className="text-[11px] shrink-0" style={{ color: "rgba(255,255,255,0.35)" }}>
             {predsLoading
-              ? <span style={{ color: "#00D4FF" }}>Loading…</span>
+              ? <BallLoader size="sm" label={null} />
               : <span>{predStats.made}/{predStats.total} picks</span>}
           </div>
         </div>
