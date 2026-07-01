@@ -102,26 +102,30 @@ export async function getMatchPredictions(
 // homeScoreET/awayScoreET are the scores after extra time (null if no ET).
 
 export async function scoreMatchResult(params: {
-  matchId:     string;
-  groupId:     string;
-  homeScore:   number;
-  awayScore:   number;
-  homeScoreET?: number | null;
-  awayScoreET?: number | null;
-  rules:       ScoringRules;
-  sbClient?:   SupabaseClient;
+  matchId:        string;
+  groupId:        string;
+  homeScore:      number;
+  awayScore:      number;
+  homeScoreET?:   number | null;
+  awayScoreET?:   number | null;
+  penaltyWinner?: string | null;
+  rules:          ScoringRules;
+  sbClient?:      SupabaseClient;
 }): Promise<void> {
   const c = params.sbClient ?? defaultSb();
   const predictions = await getMatchPredictions(params.matchId, params.groupId, c);
   if (!predictions.length) return;
 
-  // Fetch match stage for progressive scoring
+  // Fetch match stage, home team, and penalty_winner in one query
   const { data: matchRow } = await c
     .from("matches")
-    .select("stage")
+    .select("stage, home, penalty_winner")
     .eq("id", params.matchId)
     .maybeSingle();
-  const stage = ((matchRow as { stage: string } | null)?.stage ?? "Group") as Match["stage"];
+  type MatchRow = { stage: string; home: string; penalty_winner: string | null } | null;
+  const stage = ((matchRow as MatchRow)?.stage ?? "Group") as Match["stage"];
+  const matchHome = (matchRow as MatchRow)?.home ?? null;
+  const penaltyWinner = params.penaltyWinner ?? (matchRow as MatchRow)?.penalty_winner ?? null;
 
   const { correctOutcome, exactScore } = getStagePoints(stage, params.rules, params.rules.useProgressiveScoring);
 
@@ -149,6 +153,17 @@ export async function scoreMatchResult(params: {
   const effectiveHome = (overrideRow as { home_score: number } | null)?.home_score ?? policyHome;
   const effectiveAway = (overrideRow as { away_score: number } | null)?.away_score ?? policyAway;
 
+  // When the effective score is a draw AND there's a penalty winner, use the
+  // advancing team as the real winner for outcome scoring (not the draw).
+  const isDraw = effectiveHome === effectiveAway;
+  let effectiveRealWinner: "H" | "A" | "D";
+  if (isDraw && penaltyWinner && matchHome) {
+    effectiveRealWinner = penaltyWinner === matchHome ? "H" : "A";
+  } else {
+    effectiveRealWinner = effectiveHome > effectiveAway ? "H"
+      : effectiveHome < effectiveAway ? "A" : "D";
+  }
+
   const updates = predictions.map(pred => {
     const isExact =
       pred.home_score === effectiveHome &&
@@ -156,9 +171,7 @@ export async function scoreMatchResult(params: {
 
     const predWinner = pred.home_score > pred.away_score ? "H"
       : pred.home_score < pred.away_score ? "A" : "D";
-    const realWinner = effectiveHome > effectiveAway ? "H"
-      : effectiveHome < effectiveAway ? "A" : "D";
-    const isOutcome = !isExact && predWinner === realWinner;
+    const isOutcome = !isExact && predWinner === effectiveRealWinner;
 
     // exactScore is always the TOTAL for an exact prediction (flat or progressive).
     // getStagePoints() already selects the stage-specific value when progressive.

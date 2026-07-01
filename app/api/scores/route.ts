@@ -688,11 +688,12 @@ export async function POST(request: NextRequest) {
     console.log(`[scores/cron]   DB matches in 3-day window: ${dbMatches?.length ?? 0}`);
 
     const newlyFinished: Array<{
-      matchId:     string;
-      homeScore:   number;       // 90-min score
-      awayScore:   number;
-      homeScoreET: number | null; // score after extra time (null if no ET)
-      awayScoreET: number | null;
+      matchId:        string;
+      homeScore:      number;       // 90-min score
+      awayScore:      number;
+      homeScoreET:    number | null; // score after extra time (null if no ET)
+      awayScoreET:    number | null;
+      penaltyWinner:  string | null;
     }> = [];
 
     for (const f of fixtures) {
@@ -740,6 +741,18 @@ export async function POST(request: NextRequest) {
       const homeET = isAET ? (f.goals.home ?? 0) : null;
       const awayET = isAET ? (f.goals.away ?? 0) : null;
 
+      // Penalty winner: set when the API shows a definitive winner after pens
+      // f.teams.home.winner is true/false/null; use dbMatch team names (already normalised)
+      const penWinner = isAET
+        ? f.teams.home.winner === true  ? dbMatch.home
+        : f.teams.away.winner === true  ? dbMatch.away
+        : f.score.penalty.home != null && f.score.penalty.away != null
+          ? f.score.penalty.home > f.score.penalty.away ? dbMatch.home
+          : f.score.penalty.home < f.score.penalty.away ? dbMatch.away
+          : null
+        : null
+        : null;
+
       const { error: updErr } = await sb
         .from("matches")
         .update({
@@ -747,6 +760,7 @@ export async function POST(request: NextRequest) {
           away_score:     away90,
           home_score_et:  homeET,
           away_score_et:  awayET,
+          penalty_winner: penWinner,
           status:         newStatus,
           api_fixture_id: f.fixture.id,
           minute:         f.fixture.status.elapsed ?? null,
@@ -763,11 +777,12 @@ export async function POST(request: NextRequest) {
 
       if (!wasFinished && newStatus === "finished") {
         newlyFinished.push({
-          matchId:     dbMatch.id,
-          homeScore:   home90,
-          awayScore:   away90,
-          homeScoreET: homeET,
-          awayScoreET: awayET,
+          matchId:       dbMatch.id,
+          homeScore:     home90,
+          awayScore:     away90,
+          homeScoreET:   homeET,
+          awayScoreET:   awayET,
+          penaltyWinner: penWinner,
         });
         console.log(`[scores/cron]   Match ${dbMatch.id} just finished — queued for scoring`);
       }
@@ -936,7 +951,7 @@ export async function POST(request: NextRequest) {
               const label = isHardFallback ? "Hard-forced" : "Force-finished";
               console.log(`[scores/cron] STEP 3b:   ${label} match ${m.id} → finished (${resolvedHome}-${resolvedAway})`);
               // ET score not available in stuck-match recovery; admin can use score override if needed.
-              newlyFinished.push({ matchId: m.id, homeScore: resolvedHome, awayScore: resolvedAway, homeScoreET: null, awayScoreET: null });
+              newlyFinished.push({ matchId: m.id, homeScore: resolvedHome, awayScore: resolvedAway, homeScoreET: null, awayScoreET: null, penaltyWinner: null });
             }
           }
         }
@@ -962,21 +977,23 @@ export async function POST(request: NextRequest) {
       const { data: allGroups } = await sb.from("groups").select("id");
       console.log(`[scores/cron]   Groups to score: ${allGroups?.length ?? 0}`);
 
-      for (const { matchId, homeScore, awayScore, homeScoreET, awayScoreET } of newlyFinished) {
+      for (const { matchId, homeScore, awayScore, homeScoreET, awayScoreET, penaltyWinner } of newlyFinished) {
         const etLabel = homeScoreET != null ? ` (AET: ${homeScoreET}-${awayScoreET})` : "";
-        console.log(`[scores/cron]   Scoring match ${matchId}: ${homeScore}-${awayScore}${etLabel} across ${allGroups?.length ?? 0} group(s)`);
+        const penLabel = penaltyWinner ? ` pens: ${penaltyWinner}` : "";
+        console.log(`[scores/cron]   Scoring match ${matchId}: ${homeScore}-${awayScore}${etLabel}${penLabel} across ${allGroups?.length ?? 0} group(s)`);
 
         await Promise.allSettled(
           (allGroups ?? []).map(group =>
             scoreMatchResult({
               matchId,
-              groupId:    group.id,
+              groupId:       group.id,
               homeScore,
               awayScore,
               homeScoreET,
               awayScoreET,
-              rules:      buildScoringRules(rulesMap.get(group.id) ?? null),
-              sbClient:   sb,
+              penaltyWinner,
+              rules:         buildScoringRules(rulesMap.get(group.id) ?? null),
+              sbClient:      sb,
             })
           )
         );

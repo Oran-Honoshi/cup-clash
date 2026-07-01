@@ -23,6 +23,9 @@ interface BracketMatch {
   city: string;
   homeScore?: number;
   awayScore?: number;
+  homeScoreET?: number;
+  awayScoreET?: number;
+  penaltyWinner?: string;
   stage: string;
 }
 
@@ -115,6 +118,34 @@ function TeamSlot({ team }: { team: BracketTeam }) {
   );
 }
 
+function ScoreBadges({ match }: { match: BracketMatch }) {
+  const hasScore = match.homeScore !== undefined && match.awayScore !== undefined;
+  const hasET    = match.homeScoreET !== undefined && match.awayScoreET !== undefined;
+  const hasPen   = !!match.penaltyWinner;
+  if (!hasScore) return null;
+  const displayHome = hasET ? match.homeScoreET! : match.homeScore!;
+  const displayAway = hasET ? match.awayScoreET! : match.awayScore!;
+  return (
+    <div className="flex items-center gap-1.5 px-3 pb-1">
+      <span className="font-mono font-black text-sm" style={{ color: "#ffcc44" }}>
+        {displayHome}–{displayAway}
+      </span>
+      {hasET && (
+        <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full"
+          style={{ background: "rgba(139,92,246,0.15)", border: "1px solid rgba(139,92,246,0.3)", color: "#a78bfa" }}>
+          AET
+        </span>
+      )}
+      {hasPen && (
+        <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full"
+          style={{ background: "rgba(212,175,55,0.12)", border: "1px solid rgba(212,175,55,0.3)", color: "#D4AF37" }}>
+          PEN · {match.penaltyWinner}
+        </span>
+      )}
+    </div>
+  );
+}
+
 function BracketMatchCard({ match, highlight = false }: { match: BracketMatch; highlight?: boolean }) {
   return (
     <motion.div
@@ -143,6 +174,7 @@ function BracketMatchCard({ match, highlight = false }: { match: BracketMatch; h
         </div>
         <TeamSlot team={match.away} />
       </div>
+      <ScoreBadges match={match} />
       <div className="px-3 pb-3 flex items-center gap-3 flex-wrap"
         style={{ fontSize: 10, color: "rgba(255,255,255,0.3)" }}>
         <span className="flex items-center gap-1"><Clock size={9} />{match.date} · {match.time}</span>
@@ -175,37 +207,55 @@ function StageColumn({ title, matches, color, highlight = false, id }: {
   );
 }
 
+type DbMatch = {
+  id: string; home: string; away: string;
+  home_flag: string | null; away_flag: string | null;
+  kickoff_at: string; stadium: string | null; city: string | null;
+  home_score: number | null; away_score: number | null;
+  home_score_et: number | null; away_score_et: number | null;
+  penalty_winner: string | null;
+  stage: string;
+};
+
+function dbMatchToBracket(m: DbMatch, stageLabel: string): BracketMatch {
+  const kickoff = new Date(m.kickoff_at);
+  return {
+    id: m.id,
+    home: { label: m.home, flagCode: m.home_flag ?? undefined, isConfirmed: !!m.home_flag },
+    away: { label: m.away, flagCode: m.away_flag ?? undefined, isConfirmed: !!m.away_flag },
+    date: kickoff.toLocaleDateString("en-GB", { month: "short", day: "numeric" }),
+    time: kickoff.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", hour12: false }),
+    stadium: m.stadium ?? "TBD",
+    city: m.city ?? "TBD",
+    homeScore:     m.home_score     ?? undefined,
+    awayScore:     m.away_score     ?? undefined,
+    homeScoreET:   m.home_score_et  ?? undefined,
+    awayScoreET:   m.away_score_et  ?? undefined,
+    penaltyWinner: m.penalty_winner ?? undefined,
+    stage: stageLabel,
+  };
+}
+
 export function KnockoutBracket({ groupId: _groupId }: { groupId?: string }) {
   const [r32Matches, setR32Matches] = useState<BracketMatch[]>(R32_MATCHES);
+  const [r16Matches, setR16Matches] = useState<BracketMatch[]>(R16_MATCHES);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    const SELECT = "id, home, away, home_flag, away_flag, kickoff_at, stage, stadium, city, home_score, away_score, home_score_et, away_score_et, penalty_winner";
     createClient()
       .from("matches")
-      .select("id, home, away, home_flag, away_flag, kickoff_at, stadium, city")
-      .eq("stage", "R32")
+      .select(SELECT)
+      .in("stage", ["R32", "R16"])
       .order("kickoff_at", { ascending: true })
       .then(({ data }) => {
         if (!data?.length) return;
-        setR32Matches(
-          (data as Array<{
-            id: string; home: string; away: string;
-            home_flag: string | null; away_flag: string | null;
-            kickoff_at: string; stadium: string | null; city: string | null;
-          }>).map(m => {
-            const kickoff = new Date(m.kickoff_at);
-            return {
-              id: m.id,
-              home: { label: m.home, flagCode: m.home_flag ?? undefined, isConfirmed: !!m.home_flag },
-              away: { label: m.away, flagCode: m.away_flag ?? undefined, isConfirmed: !!m.away_flag },
-              date: kickoff.toLocaleDateString("en-GB", { month: "short", day: "numeric" }),
-              time: kickoff.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", hour12: false }),
-              stadium: m.stadium ?? "TBD",
-              city: m.city ?? "TBD",
-              stage: "Round of 32",
-            };
-          })
-        );
+        const rows = data as DbMatch[];
+        const r32 = rows.filter(m => m.stage === "R32");
+        const r16 = rows.filter(m => m.stage === "R16");
+
+        if (r32.length) setR32Matches(r32.map(m => dbMatchToBracket(m, "Round of 32")));
+        if (r16.length) setR16Matches(r16.map(m => dbMatchToBracket(m, "Round of 16")));
       });
   }, []);
 
@@ -286,7 +336,7 @@ export function KnockoutBracket({ groupId: _groupId }: { groupId?: string }) {
             <div className="flex flex-col justify-center">
               <ChevronRight size={20} style={{ color: "rgba(255,255,255,0.25)" }} />
             </div>
-            <StageColumn id="round-r16" title="Round of 16" matches={R16_MATCHES} color="#8B5CF6" />
+            <StageColumn id="round-r16" title="Round of 16" matches={r16Matches} color="#8B5CF6" />
             <div className="flex flex-col justify-center">
               <ChevronRight size={20} style={{ color: "rgba(255,255,255,0.25)" }} />
             </div>
