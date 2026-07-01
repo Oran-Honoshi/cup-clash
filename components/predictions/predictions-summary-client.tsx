@@ -5,7 +5,7 @@ import {
   Trophy, Check, X, Minus, Lock, Filter,
   ChevronDown, LayoutGrid, Star,
 } from "lucide-react";
-import { Flag } from "@/components/ui/flag";
+import { FlagBadge } from "@/components/ui/FlagBadge";
 import { ScoreInputCC } from "@/components/ui/score-input-cc";
 import type { SummaryMatch } from "@/app/(app)/predictions/summary/page";
 import { saveGroupPrediction } from "@/lib/services/predictions";
@@ -507,11 +507,11 @@ export function PredictionsSummaryClient({
                         {/* Teams */}
                         <div className="flex flex-col gap-1">
                           <div className="flex items-center gap-1.5">
-                            <Flag code={m.homeFlagCode} size="xs" />
+                            <FlagBadge code={m.homeFlagCode} size="sm" />
                             <span className="text-[11px] font-bold text-white truncate">{m.home}</span>
                           </div>
                           <div className="flex items-center gap-1.5">
-                            <Flag code={m.awayFlagCode} size="xs" />
+                            <FlagBadge code={m.awayFlagCode} size="sm" />
                             <span className="text-[11px] font-bold text-white truncate">{m.away}</span>
                           </div>
                         </div>

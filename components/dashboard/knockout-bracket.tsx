@@ -4,8 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import { createClient } from "@/lib/supabase/client";
 import { Trophy, MapPin, Clock, ChevronRight } from "lucide-react";
-import Image from "next/image";
-import { flagUrl } from "@/lib/countries";
+import { FlagBadge } from "@/components/ui/FlagBadge";
 
 interface BracketTeam {
   label: string;      // e.g. "1A" or "Spain"
@@ -101,12 +100,10 @@ function TeamSlot({ team }: { team: BracketTeam }) {
       transition: "all 0.15s",
     }}>
       {team.isConfirmed && team.flagCode ? (
-        <div className="relative w-6 h-4 rounded-sm overflow-hidden shrink-0">
-          <Image src={flagUrl(team.flagCode, 40)} alt={team.label} fill className="object-cover" unoptimized />
-        </div>
+        <FlagBadge code={team.flagCode} label={team.label} size="sm" />
       ) : (
-        <div className="w-6 h-4 rounded-sm shrink-0 flex items-center justify-center"
-          style={{ background: "rgba(255,255,255,0.06)", border: "1px dashed rgba(255,255,255,0.18)" }}>
+        <div className="rounded-full shrink-0 flex items-center justify-center"
+          style={{ width: 24, height: 24, background: "rgba(255,255,255,0.06)", border: "1px dashed rgba(255,255,255,0.18)" }}>
           <span style={{ fontSize: 8, color: "rgba(255,255,255,0.25)" }}>?</span>
         </div>
       )}

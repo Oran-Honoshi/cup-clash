@@ -1,12 +1,14 @@
 "use client";
 
 import { useState, type KeyboardEvent } from "react";
-import { Crown, Trophy, TrendingUp, TrendingDown, Minus, ChevronRight, Ghost, Target, Star } from "lucide-react";
+import { Crown, Trophy, TrendingUp, TrendingDown, Minus, ChevronRight, Ghost, Target, Star, Volleyball, Medal } from "lucide-react";
 import { PlayerDrawer } from "@/components/dashboard/player-drawer";
-import { MemberAvatar } from "@/components/ui/member-avatar";
+import { UserAvatar } from "@/components/ui/UserAvatar";
+import { FlagBadge } from "@/components/ui/FlagBadge";
 import { AdBanner } from "@/components/ads/ad-banner";
 import { FOCUS_RING, FOCUS_RING_INSET } from "@/lib/a11y";
 import { cn } from "@/lib/utils";
+import { countryFlagCode } from "@/lib/countries";
 import type { Member } from "@/lib/types";
 
 // Keyboard activation handler for elements that use role="button".
@@ -56,17 +58,18 @@ function DeltaBadge({ delta }: { delta: number }) {
 }
 
 const PODIUM_BAR_STYLES = [
-  // 2nd (left)
-  { background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.2)", borderBottom: "none" },
-  // 1st (center)
-  { background: "rgba(251,191,36,0.2)",   border: "1px solid #fbbf24",               borderBottom: "none" },
-  // 3rd (right)
-  { background: "rgba(248,113,113,0.12)", border: "1px solid rgba(248,113,113,0.3)", borderBottom: "none" },
+  // 2nd (left) — silver
+  { background: "rgba(196,201,212,0.1)",     border: "1px solid rgba(196,201,212,0.35)", borderBottom: "none" },
+  // 1st (center) — gold wash
+  { background: "var(--color-background-warning)", border: "1.5px solid #fbbf24",        borderBottom: "none" },
+  // 3rd (right) — bronze
+  { background: "rgba(249,115,22,0.1)",      border: "1px solid rgba(249,115,22,0.35)",  borderBottom: "none" },
 ] as const;
 
 const PODIUM_BAR_HEIGHTS = [64, 80, 50]; // 2nd, 1st, 3rd
 const PODIUM_ACTUAL_RANKS = [2, 1, 3];
 const PODIUM_POINT_COLORS = ["rgba(255,255,255,0.7)", "#fbbf24", "#f97316"];
+const PODIUM_RING_COLORS = ["#c4c9d4", "#fbbf24", "#f97316"]; // silver, gold, bronze
 
 export function Leaderboard({ members, currentUserId, groupId, showGhost = true, scrollable = false, isAdFree, isCorporate, showBestThird = false }: LeaderboardProps) {
   const [selected, setSelected] = useState<Member | null>(null);
@@ -160,23 +163,22 @@ export function Leaderboard({ members, currentUserId, groupId, showGhost = true,
                 className={cn("rounded-lg", FOCUS_RING)}
                 style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", cursor: "pointer" }}
               >
-                {/* Crown above 1st place */}
-                {rank === 1 && (
-                  <Crown
-                    size={16}
-                    fill="#fbbf24"
-                    style={{ color: "#fbbf24", marginBottom: 4 }}
-                  />
-                )}
+                {/* Crown slot — reserved height on every column so avatars stay aligned */}
+                <div style={{ height: 20, display: "flex", alignItems: "flex-end", marginBottom: 4 }}>
+                  {rank === 1 && <Crown size={16} fill="#fbbf24" style={{ color: "#fbbf24" }} />}
+                </div>
 
                 {/* Avatar */}
                 <div style={{
                   borderRadius: "50%",
-                  boxShadow: rank === 1
-                    ? "0 0 0 2px #fbbf24, 0 0 12px rgba(251,191,36,0.4)"
-                    : isMe ? "0 0 0 2px #00FF88" : "none",
+                  boxShadow: rank === 1 ? "0 0 14px rgba(251,191,36,0.4)" : "none",
                 }}>
-                  <MemberAvatar name={member.name} avatarUrl={member.avatarUrl} size="md" />
+                  <UserAvatar
+                    name={member.name}
+                    avatarUrl={member.avatarUrl}
+                    size="md"
+                    ringColor={isMe && rank !== 1 ? "#00FF88" : PODIUM_RING_COLORS[pos]}
+                  />
                 </div>
 
                 {/* Name — outside the bar so it never gets clipped */}
@@ -205,7 +207,7 @@ export function Leaderboard({ members, currentUserId, groupId, showGhost = true,
                   style={{
                     width: "100%",
                     height: PODIUM_BAR_HEIGHTS[pos],
-                    borderRadius: "10px 10px 0 0",
+                    borderRadius: "var(--border-radius-lg) var(--border-radius-lg) 0 0",
                     display: "flex",
                     flexDirection: "column",
                     alignItems: "center",
@@ -249,12 +251,22 @@ export function Leaderboard({ members, currentUserId, groupId, showGhost = true,
         <AdBanner isAdFree={isAdFree} isCorporate={isCorporate} />
       )}
 
+      {/* ── Section divider — podium (top 3) vs full standings ─── */}
+      {top3.length >= 2 && tableDisplay.length > 0 && (
+        <div className="flex items-center gap-2 px-1 py-3">
+          <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.08)" }} />
+          <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.3)" }}>Full Standings</span>
+          <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.08)" }} />
+        </div>
+      )}
+
       {/* ── Main card ───────────────────────────────────── */}
       <div
         className="rounded-2xl overflow-hidden"
         style={{
-          background: "rgba(12, 18, 32, 0.78)",
-          border: "1px solid rgba(255,255,255,0.08)",
+          background: "var(--color-background-secondary)",
+          border: "0.5px solid var(--color-border-tertiary)",
+          borderRadius: "var(--border-radius-lg)",
           boxShadow: "0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.06)",
         }}
       >
@@ -297,9 +309,8 @@ export function Leaderboard({ members, currentUserId, groupId, showGhost = true,
 
         {/* Rows: 4th place onward */}
         <div
-          className="divide-y"
+          className="p-2 space-y-1.5"
           style={{
-            borderColor: "rgba(255,255,255,0.05)",
             ...(scrollable && { overflowY: "auto", maxHeight: 340 }),
           }}
         >
@@ -320,18 +331,17 @@ export function Leaderboard({ members, currentUserId, groupId, showGhost = true,
                   onKeyDown: activateOnEnterOrSpace(activate),
                 })}
                 className={cn(
-                  "flex items-center gap-2 sm:gap-3 px-5 py-3.5 transition-all",
+                  "flex items-center gap-2 sm:gap-3 px-4 py-3 transition-all rounded-xl",
                   !isGhost && "cursor-pointer group",
                   !isGhost && FOCUS_RING_INSET,
                   isGhost && "opacity-50",
                 )}
-                style={
-                  isCurrentUser
-                    ? { background: "rgba(0,255,136,0.08)" }
-                    : undefined
-                }
-                onMouseEnter={(e: { currentTarget: HTMLElement }) => { if (!isGhost && !isCurrentUser) e.currentTarget.style.background = "rgba(255,255,255,0.04)"; }}
-                onMouseLeave={(e: { currentTarget: HTMLElement }) => { if (!isGhost && !isCurrentUser) e.currentTarget.style.background = "transparent"; }}
+                style={{
+                  background: isCurrentUser ? "rgba(0,255,136,0.1)" : "rgba(255,255,255,0.03)",
+                  border: isCurrentUser ? "0.5px solid rgba(0,255,136,0.3)" : "0.5px solid var(--color-border-tertiary)",
+                }}
+                onMouseEnter={(e: { currentTarget: HTMLElement }) => { if (!isGhost && !isCurrentUser) e.currentTarget.style.background = "rgba(255,255,255,0.06)"; }}
+                onMouseLeave={(e: { currentTarget: HTMLElement }) => { if (!isGhost && !isCurrentUser) e.currentTarget.style.background = "rgba(255,255,255,0.03)"; }}
               >
                 {/* Rank */}
                 <div className="w-6 sm:w-8 text-center shrink-0">
@@ -356,7 +366,7 @@ export function Leaderboard({ members, currentUserId, groupId, showGhost = true,
                       <Ghost size={15} style={{ color: "rgba(255,255,255,0.2)" }} />
                     </div>
                   ) : (
-                    <MemberAvatar name={member.name} avatarUrl={member.avatarUrl} size="sm" ring={isCurrentUser} />
+                    <UserAvatar name={member.name} avatarUrl={member.avatarUrl} size="sm" ringColor={isCurrentUser ? "#00FF88" : undefined} />
                   )}
                 </div>
 
@@ -386,23 +396,26 @@ export function Leaderboard({ members, currentUserId, groupId, showGhost = true,
                       </span>
                     )}
                   </div>
-                  <div className="text-[11px] truncate" style={{ color: "rgba(255,255,255,0.3)" }}>
-                    {member.country}
+                  <div className="flex items-center gap-1.5 mt-0.5">
+                    {!isGhost && <FlagBadge code={countryFlagCode(member.country ?? "")} size="sm" />}
+                    <span className="text-[11px] truncate" style={{ color: "rgba(255,255,255,0.3)" }}>
+                      {member.country}
+                    </span>
                   </div>
                   {!isGhost && (member.gsPts || member.knockoutPts || member.bestThirdPts || member.bonusPts) ? (
                     <div className="flex flex-wrap gap-1 mt-1">
                       {[
-                        { emoji: "⚽", label: "GS",    value: member.gsPts        ?? 0 },
-                        { emoji: "🏆", label: "KO",    value: member.knockoutPts  ?? 0 },
-                        { emoji: "🥉", label: "3rd",   value: member.bestThirdPts ?? 0 },
-                        { emoji: "🌟", label: "Bonus", value: member.bonusPts     ?? 0 },
-                      ].map(({ emoji, label, value }) => (
+                        { icon: Volleyball, label: "GS",    value: member.gsPts        ?? 0 },
+                        { icon: Trophy,     label: "KO",    value: member.knockoutPts  ?? 0 },
+                        { icon: Medal,      label: "3rd",   value: member.bestThirdPts ?? 0 },
+                        { icon: Star,       label: "Bonus", value: member.bonusPts     ?? 0 },
+                      ].map(({ icon: Icon, label, value }) => (
                         <div
                           key={label}
                           className="flex items-center gap-0.5 rounded-full px-1.5 py-0.5"
                           style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}
                         >
-                          <span className="text-[9px]">{emoji}</span>
+                          <Icon size={9} style={{ color: "rgba(255,255,255,0.4)" }} />
                           <span className="text-[9px] font-bold" style={{ color: "rgba(255,255,255,0.35)" }}>{label}:</span>
                           <span className="text-[9px] font-black" style={{ color: value > 0 ? "rgba(255,255,255,0.7)" : "rgba(255,255,255,0.2)", fontFamily: "var(--font-mono)" }}>{value}</span>
                         </div>
@@ -463,6 +476,7 @@ export function Leaderboard({ members, currentUserId, groupId, showGhost = true,
           userId={selected.id}
           groupId={groupId ?? ""}
           name={selected.name}
+          avatarUrl={selected.avatarUrl}
           country={selected.country ?? ""}
           points={selected.points}
           rank={sorted.findIndex(m => m.id === selected.id) + 1}

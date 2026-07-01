@@ -419,6 +419,16 @@ h1, h2, h3, h4 {
   --duration-slow:      400ms;
 }
 
+/* ── Polish-pass token aliases: map spec-provided token names onto the
+   existing dark-theme values above, instead of inventing new raw colors ── */
+:root {
+  --color-background-secondary: var(--color-surface-strong);
+  --color-border-secondary:     var(--color-border-strong);
+  --color-border-tertiary:      var(--color-border);
+  --color-background-warning:   rgba(255, 170, 0, 0.12);
+  --border-radius-lg:           var(--radius-lg);
+}
+
 /* ── Keyframes from tokens.css (new ones only) ── */
 @keyframes livePulse  { 0%,100% { opacity:1; } 50% { opacity:0.5; } }
 @keyframes floatY     { 0%,100% { transform:translateY(0); } 50% { transform:translateY(-14px); } }

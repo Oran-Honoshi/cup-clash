@@ -158,7 +158,7 @@ export default async function DashboardPage({
       )}
 
       {/* 3-panel carousel — fills remaining space */}
-      <div className="-mx-4 sm:-mx-6" style={{ flex: 1, minHeight: 0, overflow: "hidden", display: "flex", flexDirection: "column" }}>
+      <div className="-mx-4 sm:-mx-6" style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}>
         <DashboardCarousel
           matches={upcomingMatches}
           members={members}

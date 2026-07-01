@@ -1,10 +1,10 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Crown } from "lucide-react";
+import { Crown, Trophy, Target, TrendingUp, XCircle } from "lucide-react";
 import { MatchCarousel } from "@/components/dashboard/match-carousel";
 import { AdBanner } from "@/components/ads/ad-banner";
-import { MemberAvatar } from "@/components/ui/member-avatar";
+import { UserAvatar } from "@/components/ui/UserAvatar";
 import { PlayerDrawer } from "@/components/dashboard/player-drawer";
 import type { Match, Member } from "@/lib/types";
 import type { MemberPredictionsResponse } from "@/app/api/member-predictions/route";
@@ -44,7 +44,18 @@ function ordinal(n: number): string {
 const PODIUM_ORDER = [1, 0, 2] as const; // left=2nd, center=1st, right=3rd
 const PODIUM_HEIGHTS = [80, 110, 60];
 const PODIUM_AVATAR_SIZES: Array<"sm" | "md"> = ["sm", "md", "sm"];
-const PODIUM_COLORS = ["#a0c8a0", "#ffaa00", "#a0c8a0"];
+const PODIUM_COLORS = ["#c4c9d4", "#ffaa00", "#cd7f45"];
+const PODIUM_RING_COLORS = ["#c4c9d4", "#ffaa00", "#cd7f45"]; // silver, gold, bronze
+const PODIUM_BG = [
+  "#1c3a1c",                       // 2nd — neutral surface
+  "var(--color-background-warning)", // 1st — gold wash
+  "#1c3a1c",                       // 3rd — neutral surface
+];
+const PODIUM_BORDER = [
+  "1px solid rgba(196,201,212,0.35)",
+  "1.5px solid #ffaa00",
+  "1px solid rgba(205,127,69,0.4)",
+];
 
 function LeaderboardPanel({ members, currentUserId, groupId, groupName, isAdFree, isCorporate }: {
   members:       Member[];
@@ -85,23 +96,25 @@ function LeaderboardPanel({ members, currentUserId, groupId, groupName, isAdFree
                 onClick={() => setSelectedMember(member)}
                 style={{ width: 96, display: "flex", flexDirection: "column", alignItems: "center", gap: 4, background: "none", border: "none", cursor: "pointer", padding: 0 }}
               >
-                {rank === 1 && <Crown size={14} fill="#ffaa00" style={{ color: "#ffaa00" }} />}
-                <div style={{
-                  borderRadius: "50%",
-                  boxShadow: rank === 1
-                    ? "0 0 0 2px #ffaa00"
-                    : isMe ? "0 0 0 2px #00e5a0" : `0 0 0 2px #4a7a4a`,
-                }}>
-                  <MemberAvatar name={member.name} avatarUrl={member.avatarUrl} size={PODIUM_AVATAR_SIZES[pos]} />
+                <div style={{ height: 16, display: "flex", alignItems: "flex-end", marginBottom: 2 }}>
+                  {rank === 1 && <Crown size={15} fill="#ffaa00" style={{ color: "#ffaa00" }} />}
                 </div>
+                <UserAvatar
+                  name={member.name}
+                  avatarUrl={member.avatarUrl}
+                  size={PODIUM_AVATAR_SIZES[pos]}
+                  ringColor={isMe && rank !== 1 ? "#00e5a0" : PODIUM_RING_COLORS[pos]}
+                />
                 <span className="font-barlow font-bold uppercase text-center truncate w-full px-1" style={{ fontSize: 11, color: isMe ? "#00e5a0" : "#a0c8a0" }}>
                   {member.name}
                 </span>
                 <div style={{
                   width: 80, height: PODIUM_HEIGHTS[pos],
-                  borderRadius: "6px 6px 0 0",
-                  background: rank === 1 ? "#162a10" : "#1c3a1c",
-                  border: "1px solid #2a5a2a",
+                  borderRadius: "var(--border-radius-lg) var(--border-radius-lg) 0 0",
+                  background: PODIUM_BG[pos],
+                  border: PODIUM_BORDER[pos],
+                  borderBottom: "none",
+                  boxShadow: rank === 1 ? "0 -4px 20px rgba(255,170,0,0.15)" : undefined,
                   display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 2,
                 }}>
                   <span className="font-barlow font-black" style={{ fontSize: 18, color: PODIUM_COLORS[pos] }}>{member.points}</span>
@@ -116,9 +129,18 @@ function LeaderboardPanel({ members, currentUserId, groupId, groupName, isAdFree
       {/* Ad between podium and member list */}
       <AdBanner isAdFree={isAdFree} isCorporate={isCorporate} />
 
+      {/* Section divider — podium (top 3) vs full standings (#4 onward) */}
+      {rest.length > 0 && (
+        <div className="flex items-center gap-2 pt-1">
+          <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.08)" }} />
+          <span className="font-barlow font-bold uppercase" style={{ fontSize: 9, letterSpacing: 1.5, color: "#3a7a3a" }}>Full Standings</span>
+          <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.08)" }} />
+        </div>
+      )}
+
       {/* Remaining rows */}
       {rest.length > 0 && (
-        <div className="rounded-2xl overflow-hidden" style={{ background: "#0c1c0c", border: "1px solid #1a3a1a" }}>
+        <div className="rounded-2xl overflow-hidden" style={{ background: "var(--color-background-secondary)", border: "0.5px solid var(--color-border-tertiary)", borderRadius: "var(--border-radius-lg)" }}>
           {rest.map((member, i) => {
             const rank    = i + 4;
             const isMe    = member.id === currentUserId;
@@ -137,7 +159,7 @@ function LeaderboardPanel({ members, currentUserId, groupId, groupName, isAdFree
                   cursor: "pointer",
                 }}>
                 <span className="font-barlow font-bold" style={{ fontSize: 12, color: "#5a9a5a", width: 20, textAlign: "center", flexShrink: 0 }}>{rank}</span>
-                <MemberAvatar name={member.name} avatarUrl={member.avatarUrl} size="xs" />
+                <UserAvatar name={member.name} avatarUrl={member.avatarUrl} size="xs" ringColor={isMe ? "#00e5a0" : undefined} />
                 <span className="font-barlow font-bold truncate flex-1" style={{ fontSize: 13, color: isMe ? "#00e5a0" : "#a0c8a0" }}>{member.name}</span>
                 <span className="font-barlow font-bold" style={{ fontSize: 13, color: isMe ? "#00e5a0" : "#7ab07a", flexShrink: 0 }}>{member.points}</span>
               </button>
@@ -151,6 +173,7 @@ function LeaderboardPanel({ members, currentUserId, groupId, groupName, isAdFree
           userId={selectedMember.id}
           groupId={groupId}
           name={selectedMember.name}
+          avatarUrl={selectedMember.avatarUrl}
           country={selectedMember.country ?? ""}
           points={selectedMember.points}
           rank={sorted.findIndex(m => m.id === selectedMember.id) + 1}
@@ -201,30 +224,40 @@ function MyStatsPanel({ members, currentUserId, rank, totalPlayers, groupId }: {
         My Stats
       </div>
 
-      {/* 2×2 grid */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-        <div className="rounded-xl px-3.5 py-3.5" style={{ background: "#0c1c0c", border: "1px solid #1a3a1a" }}>
-          <div className="font-barlow font-black" style={{ fontSize: 32, lineHeight: 1, color: "#00e5a0" }}>{totalPts}</div>
+      {/* Total Pts — prioritized, full-width */}
+      <div className="rounded-xl px-4 py-4 flex items-center gap-3"
+        style={{ background: "var(--color-background-secondary)", border: "1.5px solid rgba(0,229,160,0.4)", borderRadius: "var(--border-radius-lg)" }}>
+        <Trophy size={22} style={{ color: "#00e5a0", flexShrink: 0 }} />
+        <div>
+          <div className="font-barlow font-black" style={{ fontSize: 40, lineHeight: 1, color: "#00e5a0" }}>{totalPts}</div>
           <div className="font-barlow uppercase mt-1" style={{ fontSize: 9, color: "#3a7a3a", letterSpacing: 1 }}>TOTAL PTS</div>
         </div>
-        <div className="rounded-xl px-3.5 py-3.5" style={{ background: "#0c1c0c", border: "1px solid #1a3a1a" }}>
-          <div className="font-barlow font-black" style={{ fontSize: 32, lineHeight: 1, color: "#e0f2e0" }}>#{rank}</div>
+      </div>
+
+      {/* Rank / Exact / Correct — 3-col row */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 }}>
+        <div className="rounded-xl px-3 py-3.5" style={{ background: "var(--color-background-secondary)", border: "0.5px solid var(--color-border-tertiary)", borderRadius: "var(--border-radius-lg)" }}>
+          <div className="font-barlow font-black" style={{ fontSize: 26, lineHeight: 1, color: "#e0f2e0" }}>#{rank}</div>
           <div className="font-barlow uppercase mt-1" style={{ fontSize: 9, color: "#3a7a3a", letterSpacing: 1 }}>MY RANK</div>
         </div>
-        <div className="rounded-xl px-3.5 py-3.5" style={{ background: "#0c1c0c", border: "1px solid #1a3a1a" }}>
-          <div className="font-barlow font-black" style={{ fontSize: 32, lineHeight: 1, color: "#ffaa00" }}>{exactCount}</div>
-          <div className="font-barlow uppercase mt-1" style={{ fontSize: 9, color: "#3a7a3a", letterSpacing: 1 }}>EXACT ⭐</div>
+        <div className="rounded-xl px-3 py-3.5" style={{ background: "var(--color-background-secondary)", border: "0.5px solid var(--color-border-tertiary)", borderRadius: "var(--border-radius-lg)" }}>
+          <Target size={14} style={{ color: "#ffaa00", marginBottom: 4 }} />
+          <div className="font-barlow font-black" style={{ fontSize: 26, lineHeight: 1, color: "#ffaa00" }}>{exactCount}</div>
+          <div className="font-barlow uppercase mt-1" style={{ fontSize: 9, color: "#3a7a3a", letterSpacing: 1 }}>EXACT</div>
         </div>
-        <div className="rounded-xl px-3.5 py-3.5" style={{ background: "#0c1c0c", border: "1px solid #1a3a1a" }}>
-          <div className="font-barlow font-black" style={{ fontSize: 32, lineHeight: 1, color: "#5aaa6a" }}>{correct}</div>
-          <div className="font-barlow uppercase mt-1" style={{ fontSize: 9, color: "#3a7a3a", letterSpacing: 1 }}>CORRECT ✓</div>
+        <div className="rounded-xl px-3 py-3.5" style={{ background: "var(--color-background-secondary)", border: "0.5px solid var(--color-border-tertiary)", borderRadius: "var(--border-radius-lg)" }}>
+          <TrendingUp size={14} style={{ color: "#5aaa6a", marginBottom: 4 }} />
+          <div className="font-barlow font-black" style={{ fontSize: 26, lineHeight: 1, color: "#5aaa6a" }}>{correct}</div>
+          <div className="font-barlow uppercase mt-1" style={{ fontSize: 9, color: "#3a7a3a", letterSpacing: 1 }}>CORRECT</div>
         </div>
       </div>
 
       {/* Wrong count */}
       <div className="rounded-xl px-3.5 py-3 flex items-center justify-between"
-        style={{ background: "#0c1c0c", border: "1px solid #1a3a1a" }}>
-        <span className="font-barlow font-bold uppercase" style={{ fontSize: 10, color: "#cc4444", letterSpacing: 1 }}>WRONG ✗</span>
+        style={{ background: "var(--color-background-secondary)", border: "0.5px solid var(--color-border-tertiary)", borderRadius: "var(--border-radius-lg)" }}>
+        <span className="flex items-center gap-1.5 font-barlow font-bold uppercase" style={{ fontSize: 10, color: "#cc4444", letterSpacing: 1 }}>
+          <XCircle size={12} style={{ color: "#cc4444" }} /> WRONG
+        </span>
         <span className="font-barlow font-black" style={{ fontSize: 28, color: "#cc4444" }}>{wrong}</span>
       </div>
 
@@ -313,6 +346,7 @@ export function DashboardCarousel({
         WebkitOverflowScrolling: "touch",
         overscrollBehavior: "contain",
         background: PANEL_BG,
+        paddingBottom: 24,
       }}>
         {panel === 0 && <MatchPanel matches={matches} groupId={groupId} groupName={groupName} />}
         {panel === 1 && <LeaderboardPanel members={members} currentUserId={currentUserId} groupId={groupId} groupName={groupName} isAdFree={isAdFree} isCorporate={isCorporate} />}

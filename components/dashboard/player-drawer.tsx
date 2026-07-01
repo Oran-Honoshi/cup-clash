@@ -2,21 +2,23 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Target, Trophy, TrendingUp, Zap, XCircle, Star, ChevronDown, ChevronRight as ChevronRightIcon } from "lucide-react";
-import Image from "next/image";
-import { flagUrl, countryFlagCode } from "@/lib/countries";
+import { X, Target, Trophy, TrendingUp, Zap, XCircle, Star, Volleyball, Medal, ChevronDown, ChevronRight as ChevronRightIcon } from "lucide-react";
+import { countryFlagCode } from "@/lib/countries";
+import { FlagBadge } from "@/components/ui/FlagBadge";
+import { UserAvatar } from "@/components/ui/UserAvatar";
 import { FOCUS_RING } from "@/lib/a11y";
 import type { MemberPrediction, BestThirdPick, MemberPredictionsResponse, TournamentPick } from "@/app/api/member-predictions/route";
 
 interface PlayerDrawerProps {
-  userId:    string;
-  groupId:   string;
-  name:      string;
-  country:   string;
-  points:    number;
-  rank:      number;
-  open:      boolean;
-  onClose:   () => void;
+  userId:     string;
+  groupId:    string;
+  name:       string;
+  avatarUrl?: string | null;
+  country:    string;
+  points:     number;
+  rank:       number;
+  open:       boolean;
+  onClose:    () => void;
 }
 
 const STAGE_ORDER = ["Group", "R32", "R16", "QF", "SF", "3rd", "Final"] as const;
@@ -42,29 +44,23 @@ function TypeIcon({ type }: { type: MemberPrediction["type"] }) {
   return <span style={{ color: "rgba(255,255,255,0.3)" }}>❌</span>;
 }
 
-function FlagImg({ code, name }: { code: string; name: string }) {
-  return (
-    <div className="relative h-4 w-5 rounded-sm overflow-hidden shrink-0">
-      <Image src={flagUrl(code, 20)} alt={name} fill className="object-cover" unoptimized />
-    </div>
-  );
-}
-
 function MatchRow({ item }: { item: MemberPrediction }) {
   return (
     <div
-      className="flex items-center gap-2 py-1.5 px-3 rounded-lg"
+      className="flex items-center gap-2 py-1.5 px-2.5 rounded-lg mb-1"
       style={{
         background: item.type === "exact"
-          ? "rgba(250,204,21,0.05)"
+          ? "rgba(250,204,21,0.06)"
           : item.type === "correct"
-            ? "rgba(0,255,136,0.04)"
-            : "transparent",
+            ? "rgba(0,255,136,0.05)"
+            : "var(--color-background-secondary)",
+        border: "0.5px solid var(--color-border-tertiary)",
+        borderRadius: "var(--border-radius-lg)",
       }}
     >
-      <FlagImg code={item.homeFlagCode} name={item.home} />
+      <FlagBadge code={item.homeFlagCode} label={item.home} size="sm" />
       <span className="text-[10px]" style={{ color: "rgba(255,255,255,0.3)" }}>vs</span>
-      <FlagImg code={item.awayFlagCode} name={item.away} />
+      <FlagBadge code={item.awayFlagCode} label={item.away} size="sm" />
       <div className="flex-1 min-w-0 ml-0.5">
         <span className="text-[11px] font-bold truncate" style={{ color: "rgba(255,255,255,0.85)" }}>
           {item.home} {item.actual} {item.away}
@@ -96,7 +92,7 @@ function CollapsibleSection({
 }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <div className="rounded-xl overflow-hidden mb-3" style={{ background: "rgba(18,14,38,0.4)", border: "1px solid rgba(255,255,255,0.08)" }}>
+    <div className="overflow-hidden mb-3" style={{ background: "var(--color-background-secondary)", border: "0.5px solid var(--color-border-tertiary)", borderRadius: "var(--border-radius-lg)" }}>
       <button
         type="button"
         onClick={() => setOpen(o => !o)}
@@ -124,7 +120,7 @@ function CollapsibleSection({
   );
 }
 
-export function PlayerDrawer({ userId, groupId, name, country, points, rank, open, onClose }: PlayerDrawerProps) {
+export function PlayerDrawer({ userId, groupId, name, avatarUrl, country, points, rank, open, onClose }: PlayerDrawerProps) {
   const [history,         setHistory]         = useState<MemberPrediction[]>([]);
   const [bestThird,       setBestThird]        = useState<MemberPredictionsResponse["bestThird"] | null>(null);
   const [tournamentPicks, setTournamentPicks]  = useState<TournamentPick[]>([]);
@@ -229,8 +225,11 @@ export function PlayerDrawer({ userId, groupId, name, country, points, rank, ope
               style={{ borderBottom: "1px solid rgba(255,255,255,0.08)", background: "rgba(18,14,38,0.6)", backdropFilter: "blur(12px)" }}
             >
               <div className="flex items-center gap-3">
-                <div className="relative h-10 w-10 rounded-full overflow-hidden" style={{ border: "2px solid rgba(0,212,255,0.2)" }}>
-                  <Image src={flagUrl(countryFlagCode(country), 40)} alt={country} fill className="object-cover" unoptimized />
+                <div className="relative shrink-0">
+                  <UserAvatar name={name} avatarUrl={avatarUrl} size="lg" />
+                  <div className="absolute -bottom-1 -right-1">
+                    <FlagBadge code={countryFlagCode(country)} label={country} size="sm" />
+                  </div>
                 </div>
                 <div>
                   <div className="font-display text-xl uppercase font-black" style={{ color: "white" }}>{name}</div>
@@ -257,17 +256,17 @@ export function PlayerDrawer({ userId, groupId, name, country, points, rank, ope
             {/* Point breakdown chips */}
             <div className="px-5 py-3 flex flex-wrap gap-2" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
               {[
-                { emoji: "⚽", label: "GS",     value: stats.gsPts,        color: "rgba(255,255,255,0.15)" },
-                { emoji: "🏆", label: "KO",     value: stats.knockoutPts,  color: "rgba(255,255,255,0.15)" },
-                { emoji: "🥉", label: "3rd",    value: stats.bestThirdPts, color: "rgba(255,255,255,0.15)" },
-                { emoji: "🌟", label: "Bonus",  value: stats.bonusPts,     color: "rgba(255,255,255,0.15)" },
-              ].map(({ emoji, label, value }) => (
+                { icon: Volleyball, label: "GS",     value: stats.gsPts        },
+                { icon: Trophy,     label: "KO",     value: stats.knockoutPts  },
+                { icon: Medal,      label: "3rd",    value: stats.bestThirdPts },
+                { icon: Star,       label: "Bonus",  value: stats.bonusPts     },
+              ].map(({ icon: Icon, label, value }) => (
                 <div
                   key={label}
                   className="flex items-center gap-1 rounded-full px-2.5 py-1"
                   style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}
                 >
-                  <span className="text-[11px]">{emoji}</span>
+                  <Icon size={11} style={{ color: "rgba(255,255,255,0.5)" }} />
                   <span className="text-[10px] font-bold" style={{ color: "rgba(255,255,255,0.5)" }}>{label}:</span>
                   <span className="text-[11px] font-black" style={{ color: value > 0 ? "white" : "rgba(255,255,255,0.3)", fontFamily: "var(--font-mono)" }}>{value}</span>
                 </div>
@@ -281,7 +280,7 @@ export function PlayerDrawer({ userId, groupId, name, country, points, rank, ope
                 { icon: TrendingUp, label: "Correct", value: stats.outcomeCount, color: "#00FF88" },
                 { icon: XCircle,    label: "Missed",  value: stats.missedCount,  color: "#f87171" },
               ].map(({ icon: Icon, label, value, color }) => (
-                <div key={label} className="rounded-xl p-2.5 text-center" style={{ background: "rgba(18,14,38,0.4)", border: "1px solid rgba(255,255,255,0.08)" }}>
+                <div key={label} className="p-2.5 text-center" style={{ background: "var(--color-background-secondary)", border: "0.5px solid var(--color-border-tertiary)", borderRadius: "var(--border-radius-lg)" }}>
                   <Icon size={14} className="mx-auto mb-1" style={{ color }} />
                   <div className="font-black text-lg" style={{ color: "white" }}>{value}</div>
                   <div className="text-[10px] uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.4)" }}>{label}</div>
@@ -306,7 +305,7 @@ export function PlayerDrawer({ userId, groupId, name, country, points, rank, ope
                   {hasGS && (
                     <CollapsibleSection
                       title="Group Stage"
-                      icon={<span className="text-base">⚽</span>}
+                      icon={<Volleyball size={13} style={{ color: "rgba(255,255,255,0.6)" }} />}
                       count={gsMatches.length}
                       pts={stats.gsPts}
                       defaultOpen={false}
@@ -328,7 +327,7 @@ export function PlayerDrawer({ userId, groupId, name, country, points, rank, ope
                   {hasKO && (
                     <CollapsibleSection
                       title="Knockout Rounds"
-                      icon={<span className="text-base">🏆</span>}
+                      icon={<Trophy size={13} style={{ color: "#d97706" }} />}
                       count={koMatches.length}
                       pts={stats.knockoutPts}
                       defaultOpen={true}

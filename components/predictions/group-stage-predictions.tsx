@@ -10,7 +10,7 @@ import { AdBanner } from "@/components/ads/ad-banner";
 import { CopyPredictions } from "@/components/predictions/copy-predictions";
 import { FlaggedTeam } from "@/components/predictions/flagged-team";
 import { PredictionBadge } from "@/components/predictions/prediction-badge";
-import { Flag } from "@/components/ui/flag";
+import { FlagBadge } from "@/components/ui/FlagBadge";
 import { MemberAvatar } from "@/components/ui/member-avatar";
 import { ScoreInputCC } from "@/components/ui/score-input-cc";
 import { WC2026_MATCHES, type ScheduleMatch } from "@/lib/schedule";
@@ -204,7 +204,7 @@ function MatchCard({ match, prediction, onChange, globalLocked, stagePoints, mat
       {/* Score row — same layout as NextMatchCard */}
       <div className="flex items-center gap-3">
         <div className="flex-1 flex flex-col items-center gap-1">
-          <Flag code={match.homeFlagCode ?? "un"} size="sm" />
+          <FlagBadge code={match.homeFlagCode ?? "un"} size="sm" />
           <span className="font-display text-xs uppercase font-black text-center text-white">
             {(match.home ?? "").substring(0, 3).toUpperCase()}
           </span>
@@ -226,7 +226,7 @@ function MatchCard({ match, prediction, onChange, globalLocked, stagePoints, mat
           {flashStatus === "error" && <span style={{ fontSize: 11, color: "#f87171", fontWeight: 700 }}>!</span>}
         </div>
         <div className="flex-1 flex flex-col items-center gap-1">
-          <Flag code={match.awayFlagCode ?? "un"} size="sm" />
+          <FlagBadge code={match.awayFlagCode ?? "un"} size="sm" />
           <span className="font-display text-xs uppercase font-black text-center text-white">
             {(match.away ?? "").substring(0, 3).toUpperCase()}
           </span>

@@ -7,7 +7,7 @@ import { differenceInMinutes } from "date-fns";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { NeonBar } from "@/components/ui/neon-bar";
-import { Flag } from "@/components/ui/flag";
+import { FlagBadge } from "@/components/ui/FlagBadge";
 import { ScoreInputCC } from "@/components/ui/score-input-cc";
 import { LiveDot } from "@/components/ui/live-dot";
 import { FOCUS_RING } from "@/lib/a11y";
@@ -106,10 +106,11 @@ export function NextMatchCard({ match, groupId = "", cardLabel }: NextMatchCardP
 
   return (
     <div
-      className="w-full max-w-full rounded-[22px] overflow-hidden"
+      className="w-full max-w-full overflow-hidden"
       style={{
-        background: "rgba(18,14,38,0.32)",
+        background: "var(--color-background-secondary)",
         border: "1px solid rgba(0,212,255,0.35)",
+        borderRadius: "var(--border-radius-lg)",
         boxShadow: "0 12px 40px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.18)",
       }}
     >
@@ -118,7 +119,7 @@ export function NextMatchCard({ match, groupId = "", cardLabel }: NextMatchCardP
 
       <div className="p-5">
         {/* Header */}
-        <div className="flex items-center justify-between gap-2 mb-5">
+        <div className="flex items-start justify-between gap-2 mb-5">
           <div className="min-w-0">
             <div
               className="flex items-center gap-1.5 mb-0.5"
@@ -158,7 +159,10 @@ export function NextMatchCard({ match, groupId = "", cardLabel }: NextMatchCardP
                 ? "bg-red-500/15 border border-red-500/30 text-red-400"
                 : "border text-slate-400"
             )}
-            style={!isLocked ? { borderColor: "rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.05)" } : undefined}
+            style={{
+              marginTop: 1,
+              ...(!isLocked ? { borderColor: "rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.05)" } : {}),
+            }}
           >
             <Lock size={10} />
             {isLocked ? "Locked" : "Locks 5 min before"}
@@ -169,7 +173,7 @@ export function NextMatchCard({ match, groupId = "", cardLabel }: NextMatchCardP
         <div className="flex items-center gap-2 w-full min-w-0">
           {/* Home team */}
           <div className="flex-1 min-w-0 flex flex-col items-center gap-2">
-            <Flag code={homeFlagCode} size="md" />
+            <FlagBadge code={homeFlagCode} size="md" />
             <span className="font-display text-sm uppercase font-black text-center leading-tight text-white w-full truncate px-1">
               {match.home}
             </span>
@@ -194,7 +198,7 @@ export function NextMatchCard({ match, groupId = "", cardLabel }: NextMatchCardP
 
           {/* Away team */}
           <div className="flex-1 min-w-0 flex flex-col items-center gap-2">
-            <Flag code={awayFlagCode} size="md" />
+            <FlagBadge code={awayFlagCode} size="md" />
             <span className="font-display text-sm uppercase font-black text-center leading-tight text-white w-full truncate px-1">
               {match.away}
             </span>
@@ -231,14 +235,15 @@ export function NextMatchCard({ match, groupId = "", cardLabel }: NextMatchCardP
               <div className="flex items-center gap-1.5 font-barlow font-bold" style={{ color: "#00e5a0", fontSize: 13, letterSpacing: "0.5px" }}>
                 <CheckCircle size={15} /> PREDICTION SAVED
               </div>
-              <button
+              <Button
                 type="button"
                 onClick={() => setSaveState("idle")}
-                className={`text-xs uppercase tracking-widest transition-opacity hover:opacity-70 rounded ${FOCUS_RING}`}
-                style={{ color: "rgba(255,255,255,0.3)" }}
+                variant="outline"
+                size="xs"
+                className={FOCUS_RING}
               >
                 Edit
-              </button>
+              </Button>
             </div>
           ) : (
             <Button

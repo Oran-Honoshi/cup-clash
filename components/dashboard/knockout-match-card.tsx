@@ -7,7 +7,7 @@ import { differenceInMinutes } from "date-fns";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Flag } from "@/components/ui/flag";
+import { FlagBadge } from "@/components/ui/FlagBadge";
 import { FOCUS_RING } from "@/lib/a11y";
 import { cn } from "@/lib/utils";
 import type { Match } from "@/lib/types";
@@ -128,7 +128,7 @@ export function KnockoutMatchCard({ match, groupId }: KnockoutMatchCardProps) {
         {/* Teams */}
         <div className="flex items-center gap-3">
           <div className="flex-1 flex flex-col items-center gap-1.5">
-            <Flag code={match.homeFlagCode ?? "un"} size="lg" />
+            <FlagBadge code={match.homeFlagCode ?? "un"} size="lg" />
             <span className="font-display text-lg uppercase text-white text-center">{match.home}</span>
           </div>
           <div className="flex items-center gap-2 shrink-0">
@@ -157,7 +157,7 @@ export function KnockoutMatchCard({ match, groupId }: KnockoutMatchCardProps) {
             )}
           </div>
           <div className="flex-1 flex flex-col items-center gap-1.5">
-            <Flag code={match.awayFlagCode ?? "un"} size="lg" />
+            <FlagBadge code={match.awayFlagCode ?? "un"} size="lg" />
             <span className="font-display text-lg uppercase text-white text-center">{match.away}</span>
           </div>
         </div>
@@ -190,7 +190,7 @@ export function KnockoutMatchCard({ match, groupId }: KnockoutMatchCardProps) {
                     boxShadow: "0 0 12px rgb(var(--accent)/0.2)",
                   } : undefined}
                 >
-                  <Flag code={flagCode} size="sm" />
+                  <FlagBadge code={flagCode} size="sm" />
                   <span className="truncate uppercase tracking-wide">{team}</span>
                   {active && <CheckCircle size={14} className="ml-auto shrink-0" style={{ color: "rgb(var(--accent-glow))" }} />}
                 </button>

@@ -172,24 +172,29 @@ export function PredictionDistribution({ matchId, groupId }: PredictionDistribut
 
   // ── Upcoming: anonymous distribution ─────────────────────────────────────────
   if (dist.length === 0) return null;
+  const maxPct = Math.max(...dist.map(d => d.pct));
   return (
     <div style={wrapperStyle}>
       <div style={labelStyle}>What your group predicted</div>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
         {dist.map(({ score, pct }) => (
-          <div
-            key={score}
-            style={{
-              display: "flex", alignItems: "center", gap: 4,
-              padding: "3px 9px", borderRadius: 20,
-              background: "rgba(255,255,255,0.06)",
-              border: "1px solid rgba(255,255,255,0.1)",
-            }}
-          >
-            <span style={{ fontFamily: "var(--font-mono)", fontWeight: 700, fontSize: 11, color: "rgba(255,255,255,0.85)" }}>
+          <div key={score} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <span style={{
+              fontFamily: "var(--font-mono)", fontWeight: 700, fontSize: 11,
+              color: "rgba(255,255,255,0.85)", width: 34, flexShrink: 0,
+            }}>
               {score}
             </span>
-            <span style={{ fontSize: 10, color: "rgba(255,255,255,0.4)", fontFamily: "var(--font-ui)", fontWeight: 600 }}>
+            <div style={{ flex: 1, height: 6, borderRadius: 3, background: "rgba(255,255,255,0.06)", overflow: "hidden" }}>
+              <div style={{
+                width: `${Math.max(4, (pct / maxPct) * 100)}%`, height: "100%", borderRadius: 3,
+                background: "linear-gradient(90deg, #00D4FF, #00FF88)",
+              }} />
+            </div>
+            <span style={{
+              fontSize: 10, color: "rgba(255,255,255,0.4)", fontFamily: "var(--font-ui)",
+              fontWeight: 600, width: 28, textAlign: "right", flexShrink: 0,
+            }}>
               {pct}%
             </span>
           </div>

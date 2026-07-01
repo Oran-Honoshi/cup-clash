@@ -8,7 +8,7 @@ import {
   Users, Zap,
 } from "lucide-react";
 import { CopyPredictionSheet } from "@/components/predictions/copy-prediction-sheet";
-import { Flag } from "@/components/ui/flag";
+import { FlagBadge } from "@/components/ui/FlagBadge";
 import { BallLoader } from "@/components/ui/BallLoader";
 import { ScoreInputCC } from "@/components/ui/score-input-cc";
 import { PredictionBadge } from "@/components/predictions/prediction-badge";
@@ -343,11 +343,11 @@ function MatchCard({
         <>
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2 min-w-0">
-              <Flag code={displayHomeFlagCode} size="xs" />
+              <FlagBadge code={displayHomeFlagCode} size="sm" />
               <span className="font-barlow font-bold uppercase truncate text-xs" style={{ color: "#a0c8a0" }}>{displayHome}</span>
               <span className="font-barlow font-black text-base tabular-nums" style={{ color: "#ffaa00" }}>{state.homeScore}–{state.awayScore}</span>
               <span className="font-barlow font-bold uppercase truncate text-xs" style={{ color: "#a0c8a0" }}>{displayAway}</span>
-              <Flag code={displayAwayFlagCode} size="xs" />
+              <FlagBadge code={displayAwayFlagCode} size="sm" />
             </div>
             <span className="shrink-0 font-barlow font-bold px-2 py-0.5 rounded-md"
               style={{ background: "#162a10", border: "1px solid #2a4a10", color: "#ffaa00", fontSize: 9 }}>
@@ -369,13 +369,13 @@ function MatchCard({
           {/* Teams + time row */}
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-1.5 flex-1 min-w-0">
-              <Flag code={displayHomeFlagCode} size="xs" />
+              <FlagBadge code={displayHomeFlagCode} size="sm" />
               <span className="font-barlow font-bold uppercase text-xs truncate" style={{ color: teamColor }}>{displayHome}</span>
             </div>
             <span className="font-barlow font-bold text-xs shrink-0" style={{ color: "#3a7a3a" }}>vs</span>
             <div className="flex items-center gap-1.5 flex-1 min-w-0 justify-end">
               <span className="font-barlow font-bold uppercase text-xs truncate" style={{ color: teamColor }}>{displayAway}</span>
-              <Flag code={displayAwayFlagCode} size="xs" />
+              <FlagBadge code={displayAwayFlagCode} size="sm" />
             </div>
             <div className="flex flex-col items-end shrink-0 ml-2">
               {locked && <Lock size={8} style={{ color: "rgba(255,255,255,0.25)" }} />}
