@@ -451,6 +451,202 @@ function parseEvents(events: APIEvent[]): { goals: ParsedGoal[]; cards: ParsedCa
   return { goals, cards };
 }
 
+// ── Bracket advancement — auto-create/confirm next-round matches ───────────────
+//
+// R32 → R16 pairing is officially confirmed per the WC2026 draw and is hardcoded
+// here (it's fixed well ahead of the group stage finishing, unlike later rounds).
+// Once both feeders of a slot are finished, we determine the winners and try to
+// fetch the real confirmed fixture (kickoff/venue) from API-Football; if the API
+// doesn't have it yet, the two teams are still set (status "upcoming") using the
+// known bracket slot's fallback venue/date, and future cron runs keep retrying
+// the API lookup (gated on api_fixture_id being null) until it's confirmed.
+const R16_SLOTS: Array<{
+  id: string; feeders: [string, string];
+  stadium: string; city: string; hostCountry: string; fallbackKickoff: string;
+}> = [
+  { id: "k001", feeders: ["r001", "r007"], stadium: "NRG Stadium",             city: "Houston",         hostCountry: "USA",    fallbackKickoff: "2026-07-04T17:00:00+00:00" },
+  { id: "k002", feeders: ["r004", "r005"], stadium: "Lincoln Financial Field", city: "Philadelphia",    hostCountry: "USA",    fallbackKickoff: "2026-07-04T21:00:00+00:00" },
+  { id: "k003", feeders: ["r008", "r009"], stadium: "MetLife Stadium",         city: "East Rutherford", hostCountry: "USA",    fallbackKickoff: "2026-07-05T20:00:00+00:00" },
+  { id: "k004", feeders: ["r003", "r014"], stadium: "Estadio Banorte",         city: "Mexico City",     hostCountry: "Mexico", fallbackKickoff: "2026-07-06T00:00:00+00:00" },
+  { id: "k005", feeders: ["r006", "r011"], stadium: "Lumen Field",             city: "Seattle",         hostCountry: "USA",    fallbackKickoff: "2026-07-07T00:00:00+00:00" },
+  { id: "k006", feeders: ["r012", "r010"], stadium: "AT&T Stadium",            city: "Arlington",       hostCountry: "USA",    fallbackKickoff: "2026-07-06T21:00:00+00:00" },
+  { id: "k007", feeders: ["r016", "r015"], stadium: "Mercedes-Benz Stadium",   city: "Atlanta",         hostCountry: "USA",    fallbackKickoff: "2026-07-07T20:00:00+00:00" },
+  { id: "k008", feeders: ["r013", "r002"], stadium: "BC Place",                city: "Vancouver",       hostCountry: "Canada", fallbackKickoff: "2026-07-08T00:00:00+00:00" },
+];
+
+// R16 → QF → SF → Final never guess pairing: they rely entirely on API-Football
+// telling us who plays whom for the round, once every match of the prior stage
+// is finished. This avoids hardcoding an unverified bracket structure.
+const STAGE_PROGRESSION: Array<{ from: string; to: string; apiRound: string; idPrefix: string }> = [
+  { from: "R16", to: "QF",    apiRound: "Quarter-finals", idPrefix: "qf" },
+  { from: "QF",  to: "SF",    apiRound: "Semi-finals",    idPrefix: "sf" },
+  { from: "SF",  to: "Final", apiRound: "Final",          idPrefix: "fn" },
+];
+
+type BracketMatchRow = {
+  home: string; away: string;
+  home_score: number | null; away_score: number | null;
+  home_score_et: number | null; away_score_et: number | null;
+  penalty_winner: string | null;
+  status: string;
+};
+
+// Advancement (who plays the next round) is a separate concern from match-score
+// grading — a shootout legitimately decides this, unlike prediction scoring.
+function knockoutWinner(m: BracketMatchRow): string | null {
+  const h = m.home_score_et ?? m.home_score;
+  const a = m.away_score_et ?? m.away_score;
+  if (h == null || a == null) return null;
+  if (h !== a) return h > a ? m.home : m.away;
+  return m.penalty_winner ?? null;
+}
+
+async function findApiFixture(round: string, teamA: string, teamB: string): Promise<APIFixture | null> {
+  try {
+    const url = `${API_BASE}/fixtures?league=${LEAGUE_ID}&season=${SEASON}&round=${encodeURIComponent(round)}`;
+    const res = await fetch(url, { headers: apiHeaders() });
+    if (!res.ok) return null;
+    const data = await res.json() as { response: APIFixture[] };
+    const a = normTeam(teamA), b = normTeam(teamB);
+    return (data.response ?? []).find(f => {
+      const h = normTeam(f.teams.home.name), aw = normTeam(f.teams.away.name);
+      return (h === a && aw === b) || (h === b && aw === a);
+    }) ?? null;
+  } catch (e) {
+    console.warn(`[scores/cron] Bracket: findApiFixture(${round}) error:`, e);
+    return null;
+  }
+}
+
+async function advanceR16Slots(sb: SupabaseClient): Promise<void> {
+  const allFeederIds = R16_SLOTS.flatMap(s => s.feeders);
+  const [{ data: feederRows }, { data: r16Rows }] = await Promise.all([
+    sb.from("matches")
+      .select("id, home, away, home_score, away_score, home_score_et, away_score_et, penalty_winner, status")
+      .in("id", allFeederIds),
+    sb.from("matches").select("id, api_fixture_id").in("id", R16_SLOTS.map(s => s.id)),
+  ]);
+  const feederMap = new Map(((feederRows ?? []) as Array<BracketMatchRow & { id: string }>).map(r => [r.id, r]));
+  const r16Map = new Map(((r16Rows ?? []) as Array<{ id: string; api_fixture_id: number | null }>).map(r => [r.id, r]));
+
+  for (const slot of R16_SLOTS) {
+    if (r16Map.get(slot.id)?.api_fixture_id) continue; // already API-confirmed, nothing to do
+
+    const [fa, fb] = slot.feeders.map(id => feederMap.get(id));
+    if (!fa || !fb || fa.status !== "finished" || fb.status !== "finished") continue;
+
+    const winnerA = knockoutWinner(fa);
+    const winnerB = knockoutWinner(fb);
+    if (!winnerA || !winnerB) continue;
+
+    const { data: allTeamRows } = await sb.from("matches").select("home, away, home_flag, away_flag");
+    const flagFor = (team: string) => {
+      for (const r of (allTeamRows ?? []) as Array<{ home: string; away: string; home_flag: string | null; away_flag: string | null }>) {
+        if (r.home === team) return r.home_flag;
+        if (r.away === team) return r.away_flag;
+      }
+      return null;
+    };
+
+    const apiFixture = await findApiFixture("Round of 16", winnerA, winnerB);
+
+    const update: Record<string, unknown> = {
+      home: winnerA, away: winnerB,
+      home_flag: flagFor(winnerA), away_flag: flagFor(winnerB),
+      status: "upcoming",
+    };
+    if (apiFixture) {
+      update.kickoff_at     = apiFixture.fixture.date;
+      update.stadium        = apiFixture.fixture.venue.name ?? slot.stadium;
+      update.city           = apiFixture.fixture.venue.city ?? slot.city;
+      update.api_fixture_id = apiFixture.fixture.id;
+    } else {
+      update.kickoff_at = slot.fallbackKickoff;
+      update.stadium    = slot.stadium;
+      update.city        = slot.city;
+      update.host_country = slot.hostCountry;
+    }
+
+    const { error } = await sb.from("matches").update(update).eq("id", slot.id);
+    if (error) {
+      console.error(`[scores/cron] Bracket: failed to update ${slot.id}:`, error);
+    } else {
+      console.log(`[scores/cron] Bracket: ${slot.id} → ${winnerA} vs ${winnerB}${apiFixture ? " (API-confirmed)" : " (API pending, using known slot mapping)"}`);
+    }
+  }
+}
+
+async function advanceStage(sb: SupabaseClient, from: string, to: string, apiRound: string, idPrefix: string): Promise<void> {
+  const { data: fromRows } = await sb.from("matches").select("id, status").eq("stage", from);
+  if (!fromRows?.length || !fromRows.every(r => r.status === "finished")) return;
+
+  const { data: toRows } = await sb.from("matches").select("id, home, away").eq("stage", to);
+
+  const url = `${API_BASE}/fixtures?league=${LEAGUE_ID}&season=${SEASON}&round=${encodeURIComponent(apiRound)}`;
+  let apiFixtures: APIFixture[] = [];
+  try {
+    const res = await fetch(url, { headers: apiHeaders() });
+    if (res.ok) {
+      const data = await res.json() as { response: APIFixture[] };
+      apiFixtures = data.response ?? [];
+    }
+  } catch (e) {
+    console.warn(`[scores/cron] Bracket: advanceStage(${to}) fetch error:`, e);
+  }
+  if (!apiFixtures.length) {
+    console.log(`[scores/cron] Bracket: ${to} not yet published by API`);
+    return;
+  }
+
+  const { data: allTeamRows } = await sb.from("matches").select("home, away, home_flag, away_flag");
+  const rows = (allTeamRows ?? []) as Array<{ home: string; away: string; home_flag: string | null; away_flag: string | null }>;
+  const canonicalName = (apiName: string): string => {
+    const norm = normTeam(apiName);
+    for (const r of rows) {
+      if (normTeam(r.home) === norm) return r.home;
+      if (normTeam(r.away) === norm) return r.away;
+    }
+    return apiName;
+  };
+  const flagFor = (team: string) => {
+    for (const r of rows) {
+      if (r.home === team) return r.home_flag;
+      if (r.away === team) return r.away_flag;
+    }
+    return null;
+  };
+
+  let n = 0;
+  for (const f of apiFixtures) {
+    const homeName = canonicalName(f.teams.home.name);
+    const awayName = canonicalName(f.teams.away.name);
+    const already = (toRows ?? []).some(r =>
+      (r.home === homeName && r.away === awayName) || (r.home === awayName && r.away === homeName)
+    );
+    if (already) continue;
+
+    n++;
+    const newId = `${idPrefix}${String(n).padStart(3, "0")}`;
+    const { error } = await sb.from("matches").insert({
+      id: newId,
+      home: homeName, away: awayName,
+      home_flag: flagFor(homeName), away_flag: flagFor(awayName),
+      kickoff_at: f.fixture.date,
+      stage: to,
+      stadium: f.fixture.venue.name ?? "TBD",
+      city: f.fixture.venue.city ?? "TBD",
+      host_country: "USA",
+      status: "upcoming",
+      api_fixture_id: f.fixture.id,
+    });
+    if (error) {
+      console.error(`[scores/cron] Bracket: failed to create ${to} match ${newId}:`, error);
+    } else {
+      console.log(`[scores/cron] Bracket: created ${to} match ${newId}: ${homeName} vs ${awayName} (API-confirmed)`);
+    }
+  }
+}
+
 // ── GET /api/scores — return cached scores from Supabase ───────────────────────
 
 export async function GET() {
@@ -958,6 +1154,18 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // ── STEP 3c: Bracket advancement — auto-create/confirm next-round matches ──
+
+    console.log("[scores/cron] STEP 3c: Checking bracket advancement...");
+    try {
+      await advanceR16Slots(sb);
+      for (const s of STAGE_PROGRESSION) {
+        await advanceStage(sb, s.from, s.to, s.apiRound, s.idPrefix);
+      }
+    } catch (e) {
+      console.error("[scores/cron] STEP 3c: bracket advancement error:", e);
+    }
+
     // ── STEP 4: Trigger scoring for newly finished matches ───────────────────
 
     if (newlyFinished.length === 0) {
@@ -991,7 +1199,6 @@ export async function POST(request: NextRequest) {
               awayScore,
               homeScoreET,
               awayScoreET,
-              penaltyWinner,
               rules:         buildScoringRules(rulesMap.get(group.id) ?? null),
               sbClient:      sb,
             })

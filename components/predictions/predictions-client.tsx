@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { GroupStagePredictions } from "@/components/predictions/group-stage-predictions";
+import { KnockoutPredictions } from "@/components/predictions/knockout-predictions";
 import { TournamentPicks } from "@/components/dashboard/tournament-picks";
 import { BonusQuestions } from "@/components/predictions/bonus-questions";
 import { GuestStore } from "@/components/ui/guest-signup-modal";
@@ -20,10 +21,11 @@ interface PredictionsClientProps {
   allMatches?:        ScheduleMatch[];
 }
 
-type SectionKey = "group" | "tournament" | "bonus";
+type SectionKey = "group" | "knockout" | "tournament" | "bonus";
 
 const TABS: { key: SectionKey; label: string }[] = [
   { key: "group",      label: "GROUP STAGE" },
+  { key: "knockout",   label: "KNOCKOUT" },
   { key: "tournament", label: "TOURNAMENT PICKS" },
   { key: "bonus",      label: "BONUS QUESTIONS" },
 ];
@@ -42,7 +44,7 @@ export function PredictionsClient({
   const predictedCount = groupStageMatchIds.filter(id => ctxPredictions[id] != null).length;
 
   const carouselRef  = useRef<HTMLDivElement>(null);
-  const sectionRefs  = useRef<(HTMLDivElement | null)[]>([null, null, null]);
+  const sectionRefs  = useRef<(HTMLDivElement | null)[]>([null, null, null, null]);
   // Prevent observer from overriding an in-flight programmatic scroll
   const scrollingRef = useRef(false);
 
@@ -217,8 +219,18 @@ export function PredictionsClient({
           />
         </div>
 
-        {/* ── Section 2: TOURNAMENT PICKS ───────────────────────── */}
+        {/* ── Section 2: KNOCKOUT ───────────────────────────────── */}
         <div ref={el => { sectionRefs.current[1] = el; }} style={cardStyle}>
+          <div className="mb-3">
+            <span className="font-barlow font-black uppercase" style={{ fontSize: 12, fontWeight: 700, color: "#e0f2e0" }}>
+              Knockout
+            </span>
+          </div>
+          <KnockoutPredictions groupId={groupId} userId={userId} allMatches={allMatches} />
+        </div>
+
+        {/* ── Section 3: TOURNAMENT PICKS ───────────────────────── */}
+        <div ref={el => { sectionRefs.current[2] = el; }} style={cardStyle}>
           <div className="mb-3">
             <span className="font-barlow font-black uppercase" style={{ fontSize: 12, fontWeight: 700, color: "#e0f2e0" }}>
               Tournament Picks
@@ -227,8 +239,8 @@ export function PredictionsClient({
           <TournamentPicks groupId={groupId} userId={userId} locked={false} />
         </div>
 
-        {/* ── Section 3: BONUS QUESTIONS ────────────────────────── */}
-        <div ref={el => { sectionRefs.current[2] = el; }} style={cardStyle}>
+        {/* ── Section 4: BONUS QUESTIONS ────────────────────────── */}
+        <div ref={el => { sectionRefs.current[3] = el; }} style={cardStyle}>
           <div className="mb-3">
             <span className="font-barlow font-black uppercase" style={{ fontSize: 12, fontWeight: 700, color: "#e0f2e0" }}>
               Bonus Questions

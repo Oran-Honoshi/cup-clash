@@ -108,7 +108,6 @@ export async function scoreMatchResult(params: {
   awayScore:      number;
   homeScoreET?:   number | null;
   awayScoreET?:   number | null;
-  penaltyWinner?: string | null;
   rules:          ScoringRules;
   sbClient?:      SupabaseClient;
 }): Promise<void> {
@@ -116,16 +115,14 @@ export async function scoreMatchResult(params: {
   const predictions = await getMatchPredictions(params.matchId, params.groupId, c);
   if (!predictions.length) return;
 
-  // Fetch match stage, home team, and penalty_winner in one query
+  // Fetch match stage in one query
   const { data: matchRow } = await c
     .from("matches")
-    .select("stage, home, penalty_winner")
+    .select("stage")
     .eq("id", params.matchId)
     .maybeSingle();
-  type MatchRow = { stage: string; home: string; penalty_winner: string | null } | null;
+  type MatchRow = { stage: string } | null;
   const stage = ((matchRow as MatchRow)?.stage ?? "Group") as Match["stage"];
-  const matchHome = (matchRow as MatchRow)?.home ?? null;
-  const penaltyWinner = params.penaltyWinner ?? (matchRow as MatchRow)?.penalty_winner ?? null;
 
   const { correctOutcome, exactScore } = getStagePoints(stage, params.rules, params.rules.useProgressiveScoring);
 
@@ -153,19 +150,11 @@ export async function scoreMatchResult(params: {
   const effectiveHome = (overrideRow as { home_score: number } | null)?.home_score ?? policyHome;
   const effectiveAway = (overrideRow as { away_score: number } | null)?.away_score ?? policyAway;
 
-  // When the effective score is a draw AND there's a penalty winner, use the
-  // advancing team as the real winner for outcome scoring (not the draw).
-  // This only applies under inc_extra_time: a shootout is irrelevant to a
-  // regular_90 (90-minute-only) rule, so penalty_winner must never override
-  // the effective score used for that policy's grading.
-  const isDraw = effectiveHome === effectiveAway;
-  let effectiveRealWinner: "H" | "A" | "D";
-  if (policy === 'inc_extra_time' && isDraw && penaltyWinner && matchHome) {
-    effectiveRealWinner = penaltyWinner === matchHome ? "H" : "A";
-  } else {
-    effectiveRealWinner = effectiveHome > effectiveAway ? "H"
-      : effectiveHome < effectiveAway ? "A" : "D";
-  }
+  // A penalty shootout never changes the effective score for match-prediction
+  // grading — it only decides bracket advancement, which is scored separately.
+  const effectiveRealWinner: "H" | "A" | "D" =
+    effectiveHome > effectiveAway ? "H"
+    : effectiveHome < effectiveAway ? "A" : "D";
 
   const updates = predictions.map(pred => {
     const isExact =
