@@ -75,8 +75,10 @@ export async function POST(request: NextRequest) {
           user_id:        userId,
           group_id:       groupId,
           payment_status: "paid",
+          paid:           true,
           can_predict:    true,
           is_ad_free:     true,
+          paid_at:        now.toISOString(),
           joined_at:      now.toISOString(),
         }, { onConflict: "user_id,group_id" });
       }
@@ -94,7 +96,7 @@ export async function POST(request: NextRequest) {
       const { data: profile } = await sb.from("profiles").select("id").eq("email", userEmail).single();
       if (profile?.id) {
         await sb.from("group_members")
-          .update({ payment_status: "refunded", is_ad_free: false })
+          .update({ payment_status: "refunded", paid: false, is_ad_free: false })
           .eq("user_id", profile.id)
           .eq("group_id", groupId);
       }

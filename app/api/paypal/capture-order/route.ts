@@ -79,7 +79,7 @@ export async function POST(request: NextRequest) {
 
     if (existing) {
       await sb.from("group_members")
-        .update({ payment_status: "paid", can_predict: true, is_ad_free: true, paid_at: new Date().toISOString() })
+        .update({ payment_status: "paid", paid: true, can_predict: true, is_ad_free: true, paid_at: new Date().toISOString() })
         .eq("group_id", groupId)
         .eq("user_id", user.id);
     } else {
@@ -88,6 +88,7 @@ export async function POST(request: NextRequest) {
         group_id:       groupId,
         user_id:        user.id,
         payment_status: "paid",
+        paid:           true,
         can_predict:    true,
         is_ad_free:     true,
         paid_at:        new Date().toISOString(),

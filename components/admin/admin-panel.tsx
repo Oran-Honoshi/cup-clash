@@ -32,6 +32,8 @@ export function AdminPanel({ group, initialMembers, isOwner, currentUserId }: Ad
   const router = useRouter();
   const { t } = useLocale();
   const [members,      setMembers]      = useState<Member[]>(initialMembers);
+  const [payingMemberId, setPayingMemberId] = useState<string | null>(null);
+  const [paidError,      setPaidError]      = useState<string | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleting,          setDeleting]          = useState(false);
   const [payouts,      setPayouts]      = useState({
@@ -99,15 +101,28 @@ export function AdminPanel({ group, initialMembers, isOwner, currentUserId }: Ad
 
   const togglePaid = async (memberId: string, currentPaid: boolean) => {
     const newPaid = !currentPaid;
+    setPayingMemberId(memberId);
+    setPaidError(null);
     setMembers(prev => prev.map(m => m.id === memberId ? { ...m, paid: newPaid } : m));
-    const sb = createClient();
-    const { data: { session } } = await sb.auth.getSession();
-    const token = session?.access_token ?? "";
-    await fetch("/api/admin/set-member-paid", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
-      body: JSON.stringify({ groupId: group.id, memberId, paid: newPaid }),
-    });
+    try {
+      const sb = createClient();
+      const { data: { session } } = await sb.auth.getSession();
+      const token = session?.access_token ?? "";
+      const res = await fetch("/api/admin/set-member-paid", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+        body: JSON.stringify({ groupId: group.id, memberId, paid: newPaid }),
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error((body as { error?: string }).error ?? "Failed to save");
+      }
+    } catch (err) {
+      setMembers(prev => prev.map(m => m.id === memberId ? { ...m, paid: currentPaid } : m));
+      setPaidError(err instanceof Error ? err.message : "Failed to save payment status");
+    } finally {
+      setPayingMemberId(null);
+    }
   };
 
   const setMemberRole = async (memberId: string, role: MemberRole) => {
@@ -265,6 +280,10 @@ export function AdminPanel({ group, initialMembers, isOwner, currentUserId }: Ad
             }} />
         </div>
 
+        {paidError && (
+          <p className="text-xs mb-3" style={{ color: "#f87171" }}>{paidError}</p>
+        )}
+
         {/* Member list */}
         <div className="space-y-1">
           {members.map(m => {
@@ -329,13 +348,16 @@ export function AdminPanel({ group, initialMembers, isOwner, currentUserId }: Ad
                       </span>
                     )}
                     <button onClick={() => togglePaid(m.id, m.paid)}
-                      className="flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider px-2 py-1 rounded-full transition-all"
+                      disabled={payingMemberId === m.id}
+                      className="flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider px-2 py-1 rounded-full transition-all disabled:opacity-50"
                       style={m.paid ? {
                         background: "rgba(0,255,136,0.12)", border: "1px solid rgba(0,255,136,0.25)", color: "#00FF88",
                       } : {
                         background: "rgba(248,113,113,0.1)", border: "1px solid rgba(248,113,113,0.2)", color: "#f87171",
                       }}>
-                      {m.paid ? <><CheckCircle size={11} /> Paid</> : <><XCircle size={11} /> Unpaid</>}
+                      {payingMemberId === m.id
+                        ? <><RefreshCw size={11} className="animate-spin" /> Saving…</>
+                        : m.paid ? <><CheckCircle size={11} /> Paid</> : <><XCircle size={11} /> Unpaid</>}
                     </button>
                   </div>
                 </div>
