@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { MemberAvatar } from "@/components/ui/member-avatar";
 import type { Member } from "@/lib/types";
 import type { Group } from "@/lib/types";
+import { compareMembersForRanking } from "@/lib/leaderboard-sort";
 
 interface WinnerPosterProps {
   group: Group;
@@ -14,7 +15,7 @@ interface WinnerPosterProps {
 
 export function WinnerPoster({ group, members }: WinnerPosterProps) {
   const posterRef = useRef<HTMLDivElement>(null);
-  const sorted = [...members].sort((a, b) => b.points - a.points);
+  const sorted = [...members].sort(compareMembersForRanking);
   const winner = sorted[0];
 
   const downloadPoster = async () => {

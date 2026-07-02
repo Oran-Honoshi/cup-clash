@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import type { Group, Member } from "@/lib/types";
+import { sortMembersForRanking } from "@/lib/leaderboard-sort";
 
 // Standard anon client for authenticated requests
 function sb() {
@@ -38,6 +39,7 @@ function mapGroup(d: {
   show_payment_link?: boolean | null;
   group_mode?: string | null;
   winner_message?: string | null;
+  payout_splits?: { first: string[] | null; second: string[] | null; third: string[] | null } | null;
 }): Group {
   return {
     id:                      d.id,
@@ -68,6 +70,11 @@ function mapGroup(d: {
       second: `${d.payout_second ?? 30}%`,
       third:  `${d.payout_third  ?? 10}%`,
     },
+    payoutSplits: {
+      first:  d.payout_splits?.first  ?? null,
+      second: d.payout_splits?.second ?? null,
+      third:  d.payout_splits?.third  ?? null,
+    },
   };
 }
 
@@ -79,7 +86,7 @@ const GROUP_SELECT = `
   currency, currency_symbol, payment_link,
   enable_group_stage_prize, group_stage_prize_amount, group_stage_prize_label,
   show_prize_split, show_entry_fee, show_prize_pot, show_buy_in_tracker, show_payment_link,
-  group_mode, winner_message
+  group_mode, winner_message, payout_splits
 `;
 
 // ── Get group by ID ──────────────────────────────────────────────────────────
@@ -116,7 +123,7 @@ export async function getGroupByInviteCode(code: string): Promise<Group | null> 
 // ── Members / Leaderboard ────────────────────────────────────────────────────
 
 export async function getMembers(groupId: string): Promise<Member[]> {
-  const [membersRes, ptRes, matchPredsRes, tournamentRes, bonusRes] = await Promise.all([
+  const [membersRes, ptRes, matchPredsRes, tournamentRes, bonusRes, finalRes] = await Promise.all([
     sbAdmin()
       .from("group_members")
       .select(`user_id, payment_status, can_predict, joined_at, role, profiles ( id, name, country, avatar_url )`)
@@ -132,7 +139,7 @@ export async function getMembers(groupId: string): Promise<Member[]> {
 
     sbAdmin()
       .from("group_predictions")
-      .select("user_id, pred_type, points_earned")
+      .select("user_id, pred_type, pred_value, points_earned")
       .eq("group_id", groupId)
       .neq("pred_type", "match"),
 
@@ -140,6 +147,12 @@ export async function getMembers(groupId: string): Promise<Member[]> {
       .from("bonus_answers")
       .select("user_id, points_earned")
       .eq("group_id", groupId),
+
+    sbAdmin()
+      .from("matches")
+      .select("final_first_goal_minute")
+      .eq("id", "final")
+      .maybeSingle(),
   ]);
 
   if (membersRes.error) throw membersRes.error;
@@ -168,11 +181,20 @@ export async function getMembers(groupId: string): Promise<Member[]> {
   }
 
   type MatchPredRow = { user_id: string; match_id: string; is_exact: boolean | null; points_earned: number | null };
-  type TournRow2   = { user_id: string; pred_type: string; points_earned: number | null };
+  type TournRow2   = { user_id: string; pred_type: string; pred_value: string | null; points_earned: number | null };
   type BonusRow    = { user_id: string; points_earned: number | null };
 
   const statsMap: Record<string, { exactScores: number; correctPredictions: number }> = {};
   const breakdownMap: Record<string, { gsPts: number; knockoutPts: number; bestThirdPts: number; bonusPts: number }> = {};
+
+  // Golden Guess tiebreaker data
+  const actualFinalGoalMinute = (finalRes.data as { final_first_goal_minute: number | null } | null)
+    ?.final_first_goal_minute ?? null;
+  const tiebreakMap: Record<string, { predictedMinute: number | null; correctWinnerPick: boolean }> = {};
+  const getTiebreak = (uid: string) => {
+    if (!tiebreakMap[uid]) tiebreakMap[uid] = { predictedMinute: null, correctWinnerPick: false };
+    return tiebreakMap[uid];
+  };
 
   const getBreakdown = (uid: string) => {
     if (!breakdownMap[uid]) breakdownMap[uid] = { gsPts: 0, knockoutPts: 0, bestThirdPts: 0, bonusPts: 0 };
@@ -196,6 +218,14 @@ export async function getMembers(groupId: string): Promise<Member[]> {
   }
 
   for (const r of (tournamentRes.data ?? []) as TournRow2[]) {
+    if (r.pred_type === "final_goal_minute" && r.pred_value) {
+      const minute = parseInt(r.pred_value, 10);
+      if (!Number.isNaN(minute)) getTiebreak(r.user_id).predictedMinute = minute;
+    }
+    if (r.pred_type === "winner" && (r.points_earned ?? 0) > 0) {
+      getTiebreak(r.user_id).correctWinnerPick = true;
+    }
+
     const pts = r.points_earned ?? 0;
     if (pts <= 0) continue;
     const b = getBreakdown(r.user_id);
@@ -209,7 +239,7 @@ export async function getMembers(groupId: string): Promise<Member[]> {
     getBreakdown(r.user_id).bonusPts += pts;
   }
 
-  return (membersRes.data as unknown as Array<{
+  const members = (membersRes.data as unknown as Array<{
     user_id: string;
     payment_status: string;
     can_predict: boolean;
@@ -218,25 +248,36 @@ export async function getMembers(groupId: string): Promise<Member[]> {
     profiles: { id: string; name: string; country: string | null; avatar_url: string | null } | null;
   }>)
     .filter(row => row.profiles !== null)
-    .map(row => ({
-      id:                  row.user_id,
-      name:                row.profiles!.name,
-      country:             row.profiles!.country ?? "",
-      avatarUrl:           row.profiles!.avatar_url ?? null,
-      points:              pointsMap[row.user_id] ?? 0,
-      paid:                row.payment_status === "paid",
-      canPredict:          row.can_predict,
-      stakePaid:           false,
-      joinedAt:            row.joined_at,
-      role:                row.role ?? 'member',
-      exactScores:         statsMap[row.user_id]?.exactScores ?? 0,
-      correctPredictions:  statsMap[row.user_id]?.correctPredictions ?? 0,
-      gsPts:               breakdownMap[row.user_id]?.gsPts        ?? 0,
-      knockoutPts:         breakdownMap[row.user_id]?.knockoutPts  ?? 0,
-      bestThirdPts:        breakdownMap[row.user_id]?.bestThirdPts ?? 0,
-      bonusPts:            breakdownMap[row.user_id]?.bonusPts     ?? 0,
-    }))
-    .sort((a, b) => b.points - a.points);
+    .map(row => {
+      const tiebreak = tiebreakMap[row.user_id];
+      const predictedMinute = tiebreak?.predictedMinute ?? null;
+      const finalGoalMinuteDistance = actualFinalGoalMinute != null && predictedMinute != null
+        ? Math.abs(predictedMinute - actualFinalGoalMinute)
+        : undefined;
+
+      return {
+        id:                  row.user_id,
+        name:                row.profiles!.name,
+        country:             row.profiles!.country ?? "",
+        avatarUrl:           row.profiles!.avatar_url ?? null,
+        points:              pointsMap[row.user_id] ?? 0,
+        paid:                row.payment_status === "paid",
+        canPredict:          row.can_predict,
+        stakePaid:           false,
+        joinedAt:            row.joined_at,
+        role:                row.role ?? 'member',
+        exactScores:         statsMap[row.user_id]?.exactScores ?? 0,
+        correctPredictions:  statsMap[row.user_id]?.correctPredictions ?? 0,
+        gsPts:               breakdownMap[row.user_id]?.gsPts        ?? 0,
+        knockoutPts:         breakdownMap[row.user_id]?.knockoutPts  ?? 0,
+        bestThirdPts:        breakdownMap[row.user_id]?.bestThirdPts ?? 0,
+        bonusPts:            breakdownMap[row.user_id]?.bonusPts     ?? 0,
+        finalGoalMinuteDistance,
+        correctWinnerPick:   tiebreak?.correctWinnerPick ?? false,
+      };
+    });
+
+  return sortMembersForRanking(members);
 }
 
 export async function getLeaderboard(groupId: string, limit = 8): Promise<Member[]> {

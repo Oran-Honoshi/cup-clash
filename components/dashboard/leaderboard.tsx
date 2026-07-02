@@ -10,6 +10,7 @@ import { FOCUS_RING, FOCUS_RING_INSET } from "@/lib/a11y";
 import { cn } from "@/lib/utils";
 import { countryFlagCode } from "@/lib/countries";
 import type { Member } from "@/lib/types";
+import { compareMembersForRanking } from "@/lib/leaderboard-sort";
 
 // Keyboard activation handler for elements that use role="button".
 // Enter and Space both trigger, matching native button semantics.
@@ -74,7 +75,7 @@ const PODIUM_RING_COLORS = ["#c4c9d4", "#fbbf24", "#f97316"]; // silver, gold, b
 export function Leaderboard({ members, currentUserId, groupId, showGhost = true, scrollable = false, isAdFree, isCorporate, showBestThird = false }: LeaderboardProps) {
   const [selected, setSelected] = useState<Member | null>(null);
 
-  const sorted = [...members].sort((a, b) => b.points - a.points);
+  const sorted = [...members].sort(compareMembersForRanking);
   const ghost  = buildGhostPlayer(members);
 
   const realMembers   = sorted.filter(m => !m.isGhost);

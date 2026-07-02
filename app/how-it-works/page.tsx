@@ -115,7 +115,7 @@ export default function HowItWorksPage() {
           <Section title="4. Leaderboard">
             <div className="text-sm leading-relaxed space-y-3" style={{ color: "rgba(255,255,255,0.7)" }}>
               <p>The leaderboard updates in real-time as match results come in. Every group member is shown — there is no minimum score required to appear.</p>
-              <p><strong className="text-white">Tie-breaker</strong> — if two or more members have identical points at the end of the tournament, the tie is broken by total exact-score predictions, then by total correct-outcome predictions.</p>
+              <p><strong className="text-white">Tie-breaker</strong> — if two or more members have identical points, ties are broken in order: (1) most exact score predictions, (2) closest guess to the minute of the first goal in the Final, (3) a correct Tournament Winner pick. If members are still tied after all three, it's a genuine tie — the group admin can split the prize for that position between them.</p>
             </div>
           </Section>
 

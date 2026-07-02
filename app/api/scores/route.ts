@@ -451,6 +451,15 @@ function parseEvents(events: APIEvent[]): { goals: ParsedGoal[]; cards: ParsedCa
   return { goals, cards };
 }
 
+// Golden Guess tiebreaker: minute of the first goal of the match (any goal type).
+function firstGoalMinute(events: Array<{ minute: number; type: string }> | null): number | null {
+  if (!events?.length) return null;
+  const goalMinutes = events
+    .filter(e => e.type === "goal" || e.type === "own_goal" || e.type === "penalty")
+    .map(e => e.minute);
+  return goalMinutes.length ? Math.min(...goalMinutes) : null;
+}
+
 // ── Bracket advancement — auto-create/confirm next-round matches ───────────────
 //
 // R32 → R16 pairing is officially confirmed per the WC2026 draw and is hardcoded
@@ -961,6 +970,7 @@ export async function POST(request: NextRequest) {
           api_fixture_id: f.fixture.id,
           minute:         f.fixture.status.elapsed ?? null,
           match_events:   matchEvents,
+          ...(dbMatch.id === "final" ? { final_first_goal_minute: firstGoalMinute(matchEvents) } : {}),
         })
         .eq("id", dbMatch.id);
 
@@ -1138,6 +1148,7 @@ export async function POST(request: NextRequest) {
                 home_score:   resolvedHome,
                 away_score:   resolvedAway,
                 match_events: stuckMatchEvents,
+                ...(m.id === "final" ? { final_first_goal_minute: firstGoalMinute(stuckMatchEvents) } : {}),
               })
               .eq("id", m.id);
 

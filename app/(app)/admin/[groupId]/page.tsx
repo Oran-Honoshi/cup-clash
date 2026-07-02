@@ -10,6 +10,7 @@ import { PickOverridesPanel }  from "@/components/admin/pick-overrides-panel";
 import { MatchOverridePanel }  from "@/components/admin/match-override-panel";
 import { WelcomeEmailSender }  from "@/components/admin/welcome-email-sender";
 import { WinnerPoster }        from "@/components/export/winner-poster";
+import { SplitPotPanel }       from "@/components/admin/split-pot-panel";
 import { getGroup, getMembers } from "@/lib/services/groups";
 import { getCurrentUserProfile } from "@/lib/services/user-group";
 import Link from "next/link";
@@ -48,10 +49,12 @@ export default async function AdminGroupPage({ params }: { params: { groupId: st
   }
 
   const groupId = params.groupId;
-  const [group, members] = await Promise.all([
+  const [group, members, finalMatch] = await Promise.all([
     getGroup(groupId),
     getMembers(groupId),
+    sbAdmin().from("matches").select("status").eq("id", "final").maybeSingle(),
   ]);
+  const finalLocked = (finalMatch.data as { status: string } | null)?.status === "finished";
 
   return (
     <div className="space-y-6 max-w-3xl mx-auto pb-32">
@@ -69,6 +72,17 @@ export default async function AdminGroupPage({ params }: { params: { groupId: st
 
       {/* Member management */}
       <AdminPanel group={group} initialMembers={members} isOwner={isOwner} currentUserId={userProfile.id} />
+
+      {/* Split the Pot — only relevant once the Final has been played and there's a genuine tie */}
+      <SplitPotPanel
+        groupId={groupId}
+        members={members}
+        payouts={group.payouts}
+        payoutSplits={group.payoutSplits}
+        buyInAmount={group.buyInAmount}
+        currencySymbol={group.currencySymbol}
+        finalLocked={finalLocked}
+      />
 
       {/* Group settings: buy-in, prize split */}
       <GroupRulesEditor

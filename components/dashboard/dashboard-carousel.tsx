@@ -8,6 +8,7 @@ import { UserAvatar } from "@/components/ui/UserAvatar";
 import { PlayerDrawer } from "@/components/dashboard/player-drawer";
 import type { Match, Member } from "@/lib/types";
 import type { MemberPredictionsResponse } from "@/app/api/member-predictions/route";
+import { compareMembersForRanking } from "@/lib/leaderboard-sort";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -65,7 +66,7 @@ function LeaderboardPanel({ members, currentUserId, groupId, groupName, isAdFree
   isAdFree:      boolean;
   isCorporate:   boolean;
 }) {
-  const sorted = [...members].sort((a, b) => b.points - a.points);
+  const sorted = [...members].sort(compareMembersForRanking);
   const top3   = sorted.slice(0, 3);
   const rest   = sorted.slice(3);
 

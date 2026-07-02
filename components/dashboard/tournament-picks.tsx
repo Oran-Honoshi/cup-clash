@@ -32,6 +32,7 @@ interface Picks {
   bestDefence:     string;
   bestYoungPlayer: string;
   bestThird:       string[];
+  finalGoalMinute: string;
 }
 
 interface ScoringRules {
@@ -230,7 +231,7 @@ function BestThirdPicker({ selected, onToggle, isLocked, pts }: BestThirdPickerP
 
 // ── Main component ─────────────────────────────────────────────────────────────
 export function TournamentPicks({ groupId, userId, locked = false }: TournamentPicksProps) {
-  const [picks,  setPicks]  = useState<Picks>({ winner: "", topScorer: "", topAssister: "", goldenBall: "", bestDefence: "", bestYoungPlayer: "", bestThird: [] });
+  const [picks,  setPicks]  = useState<Picks>({ winner: "", topScorer: "", topAssister: "", goldenBall: "", bestDefence: "", bestYoungPlayer: "", bestThird: [], finalGoalMinute: "" });
   const [rules,  setRules]  = useState<ScoringRules>(DEFAULT_RULES);
   const [saving, setSaving] = useState(false);
   const [saved,  setSaved]  = useState(false);
@@ -248,7 +249,7 @@ export function TournamentPicks({ groupId, userId, locked = false }: TournamentP
   // Load scoring rules and existing picks
   useEffect(() => {
     if (!groupId) return;
-    setPicks({ winner: "", topScorer: "", topAssister: "", goldenBall: "", bestDefence: "", bestYoungPlayer: "", bestThird: [] });
+    setPicks({ winner: "", topScorer: "", topAssister: "", goldenBall: "", bestDefence: "", bestYoungPlayer: "", bestThird: [], finalGoalMinute: "" });
     const sb = createClient();
     sb.from("scoring_rules").select("*").eq("group_id", groupId).maybeSingle()
       .then(({ data }) => { if (data) setRules({ ...DEFAULT_RULES, ...data }); });
@@ -262,7 +263,7 @@ export function TournamentPicks({ groupId, userId, locked = false }: TournamentP
         .eq("user_id", user.id)
         .in("pred_type", [
           "winner", "top_scorer", "top_assister", "golden_ball",
-          "best_defence", "best_young_player",
+          "best_defence", "best_young_player", "final_goal_minute",
           "best_third_1", "best_third_2", "best_third_3", "best_third_4",
           "best_third_5", "best_third_6", "best_third_7", "best_third_8",
         ])
@@ -276,6 +277,7 @@ export function TournamentPicks({ groupId, userId, locked = false }: TournamentP
             if (row.pred_type === "golden_ball")       p.goldenBall      = row.pred_value;
             if (row.pred_type === "best_defence")      p.bestDefence     = row.pred_value;
             if (row.pred_type === "best_young_player") p.bestYoungPlayer = row.pred_value;
+            if (row.pred_type === "final_goal_minute") p.finalGoalMinute = row.pred_value;
             if (row.pred_type.startsWith("best_third_")) {
               p.bestThird = [...(p.bestThird ?? []), row.pred_value];
             }
@@ -313,6 +315,7 @@ export function TournamentPicks({ groupId, userId, locked = false }: TournamentP
     addPick("golden_ball",      currentPicks.goldenBall);
     addPick("best_defence",     currentPicks.bestDefence);
     addPick("best_young_player", currentPicks.bestYoungPlayer);
+    addPick("final_goal_minute", currentPicks.finalGoalMinute);
     currentPicks.bestThird.forEach((c, i) => addPick(`best_third_${i + 1}`, c));
 
     if (rows.length === 0) { setSaving(false); return; }
@@ -419,6 +422,31 @@ export function TournamentPicks({ groupId, userId, locked = false }: TournamentP
           />
         </div>
       )}
+
+      {/* Golden Guess tiebreaker — always collected, used only to break ties */}
+      <div className="p-5" style={glassCard}>
+        <div className="flex items-center gap-2 mb-1">
+          <Trophy size={18} style={{ color: "#0891B2" }} />
+          <span className="font-display text-xl uppercase font-black" style={{ color: "white" }}>Golden Guess Tiebreaker</span>
+        </div>
+        <p className="text-xs mb-3" style={{ color: "rgba(255,255,255,0.4)" }}>
+          Guess the minute of the first goal in the Final — used only as a tiebreaker, not for points.
+        </p>
+        <input
+          type="number"
+          min={1}
+          max={130}
+          inputMode="numeric"
+          placeholder="e.g. 23"
+          value={picks.finalGoalMinute}
+          disabled={isLocked}
+          onChange={e => updatePick("finalGoalMinute", e.target.value)}
+          className="w-full sm:w-40 pl-4 pr-3 py-2 rounded-xl text-sm focus:outline-none disabled:opacity-40"
+          style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", color: "#ffffff" }}
+          onFocus={e => { e.target.style.border = "1px solid #00D4FF"; }}
+          onBlur={e => { e.target.style.border = "1px solid rgba(255,255,255,0.12)"; }}
+        />
+      </div>
 
       {/* Best 3rd place — only if enabled */}
       {rules.enable_best_third && (

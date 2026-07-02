@@ -42,6 +42,11 @@ export interface Group {
     second: string;  // "30%"
     third:  string;  // "10%"
   };
+  payoutSplits: {
+    first:  string[] | null;
+    second: string[] | null;
+    third:  string[] | null;
+  };
 }
 
 export interface Member {
@@ -54,6 +59,8 @@ export interface Member {
   rankDelta?:          number;
   exactScores?:        number;
   correctPredictions?: number;
+  finalGoalMinuteDistance?: number;
+  correctWinnerPick?:  boolean;
   gsPts?:              number;
   knockoutPts?:        number;
   bestThirdPts?:       number;
