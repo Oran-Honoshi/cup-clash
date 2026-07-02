@@ -155,9 +155,12 @@ export async function scoreMatchResult(params: {
 
   // When the effective score is a draw AND there's a penalty winner, use the
   // advancing team as the real winner for outcome scoring (not the draw).
+  // This only applies under inc_extra_time: a shootout is irrelevant to a
+  // regular_90 (90-minute-only) rule, so penalty_winner must never override
+  // the effective score used for that policy's grading.
   const isDraw = effectiveHome === effectiveAway;
   let effectiveRealWinner: "H" | "A" | "D";
-  if (isDraw && penaltyWinner && matchHome) {
+  if (policy === 'inc_extra_time' && isDraw && penaltyWinner && matchHome) {
     effectiveRealWinner = penaltyWinner === matchHome ? "H" : "A";
   } else {
     effectiveRealWinner = effectiveHome > effectiveAway ? "H"
