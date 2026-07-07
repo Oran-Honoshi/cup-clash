@@ -103,6 +103,7 @@ export interface Database {
           home_score: number | null;
           away_score: number | null;
           status: string;
+          time_confirmed: boolean;
         };
         Insert: {
           id: string;
@@ -119,6 +120,7 @@ export interface Database {
           home_score?: number | null;
           away_score?: number | null;
           status?: string;
+          time_confirmed?: boolean;
         };
         Update: {
           home_score?: number | null;
@@ -126,6 +128,7 @@ export interface Database {
           status?: string;
           home?: string;
           away?: string;
+          time_confirmed?: boolean;
         };
       };
       predictions: {

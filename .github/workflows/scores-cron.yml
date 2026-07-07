@@ -1,0 +1,23 @@
+name: Live scores cron
+
+# Vercel Hobby plan caps cron jobs at 2/day, but live scores need to poll every
+# 15-30 min during match windows — so this workflow pings the endpoint instead.
+# Requires repo secret SCORES_APP_URL (e.g. https://cup-clash.vercel.app) and
+# CRON_SECRET (must match the CRON_SECRET env var set in the Vercel project).
+on:
+  schedule:
+    - cron: "*/20 * * * *"
+  workflow_dispatch: {}
+
+jobs:
+  ping-scores:
+    runs-on: ubuntu-latest
+    steps:
+      - name: POST /api/scores
+        run: |
+          curl -sf -X POST "${SCORES_APP_URL}/api/scores" \
+            -H "Authorization: Bearer ${CRON_SECRET}" \
+            -o - -w "\nHTTP %{http_code}\n"
+        env:
+          SCORES_APP_URL: ${{ secrets.SCORES_APP_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}

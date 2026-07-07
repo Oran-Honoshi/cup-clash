@@ -569,11 +569,13 @@ async function advanceR16Slots(sb: SupabaseClient): Promise<void> {
       update.stadium        = apiFixture.fixture.venue.name ?? slot.stadium;
       update.city           = apiFixture.fixture.venue.city ?? slot.city;
       update.api_fixture_id = apiFixture.fixture.id;
+      update.time_confirmed = true;
     } else {
       update.kickoff_at = slot.fallbackKickoff;
       update.stadium    = slot.stadium;
       update.city        = slot.city;
       update.host_country = slot.hostCountry;
+      update.time_confirmed = false; // teams are known but the date is our own guess until API-Football publishes this fixture
     }
 
     const { error } = await sb.from("matches").update(update).eq("id", slot.id);
@@ -587,9 +589,17 @@ async function advanceR16Slots(sb: SupabaseClient): Promise<void> {
 
 async function advanceStage(sb: SupabaseClient, from: string, to: string, apiRound: string, idPrefix: string): Promise<void> {
   const { data: fromRows } = await sb.from("matches").select("id, status").eq("stage", from);
-  if (!fromRows?.length || !fromRows.every(r => r.status === "finished")) return;
+  // Don't wait for the whole round to finish — API-Football publishes each fixture
+  // of `to` as soon as that fixture's own two feeders are decided, so partial
+  // population (e.g. 3 of 4 QF pairings while the 4th R16 match is still live) is
+  // both safe and expected. Only skip if literally nothing in `from` has finished yet.
+  if (!fromRows?.length || !fromRows.some(r => r.status === "finished")) return;
 
-  const { data: toRows } = await sb.from("matches").select("id, home, away").eq("stage", to);
+  const { data: toRows } = await sb.from("matches")
+    .select("id, home, away, api_fixture_id")
+    .eq("stage", to)
+    .order("id", { ascending: true });
+  const existing = (toRows ?? []) as Array<{ id: string; home: string; away: string; api_fixture_id: number | null }>;
 
   const url = `${API_BASE}/fixtures?league=${LEAGUE_ID}&season=${SEASON}&round=${encodeURIComponent(apiRound)}`;
   let apiFixtures: APIFixture[] = [];
@@ -625,33 +635,47 @@ async function advanceStage(sb: SupabaseClient, from: string, to: string, apiRou
     return null;
   };
 
-  let n = 0;
+  // Fixed-ID placeholder rows (e.g. "qf-01") are filled in place so predictions
+  // and UI referencing those IDs keep working; only overflow gets a freshly minted ID.
+  const openPlaceholders = existing.filter(r => !r.api_fixture_id);
+  let n = existing.length;
+
   for (const f of apiFixtures) {
     const homeName = canonicalName(f.teams.home.name);
     const awayName = canonicalName(f.teams.away.name);
-    const already = (toRows ?? []).some(r =>
-      (r.home === homeName && r.away === awayName) || (r.home === awayName && r.away === homeName)
+    const already = existing.some(r =>
+      r.api_fixture_id && ((r.home === homeName && r.away === awayName) || (r.home === awayName && r.away === homeName))
     );
     if (already) continue;
 
-    n++;
-    const newId = `${idPrefix}${String(n).padStart(3, "0")}`;
-    const { error } = await sb.from("matches").insert({
-      id: newId,
+    const fields = {
       home: homeName, away: awayName,
       home_flag: flagFor(homeName), away_flag: flagFor(awayName),
       kickoff_at: f.fixture.date,
-      stage: to,
       stadium: f.fixture.venue.name ?? "TBD",
       city: f.fixture.venue.city ?? "TBD",
-      host_country: "USA",
       status: "upcoming",
       api_fixture_id: f.fixture.id,
-    });
-    if (error) {
-      console.error(`[scores/cron] Bracket: failed to create ${to} match ${newId}:`, error);
+      time_confirmed: true,
+    };
+
+    const placeholder = openPlaceholders.shift();
+    if (placeholder) {
+      const { error } = await sb.from("matches").update(fields).eq("id", placeholder.id);
+      if (error) {
+        console.error(`[scores/cron] Bracket: failed to update ${to} match ${placeholder.id}:`, error);
+      } else {
+        console.log(`[scores/cron] Bracket: ${placeholder.id} → ${homeName} vs ${awayName} (API-confirmed)`);
+      }
     } else {
-      console.log(`[scores/cron] Bracket: created ${to} match ${newId}: ${homeName} vs ${awayName} (API-confirmed)`);
+      n++;
+      const newId = `${idPrefix}-${String(n).padStart(2, "0")}`;
+      const { error } = await sb.from("matches").insert({ id: newId, stage: to, host_country: "USA", ...fields });
+      if (error) {
+        console.error(`[scores/cron] Bracket: failed to create ${to} match ${newId}:`, error);
+      } else {
+        console.log(`[scores/cron] Bracket: created ${to} match ${newId}: ${homeName} vs ${awayName} (API-confirmed)`);
+      }
     }
   }
 }

@@ -20,6 +20,7 @@ interface BracketMatch {
   time: string;
   stadium: string;
   city: string;
+  timeConfirmed?: boolean; // false ⇒ date/time/venue is a guess, not yet confirmed by API-Football
   homeScore?: number;
   awayScore?: number;
   homeScoreET?: number;
@@ -59,16 +60,18 @@ const R16_MATCHES: BracketMatch[] = [
   { id: "r16-8", home: { label: "W R32-15", isConfirmed: false }, away: { label: "W R32-16", isConfirmed: false },date: "Jul 12", time: "20:00 ET", stadium: "BC Place",                 city: "Vancouver",    stage: "Round of 16" },
 ];
 
+// Fallback skeleton shown only until the DB fetch below resolves — dates/venues
+// here are placeholders, not real fixture data, hence timeConfirmed: false.
 const QF_MATCHES: BracketMatch[] = [
-  { id: "qf-1", home: { label: "W R16-1", isConfirmed: false }, away: { label: "W R16-2", isConfirmed: false }, date: "Jul 15", time: "16:00 ET", stadium: "MetLife Stadium",  city: "New York/NJ",   stage: "Quarter-Final" },
-  { id: "qf-2", home: { label: "W R16-3", isConfirmed: false }, away: { label: "W R16-4", isConfirmed: false }, date: "Jul 15", time: "20:00 ET", stadium: "SoFi Stadium",     city: "Los Angeles",   stage: "Quarter-Final" },
-  { id: "qf-3", home: { label: "W R16-5", isConfirmed: false }, away: { label: "W R16-6", isConfirmed: false }, date: "Jul 16", time: "16:00 ET", stadium: "AT&T Stadium",     city: "Dallas",        stage: "Quarter-Final" },
-  { id: "qf-4", home: { label: "W R16-7", isConfirmed: false }, away: { label: "W R16-8", isConfirmed: false }, date: "Jul 16", time: "20:00 ET", stadium: "Levi's Stadium",   city: "San Francisco", stage: "Quarter-Final" },
+  { id: "qf-1", home: { label: "W R16-1", isConfirmed: false }, away: { label: "W R16-2", isConfirmed: false }, date: "Jul 15", time: "16:00 ET", stadium: "MetLife Stadium",  city: "New York/NJ",   timeConfirmed: false, stage: "Quarter-Final" },
+  { id: "qf-2", home: { label: "W R16-3", isConfirmed: false }, away: { label: "W R16-4", isConfirmed: false }, date: "Jul 15", time: "20:00 ET", stadium: "SoFi Stadium",     city: "Los Angeles",   timeConfirmed: false, stage: "Quarter-Final" },
+  { id: "qf-3", home: { label: "W R16-5", isConfirmed: false }, away: { label: "W R16-6", isConfirmed: false }, date: "Jul 16", time: "16:00 ET", stadium: "AT&T Stadium",     city: "Dallas",        timeConfirmed: false, stage: "Quarter-Final" },
+  { id: "qf-4", home: { label: "W R16-7", isConfirmed: false }, away: { label: "W R16-8", isConfirmed: false }, date: "Jul 16", time: "20:00 ET", stadium: "Levi's Stadium",   city: "San Francisco", timeConfirmed: false, stage: "Quarter-Final" },
 ];
 
 const SF_MATCHES: BracketMatch[] = [
-  { id: "sf-1", home: { label: "W QF-1", isConfirmed: false }, away: { label: "W QF-2", isConfirmed: false }, date: "Jul 21", time: "20:00 ET", stadium: "MetLife Stadium", city: "New York/NJ", stage: "Semi-Final" },
-  { id: "sf-2", home: { label: "W QF-3", isConfirmed: false }, away: { label: "W QF-4", isConfirmed: false }, date: "Jul 22", time: "20:00 ET", stadium: "AT&T Stadium",   city: "Dallas",      stage: "Semi-Final" },
+  { id: "sf-1", home: { label: "W QF-1", isConfirmed: false }, away: { label: "W QF-2", isConfirmed: false }, date: "Jul 21", time: "20:00 ET", stadium: "MetLife Stadium", city: "New York/NJ", timeConfirmed: false, stage: "Semi-Final" },
+  { id: "sf-2", home: { label: "W QF-3", isConfirmed: false }, away: { label: "W QF-4", isConfirmed: false }, date: "Jul 22", time: "20:00 ET", stadium: "AT&T Stadium",   city: "Dallas",      timeConfirmed: false, stage: "Semi-Final" },
 ];
 
 const ROUND_TABS = [
@@ -87,6 +90,7 @@ const FINAL_MATCH: BracketMatch = {
   time: "18:00 ET",
   stadium: "MetLife Stadium",
   city: "New York/NJ",
+  timeConfirmed: false,
   stage: "Final",
 };
 
@@ -174,7 +178,9 @@ function BracketMatchCard({ match, highlight = false }: { match: BracketMatch; h
       <ScoreBadges match={match} />
       <div className="px-3 pb-3 flex items-center gap-3 flex-wrap"
         style={{ fontSize: 10, color: "rgba(255,255,255,0.3)" }}>
-        <span className="flex items-center gap-1"><Clock size={9} />{match.date} · {match.time}</span>
+        <span className="flex items-center gap-1">
+          <Clock size={9} />{match.timeConfirmed === false ? "Date TBD" : `${match.date} · ${match.time}`}
+        </span>
         <span className="flex items-center gap-1"><MapPin size={9} />{match.city}</span>
       </div>
     </motion.div>
@@ -211,6 +217,7 @@ type DbMatch = {
   home_score: number | null; away_score: number | null;
   home_score_et: number | null; away_score_et: number | null;
   penalty_winner: string | null;
+  time_confirmed: boolean;
   stage: string;
 };
 
@@ -224,6 +231,7 @@ function dbMatchToBracket(m: DbMatch, stageLabel: string): BracketMatch {
     time: kickoff.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", hour12: false }),
     stadium: m.stadium ?? "TBD",
     city: m.city ?? "TBD",
+    timeConfirmed: m.time_confirmed,
     homeScore:     m.home_score     ?? undefined,
     awayScore:     m.away_score     ?? undefined,
     homeScoreET:   m.home_score_et  ?? undefined,
@@ -236,23 +244,32 @@ function dbMatchToBracket(m: DbMatch, stageLabel: string): BracketMatch {
 export function KnockoutBracket({ groupId: _groupId }: { groupId?: string }) {
   const [r32Matches, setR32Matches] = useState<BracketMatch[]>(R32_MATCHES);
   const [r16Matches, setR16Matches] = useState<BracketMatch[]>(R16_MATCHES);
+  const [qfMatches, setQfMatches] = useState<BracketMatch[]>(QF_MATCHES);
+  const [sfMatches, setSfMatches] = useState<BracketMatch[]>(SF_MATCHES);
+  const [finalMatch, setFinalMatch] = useState<BracketMatch>(FINAL_MATCH);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const SELECT = "id, home, away, home_flag, away_flag, kickoff_at, stage, stadium, city, home_score, away_score, home_score_et, away_score_et, penalty_winner";
+    const SELECT = "id, home, away, home_flag, away_flag, kickoff_at, stage, stadium, city, home_score, away_score, home_score_et, away_score_et, penalty_winner, time_confirmed";
     createClient()
       .from("matches")
       .select(SELECT)
-      .in("stage", ["R32", "R16"])
+      .in("stage", ["R32", "R16", "QF", "SF", "Final"])
       .order("kickoff_at", { ascending: true })
       .then(({ data }) => {
         if (!data?.length) return;
         const rows = data as DbMatch[];
         const r32 = rows.filter(m => m.stage === "R32");
         const r16 = rows.filter(m => m.stage === "R16");
+        const qf  = rows.filter(m => m.stage === "QF");
+        const sf  = rows.filter(m => m.stage === "SF");
+        const fn  = rows.filter(m => m.stage === "Final");
 
         if (r32.length) setR32Matches(r32.map(m => dbMatchToBracket(m, "Round of 32")));
         if (r16.length) setR16Matches(r16.map(m => dbMatchToBracket(m, "Round of 16")));
+        if (qf.length)  setQfMatches(qf.map(m => dbMatchToBracket(m, "Quarter-Final")));
+        if (sf.length)  setSfMatches(sf.map(m => dbMatchToBracket(m, "Semi-Final")));
+        if (fn.length)  setFinalMatch(dbMatchToBracket(fn[0], "Final"));
       });
   }, []);
 
@@ -337,11 +354,11 @@ export function KnockoutBracket({ groupId: _groupId }: { groupId?: string }) {
             <div className="flex flex-col justify-center">
               <ChevronRight size={20} style={{ color: "rgba(255,255,255,0.25)" }} />
             </div>
-            <StageColumn id="round-qf" title="Quarter-Finals" matches={QF_MATCHES} color="#8B5CF6" />
+            <StageColumn id="round-qf" title="Quarter-Finals" matches={qfMatches} color="#8B5CF6" />
             <div className="flex flex-col justify-center">
               <ChevronRight size={20} style={{ color: "rgba(255,255,255,0.25)" }} />
             </div>
-            <StageColumn id="round-sf" title="Semi-Finals" matches={SF_MATCHES} color="#8B5CF6" />
+            <StageColumn id="round-sf" title="Semi-Finals" matches={sfMatches} color="#8B5CF6" />
             <div className="flex flex-col justify-center">
               <ChevronRight size={20} style={{ color: "rgba(255,255,255,0.25)" }} />
             </div>
@@ -350,9 +367,11 @@ export function KnockoutBracket({ groupId: _groupId }: { groupId?: string }) {
               <div className="flex items-center gap-2 mb-3 pb-2 border-b border-white/[0.06]">
                 <Trophy size={14} style={{ color: "#D4AF37" }} />
                 <span className="label-caps">Final</span>
-                <span style={{ fontSize: 10, color: "rgba(255,255,255,0.25)" }}>MetLife · Jul 19</span>
+                <span style={{ fontSize: 10, color: "rgba(255,255,255,0.25)" }}>
+                  {finalMatch.city} · {finalMatch.timeConfirmed === false ? "Date TBD" : finalMatch.date}
+                </span>
               </div>
-              <BracketMatchCard match={FINAL_MATCH} highlight />
+              <BracketMatchCard match={finalMatch} highlight />
             </div>
           </div>
         </div>
