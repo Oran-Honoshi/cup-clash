@@ -78,14 +78,15 @@ function fmtScore(h: number, a: number) { return `${h}–${a}`; }
 // Server timezone (UTC) ≠ viewer timezone, so any synchronous toLocaleTimeString
 // call produces the wrong time during SSR. useState("") ensures the SSR HTML is
 // neutral and the useEffect sets the correct local value after hydration.
-function MatchDateTime({ utcTime }: { utcTime: string }) {
+function MatchDateTime({ utcTime, timeConfirmed }: { utcTime: string; timeConfirmed?: boolean }) {
   const [label, setLabel] = useState("");
   useEffect(() => {
+    if (timeConfirmed === false) { setLabel("Date TBD"); return; }
     const d    = new Date(utcTime);
     const date = d.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
     const time = d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", hour12: false });
     setLabel(`${date} · ${time}`);
-  }, [utcTime]);
+  }, [utcTime, timeConfirmed]);
   return <span suppressHydrationWarning>{label}</span>;
 }
 
@@ -518,7 +519,7 @@ export function PredictionsSummaryClient({
                         {/* Date / time / result */}
                         <div className="flex items-center gap-1.5 flex-wrap">
                           <span className="text-[9px]" style={{ color: "rgba(255,255,255,0.35)" }}>
-                            <MatchDateTime utcTime={m.kickoff_at} />
+                            <MatchDateTime utcTime={m.kickoff_at} timeConfirmed={m.time_confirmed} />
                           </span>
                           {finished && (
                             <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full"

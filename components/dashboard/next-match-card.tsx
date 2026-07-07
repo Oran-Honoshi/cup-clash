@@ -43,10 +43,12 @@ export function NextMatchCard({ match, groupId = "", cardLabel }: NextMatchCardP
 
   const matchDate        = new Date(match.time);
   const minutesToKickoff = differenceInMinutes(matchDate, new Date());
+  const dateConfirmed    = match.timeConfirmed !== false;
 
-  const etFallback = formatInTimeZone(matchDate, "America/New_York", "EEE dd MMM · h:mm a 'ET'");
+  const etFallback = dateConfirmed ? formatInTimeZone(matchDate, "America/New_York", "EEE dd MMM · h:mm a 'ET'") : "Date TBD";
   const [formattedTime, setFormattedTime] = useState(etFallback);
   useEffect(() => {
+    if (!dateConfirmed) { setFormattedTime("Date TBD"); return; }
     const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
     const d = matchDate;
     const dayStr  = d.toLocaleDateString("en", { timeZone: tz, weekday: "short", day: "2-digit", month: "short" });
@@ -54,7 +56,7 @@ export function NextMatchCard({ match, groupId = "", cardLabel }: NextMatchCardP
     const tzAbbr  = new Intl.DateTimeFormat("en", { timeZoneName: "short", timeZone: tz })
       .formatToParts(d).find(p => p.type === "timeZoneName")?.value ?? "";
     setFormattedTime(`${dayStr} · ${timeStr} ${tzAbbr}`);
-  }, [match.time]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [match.time, dateConfirmed]); // eslint-disable-line react-hooks/exhaustive-deps
   const isLocked         = minutesToKickoff <= 5;
   const isLive           = minutesToKickoff <= 0 && minutesToKickoff > -120;
 

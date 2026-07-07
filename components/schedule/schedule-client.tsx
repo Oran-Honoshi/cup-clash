@@ -57,6 +57,7 @@ export interface ScheduleClientProps {
   matchResults: Record<string, MatchResult>;
   matchTeams?: Record<string, { home: string; away: string; homeFlagCode?: string; awayFlagCode?: string }>;
   matchKickoffs?: Record<string, string>;
+  matchTimeConfirmed?: Record<string, boolean>;
   initialPredictions: Record<string, UserPrediction>;
   isAdFree: boolean;
   isCorporate: boolean;
@@ -257,6 +258,7 @@ function MatchCard({
   saveStatus,
   teamOverride,
   kickoff,
+  timeConfirmed,
 }: {
   match: ScheduleMatch;
   state: ReturnType<typeof getMatchState>;
@@ -271,17 +273,19 @@ function MatchCard({
   saveStatus?: "success" | "error" | null;
   teamOverride?: { home: string; away: string; homeFlagCode?: string; awayFlagCode?: string };
   kickoff: string;
+  timeConfirmed: boolean;
 }) {
   const locked = state.type !== "upcoming" || isLocked(kickoff);
   const canPredict = !!userId && !!groupId && !locked && state.type === "upcoming";
 
   const [localTime, setLocalTime] = useState("");
   useEffect(() => {
+    if (!timeConfirmed) { setLocalTime("Date TBD"); return; }
     const d = new Date(kickoff);
     const time = d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", hour12: false });
     const tz = getTzAbbr(kickoff);
     setLocalTime(tz ? `${time} ${tz}` : time);
-  }, [kickoff]);
+  }, [kickoff, timeConfirmed]);
 
   const displayHome        = teamOverride?.home        ?? match.home;
   const displayAway        = teamOverride?.away        ?? match.away;
@@ -446,6 +450,7 @@ export function ScheduleClient({
   matchResults,
   matchTeams,
   matchKickoffs,
+  matchTimeConfirmed,
   initialPredictions,
   isAdFree,
   isCorporate,
@@ -798,9 +803,12 @@ export function ScheduleClient({
         <div className="space-y-6">
           {groupedDates.map(([date, matches]) => {
             const isToday = date === todayStr;
+            // If every match bucketed under this guessed date is itself unconfirmed,
+            // the date grouping is a guess too — don't present it as a real day.
+            const allUnconfirmed = matches.every(m => (matchTimeConfirmed?.[m.id] ?? m.time_confirmed) === false);
             const refDate  = new Date(matches[0].kickoff_at);
-            const dayLabel = refDate.toLocaleDateString("en-GB", { weekday: "long" });
-            const dateLabel = refDate.toLocaleDateString("en-GB", { month: "long", day: "numeric", year: "numeric" });
+            const dayLabel = allUnconfirmed ? "Date TBD" : refDate.toLocaleDateString("en-GB", { weekday: "long" });
+            const dateLabel = allUnconfirmed ? "" : refDate.toLocaleDateString("en-GB", { month: "long", day: "numeric", year: "numeric" });
 
             return (
               <section key={date}>
@@ -849,6 +857,7 @@ export function ScheduleClient({
                         saveStatus={saveFlash[m.id]}
                         teamOverride={matchTeams?.[m.id]}
                         kickoff={matchKickoffs?.[m.id] ?? m.kickoff_at}
+                        timeConfirmed={matchTimeConfirmed?.[m.id] ?? m.time_confirmed ?? true}
                       />
                     );
                   })}

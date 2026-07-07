@@ -49,6 +49,7 @@ type DbMatch = {
   home_flag: string | null;
   away_flag: string | null;
   kickoff_at: string | null;
+  time_confirmed: boolean | null;
 };
 
 type DbPred = {
@@ -74,7 +75,7 @@ export default async function SchedulePage({
     getAllMatches(),
     sbAdmin()
       .from("matches")
-      .select("id, status, home_score, away_score, home_score_et, away_score_et, minute, match_events, home, away, home_flag, away_flag, kickoff_at"),
+      .select("id, status, home_score, away_score, home_score_et, away_score_et, minute, match_events, home, away, home_flag, away_flag, kickoff_at, time_confirmed"),
   ]);
 
   const matchResults: Record<string, {
@@ -86,6 +87,7 @@ export default async function SchedulePage({
   }> = {};
   const matchTeams: Record<string, { home: string; away: string; homeFlagCode?: string; awayFlagCode?: string }> = {};
   const matchKickoffs: Record<string, string> = {};
+  const matchTimeConfirmed: Record<string, boolean> = {};
 
   for (const m of (dbMatchRows ?? []) as DbMatch[]) {
     matchResults[m.id] = {
@@ -105,6 +107,9 @@ export default async function SchedulePage({
     }
     if (m.kickoff_at) {
       matchKickoffs[m.id] = m.kickoff_at;
+    }
+    if (m.time_confirmed != null) {
+      matchTimeConfirmed[m.id] = m.time_confirmed;
     }
   }
 
@@ -190,6 +195,7 @@ export default async function SchedulePage({
         matchResults={matchResults}
         matchTeams={matchTeams}
         matchKickoffs={matchKickoffs}
+        matchTimeConfirmed={matchTimeConfirmed}
         initialPredictions={initialPredictions}
         isAdFree={isAdFree}
         isCorporate={isCorporate}

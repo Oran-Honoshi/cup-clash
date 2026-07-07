@@ -125,11 +125,13 @@ function MatchCard({ match, prediction, onChange, globalLocked, stagePoints, mat
   const { t } = useLocale();
   const filled      = prediction.home !== "" && prediction.away !== "";
   const kickoff     = match.kickoff_at;
+  const dateConfirmed = match.time_confirmed !== false;
   const matchLocked = globalLocked || isMatchLocked(kickoff);
-  const countdown   = !matchLocked ? getCountdown(kickoff, t) : "";
+  const countdown   = !matchLocked && dateConfirmed ? getCountdown(kickoff, t) : "";
 
   const [localTimeStr, setLocalTimeStr] = useState("");
   useEffect(() => {
+    if (!dateConfirmed) { setLocalTimeStr("Date TBD"); return; }
     const d = new Date(kickoff);
     const dateStr = d.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
     const timeStr = d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", hour12: false });
@@ -137,7 +139,7 @@ function MatchCard({ match, prediction, onChange, globalLocked, stagePoints, mat
     const tzAbbr = new Intl.DateTimeFormat("en-GB", { timeZoneName: "short", timeZone: tz })
       .formatToParts(d).find(p => p.type === "timeZoneName")?.value ?? "";
     setLocalTimeStr(`${dateStr} · ${timeStr}${tzAbbr ? ` ${tzAbbr}` : ""}`);
-  }, [kickoff]);
+  }, [kickoff, dateConfirmed]);
   const status = matchLocked ? "locked" : filled ? "saved" : "open";
 
   // Result badge (only for finished matches with a prediction)

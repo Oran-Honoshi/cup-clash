@@ -21,6 +21,7 @@ export interface ScheduleMatch {
   home_score?: number | null;
   away_score?: number | null;
   status?: string;
+  time_confirmed?: boolean;     // false ⇒ kickoff_at/stadium/city is a guessed placeholder, not yet confirmed by API-Football
 }
 
 export const WC2026_MATCHES: ScheduleMatch[] = [];

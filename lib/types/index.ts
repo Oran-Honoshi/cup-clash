@@ -87,6 +87,7 @@ export interface Match {
   homeScore?:   number;
   awayScore?:   number;
   status?:      string;
+  timeConfirmed?: boolean;   // false ⇒ time/utcTime is a guessed placeholder, not yet confirmed by API-Football
 }
 
 export interface Prediction {

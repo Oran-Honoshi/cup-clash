@@ -18,7 +18,7 @@ export async function getUpcomingMatches(limit = 20): Promise<Match[]> {
   try {
     const { data, error } = await sb()
       .from("matches")
-      .select("id, home, away, home_flag, away_flag, kickoff_at, stage, group_letter, stadium, city")
+      .select("id, home, away, home_flag, away_flag, kickoff_at, stage, group_letter, stadium, city, time_confirmed")
       .gt("kickoff_at", new Date().toISOString())
       .neq("home", "TBD")
       .neq("away", "TBD")
@@ -32,6 +32,7 @@ export async function getUpcomingMatches(limit = 20): Promise<Match[]> {
         kickoff_at: string; stage: string;
         group_letter: string | null;
         stadium: string | null; city: string | null;
+        time_confirmed: boolean | null;
       }>).map(m => ({
         id:          m.id,
         home:        m.home,
@@ -44,6 +45,7 @@ export async function getUpcomingMatches(limit = 20): Promise<Match[]> {
         group:       m.group_letter ?? undefined,
         stadium:     m.stadium ?? undefined,
         city:        m.city    ?? undefined,
+        timeConfirmed: m.time_confirmed ?? true,
       }));
     }
   } catch { /* fall through to schedule fallback */ }
@@ -131,13 +133,14 @@ type DbAllMatch = {
   home_score: number | null; away_score: number | null;
   home_score_et: number | null; away_score_et: number | null;
   status: string;
+  time_confirmed: boolean | null;
 };
 
 export async function getAllMatches(): Promise<ScheduleMatch[]> {
   try {
     const { data, error } = await sb()
       .from("matches")
-      .select("id, home, away, home_flag, away_flag, kickoff_at, stage, group_letter, stadium, city, home_score, away_score, home_score_et, away_score_et, status")
+      .select("id, home, away, home_flag, away_flag, kickoff_at, stage, group_letter, stadium, city, home_score, away_score, home_score_et, away_score_et, status, time_confirmed")
       .order("kickoff_at", { ascending: true });
 
     if (!error && data?.length) {
@@ -156,6 +159,7 @@ export async function getAllMatches(): Promise<ScheduleMatch[]> {
         home_score:   m.home_score_et ?? m.home_score,
         away_score:   m.away_score_et ?? m.away_score,
         status:       m.status,
+        time_confirmed: m.time_confirmed ?? true,
       }));
     }
   } catch { /* fall through */ }

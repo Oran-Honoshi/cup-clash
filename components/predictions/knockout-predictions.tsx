@@ -60,13 +60,16 @@ function KnockoutCard({ match, prediction, onChange, flashStatus }: {
   const locked  = isMatchLocked(match.kickoff_at);
   const status  = locked ? "locked" : filled ? "saved" : "open";
 
+  const dateConfirmed = match.time_confirmed !== false;
+
   const [localTimeStr, setLocalTimeStr] = useState("");
   useEffect(() => {
+    if (!dateConfirmed) { setLocalTimeStr("Date TBD"); return; }
     const d = new Date(match.kickoff_at);
     const dateStr = d.toLocaleDateString("en-GB", { day: "numeric", month: "short" });
     const timeStr = d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", hour12: false });
     setLocalTimeStr(`${dateStr} · ${timeStr}`);
-  }, [match.kickoff_at]);
+  }, [match.kickoff_at, dateConfirmed]);
 
   const cardStyle = {
     open:   { background: "rgba(18,14,38,0.55)", border: "1px solid rgba(0,255,136,0.25)"  },
