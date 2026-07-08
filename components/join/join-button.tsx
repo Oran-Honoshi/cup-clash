@@ -43,7 +43,7 @@ export function JoinButton({ groupId, groupName, enrollmentFee, demoMode }: Join
       <div className="space-y-3">
         <button onClick={() => setShowPayPal(false)}
           className="text-xs font-bold flex items-center gap-1"
-          style={{ color: "rgba(255,255,255,0.45)" }}>
+          style={{ color: "#64748b" }}>
           ← Back
         </button>
         <div className="rounded-2xl p-4" style={{ background: "rgba(18,14,38,0.32)", backdropFilter: "blur(40px) saturate(180%)", border: "1px solid rgba(255,255,255,0.14)", borderRadius: 22 }}>
@@ -79,7 +79,7 @@ export function JoinButton({ groupId, groupName, enrollmentFee, demoMode }: Join
         </button>
       )}
 
-      <p className="text-center text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>
+      <p className="text-center text-xs" style={{ color: "#94a3b8" }}>
         {demoMode ? "Free beta · No payment required" : "Free to join · Predict all 104 matches"}
       </p>
     </div>

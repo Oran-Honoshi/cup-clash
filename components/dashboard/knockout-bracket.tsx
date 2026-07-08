@@ -30,34 +30,35 @@ interface BracketMatch {
 }
 
 // Bracket data: labels show group positions until draw is made.
+// R32/R16 fixture data below is a placeholder until the draw is made, hence timeConfirmed: false.
 const R32_MATCHES: BracketMatch[] = [
-  { id: "r32-1",  home: { label: "1A", isConfirmed: false }, away: { label: "2B", isConfirmed: false }, date: "Jul 1",  time: "16:00 ET", stadium: "MetLife Stadium",          city: "New York/NJ",    stage: "Round of 32" },
-  { id: "r32-2",  home: { label: "1B", isConfirmed: false }, away: { label: "2A", isConfirmed: false }, date: "Jul 1",  time: "20:00 ET", stadium: "SoFi Stadium",             city: "Los Angeles",    stage: "Round of 32" },
-  { id: "r32-3",  home: { label: "1C", isConfirmed: false }, away: { label: "2D", isConfirmed: false }, date: "Jul 2",  time: "16:00 ET", stadium: "AT&T Stadium",             city: "Dallas",         stage: "Round of 32" },
-  { id: "r32-4",  home: { label: "1D", isConfirmed: false }, away: { label: "2C", isConfirmed: false }, date: "Jul 2",  time: "20:00 ET", stadium: "Hard Rock Stadium",        city: "Miami",          stage: "Round of 32" },
-  { id: "r32-5",  home: { label: "1E", isConfirmed: false }, away: { label: "2F", isConfirmed: false }, date: "Jul 3",  time: "16:00 ET", stadium: "Estadio Azteca",           city: "Mexico City",    stage: "Round of 32" },
-  { id: "r32-6",  home: { label: "1F", isConfirmed: false }, away: { label: "2E", isConfirmed: false }, date: "Jul 3",  time: "20:00 ET", stadium: "BMO Field",                city: "Toronto",        stage: "Round of 32" },
-  { id: "r32-7",  home: { label: "1G", isConfirmed: false }, away: { label: "2H", isConfirmed: false }, date: "Jul 4",  time: "16:00 ET", stadium: "NRG Stadium",              city: "Houston",        stage: "Round of 32" },
-  { id: "r32-8",  home: { label: "1H", isConfirmed: false }, away: { label: "2G", isConfirmed: false }, date: "Jul 4",  time: "20:00 ET", stadium: "Arrowhead Stadium",        city: "Kansas City",    stage: "Round of 32" },
-  { id: "r32-9",  home: { label: "1I", isConfirmed: false }, away: { label: "2J", isConfirmed: false }, date: "Jul 5",  time: "16:00 ET", stadium: "Lincoln Financial Field",  city: "Philadelphia",   stage: "Round of 32" },
-  { id: "r32-10", home: { label: "1J", isConfirmed: false }, away: { label: "2I", isConfirmed: false }, date: "Jul 5",  time: "20:00 ET", stadium: "Gillette Stadium",         city: "Boston",         stage: "Round of 32" },
-  { id: "r32-11", home: { label: "1K", isConfirmed: false }, away: { label: "2L", isConfirmed: false }, date: "Jul 6",  time: "16:00 ET", stadium: "BC Place",                 city: "Vancouver",      stage: "Round of 32" },
-  { id: "r32-12", home: { label: "1L", isConfirmed: false }, away: { label: "2K", isConfirmed: false }, date: "Jul 6",  time: "20:00 ET", stadium: "Levi's Stadium",           city: "San Francisco",  stage: "Round of 32" },
-  { id: "r32-13", home: { label: "Best 3rd", isConfirmed: false }, away: { label: "TBD", isConfirmed: false }, date: "Jul 7", time: "16:00 ET", stadium: "Estadio BBVA",      city: "Monterrey",      stage: "Round of 32" },
-  { id: "r32-14", home: { label: "Best 3rd", isConfirmed: false }, away: { label: "TBD", isConfirmed: false }, date: "Jul 7", time: "20:00 ET", stadium: "Estadio Akron",      city: "Guadalajara",    stage: "Round of 32" },
-  { id: "r32-15", home: { label: "Best 3rd", isConfirmed: false }, away: { label: "TBD", isConfirmed: false }, date: "Jul 8", time: "16:00 ET", stadium: "MetLife Stadium",     city: "New York/NJ",    stage: "Round of 32" },
-  { id: "r32-16", home: { label: "Best 3rd", isConfirmed: false }, away: { label: "TBD", isConfirmed: false }, date: "Jul 8", time: "20:00 ET", stadium: "SoFi Stadium",        city: "Los Angeles",    stage: "Round of 32" },
+  { id: "r32-1",  home: { label: "1A", isConfirmed: false }, away: { label: "2B", isConfirmed: false }, date: "Jul 1",  time: "16:00 ET", stadium: "MetLife Stadium",          city: "New York/NJ",    timeConfirmed: false, stage: "Round of 32" },
+  { id: "r32-2",  home: { label: "1B", isConfirmed: false }, away: { label: "2A", isConfirmed: false }, date: "Jul 1",  time: "20:00 ET", stadium: "SoFi Stadium",             city: "Los Angeles",    timeConfirmed: false, stage: "Round of 32" },
+  { id: "r32-3",  home: { label: "1C", isConfirmed: false }, away: { label: "2D", isConfirmed: false }, date: "Jul 2",  time: "16:00 ET", stadium: "AT&T Stadium",             city: "Dallas",         timeConfirmed: false, stage: "Round of 32" },
+  { id: "r32-4",  home: { label: "1D", isConfirmed: false }, away: { label: "2C", isConfirmed: false }, date: "Jul 2",  time: "20:00 ET", stadium: "Hard Rock Stadium",        city: "Miami",          timeConfirmed: false, stage: "Round of 32" },
+  { id: "r32-5",  home: { label: "1E", isConfirmed: false }, away: { label: "2F", isConfirmed: false }, date: "Jul 3",  time: "16:00 ET", stadium: "Estadio Azteca",           city: "Mexico City",    timeConfirmed: false, stage: "Round of 32" },
+  { id: "r32-6",  home: { label: "1F", isConfirmed: false }, away: { label: "2E", isConfirmed: false }, date: "Jul 3",  time: "20:00 ET", stadium: "BMO Field",                city: "Toronto",        timeConfirmed: false, stage: "Round of 32" },
+  { id: "r32-7",  home: { label: "1G", isConfirmed: false }, away: { label: "2H", isConfirmed: false }, date: "Jul 4",  time: "16:00 ET", stadium: "NRG Stadium",              city: "Houston",        timeConfirmed: false, stage: "Round of 32" },
+  { id: "r32-8",  home: { label: "1H", isConfirmed: false }, away: { label: "2G", isConfirmed: false }, date: "Jul 4",  time: "20:00 ET", stadium: "Arrowhead Stadium",        city: "Kansas City",    timeConfirmed: false, stage: "Round of 32" },
+  { id: "r32-9",  home: { label: "1I", isConfirmed: false }, away: { label: "2J", isConfirmed: false }, date: "Jul 5",  time: "16:00 ET", stadium: "Lincoln Financial Field",  city: "Philadelphia",   timeConfirmed: false, stage: "Round of 32" },
+  { id: "r32-10", home: { label: "1J", isConfirmed: false }, away: { label: "2I", isConfirmed: false }, date: "Jul 5",  time: "20:00 ET", stadium: "Gillette Stadium",         city: "Boston",         timeConfirmed: false, stage: "Round of 32" },
+  { id: "r32-11", home: { label: "1K", isConfirmed: false }, away: { label: "2L", isConfirmed: false }, date: "Jul 6",  time: "16:00 ET", stadium: "BC Place",                 city: "Vancouver",      timeConfirmed: false, stage: "Round of 32" },
+  { id: "r32-12", home: { label: "1L", isConfirmed: false }, away: { label: "2K", isConfirmed: false }, date: "Jul 6",  time: "20:00 ET", stadium: "Levi's Stadium",           city: "San Francisco",  timeConfirmed: false, stage: "Round of 32" },
+  { id: "r32-13", home: { label: "Best 3rd", isConfirmed: false }, away: { label: "TBD", isConfirmed: false }, date: "Jul 7", time: "16:00 ET", stadium: "Estadio BBVA",      city: "Monterrey",      timeConfirmed: false, stage: "Round of 32" },
+  { id: "r32-14", home: { label: "Best 3rd", isConfirmed: false }, away: { label: "TBD", isConfirmed: false }, date: "Jul 7", time: "20:00 ET", stadium: "Estadio Akron",      city: "Guadalajara",    timeConfirmed: false, stage: "Round of 32" },
+  { id: "r32-15", home: { label: "Best 3rd", isConfirmed: false }, away: { label: "TBD", isConfirmed: false }, date: "Jul 8", time: "16:00 ET", stadium: "MetLife Stadium",     city: "New York/NJ",    timeConfirmed: false, stage: "Round of 32" },
+  { id: "r32-16", home: { label: "Best 3rd", isConfirmed: false }, away: { label: "TBD", isConfirmed: false }, date: "Jul 8", time: "20:00 ET", stadium: "SoFi Stadium",        city: "Los Angeles",    timeConfirmed: false, stage: "Round of 32" },
 ];
 
 const R16_MATCHES: BracketMatch[] = [
-  { id: "r16-1", home: { label: "W R32-1", isConfirmed: false }, away: { label: "W R32-2", isConfirmed: false },  date: "Jul 9",  time: "16:00 ET", stadium: "AT&T Stadium",             city: "Dallas",       stage: "Round of 16" },
-  { id: "r16-2", home: { label: "W R32-3", isConfirmed: false }, away: { label: "W R32-4", isConfirmed: false },  date: "Jul 9",  time: "20:00 ET", stadium: "Hard Rock Stadium",        city: "Miami",        stage: "Round of 16" },
-  { id: "r16-3", home: { label: "W R32-5", isConfirmed: false }, away: { label: "W R32-6", isConfirmed: false },  date: "Jul 10", time: "16:00 ET", stadium: "BMO Field",                city: "Toronto",      stage: "Round of 16" },
-  { id: "r16-4", home: { label: "W R32-7", isConfirmed: false }, away: { label: "W R32-8", isConfirmed: false },  date: "Jul 10", time: "20:00 ET", stadium: "NRG Stadium",              city: "Houston",      stage: "Round of 16" },
-  { id: "r16-5", home: { label: "W R32-9", isConfirmed: false }, away: { label: "W R32-10", isConfirmed: false }, date: "Jul 11", time: "16:00 ET", stadium: "Arrowhead Stadium",        city: "Kansas City",  stage: "Round of 16" },
-  { id: "r16-6", home: { label: "W R32-11", isConfirmed: false }, away: { label: "W R32-12", isConfirmed: false },date: "Jul 11", time: "20:00 ET", stadium: "Lincoln Financial Field",  city: "Philadelphia", stage: "Round of 16" },
-  { id: "r16-7", home: { label: "W R32-13", isConfirmed: false }, away: { label: "W R32-14", isConfirmed: false },date: "Jul 12", time: "16:00 ET", stadium: "Estadio Azteca",           city: "Mexico City",  stage: "Round of 16" },
-  { id: "r16-8", home: { label: "W R32-15", isConfirmed: false }, away: { label: "W R32-16", isConfirmed: false },date: "Jul 12", time: "20:00 ET", stadium: "BC Place",                 city: "Vancouver",    stage: "Round of 16" },
+  { id: "r16-1", home: { label: "W R32-1", isConfirmed: false }, away: { label: "W R32-2", isConfirmed: false },  date: "Jul 9",  time: "16:00 ET", stadium: "AT&T Stadium",             city: "Dallas",       timeConfirmed: false, stage: "Round of 16" },
+  { id: "r16-2", home: { label: "W R32-3", isConfirmed: false }, away: { label: "W R32-4", isConfirmed: false },  date: "Jul 9",  time: "20:00 ET", stadium: "Hard Rock Stadium",        city: "Miami",        timeConfirmed: false, stage: "Round of 16" },
+  { id: "r16-3", home: { label: "W R32-5", isConfirmed: false }, away: { label: "W R32-6", isConfirmed: false },  date: "Jul 10", time: "16:00 ET", stadium: "BMO Field",                city: "Toronto",      timeConfirmed: false, stage: "Round of 16" },
+  { id: "r16-4", home: { label: "W R32-7", isConfirmed: false }, away: { label: "W R32-8", isConfirmed: false },  date: "Jul 10", time: "20:00 ET", stadium: "NRG Stadium",              city: "Houston",      timeConfirmed: false, stage: "Round of 16" },
+  { id: "r16-5", home: { label: "W R32-9", isConfirmed: false }, away: { label: "W R32-10", isConfirmed: false }, date: "Jul 11", time: "16:00 ET", stadium: "Arrowhead Stadium",        city: "Kansas City",  timeConfirmed: false, stage: "Round of 16" },
+  { id: "r16-6", home: { label: "W R32-11", isConfirmed: false }, away: { label: "W R32-12", isConfirmed: false },date: "Jul 11", time: "20:00 ET", stadium: "Lincoln Financial Field",  city: "Philadelphia", timeConfirmed: false, stage: "Round of 16" },
+  { id: "r16-7", home: { label: "W R32-13", isConfirmed: false }, away: { label: "W R32-14", isConfirmed: false },date: "Jul 12", time: "16:00 ET", stadium: "Estadio Azteca",           city: "Mexico City",  timeConfirmed: false, stage: "Round of 16" },
+  { id: "r16-8", home: { label: "W R32-15", isConfirmed: false }, away: { label: "W R32-16", isConfirmed: false },date: "Jul 12", time: "20:00 ET", stadium: "BC Place",                 city: "Vancouver",    timeConfirmed: false, stage: "Round of 16" },
 ];
 
 // Fallback skeleton shown only until the DB fetch below resolves — dates/venues

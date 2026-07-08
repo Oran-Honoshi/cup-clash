@@ -109,7 +109,7 @@ export function PredictionsClient({
 
   const cardStyle: React.CSSProperties = {
     flex: "none",
-    width: "85vw",
+    width: "85%",
     scrollSnapAlign: "start",
     background: "#0c1c0c",
     borderRadius: 14,

@@ -164,7 +164,25 @@ export function BonusQuestions({ groupId, userId }: BonusQuestionsProps) {
     return true;
   });
 
-  if (!activeQuestions.length) return null;
+  if (!activeQuestions.length) {
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center gap-2 px-1">
+          <HelpCircle size={16} style={{ color: "#00D4FF" }} />
+          <span className="text-xs font-black uppercase tracking-widest" style={{ color: "#00D4FF" }}>
+            Bonus Questions
+          </span>
+        </div>
+        <div className="p-6 text-center" style={glassCard}>
+          <HelpCircle size={26} className="mx-auto mb-3" style={{ color: "rgba(255,255,255,0.25)" }} />
+          <p className="text-sm font-bold text-white mb-1">No bonus questions yet</p>
+          <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>
+            Check back once your group admin sets them up.
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">

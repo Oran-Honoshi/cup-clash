@@ -8,6 +8,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { Trophy, Users, DollarSign, ArrowRight, Plus, LogIn, KeyRound } from "lucide-react";
 import Link from "next/link";
 import { serverT } from "@/lib/server-locale";
+import { ENABLE_BETA_FEATURES } from "@/lib/feature-flags";
 
 function sbAdmin() {
   return createAdminClient(
@@ -82,6 +83,11 @@ export default async function GroupsPage() {
         <div>
           <div style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: "0.12em", color: "#00D4FF", fontFamily: "var(--font-ui)", marginBottom: 4 }}>{serverT("grp_your")}</div>
           <h1 className="font-display text-4xl sm:text-5xl uppercase tracking-tight text-white">My Groups</h1>
+          {ENABLE_BETA_FEATURES && (
+            <Link href="/groups/beta" className="text-[10px] font-bold uppercase tracking-widest inline-block mt-1" style={{ color: "#10b981" }}>
+              Try the Beta groups view →
+            </Link>
+          )}
         </div>
         <div className="flex gap-2">
           <Link href="/join/enter">
@@ -114,6 +120,8 @@ export default async function GroupsPage() {
             const isAdmin   = g.admin_id === userProfile.id;
             const isAdFree  = m.is_ad_free;
             const memberCount = memberCounts[m.group_id] ?? 0;
+            const hasBuyIn  = g.buy_in_amount > 0;
+            const adFreeFee = ((g.enrollment_fee_cents ?? 200) / 100).toFixed(0);
             return (
               <div key={m.group_id} className="rounded-2xl overflow-hidden transition-all duration-200 hover:-translate-y-0.5"
                 style={{ background: "rgba(18,14,38,0.32)", backdropFilter: "blur(40px) saturate(180%)", WebkitBackdropFilter: "blur(40px) saturate(180%)", border: "1px solid rgba(255,255,255,0.14)" }}>
@@ -136,7 +144,7 @@ export default async function GroupsPage() {
                 <div className="grid grid-cols-3 divide-x" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
                   {[
                     { icon: Users,      label: "Members", value: `${memberCount}`, sub: "" },
-                    { icon: DollarSign, label: "Entry",   value: "Free",           sub: "$2 removes ads" },
+                    { icon: DollarSign, label: "Entry",   value: hasBuyIn ? `$${g.buy_in_amount}` : "Free", sub: hasBuyIn ? "Prize pot buy-in" : `$${adFreeFee} removes ads` },
                     { icon: Trophy,     label: "Type",    value: "2026 WC",        sub: "" },
                   ].map(({ icon: Icon, label, value, sub }) => (
                     <div key={label} className="px-4 py-3 text-center" style={{ borderColor: "rgba(255,255,255,0.06)" }}>

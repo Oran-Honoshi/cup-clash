@@ -128,6 +128,7 @@ export default function HowItWorksPage() {
                   { phase: "Round of 16", dates: "Jul 6 – Jul 8", matches: "8 knockout matches", icon: <Target size={14} /> },
                   { phase: "Quarter-Finals", dates: "Jul 9 – Jul 11", matches: "4 matches", icon: <Target size={14} /> },
                   { phase: "Semi-Finals", dates: "Jul 14 – Jul 15", matches: "2 matches", icon: <Target size={14} /> },
+                  { phase: "Third Place Playoff", dates: "Jul 18", matches: "1 match", icon: <Target size={14} /> },
                   { phase: "Final", dates: "Jul 19", matches: "MetLife Stadium, New Jersey", icon: <Trophy size={14} /> },
                 ].map(({ phase, dates, matches, icon }) => (
                   <div key={phase} className="flex items-start gap-3 py-2.5 border-b last:border-0"
