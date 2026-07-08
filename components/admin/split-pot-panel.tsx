@@ -32,6 +32,7 @@ function parsePct(val: string): number {
 export function SplitPotPanel({ groupId, members, payouts, payoutSplits, buyInAmount, currencySymbol, finalLocked }: SplitPotPanelProps) {
   const [saving, setSaving] = useState<string | null>(null); // key of positions joined, while in flight
   const [localSplits, setLocalSplits] = useState(payoutSplits);
+  const [error, setError] = useState<string | null>(null);
 
   if (!finalLocked) return null;
 
@@ -49,22 +50,32 @@ export function SplitPotPanel({ groupId, members, payouts, payoutSplits, buyInAm
   const submit = async (positions: PayoutPosition[], memberIds: string[] | null) => {
     const key = positions.join(",");
     setSaving(key);
-    const sb = createClient();
-    const { data: { session } } = await sb.auth.getSession();
-    const token = session?.access_token ?? "";
-    for (const position of positions) {
-      await fetch("/api/admin/split-pot", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
-        body: JSON.stringify({ groupId, position, memberIds }),
+    setError(null);
+    try {
+      const sb = createClient();
+      const { data: { session } } = await sb.auth.getSession();
+      const token = session?.access_token ?? "";
+      for (const position of positions) {
+        const res = await fetch("/api/admin/split-pot", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+          body: JSON.stringify({ groupId, position, memberIds }),
+        });
+        if (!res.ok) {
+          const body = await res.json().catch(() => ({}));
+          throw new Error((body as { error?: string }).error ?? "Failed to save split");
+        }
+      }
+      setLocalSplits(prev => {
+        const next = { ...prev };
+        positions.forEach(pos => { next[pos] = memberIds; });
+        return next;
       });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to save split");
+    } finally {
+      setSaving(null);
     }
-    setLocalSplits(prev => {
-      const next = { ...prev };
-      positions.forEach(pos => { next[pos] = memberIds; });
-      return next;
-    });
-    setSaving(null);
   };
 
   return (
@@ -77,6 +88,10 @@ export function SplitPotPanel({ groupId, members, payouts, payoutSplits, buyInAm
         The final standings have a genuine tie after all tiebreakers (exact scores, closest Final goal-minute guess,
         correct Tournament Winner pick). Confirm how to split the prize.
       </p>
+
+      {error && (
+        <p className="text-xs font-bold" style={{ color: "#f87171" }}>{error}</p>
+      )}
 
       {tieGroups.map(group => {
         const memberIds = group.members.map(m => m.id);

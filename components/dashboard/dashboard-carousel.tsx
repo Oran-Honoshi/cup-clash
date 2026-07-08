@@ -6,6 +6,8 @@ import { MatchCarousel } from "@/components/dashboard/match-carousel";
 import { AdBanner } from "@/components/ads/ad-banner";
 import { UserAvatar } from "@/components/ui/UserAvatar";
 import { PlayerDrawer } from "@/components/dashboard/player-drawer";
+import { MiniLeaderboard } from "@/components/dashboard/mini-leaderboard";
+import { ENABLE_BETA_FEATURES } from "@/lib/feature-flags";
 import type { Match, Member } from "@/lib/types";
 import type { MemberPredictionsResponse } from "@/app/api/member-predictions/route";
 import { compareMembersForRanking } from "@/lib/leaderboard-sort";
@@ -272,10 +274,12 @@ function MyStatsPanel({ members, currentUserId, rank, totalPlayers, groupId }: {
 
 // ── Match panel ───────────────────────────────────────────────────────────────
 
-function MatchPanel({ matches, groupId, groupName }: {
+function MatchPanel({ matches, groupId, groupName, members, currentUserId }: {
   matches: Match[];
   groupId: string;
   groupName: string;
+  members: Member[];
+  currentUserId: string;
 }) {
   if (!matches.length) {
     return (
@@ -289,11 +293,20 @@ function MatchPanel({ matches, groupId, groupName }: {
   }
 
   return (
-    <div className="px-4 py-4 space-y-3">
+    <div id="tour-match-card" className="px-4 py-4 space-y-3">
       <div className="font-barlow font-bold uppercase text-center" style={{ fontSize: 9, letterSpacing: 1, color: "#3a7a3a" }}>
         {groupName} · Upcoming Matches
       </div>
       <MatchCarousel matches={matches} groupId={groupId} />
+      {ENABLE_BETA_FEATURES && (
+        <div className="space-y-1.5">
+          <span className="text-[9px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-full inline-block"
+            style={{ background: "rgba(16,185,129,0.15)", color: "#10b981" }}>
+            Beta
+          </span>
+          <MiniLeaderboard members={members} groupId={groupId} currentUserId={currentUserId} />
+        </div>
+      )}
     </div>
   );
 }
@@ -321,6 +334,7 @@ export function DashboardCarousel({
         {PANELS.map((label, i) => (
           <button
             key={label}
+            id={label === "LEADERBOARD" ? "tour-group-preds" : undefined}
             onClick={() => setPanel(i)}
             className="font-barlow font-bold uppercase shrink-0"
             style={{
@@ -349,7 +363,7 @@ export function DashboardCarousel({
         background: PANEL_BG,
         paddingBottom: 24,
       }}>
-        {panel === 0 && <MatchPanel matches={matches} groupId={groupId} groupName={groupName} />}
+        {panel === 0 && <MatchPanel matches={matches} groupId={groupId} groupName={groupName} members={members} currentUserId={currentUserId} />}
         {panel === 1 && <LeaderboardPanel members={members} currentUserId={currentUserId} groupId={groupId} groupName={groupName} isAdFree={isAdFree} isCorporate={isCorporate} />}
         {panel === 2 && <MyStatsPanel members={members} currentUserId={currentUserId} rank={rank} totalPlayers={totalPlayers} groupId={groupId} />}
       </div>

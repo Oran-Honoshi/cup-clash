@@ -165,7 +165,7 @@ export function PickOverridesPanel({ groupId, adminId }: PickOverridesPanelProps
       <div className="rounded-xl px-4 py-3 flex items-start gap-2.5"
         style={{ background: "rgba(217,119,6,0.06)", border: "1px solid rgba(217,119,6,0.2)" }}>
         <AlertCircle size={15} className="shrink-0 mt-0.5" style={{ color: "#d97706" }} />
-        <p className="text-xs" style={{ color: "#92400e" }}>
+        <p className="text-xs" style={{ color: "rgba(255,255,255,0.5)" }}>
           Use this panel to manually award points when a member guessed correctly but had a typo or name variation.
           Enter the actual correct value and set the point amount before clicking Grant.
         </p>

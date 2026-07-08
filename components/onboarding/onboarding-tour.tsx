@@ -28,8 +28,8 @@ const STEPS: DriveStep[] = [
     element: "#tour-group-preds",
     popover: {
       title: "Group Rankings",
-      description: "See what your group predicted and track who's leading",
-      side: "top",
+      description: "Tap here to see who's leading your group",
+      side: "bottom",
       align: "center",
     },
   },

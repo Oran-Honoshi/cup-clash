@@ -46,6 +46,9 @@ export function AdminPanel({ group, initialMembers, isOwner, currentUserId }: Ad
   const [payoutError,  setPayoutError]  = useState<string | null>(null);
   const [copied,          setCopied]          = useState(false);
   const [inviteUrl,       setInviteUrl]       = useState("");
+  const [currentPasskey,  setCurrentPasskey]  = useState(group.passkey);
+  const [regeneratingCode, setRegeneratingCode] = useState(false);
+  const [regenerateError,  setRegenerateError]  = useState<string | null>(null);
   const [paymentLinkEdit, setPaymentLinkEdit] = useState(group.paymentLink ?? "");
   const [editingLink,     setEditingLink]     = useState(false);
   const [savingLink,      setSavingLink]      = useState(false);
@@ -86,9 +89,34 @@ export function AdminPanel({ group, initialMembers, isOwner, currentUserId }: Ad
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      setInviteUrl(`${window.location.origin}/join/${group.passkey}`);
+      setInviteUrl(`${window.location.origin}/join/${currentPasskey}`);
     }
-  }, [group.passkey]);
+  }, [currentPasskey]);
+
+  const regenerateCode = async () => {
+    setRegeneratingCode(true);
+    setRegenerateError(null);
+    try {
+      const sb = createClient();
+      const { data: { session } } = await sb.auth.getSession();
+      const token = session?.access_token ?? "";
+      const res = await fetch("/api/admin/regenerate-code", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+        body: JSON.stringify({ groupId: group.id }),
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error((body as { error?: string }).error ?? "Failed to regenerate code");
+      }
+      const result = await res.json() as { success: boolean; passkey: string };
+      setCurrentPasskey(result.passkey);
+    } catch (err) {
+      setRegenerateError(err instanceof Error ? err.message : "Failed to regenerate code");
+    } finally {
+      setRegeneratingCode(false);
+    }
+  };
 
 
   const paidCount    = members.filter(m => m.paid).length;
@@ -474,8 +502,12 @@ export function AdminPanel({ group, initialMembers, isOwner, currentUserId }: Ad
               leftIcon={copied ? <Check size={14} /> : <Copy size={14} />}>
               {copied ? t("adm_copied") : t("adm_copy")}
             </Button>
-            <Button variant="outline" size="sm" leftIcon={<RefreshCw size={14} />}>{t("adm_new_code")}</Button>
+            <Button onClick={regenerateCode} loading={regeneratingCode} variant="outline" size="sm"
+              leftIcon={<RefreshCw size={14} />}>{t("adm_new_code")}</Button>
           </div>
+          {regenerateError && (
+            <p className="mt-2 text-[11px]" style={{ color: "#f87171" }}>{regenerateError}</p>
+          )}
           <p className="mt-3 text-[11px]" style={{ color: "rgba(255,255,255,0.3)" }}>
             {t("adm_invite_hint")}
           </p>

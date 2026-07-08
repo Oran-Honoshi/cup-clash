@@ -126,6 +126,7 @@ export function BonusQuestionsAdmin({ groupId }: BonusQuestionsAdminProps) {
   const [resolveAnswer, setResolveAnswer] = useState("");
   const [resolving,     setResolving]     = useState(false);
   const [resolveResult, setResolveResult] = useState<{ correctCount: number; totalAnswers: number; pointsAwarded: number } | null>(null);
+  const [resolveError,  setResolveError]  = useState<string | null>(null);
   const [savedConfirm,  setSavedConfirm]  = useState(false);
   const [saveError,     setSaveError]     = useState<string | null>(null);
   const [suggOpen,      setSuggOpen]      = useState(false);
@@ -208,26 +209,36 @@ export function BonusQuestionsAdmin({ groupId }: BonusQuestionsAdminProps) {
     setResolveId(id);
     setResolveAnswer("");
     setResolveResult(null);
+    setResolveError(null);
   };
 
   const submitResolve = async () => {
     if (!resolveId || !resolveAnswer.trim()) return;
     setResolving(true);
-    const sb = createClient();
-    const { data: { session } } = await sb.auth.getSession();
-    const token = session?.access_token ?? "";
+    setResolveError(null);
+    try {
+      const sb = createClient();
+      const { data: { session } } = await sb.auth.getSession();
+      const token = session?.access_token ?? "";
 
-    const res = await fetch("/api/admin/bonus-questions/resolve", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
-      body: JSON.stringify({ questionId: resolveId, correctAnswer: resolveAnswer }),
-    });
-    const result = await res.json() as { success?: boolean; correctCount?: number; totalAnswers?: number; pointsAwarded?: number };
-    if (result.success) {
+      const res = await fetch("/api/admin/bonus-questions/resolve", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Authorization": `Bearer ${token}` },
+        body: JSON.stringify({ questionId: resolveId, correctAnswer: resolveAnswer }),
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error((body as { error?: string }).error ?? "Failed to resolve question");
+      }
+      const result = await res.json() as { success?: boolean; correctCount?: number; totalAnswers?: number; pointsAwarded?: number };
+      if (!result.success) throw new Error("Failed to resolve question");
       setResolveResult({ correctCount: result.correctCount ?? 0, totalAnswers: result.totalAnswers ?? 0, pointsAwarded: result.pointsAwarded ?? 0 });
       await loadQuestions();
+    } catch (err) {
+      setResolveError(err instanceof Error ? err.message : "Failed to resolve question");
+    } finally {
+      setResolving(false);
     }
-    setResolving(false);
   };
 
   const resolveQuestion = questions.find(q => q.id === resolveId);
@@ -494,6 +505,11 @@ export function BonusQuestionsAdmin({ groupId }: BonusQuestionsAdminProps) {
                 <p className="text-xs" style={{ color: "rgba(255,255,255,0.35)" }}>
                   Members whose answers match (case-insensitive) will each receive {resolveQuestion?.points_awarded ?? 0} points.
                 </p>
+                {resolveError && (
+                  <div className="w-full py-2 rounded-xl text-xs font-bold text-center" style={{ background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.25)", color: "#f87171" }}>
+                    ❌ {resolveError}
+                  </div>
+                )}
                 <div className="flex gap-3">
                   <button
                     onClick={() => setResolveId(null)}
