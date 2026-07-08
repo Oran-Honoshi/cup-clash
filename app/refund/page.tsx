@@ -71,7 +71,7 @@ export default function RefundPage() {
               <li>The group name you paid to join</li>
               <li>Your reason for requesting a refund (optional)</li>
             </ul>
-            <p className="mt-3">We process refunds within 3-5 business days. The refund will be returned to your original payment method via Paddle.</p>
+            <p className="mt-3">We process refunds within 3-5 business days. The refund will be returned to your original payment method via PayPal.</p>
           </section>
 
           <section>

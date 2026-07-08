@@ -1,10 +1,48 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Mail, Send, Check, AlertCircle, Info, UserPlus, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { createClient } from "@/lib/supabase/client";
 import { cn } from "@/lib/utils";
 import type { Member, Group } from "@/lib/types";
+
+interface ScoringRulesRow {
+  correct_outcome:          number | null;
+  exact_score:               number | null;
+  ko_advancement:            number | null;
+  tournament_winner:         number | null;
+  top_scorer:                number | null;
+  top_assister:              number | null;
+  golden_ball:               number | null;
+  best_defence:              number | null;
+  best_young_player:         number | null;
+  best_third:                number | null;
+  enable_winner:             boolean | null;
+  enable_scorer:             boolean | null;
+  enable_assister:           boolean | null;
+  enable_golden_ball:        boolean | null;
+  enable_best_defence:       boolean | null;
+  enable_best_young_player:  boolean | null;
+  enable_best_third:         boolean | null;
+}
+
+function buildScoringSystemSummary(rules: ScoringRulesRow | null): string {
+  if (!rules) return "10 pts correct outcome · 25 pts exact score · 20 pts KO advancement";
+  const parts = [
+    `${rules.correct_outcome ?? 10} pts correct outcome`,
+    `${rules.exact_score ?? 25} pts exact score`,
+    `${rules.ko_advancement ?? 20} pts KO advancement`,
+  ];
+  if (rules.enable_winner !== false)   parts.push(`${rules.tournament_winner ?? 100} pts tournament winner`);
+  if (rules.enable_scorer !== false)   parts.push(`${rules.top_scorer ?? 50} pts top scorer`);
+  if (rules.enable_assister !== false) parts.push(`${rules.top_assister ?? 50} pts top assister`);
+  if (rules.enable_golden_ball)        parts.push(`${rules.golden_ball ?? 40} pts golden ball`);
+  if (rules.enable_best_defence)       parts.push(`${rules.best_defence ?? 30} pts best defence`);
+  if (rules.enable_best_young_player)  parts.push(`${rules.best_young_player ?? 30} pts best young player`);
+  if (rules.enable_best_third !== false) parts.push(`${rules.best_third ?? 20} pts per correct best-3rd pick`);
+  return parts.join(" · ");
+}
 
 const glass = {
   background: "rgba(18,14,38,0.32)",
@@ -35,6 +73,21 @@ export function WelcomeEmailSender({ group, members, adminName }: WelcomeEmailSe
   const [sent,    setSent]    = useState(false);
   const [error,   setError]   = useState<string | null>(null);
   const [result,  setResult]  = useState<{ sent: number; failed: number; message: string } | null>(null);
+  const [scoringRules, setScoringRules] = useState<ScoringRulesRow | null>(null);
+  const [rulesText,    setRulesText]    = useState("");
+  const [adminFeePercent, setAdminFeePercent] = useState(0);
+
+  useEffect(() => {
+    const sb = createClient();
+    sb.from("scoring_rules").select("*").eq("group_id", group.id).maybeSingle()
+      .then(({ data }) => { if (data) setScoringRules(data as ScoringRulesRow); });
+    sb.from("groups").select("rules_text, admin_fee_percent").eq("id", group.id).maybeSingle()
+      .then(({ data }) => {
+        const d = data as { rules_text: string | null; admin_fee_percent: number | null } | null;
+        if (d?.rules_text)        setRulesText(d.rules_text);
+        if (d?.admin_fee_percent) setAdminFeePercent(d.admin_fee_percent);
+      });
+  }, [group.id]);
 
   const updateEmail   = (memberId: string, email: string) =>
     setMemberEmails(prev => prev.map(m => m.memberId === memberId ? { ...m, email } : m));
@@ -68,11 +121,11 @@ export function WelcomeEmailSender({ group, members, adminName }: WelcomeEmailSe
           memberNames:   selected.map(m => m.name || "Member"),
           groupName:     group.name,
           adminName,
-          rulesText:     "",
+          rulesText,
           buyInAmount:   group.buyInAmount,
           inviteCode:    group.passkey,
-          scoringSystem: "25 pts exact score · 10 pts correct outcome · 20 pts KO advancement",
-          adminFee:      0,
+          scoringSystem: buildScoringSystemSummary(scoringRules),
+          adminFee:      adminFeePercent,
           payouts: {
             first:  Number(group.payouts.first.replace("%",  "")),
             second: Number(group.payouts.second.replace("%", "")),
