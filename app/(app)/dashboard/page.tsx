@@ -157,6 +157,22 @@ export default async function DashboardPage({
         </div>
       )}
 
+      {isAdmin && (
+        <Link
+          href={`/admin/${activeGroupId}`}
+          className="-mx-4 sm:-mx-6 flex items-center justify-between gap-2 px-4 sm:px-6 py-2 shrink-0"
+          style={{ background: "rgba(251,191,36,0.08)", borderBottom: "1px solid rgba(251,191,36,0.2)" }}
+        >
+          <span className="text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-full"
+            style={{ background: "rgba(251,191,36,0.15)", color: "#fbbf24" }}>
+            Admin
+          </span>
+          <span className="text-xs font-bold" style={{ color: "#fbbf24" }}>
+            Manage this group →
+          </span>
+        </Link>
+      )}
+
       {/* 3-panel carousel — fills remaining space */}
       <div className="-mx-4 sm:-mx-6" style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}>
         <DashboardCarousel

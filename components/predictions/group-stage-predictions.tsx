@@ -11,6 +11,7 @@ import { CopyPredictions } from "@/components/predictions/copy-predictions";
 import { FlaggedTeam } from "@/components/predictions/flagged-team";
 import { PredictionBadge } from "@/components/predictions/prediction-badge";
 import { FlagBadge } from "@/components/ui/FlagBadge";
+import { BallLoader } from "@/components/ui/BallLoader";
 import { MemberAvatar } from "@/components/ui/member-avatar";
 import { ScoreInputCC } from "@/components/ui/score-input-cc";
 import { WC2026_MATCHES, type ScheduleMatch } from "@/lib/schedule";
@@ -415,7 +416,7 @@ function SaveIndicator({ status }: { status: "idle"|"saving"|"saved"|"error" }) 
   return (
     <span className="flex items-center gap-1.5 text-[11px] font-bold"
       style={{ color: status === "saved" ? "#00FF88" : status === "error" ? "#f87171" : "rgba(255,255,255,0.4)" }}>
-      {status === "saving" && <span className="animate-spin">⟳</span>}
+      {status === "saving" && <BallLoader size="inline" label={null} />}
       {status === "saved"  && <Check size={11} />}
       {status === "error"  && <AlertCircle size={11} />}
       {status === "saving" ? t("pred_saving") : status === "saved" ? t("pred_saved") : t("pred_failed")}

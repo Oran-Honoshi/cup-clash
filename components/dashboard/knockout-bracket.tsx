@@ -64,15 +64,15 @@ const R16_MATCHES: BracketMatch[] = [
 // Fallback skeleton shown only until the DB fetch below resolves — dates/venues
 // here are placeholders, not real fixture data, hence timeConfirmed: false.
 const QF_MATCHES: BracketMatch[] = [
-  { id: "qf-1", home: { label: "W R16-1", isConfirmed: false }, away: { label: "W R16-2", isConfirmed: false }, date: "Jul 15", time: "16:00 ET", stadium: "MetLife Stadium",  city: "New York/NJ",   timeConfirmed: false, stage: "Quarter-Final" },
-  { id: "qf-2", home: { label: "W R16-3", isConfirmed: false }, away: { label: "W R16-4", isConfirmed: false }, date: "Jul 15", time: "20:00 ET", stadium: "SoFi Stadium",     city: "Los Angeles",   timeConfirmed: false, stage: "Quarter-Final" },
-  { id: "qf-3", home: { label: "W R16-5", isConfirmed: false }, away: { label: "W R16-6", isConfirmed: false }, date: "Jul 16", time: "16:00 ET", stadium: "AT&T Stadium",     city: "Dallas",        timeConfirmed: false, stage: "Quarter-Final" },
-  { id: "qf-4", home: { label: "W R16-7", isConfirmed: false }, away: { label: "W R16-8", isConfirmed: false }, date: "Jul 16", time: "20:00 ET", stadium: "Levi's Stadium",   city: "San Francisco", timeConfirmed: false, stage: "Quarter-Final" },
+  { id: "qf-1", home: { label: "W R16-1", isConfirmed: false }, away: { label: "W R16-2", isConfirmed: false }, date: "Jul 13", time: "16:00 ET", stadium: "MetLife Stadium",  city: "New York/NJ",   timeConfirmed: false, stage: "Quarter-Final" },
+  { id: "qf-2", home: { label: "W R16-3", isConfirmed: false }, away: { label: "W R16-4", isConfirmed: false }, date: "Jul 13", time: "20:00 ET", stadium: "SoFi Stadium",     city: "Los Angeles",   timeConfirmed: false, stage: "Quarter-Final" },
+  { id: "qf-3", home: { label: "W R16-5", isConfirmed: false }, away: { label: "W R16-6", isConfirmed: false }, date: "Jul 14", time: "16:00 ET", stadium: "AT&T Stadium",     city: "Dallas",        timeConfirmed: false, stage: "Quarter-Final" },
+  { id: "qf-4", home: { label: "W R16-7", isConfirmed: false }, away: { label: "W R16-8", isConfirmed: false }, date: "Jul 14", time: "20:00 ET", stadium: "Levi's Stadium",   city: "San Francisco", timeConfirmed: false, stage: "Quarter-Final" },
 ];
 
 const SF_MATCHES: BracketMatch[] = [
-  { id: "sf-1", home: { label: "W QF-1", isConfirmed: false }, away: { label: "W QF-2", isConfirmed: false }, date: "Jul 21", time: "20:00 ET", stadium: "MetLife Stadium", city: "New York/NJ", timeConfirmed: false, stage: "Semi-Final" },
-  { id: "sf-2", home: { label: "W QF-3", isConfirmed: false }, away: { label: "W QF-4", isConfirmed: false }, date: "Jul 22", time: "20:00 ET", stadium: "AT&T Stadium",   city: "Dallas",      timeConfirmed: false, stage: "Semi-Final" },
+  { id: "sf-1", home: { label: "W QF-1", isConfirmed: false }, away: { label: "W QF-2", isConfirmed: false }, date: "Jul 17", time: "20:00 ET", stadium: "MetLife Stadium", city: "New York/NJ", timeConfirmed: false, stage: "Semi-Final" },
+  { id: "sf-2", home: { label: "W QF-3", isConfirmed: false }, away: { label: "W QF-4", isConfirmed: false }, date: "Jul 18", time: "20:00 ET", stadium: "AT&T Stadium",   city: "Dallas",      timeConfirmed: false, stage: "Semi-Final" },
 ];
 
 const ROUND_TABS = [

@@ -1,8 +1,9 @@
 "use client";
 
-type Size = "sm" | "md" | "lg";
+type Size = "inline" | "sm" | "md" | "lg";
 
 const SIZE_MAP: Record<Size, { font: number; bounce: number }> = {
+  inline: { font: 14, bounce: 6 },
   sm: { font: 32, bounce: 28 },
   md: { font: 48, bounce: 48 },
   lg: { font: 64, bounce: 70 },

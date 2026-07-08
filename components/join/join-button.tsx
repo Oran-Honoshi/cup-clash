@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { ArrowRight, Loader2, Sparkles } from "lucide-react";
+import { ArrowRight, Sparkles } from "lucide-react";
 import { PayPalCheckout } from "@/components/payments/paypal-checkout";
+import { BallLoader } from "@/components/ui/BallLoader";
 
 interface JoinButtonProps {
   groupId:       string;
@@ -64,7 +65,7 @@ export function JoinButton({ groupId, groupName, enrollmentFee, demoMode }: Join
         disabled={loading}
         className="w-full py-3.5 rounded-xl font-bold text-sm uppercase tracking-wider flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5 disabled:opacity-60"
         style={{ background: "linear-gradient(135deg, #00FF88, #00D4FF)", color: "#0B141B", boxShadow: "0 4px 16px rgba(0,255,136,0.25)" }}>
-        {loading ? <><Loader2 size={15} className="animate-spin" /> Joining...</> : <>Join Free <ArrowRight size={15} /></>}
+        {loading ? <><BallLoader size="inline" label={null} /> Joining...</> : <>Join Free <ArrowRight size={15} /></>}
       </button>
 
       {error && <p className="text-xs text-center rounded-xl px-3 py-2" style={{ color: "#dc2626", background: "rgba(220,38,38,0.06)" }}>{error}</p>}

@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { Eye, EyeOff, Lock, Mail, AlertCircle, ArrowRight, Loader2, Sparkles } from "lucide-react";
+import { Eye, EyeOff, Lock, Mail, AlertCircle, ArrowRight, Sparkles } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { NeonBar } from "@/components/ui/neon-bar";
+import { BallLoader } from "@/components/ui/BallLoader";
 import { SocialAuth } from "@/components/auth/social-auth";
 import { useLocale } from "@/components/i18n/locale-provider";
 
@@ -255,7 +256,7 @@ export default function SignInPage() {
             }}
           >
             {loading
-              ? <><Loader2 size={16} className="animate-spin" /> {t("auth_signing_in")}</>
+              ? <><BallLoader size="inline" label={null} /> {t("auth_signing_in")}</>
               : <><span>{t("auth_signin")}</span><ArrowRight size={16} /></>}
           </button>
 

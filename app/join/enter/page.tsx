@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { Hash, ArrowRight, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -78,9 +79,9 @@ export default function JoinEnterPage() {
 
         <p className="text-center text-sm" style={{ color: "#94a3b8" }}>
           Don&apos;t have a passkey?{" "}
-          <a href="/create-group" style={{ color: "#0891B2", fontWeight: "bold" }}>
+          <Link href="/create-group" style={{ color: "#0891B2", fontWeight: "bold" }}>
             Create your own group
-          </a>
+          </Link>
         </p>
       </div>
     </div>

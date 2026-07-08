@@ -5,6 +5,7 @@ import { Camera, Check, AlertCircle, Upload, RefreshCw, X, Zap, Mail } from "luc
 import { createClient } from "@/lib/supabase/client";
 import { CountrySelector } from "@/components/auth/country-selector";
 import { MemberAvatar, SOCCER_PRESETS, dicebearUrl } from "@/components/ui/member-avatar";
+import { BallLoader } from "@/components/ui/BallLoader";
 import { useTheme } from "@/components/theme-provider";
 import type { CountryCode } from "@/lib/types";
 import { useLocale } from "@/components/i18n/locale-provider";
@@ -143,9 +144,8 @@ export default function ProfilePage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-20"
-        style={{ color: "rgba(255,255,255,0.35)" }}>
-        {t("prof_loading")}
+      <div className="flex items-center justify-center py-20">
+        <BallLoader size="lg" label={t("prof_loading")} />
       </div>
     );
   }

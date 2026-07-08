@@ -6,6 +6,7 @@ import { X, Target, Trophy, TrendingUp, Zap, XCircle, Star, Volleyball, Medal, C
 import { countryFlagCode } from "@/lib/countries";
 import { FlagBadge } from "@/components/ui/FlagBadge";
 import { UserAvatar } from "@/components/ui/UserAvatar";
+import { BallLoader } from "@/components/ui/BallLoader";
 import { FOCUS_RING } from "@/lib/a11y";
 import type { MemberPrediction, BestThirdPick, MemberPredictionsResponse, TournamentPick } from "@/app/api/member-predictions/route";
 
@@ -217,6 +218,7 @@ export function PlayerDrawer({ userId, groupId, name, avatarUrl, country, points
               WebkitBackdropFilter: "blur(24px)",
               borderLeft: "1px solid rgba(0,212,255,0.15)",
               boxShadow: "-8px 0 40px rgba(0,0,0,0.1)",
+              paddingBottom: "env(safe-area-inset-bottom, 0px)",
             }}
           >
             {/* Header */}
@@ -291,7 +293,7 @@ export function PlayerDrawer({ userId, groupId, name, avatarUrl, country, points
             {/* Content */}
             <div className="px-5 py-4">
               {loading ? (
-                <div className="py-8 text-center text-sm" style={{ color: "rgba(255,255,255,0.35)" }}>Loading...</div>
+                <div className="py-8 flex justify-center"><BallLoader size="sm" label={null} /></div>
               ) : history.length === 0 && tournamentPicks.length === 0 && !bestThird?.enabled ? (
                 <div className="py-8 text-center space-y-2">
                   <Zap size={28} className="mx-auto" style={{ color: "rgba(255,255,255,0.2)" }} />

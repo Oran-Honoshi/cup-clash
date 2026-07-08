@@ -3,12 +3,13 @@
 import { useState, useEffect, Suspense } from "react";
 import {
   Users, Trophy, AlertCircle, Copy, Check,
-  ArrowRight, Zap, ChevronDown, Settings, Building2, UserCheck, Loader2, GraduationCap,
+  ArrowRight, Zap, ChevronDown, Settings, Building2, UserCheck, GraduationCap,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useSearchParams } from "next/navigation";
 import { NeonBar } from "@/components/ui/neon-bar";
 import { Chip } from "@/components/ui/chip";
+import { BallLoader } from "@/components/ui/BallLoader";
 import { useLocale } from "@/components/i18n/locale-provider";
 
 const inputStyle = {
@@ -1253,7 +1254,7 @@ function CreateGroupInner() {
               boxShadow: "0 0 24px rgba(0,255,136,0.3)",
             }}>
             {loading
-              ? <><Loader2 size={16} className="animate-spin" /> Creating your league...</>
+              ? <><BallLoader size="inline" label={null} /> Creating your league...</>
               : <><Trophy size={16} /> {t("cg_complete")}</>}
           </button>
         </div>
@@ -1265,8 +1266,8 @@ function CreateGroupInner() {
 export default function CreateGroupPage() {
   return (
     <Suspense fallback={
-      <div className="max-w-[480px] mx-auto py-12 text-center text-sm" style={{ color: "rgba(255,255,255,0.3)" }}>
-        Loading...
+      <div className="max-w-[480px] mx-auto py-12 flex justify-center">
+        <BallLoader size="md" />
       </div>
     }>
       <CreateGroupInner />

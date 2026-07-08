@@ -5,6 +5,7 @@ import { Trophy, Star, Search, Check, Lock, AlertCircle, BarChart2, Shield } fro
 import { PlayerPicker } from "@/components/predictions/player-picker";
 import { createClient } from "@/lib/supabase/client";
 import { ALL_COUNTRIES } from "@/lib/countries";
+import { FlagBadge } from "@/components/ui/FlagBadge";
 import { FOCUS_RING } from "@/lib/a11y";
 import { cn } from "@/lib/utils";
 
@@ -125,9 +126,7 @@ function CountryPicker({ value, onSelect, label, pts, isLocked }: CountryPickerP
               style={isSelected
                 ? { border: "1px solid rgba(0,255,136,0.4)", background: "rgba(0,255,136,0.1)" }
                 : { border: "1px solid rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.04)" }}>
-              <img src={`/flags/${c.flagCode}.svg`} alt={c.name}
-                className="w-7 h-4 object-cover rounded-sm"
-                onError={e => { (e.target as HTMLImageElement).style.display = "none"; }} />
+              <FlagBadge code={c.flagCode} label={c.name} size="sm" />
               <span className="text-[8px] font-bold truncate w-full text-center" style={{ color: "rgba(255,255,255,0.5)" }}>
                 {(c.code ?? c.flagCode).toUpperCase()}
               </span>
@@ -212,9 +211,7 @@ function BestThirdPicker({ selected, onToggle, isLocked, pts }: BestThirdPickerP
               style={isSelected
                 ? { border: "1px solid rgba(0,255,136,0.4)", background: "rgba(0,255,136,0.1)" }
                 : { border: "1px solid rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.04)" }}>
-              <img src={`/flags/${c.flagCode}.svg`} alt={c.name}
-                className="w-7 h-4 object-cover rounded-sm"
-                onError={e => { (e.target as HTMLImageElement).style.display = "none"; }} />
+              <FlagBadge code={c.flagCode} label={c.name} size="sm" />
               <span className="text-[8px] font-bold truncate w-full text-center" style={{ color: "rgba(255,255,255,0.5)" }}>
                 {(c.code ?? c.flagCode).toUpperCase()}
               </span>

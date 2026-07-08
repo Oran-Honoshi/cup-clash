@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { AlertCircle, Edit3, X, Check, Loader2 } from "lucide-react";
+import { AlertCircle, Edit3, X, Check } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
+import { BallLoader } from "@/components/ui/BallLoader";
 
 interface FinishedMatch {
   matchId:    string;
@@ -181,8 +182,8 @@ export function MatchOverridePanel({ groupId }: MatchOverridePanelProps) {
   } as const;
 
   if (loading) return (
-    <div className="flex items-center justify-center gap-2 py-8 text-sm" style={{ color: "rgba(255,255,255,0.35)" }}>
-      <Loader2 size={14} className="animate-spin" /> Loading matches...
+    <div className="flex justify-center py-8">
+      <BallLoader size="sm" label="Loading matches..." />
     </div>
   );
 
@@ -246,7 +247,7 @@ export function MatchOverridePanel({ groupId }: MatchOverridePanelProps) {
                       disabled={isSaving}
                       className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider disabled:opacity-40"
                       style={{ background: "rgba(220,38,38,0.08)", color: "#dc2626", border: "1px solid rgba(220,38,38,0.2)" }}>
-                      {isSaving ? <Loader2 size={11} className="animate-spin" /> : <X size={11} />}
+                      {isSaving ? <BallLoader size="inline" label={null} /> : <X size={11} />}
                       Remove
                     </button>
                   )}
@@ -313,7 +314,7 @@ export function MatchOverridePanel({ groupId }: MatchOverridePanelProps) {
                     className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-bold uppercase tracking-wider disabled:opacity-40 transition-opacity"
                     style={{ background: "rgba(251,191,36,0.12)", color: "rgb(251,191,36)", border: "1px solid rgba(251,191,36,0.3)" }}>
                     {isSaving
-                      ? <><Loader2 size={13} className="animate-spin" /> Applying...</>
+                      ? <><BallLoader size="inline" label={null} /> Applying...</>
                       : <><Check size={13} /> Apply Correction</>}
                   </button>
                 </div>

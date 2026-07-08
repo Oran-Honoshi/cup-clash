@@ -2,8 +2,8 @@
 
 import { useState, useMemo } from "react";
 import { Search, Check } from "lucide-react";
-import Image from "next/image";
-import { ALL_COUNTRIES, flagUrl } from "@/lib/countries";
+import { ALL_COUNTRIES } from "@/lib/countries";
+import { FlagBadge } from "@/components/ui/FlagBadge";
 import { useTheme } from "@/components/theme-provider";
 import { cn } from "@/lib/utils";
 import type { CountryCode } from "@/lib/types";
@@ -85,15 +85,7 @@ export function CountrySelector({ value, onChange }: CountrySelectorProps) {
                   : undefined
               }
             >
-              <div className="relative w-8 h-5 rounded-sm overflow-hidden">
-                <Image
-                  src={flagUrl(c.flagCode, 40)}
-                  alt={c.name}
-                  fill
-                  className="object-cover"
-                  unoptimized
-                />
-              </div>
+              <FlagBadge code={c.flagCode} label={c.name} size="sm" />
               <span
                 className={cn(
                   "text-[9px] font-bold tracking-wider leading-none",

@@ -6,6 +6,8 @@ import { createClient } from "@/lib/supabase/client";
 import { ALL_COUNTRIES } from "@/lib/countries";
 import { cn } from "@/lib/utils";
 import { FOCUS_RING } from "@/lib/a11y";
+import { BallLoader } from "@/components/ui/BallLoader";
+import { FlagBadge } from "@/components/ui/FlagBadge";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -103,7 +105,6 @@ export function PlayerPicker({
         if ((data?.length ?? 0) < PAGE) break;
         from += PAGE;
       }
-      console.log("[PlayerPicker] fetched", all.length, "players");
       setPlayers(all);
       setLoading(false);
     }
@@ -194,9 +195,7 @@ export function PlayerPicker({
             </div>
           )}
           {selectedPlayer && flagCode(selectedPlayer.country) && (
-            <img src={`/flags/${flagCode(selectedPlayer.country)}.svg`}
-              alt={selectedPlayer.country} className="w-5 h-3.5 object-cover rounded-sm shrink-0"
-              onError={e => { (e.target as HTMLImageElement).style.display = "none"; }} />
+            <FlagBadge code={flagCode(selectedPlayer.country)} label={selectedPlayer.country} size="sm" />
           )}
           <span className="text-sm font-bold text-white flex-1 truncate">{value}</span>
           {selectedPlayer && (
@@ -228,8 +227,8 @@ export function PlayerPicker({
 
       {/* Accordion */}
       {loading ? (
-        <div className="text-xs text-center py-4" style={{ color: "rgba(255,255,255,0.3)" }}>
-          Loading players…
+        <div className="py-4 flex justify-center">
+          <BallLoader size="sm" label="Loading players…" />
         </div>
       ) : (
         <div className="rounded-xl overflow-hidden max-h-80 overflow-y-auto"
@@ -265,13 +264,7 @@ export function PlayerPicker({
                           ? "rgba(0,212,255,0.05)"
                           : "transparent",
                     }}>
-                    {fc ? (
-                      <img src={`/flags/${fc}.svg`} alt={team}
-                        className="w-6 h-4 object-cover rounded-sm shrink-0"
-                        onError={e => { (e.target as HTMLImageElement).style.display = "none"; }} />
-                    ) : (
-                      <div className="w-6 h-4 rounded-sm shrink-0 bg-white/10" />
-                    )}
+                    <FlagBadge code={fc} label={team} size="sm" />
                     <span className="flex-1 text-sm font-bold truncate"
                       style={{ color: hasSelect ? "#00D4FF" : teamHit && q ? "#fff" : "rgba(255,255,255,0.8)" }}>
                       {team}

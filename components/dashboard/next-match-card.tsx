@@ -1,13 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Lock, Send, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
+import { Lock, Send, CheckCircle, AlertCircle } from "lucide-react";
 import { formatInTimeZone } from "date-fns-tz";
 import { differenceInMinutes } from "date-fns";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { NeonBar } from "@/components/ui/neon-bar";
 import { FlagBadge } from "@/components/ui/FlagBadge";
+import { BallLoader } from "@/components/ui/BallLoader";
 import { ScoreInputCC } from "@/components/ui/score-input-cc";
 import { LiveDot } from "@/components/ui/live-dot";
 import { FOCUS_RING } from "@/lib/a11y";
@@ -252,7 +253,7 @@ export function NextMatchCard({ match, groupId = "", cardLabel }: NextMatchCardP
               onClick={handleSubmit}
               disabled={homeScore === "" || awayScore === "" || saveState === "saving"}
               size="md" className="w-full"
-              rightIcon={saveState === "saving" ? <Loader2 size={15} className="animate-spin" /> : <Send size={15} />}
+              rightIcon={saveState === "saving" ? <BallLoader size="inline" label={null} /> : <Send size={15} />}
             >
               {saveState === "saving" ? "Saving..." : "Lock in prediction"}
             </Button>

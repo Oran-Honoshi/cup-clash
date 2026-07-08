@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { HelpCircle, Plus, Trash2, CheckCircle, Clock, Search, Users, User, Hash, MessageSquare, ChevronDown } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
+import { BallLoader } from "@/components/ui/BallLoader";
 import { ALL_COUNTRIES } from "@/lib/countries";
 
 type QuestionType = "open_text" | "player_pick" | "team_pick" | "number";
@@ -324,7 +325,7 @@ export function BonusQuestionsAdmin({ groupId }: BonusQuestionsAdminProps) {
           onBlur={e => { e.target.style.borderColor = "rgba(255,255,255,0.12)"; }}
         />
 
-        <div className="grid grid-cols-4 gap-2">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
           {(["open_text", "player_pick", "team_pick", "number"] as QuestionType[]).map(t => (
             <button key={t} type="button"
               onClick={() => setNewQ(q => ({ ...q, question_type: t }))}
@@ -395,7 +396,7 @@ export function BonusQuestionsAdmin({ groupId }: BonusQuestionsAdminProps) {
 
       {/* ── Question list ── */}
       {loading ? (
-        <div className="text-sm text-center py-4" style={{ color: "rgba(255,255,255,0.3)" }}>Loading…</div>
+        <div className="py-4 flex justify-center"><BallLoader size="sm" label={null} /></div>
       ) : questions.length === 0 ? (
         <div className="text-sm text-center py-4" style={{ color: "rgba(255,255,255,0.3)" }}>No questions yet</div>
       ) : (

@@ -3,12 +3,13 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { Mail, Lock, Eye, EyeOff, User, ArrowRight, Check, AlertCircle, Loader2 } from "lucide-react";
+import { Mail, Lock, Eye, EyeOff, User, ArrowRight, Check, AlertCircle } from "lucide-react";
 import { createClient as createSupabaseClient } from "@/lib/supabase/client";
 import { SocialAuth } from "@/components/auth/social-auth";
 import { CountrySelector } from "@/components/auth/country-selector";
 import { useTheme } from "@/components/theme-provider";
 import { NeonBar } from "@/components/ui/neon-bar";
+import { BallLoader } from "@/components/ui/BallLoader";
 import type { CountryCode } from "@/lib/types";
 
 
@@ -372,7 +373,7 @@ export default function SignUpPage() {
                   }}
                 >
                   {loading
-                    ? <><Loader2 size={16} className="animate-spin" /> Creating...</>
+                    ? <><BallLoader size="inline" label={null} /> Creating...</>
                     : <><span>{country ? "Create account" : "Skip for now"}</span><ArrowRight size={16} /></>}
                 </button>
               </div>

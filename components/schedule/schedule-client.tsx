@@ -10,6 +10,7 @@ import {
 import { CopyPredictionSheet } from "@/components/predictions/copy-prediction-sheet";
 import { FlagBadge } from "@/components/ui/FlagBadge";
 import { BallLoader } from "@/components/ui/BallLoader";
+import { Card } from "@/components/ui/card";
 import { ScoreInputCC } from "@/components/ui/score-input-cc";
 import { PredictionBadge } from "@/components/predictions/prediction-badge";
 import { PredictionDistribution } from "@/components/dashboard/prediction-distribution";
@@ -134,15 +135,6 @@ function predResult(pred: UserPrediction, homeScore: number, awayScore: number):
   const rw = homeScore > awayScore ? "H" : homeScore < awayScore ? "A" : "D";
   return pw === rw ? "correct" : "missed";
 }
-
-// ── Glass tokens ───────────────────────────────────────────────────────────────
-
-const glassCard = {
-  background: "rgba(18,14,38,0.45)",
-  backdropFilter: "blur(24px) saturate(160%)",
-  WebkitBackdropFilter: "blur(24px) saturate(160%)",
-  border: "1px solid rgba(255,255,255,0.09)",
-} as const;
 
 // ── Prediction Row ─────────────────────────────────────────────────────────────
 
@@ -695,7 +687,7 @@ export function ScheduleClient({
 
       {/* ── Predicting-for info card ──────────────────────────── */}
       {userId && allGroups.length > 0 && (
-        <div className="flex items-center gap-3 px-4 py-3 rounded-2xl" style={glass}>
+        <Card className="flex items-center gap-3 px-4 py-3" style={glass}>
           <div className="h-8 w-8 rounded-xl flex items-center justify-center shrink-0"
             style={{ background: "rgba(0,212,255,0.12)", border: "1px solid rgba(0,212,255,0.25)" }}>
             <Users size={14} style={{ color: "#00D4FF" }} />
@@ -713,7 +705,7 @@ export function ScheduleClient({
               ? <BallLoader size="sm" label={null} />
               : <span>{predStats.made}/{predStats.total} picks</span>}
           </div>
-        </div>
+        </Card>
       )}
 
       {/* ── Guest CTA ──────────────────────────────────────────── */}

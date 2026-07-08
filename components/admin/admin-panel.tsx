@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Users, Trophy, Copy, Check, RefreshCw, CheckCircle, XCircle, Link2, Trash2, UserCog, Shield, Crown, Eye, GraduationCap } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
+import { BallLoader } from "@/components/ui/BallLoader";
 import { MemberAvatar } from "@/components/ui/member-avatar";
 import { NudgeButton } from "@/components/admin/nudge-button";
 import { BonusQuestionsAdmin } from "@/components/admin/bonus-questions-admin";
@@ -384,7 +385,7 @@ export function AdminPanel({ group, initialMembers, isOwner, currentUserId }: Ad
                         background: "rgba(248,113,113,0.1)", border: "1px solid rgba(248,113,113,0.2)", color: "#f87171",
                       }}>
                       {payingMemberId === m.id
-                        ? <><RefreshCw size={11} className="animate-spin" /> Saving…</>
+                        ? <><BallLoader size="inline" label={null} /> Saving…</>
                         : m.paid ? <><CheckCircle size={11} /> Paid</> : <><XCircle size={11} /> Unpaid</>}
                     </button>
                   </div>

@@ -7,6 +7,8 @@ import { ALL_COUNTRIES } from "@/lib/countries";
 import { cn } from "@/lib/utils";
 import { FOCUS_RING } from "@/lib/a11y";
 import { PlayerPicker } from "@/components/predictions/player-picker";
+import { FlagBadge } from "@/components/ui/FlagBadge";
+import { BallLoader } from "@/components/ui/BallLoader";
 
 type QuestionType = "open_text" | "player_pick" | "team_pick" | "number";
 
@@ -65,8 +67,7 @@ function BonusCountryPicker({ value, onSelect, isLocked }: { value: string; onSe
               style={isSelected
                 ? { border: "1px solid rgba(0,255,136,0.4)", background: "rgba(0,255,136,0.1)" }
                 : { border: "1px solid rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.04)" }}>
-              <img src={`/flags/${c.flagCode}.svg`} alt={c.name} className="w-7 h-4 object-cover rounded-sm"
-                onError={e => { (e.target as HTMLImageElement).style.display = "none"; }} />
+              <FlagBadge code={c.flagCode} label={c.name} size="sm" />
               <span className="text-[8px] font-bold truncate w-full text-center" style={{ color: "rgba(255,255,255,0.5)" }}>
                 {(c.code ?? c.flagCode).toUpperCase()}
               </span>
@@ -276,7 +277,7 @@ export function BonusQuestions({ groupId, userId }: BonusQuestionsProps) {
                 {!isLocked && (isSaving || isSaved) && (
                   <div className="flex items-center gap-1.5 mt-2 text-xs font-bold"
                     style={{ color: isSaved ? "#00FF88" : "rgba(255,255,255,0.4)" }}>
-                    {isSaving ? <span className="animate-spin">⟳</span> : <Check size={11} />}
+                    {isSaving ? <BallLoader size="inline" label={null} /> : <Check size={11} />}
                     {isSaving ? "Saving…" : "Answer saved ✓"}
                   </div>
                 )}

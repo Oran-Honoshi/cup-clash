@@ -26,7 +26,7 @@ interface LeaderboardTabsProps {
   isCorporate?: boolean;
 }
 
-export function LeaderboardTabs({ members, currentUserId = "1", groupId, isAdFree, isCorporate }: LeaderboardTabsProps) {
+export function LeaderboardTabs({ members, currentUserId, groupId, isAdFree, isCorporate }: LeaderboardTabsProps) {
   const [active, setActive] = useState<Tab>("predictions");
 
   return (
