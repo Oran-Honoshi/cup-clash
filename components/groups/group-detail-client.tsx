@@ -134,7 +134,7 @@ export function GroupDetailClient({ group, rules, members, currentUserId, isAdmi
           )}
           <div className="grid grid-cols-3 gap-2">
             {[
-              { icon: Users,      label: t("grp_members"),   value: `${paidCount}`,                accent: "#00D4FF", show: true },
+              { icon: Users,      label: t("grp_members"),   value: `${members.length}`,           accent: "#00D4FF", show: true },
               { icon: DollarSign, label: t("grp_entry"),     value: `${group.currency_symbol ?? "$"}${group.buy_in_amount ?? 0}`, accent: "#00FF88", show: showEntryFee },
               { icon: Trophy,     label: t("grp_prize_pot"), value: `${group.currency_symbol ?? "$"}${totalPot}`,                 accent: "#fbbf24", show: showPrizePot },
             ].filter(c => c.show).map(({ icon: Icon, label, value, accent }) => (

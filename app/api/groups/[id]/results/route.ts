@@ -42,8 +42,24 @@ export async function GET(
     return NextResponse.json({ error: predErr.message }, { status: 500 });
   }
 
+  // Grand totals per member across ALL prediction types (match, tournament picks,
+  // best-third, bonus questions) so this matches the totals shown in the
+  // Leaderboard / My Stats / Player Drawer instead of only match-grid points.
+  const [{ data: allPoints }, { data: bonusPoints }] = await Promise.all([
+    sb.from("group_predictions").select("user_id, points_earned").eq("group_id", groupId),
+    sb.from("bonus_answers").select("user_id, points_earned").eq("group_id", groupId),
+  ]);
+
+  const totals: Record<string, number> = {};
+  for (const r of (allPoints ?? []) as { user_id: string; points_earned: number | null }[]) {
+    totals[r.user_id] = (totals[r.user_id] ?? 0) + (r.points_earned ?? 0);
+  }
+  for (const r of (bonusPoints ?? []) as { user_id: string; points_earned: number | null }[]) {
+    totals[r.user_id] = (totals[r.user_id] ?? 0) + (r.points_earned ?? 0);
+  }
+
   return NextResponse.json(
-    { matches: matches ?? [], predictions: predictions ?? [] },
+    { matches: matches ?? [], predictions: predictions ?? [], totals },
     { headers: { "Cache-Control": "no-store" } }
   );
 }

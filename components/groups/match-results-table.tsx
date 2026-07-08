@@ -52,6 +52,7 @@ const glass = {
 export function MatchResultsTable({ groupId, members }: Props) {
   const [matches, setMatches] = useState<FinishedMatch[]>([]);
   const [predictions, setPredictions] = useState<MemberPrediction[]>([]);
+  const [totals, setTotals] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -60,6 +61,7 @@ export function MatchResultsTable({ groupId, members }: Props) {
       .then(data => {
         setMatches(data.matches ?? []);
         setPredictions(data.predictions ?? []);
+        setTotals(data.totals ?? {});
       })
       .catch(console.error)
       .finally(() => setLoading(false));
@@ -69,11 +71,6 @@ export function MatchResultsTable({ groupId, members }: Props) {
   predictions.forEach(p => {
     if (!predMap[p.match_id]) predMap[p.match_id] = {};
     predMap[p.match_id][p.user_id] = p;
-  });
-
-  const totals: Record<string, number> = {};
-  predictions.forEach(p => {
-    totals[p.user_id] = (totals[p.user_id] ?? 0) + (p.points_earned ?? 0);
   });
 
   if (loading) {
