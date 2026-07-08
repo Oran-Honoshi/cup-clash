@@ -43,41 +43,45 @@ export function NotificationsClient({ userId }: { userId: string }) {
   const [settings,       setSettings]       = useState<Record<string, boolean>>({});
   const [pushEnabled,    setPushEnabled]     = useState(false);
   const [loading,        setLoading]         = useState(false);
-  const [saved,          setSaved]           = useState(false);
   const [telegramChatId, setTelegramChatId]  = useState<string | null | undefined>(undefined);
   const [tgDisconnecting, setTgDisconnecting] = useState(false);
 
   useEffect(() => {
+    const defaults: Record<string, boolean> = {};
+    SETTINGS.forEach(s => { defaults[s.key] = s.default; });
+
     const stored = localStorage.getItem("cupclash_notif_settings");
-    if (stored) {
-      setSettings(JSON.parse(stored));
-    } else {
-      const defaults: Record<string, boolean> = {};
-      SETTINGS.forEach(s => { defaults[s.key] = s.default; });
-      setSettings(defaults);
-    }
+    setSettings(stored ? { ...defaults, ...JSON.parse(stored) } : defaults);
+
     if ("Notification" in window) {
       setPushEnabled(Notification.permission === "granted");
     }
 
-    // Load telegram_chat_id from profile
-    async function loadTelegram() {
+    // Load telegram_chat_id + server-synced notification preferences from profile
+    async function loadProfile() {
       const sb = createClient();
       const { data } = await sb
         .from("profiles")
-        .select("telegram_chat_id")
+        .select("telegram_chat_id, notification_preferences")
         .eq("id", userId)
         .maybeSingle();
-      const row = data as { telegram_chat_id: string | null } | null;
+      const row = data as { telegram_chat_id: string | null; notification_preferences: Record<string, boolean> | null } | null;
       setTelegramChatId(row?.telegram_chat_id ?? null);
+      if (row?.notification_preferences) {
+        const merged = { ...defaults, ...row.notification_preferences };
+        setSettings(merged);
+        localStorage.setItem("cupclash_notif_settings", JSON.stringify(merged));
+      }
     }
-    loadTelegram();
+    loadProfile();
   }, [userId]);
 
   const toggleSetting = (key: string) => {
     setSettings(prev => {
       const next = { ...prev, [key]: !prev[key] };
       localStorage.setItem("cupclash_notif_settings", JSON.stringify(next));
+      const sb = createClient();
+      sb.from("profiles").update({ notification_preferences: next }).eq("id", userId).then();
       return next;
     });
   };
@@ -100,13 +104,6 @@ export function NotificationsClient({ userId }: { userId: string }) {
     const success = await subscribeToPush(userId);
     setPushEnabled(success);
     setLoading(false);
-    if (success) { setSaved(true); setTimeout(() => setSaved(false), 3000); }
-  };
-
-  const saveSettings = () => {
-    localStorage.setItem("cupclash_notif_settings", JSON.stringify(settings));
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
   };
 
   return (
@@ -229,18 +226,6 @@ export function NotificationsClient({ userId }: { userId: string }) {
           </div>
         ))}
       </div>
-
-      {/* Save button */}
-      <button onClick={saveSettings}
-        className="w-full py-3 rounded-xl font-bold text-sm uppercase tracking-wider flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5"
-        style={saved ? {
-          background: "rgba(0,255,136,0.1)", border: "1px solid rgba(0,255,136,0.25)", color: "#00FF88",
-        } : {
-          background: "linear-gradient(135deg, #00FF88, #00D4FF)", color: "#0B141B",
-          boxShadow: "0 0 20px rgba(0,255,136,0.25)",
-        }}>
-        {saved ? <><Check size={16} /> {t("notif_saved")}</> : t("notif_save")}
-      </button>
     </div>
   );
 }
