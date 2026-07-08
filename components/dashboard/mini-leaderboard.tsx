@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Trophy, Target, TrendingUp } from "lucide-react";
 import { MemberAvatar } from "@/components/ui/member-avatar";
+import { sortMembersForRanking } from "@/lib/leaderboard-sort";
 import type { Member } from "@/lib/types";
 
 interface MiniLeaderboardProps {
@@ -12,7 +13,7 @@ interface MiniLeaderboardProps {
 const RANK_COLORS = ["#fbbf24", "#94a3b8", "#f97316", "rgba(255,255,255,0.3)", "rgba(255,255,255,0.3)"];
 
 export function MiniLeaderboard({ members, groupId, currentUserId }: MiniLeaderboardProps) {
-  const top5        = members.slice(0, 5);
+  const top5        = sortMembersForRanking(members).slice(0, 5);
   const totalExact  = members.reduce((s, m) => s + (m.exactScores        ?? 0), 0);
   const totalCorrect = members.reduce((s, m) => s + (m.correctPredictions ?? 0), 0);
   if (!top5.length) return null;

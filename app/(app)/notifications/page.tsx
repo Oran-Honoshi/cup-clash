@@ -1,8 +1,10 @@
 export const dynamic = "force-dynamic";
 
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { NotificationsClient } from "@/components/notifications/notifications-client";
 import { getCurrentUserProfile } from "@/lib/services/user-group";
+import { ENABLE_BETA_FEATURES } from "@/lib/feature-flags";
 
 export default async function NotificationsPage() {
   const userProfile = await getCurrentUserProfile();
@@ -18,6 +20,11 @@ export default async function NotificationsPage() {
         <p className="text-sm mt-1" style={{ color: "rgba(255,255,255,0.4)" }}>
           Choose when and how Cup Clash notifies you.
         </p>
+        {ENABLE_BETA_FEATURES && (
+          <Link href="/notifications/beta" className="text-[10px] font-bold uppercase tracking-widest inline-block mt-2" style={{ color: "#10b981" }}>
+            Try the Beta notifications view →
+          </Link>
+        )}
       </div>
       <NotificationsClient userId={userProfile.id} />
     </div>

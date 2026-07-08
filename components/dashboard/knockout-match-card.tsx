@@ -48,10 +48,10 @@ export function KnockoutMatchCard({ match, groupId }: KnockoutMatchCardProps) {
       const { data: { user } } = await sb.auth.getUser();
       if (!user) return;
 
-      const { data } = await sb.from("predictions")
+      const { data } = await sb.from("group_predictions")
         .select("home_score, away_score, pred_value")
         .eq("user_id", user.id).eq("group_id", groupId)
-        .eq("match_id", match.id).eq("pred_type", "match")
+        .eq("match_id", match.id)
         .maybeSingle();
 
       if (data) {
@@ -90,16 +90,15 @@ export function KnockoutMatchCard({ match, groupId }: KnockoutMatchCardProps) {
     if (!user) { setErrorMsg("Sign in to save"); setSaveState("error"); return; }
 
     const lockTime = new Date(matchDate.getTime() - 5 * 60 * 1000);
-    const { error } = await sb.from("predictions").upsert({
+    const { error } = await sb.from("group_predictions").upsert({
       user_id:   user.id,
       group_id:  groupId,
       match_id:  match.id,
-      pred_type: "match",
       home_score: Number(homeScore),
       away_score: Number(awayScore),
       pred_value: advancementPick, // who advances
       locked_at:  lockTime.toISOString(),
-    } as Record<string, unknown>, { onConflict: "user_id,group_id,match_id,pred_type" });
+    } as Record<string, unknown>, { onConflict: "user_id,group_id,match_id" });
 
     if (error) { setErrorMsg(error.message); setSaveState("error"); return; }
     setSaveState("saved");

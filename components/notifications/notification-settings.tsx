@@ -41,7 +41,11 @@ const DEFAULT_CHANNELS: NotifChannels = {
   push:  false,
 };
 
-const STORAGE_KEY = "cupclash_notif_settings";
+// Deliberately a distinct key from the live notifications-client.tsx's
+// "cupclash_notif_settings" — the two components use incompatible data
+// shapes, so sharing a key would silently corrupt a real user's saved
+// preferences the moment either component wrote to it.
+const STORAGE_KEY = "cupclash_notif_settings_v2";
 
 function Toggle({ on, onChange, disabled }: { on: boolean; onChange: (v: boolean) => void; disabled?: boolean }) {
   return (

@@ -6,6 +6,25 @@ import { FlagBadge } from "@/components/ui/FlagBadge";
 import { ScoreInputCC } from "@/components/ui/score-input-cc";
 import { createClient } from "@/lib/supabase/client";
 import { STAGE_LABELS, type ScheduleMatch } from "@/lib/schedule";
+import { ENABLE_BETA_FEATURES } from "@/lib/feature-flags";
+import { KnockoutMatchCard } from "@/components/dashboard/knockout-match-card";
+import type { Match } from "@/lib/types";
+
+function toMatchType(m: ScheduleMatch): Match {
+  return {
+    id:            m.id,
+    home:          m.home,
+    away:          m.away,
+    homeFlagCode:  m.homeFlagCode,
+    awayFlagCode:  m.awayFlagCode,
+    time:          m.kickoff_at,
+    stage:         m.stage,
+    stadium:       m.stadium,
+    city:          m.city,
+    status:        m.status,
+    timeConfirmed: m.time_confirmed,
+  };
+}
 
 const glassCard = {
   background: "rgba(18,14,38,0.32)",
@@ -243,6 +262,8 @@ export function KnockoutPredictions({ groupId, userId, allMatches = [] }: Knocko
               {stageMatches.map(match => (
                 !match.homeFlagCode || !match.awayFlagCode
                   ? <PendingMatchCard key={match.id} match={match} />
+                  : ENABLE_BETA_FEATURES
+                  ? <KnockoutMatchCard key={match.id} match={toMatchType(match)} groupId={groupId} />
                   : (
                     <KnockoutCard
                       key={match.id}
