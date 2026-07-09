@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { createClient } from "@/lib/supabase/client";
-import { Trophy, MapPin, Clock, ChevronRight } from "lucide-react";
+import { Trophy, MapPin, Clock, Target } from "lucide-react";
 import { FlagBadge } from "@/components/ui/FlagBadge";
+import { Card } from "@/components/ui/card";
 
 interface BracketTeam {
   label: string;      // e.g. "1A" or "Spain"
@@ -75,14 +76,6 @@ const SF_MATCHES: BracketMatch[] = [
   { id: "sf-2", home: { label: "W QF-3", isConfirmed: false }, away: { label: "W QF-4", isConfirmed: false }, date: "Jul 18", time: "20:00 ET", stadium: "AT&T Stadium",   city: "Dallas",      timeConfirmed: false, stage: "Semi-Final" },
 ];
 
-const ROUND_TABS = [
-  { id: "r32",   label: "R32",   count: 16 },
-  { id: "r16",   label: "R16",   count: 8  },
-  { id: "qf",    label: "QF",    count: 4  },
-  { id: "sf",    label: "SF",    count: 2  },
-  { id: "final", label: "Final", count: 1  },
-];
-
 const FINAL_MATCH: BracketMatch = {
   id: "final",
   home: { label: "W SF-1", isConfirmed: false },
@@ -95,27 +88,44 @@ const FINAL_MATCH: BracketMatch = {
   stage: "Final",
 };
 
+const ROUND_TABS = [
+  { id: "r32",   label: "R32"   },
+  { id: "r16",   label: "R16"   },
+  { id: "qf",    label: "QF"    },
+  { id: "sf",    label: "SF"    },
+  { id: "final", label: "Final" },
+] as const;
+
+type RoundId = typeof ROUND_TABS[number]["id"];
+
 function TeamSlot({ team }: { team: BracketTeam }) {
+  const showHint = !team.isConfirmed && team.label && team.label !== "TBD";
   return (
     <div style={{
       display: "flex", alignItems: "center", gap: 8,
       padding: "8px 12px", borderRadius: 10,
-      border: team.isConfirmed ? "1px solid rgba(0,255,136,0.25)" : "1px solid rgba(255,255,255,0.08)",
-      background: team.isConfirmed ? "rgba(0,255,136,0.05)" : "rgba(255,255,255,0.02)",
+      border: team.isConfirmed ? "1px solid color-mix(in srgb, var(--ac) 30%, transparent)" : "1.5px dashed var(--br)",
+      background: team.isConfirmed ? "color-mix(in srgb, var(--ac) 6%, transparent)" : "var(--ip)",
       transition: "all 0.15s",
     }}>
       {team.isConfirmed && team.flagCode ? (
         <FlagBadge code={team.flagCode} label={team.label} size="sm" />
       ) : (
         <div className="rounded-full shrink-0 flex items-center justify-center"
-          style={{ width: 24, height: 24, background: "rgba(255,255,255,0.06)", border: "1px dashed rgba(255,255,255,0.18)" }}>
-          <span style={{ fontSize: 8, color: "rgba(255,255,255,0.25)" }}>?</span>
+          style={{ width: 24, height: 24, background: "var(--ip)", border: "1.5px dashed var(--br)" }}>
+          <span style={{ fontSize: 8, color: "var(--ft)" }}>?</span>
         </div>
       )}
-      <span className="text-sm font-bold truncate"
-        style={{ color: team.isConfirmed ? "#ffffff" : "rgba(255,255,255,0.3)" }}>
-        {team.label}
-      </span>
+      <div className="min-w-0 flex flex-col">
+        <span className="text-sm font-bold truncate" style={{ color: team.isConfirmed ? "var(--tx)" : "var(--ft)" }}>
+          {team.isConfirmed ? team.label : "TBD"}
+        </span>
+        {showHint && (
+          <span className="text-[9px] font-bold uppercase tracking-wide truncate" style={{ color: "var(--ft)" }}>
+            {team.label}
+          </span>
+        )}
+      </div>
     </div>
   );
 }
@@ -129,7 +139,7 @@ function ScoreBadges({ match }: { match: BracketMatch }) {
   const displayAway = hasET ? match.awayScoreET! : match.awayScore!;
   return (
     <div className="flex items-center gap-1.5 px-3 pb-1">
-      <span className="font-mono font-black text-sm" style={{ color: "#ffcc44" }}>
+      <span className="font-mono font-black text-sm" style={{ color: "var(--sc)" }}>
         {displayHome}–{displayAway}
       </span>
       {hasET && (
@@ -140,7 +150,7 @@ function ScoreBadges({ match }: { match: BracketMatch }) {
       )}
       {hasPen && (
         <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full"
-          style={{ background: "rgba(212,175,55,0.12)", border: "1px solid rgba(212,175,55,0.3)", color: "#D4AF37" }}>
+          style={{ background: "color-mix(in srgb, var(--sc) 14%, transparent)", border: "1px solid color-mix(in srgb, var(--sc) 32%, transparent)", color: "var(--sc)" }}>
           PEN · {match.penaltyWinner}
         </span>
       )}
@@ -148,63 +158,67 @@ function ScoreBadges({ match }: { match: BracketMatch }) {
   );
 }
 
-function BracketMatchCard({ match, highlight = false }: { match: BracketMatch; highlight?: boolean }) {
+function BracketMatchCard({ match, highlight = false, myPick }: { match: BracketMatch; highlight?: boolean; myPick?: string }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
-      style={{
-        background: "rgba(18,14,38,0.32)",
-        backdropFilter: "blur(40px) saturate(180%)",
-        WebkitBackdropFilter: "blur(40px) saturate(180%)",
-        border: highlight ? "1px solid rgba(212,175,55,0.3)" : "1px solid rgba(255,255,255,0.1)",
-        borderRadius: 14,
-        overflow: "hidden",
-        boxShadow: highlight ? "0 0 20px rgba(212,175,55,0.2)" : "0 4px 16px rgba(0,0,0,0.3)",
-      }}
+      className="relative"
     >
-      {highlight && (
-        <div className="h-px bg-gradient-to-r from-transparent via-yellow-400/60 to-transparent" />
-      )}
-      <div className="p-3 space-y-1.5">
-        <TeamSlot team={match.home} />
-        <div className="flex items-center gap-2 px-3">
-          <div className="flex-1 h-px" style={{ background: "rgba(255,255,255,0.06)" }} />
-          <span className="font-bold" style={{ fontSize: 10, color: "rgba(255,255,255,0.25)" }}>VS</span>
-          <div className="flex-1 h-px" style={{ background: "rgba(255,255,255,0.06)" }} />
+      {myPick && (
+        <div className="absolute -top-2 right-3 z-10 flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wide"
+          style={{ background: "var(--ac)", color: "var(--at)", boxShadow: "0 2px 8px color-mix(in srgb, var(--ac) 50%, transparent)" }}>
+          <Target size={9} /> Your pick: {myPick}
         </div>
-        <TeamSlot team={match.away} />
-      </div>
-      <ScoreBadges match={match} />
-      <div className="px-3 pb-3 flex items-center gap-3 flex-wrap"
-        style={{ fontSize: 10, color: "rgba(255,255,255,0.3)" }}>
-        <span className="flex items-center gap-1">
-          <Clock size={9} />{match.timeConfirmed === false ? "Date TBD" : `${match.date} · ${match.time}`}
-        </span>
-        <span className="flex items-center gap-1"><MapPin size={9} />{match.city}</span>
-      </div>
+      )}
+      <Card
+        variant="glass-accent"
+        className="overflow-hidden"
+        style={{
+          background: "var(--sf)",
+          border: highlight ? "1px solid var(--sc)" : "1px solid var(--br)",
+          boxShadow: highlight ? "0 0 20px color-mix(in srgb, var(--sc) 25%, transparent)" : "0 4px 16px var(--shad)",
+        }}
+      >
+        {highlight && <div className="h-px" style={{ background: "linear-gradient(90deg, transparent, var(--sc), transparent)" }} />}
+        <div className="p-3 space-y-1.5">
+          <TeamSlot team={match.home} />
+          <div className="flex items-center gap-2 px-3">
+            <div className="flex-1 h-px" style={{ background: "var(--dv)" }} />
+            <span className="font-bold" style={{ fontSize: 10, color: "var(--ft)" }}>VS</span>
+            <div className="flex-1 h-px" style={{ background: "var(--dv)" }} />
+          </div>
+          <TeamSlot team={match.away} />
+        </div>
+        <ScoreBadges match={match} />
+        <div className="px-3 pb-3 flex items-center gap-3 flex-wrap" style={{ fontSize: 10, color: "var(--mt)" }}>
+          <span className="flex items-center gap-1">
+            <Clock size={9} />{match.timeConfirmed === false ? "Date TBD" : `${match.date} · ${match.time}`}
+          </span>
+          <span className="flex items-center gap-1"><MapPin size={9} />{match.city}</span>
+        </div>
+      </Card>
     </motion.div>
   );
 }
 
-function StageColumn({ title, matches, color, highlight = false, id }: {
+function DrawColumn({ title, matches, highlight = false, myPicks }: {
   title: string;
   matches: BracketMatch[];
-  color: string;
   highlight?: boolean;
-  id?: string;
+  myPicks: Record<string, string>;
 }) {
   return (
-    <div id={id} className="min-w-[200px] flex-1">
-      <div className="flex items-center gap-2 mb-3 pb-2 border-b border-white/[0.06]">
-        <div className="h-2 w-2 rounded-full" style={{ backgroundColor: color }} />
-        <span className="label-caps">{title}</span>
-        <span style={{ fontSize: 10, color: "rgba(255,255,255,0.25)" }}>{matches.length} matches</span>
+    <div className="flex-1 min-w-0">
+      <div className="flex items-center gap-2 mb-3 pb-2 border-b" style={{ borderColor: "var(--dv)" }}>
+        <div className="h-2 w-2 rounded-full" style={{ backgroundColor: "var(--ac)" }} />
+        <span className="text-[10px] font-black uppercase tracking-widest" style={{ color: "var(--mt)" }}>{title}</span>
+        <span style={{ fontSize: 10, color: "var(--ft)" }}>{matches.length} match{matches.length === 1 ? "" : "es"}</span>
       </div>
-      <div className="space-y-2">
-        {matches.map((m) => (
-          <BracketMatchCard key={m.id} match={m} highlight={highlight} />
+      <div className="space-y-3">
+        {matches.map(m => (
+          <BracketMatchCard key={m.id} match={m} highlight={highlight} myPick={myPicks[m.id]} />
         ))}
       </div>
     </div>
@@ -242,14 +256,17 @@ function dbMatchToBracket(m: DbMatch, stageLabel: string): BracketMatch {
   };
 }
 
-export function KnockoutBracket({ groupId: _groupId }: { groupId?: string }) {
+export function KnockoutBracket({ groupId }: { groupId?: string }) {
   const [r32Matches, setR32Matches] = useState<BracketMatch[]>(R32_MATCHES);
   const [r16Matches, setR16Matches] = useState<BracketMatch[]>(R16_MATCHES);
   const [qfMatches, setQfMatches] = useState<BracketMatch[]>(QF_MATCHES);
   const [sfMatches, setSfMatches] = useState<BracketMatch[]>(SF_MATCHES);
   const [finalMatch, setFinalMatch] = useState<BracketMatch>(FINAL_MATCH);
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const [round, setRound] = useState<RoundId>("r32");
+  const [userId, setUserId] = useState<string | null>(null);
+  const [myPicks, setMyPicks] = useState<Record<string, string>>({});
 
+  // Data-fetching/advancement logic — unchanged from the pre-redesign version.
   useEffect(() => {
     const SELECT = "id, home, away, home_flag, away_flag, kickoff_at, stage, stadium, city, home_score, away_score, home_score_et, away_score_et, penalty_winner, time_confirmed";
     createClient()
@@ -274,29 +291,56 @@ export function KnockoutBracket({ groupId: _groupId }: { groupId?: string }) {
       });
   }, []);
 
+  useEffect(() => {
+    createClient().auth.getUser().then(({ data }) => setUserId(data.user?.id ?? null));
+  }, []);
+
+  // Additive, presentation-only lookup: the member's own saved pick per bracket
+  // match, for the "Your pick" overlay badge. Does not touch match/advancement fetching above.
+  useEffect(() => {
+    if (!userId || !groupId) return;
+    const allIds = [...r32Matches, ...r16Matches, ...qfMatches, ...sfMatches, finalMatch].map(m => m.id);
+    if (!allIds.length) return;
+    createClient()
+      .from("group_predictions")
+      .select("match_id, home_score, away_score")
+      .eq("user_id", userId)
+      .eq("group_id", groupId)
+      .in("match_id", allIds)
+      .then(({ data }) => {
+        if (!data) return;
+        const map: Record<string, string> = {};
+        for (const row of data as { match_id: string; home_score: number | null; away_score: number | null }[]) {
+          if (row.home_score != null && row.away_score != null) {
+            map[row.match_id] = `${row.home_score}-${row.away_score}`;
+          }
+        }
+        setMyPicks(map);
+      });
+  }, [userId, groupId, r32Matches, r16Matches, qfMatches, sfMatches, finalMatch]);
+
   const allUnconfirmed = r32Matches.every(m => !m.home.isConfirmed && !m.away.isConfirmed);
 
-  const scrollToRound = (roundId: string) => {
-    const container = scrollRef.current;
-    const el = document.getElementById(`round-${roundId}`);
-    if (!container || !el) return;
-    const containerRect = container.getBoundingClientRect();
-    const elRect = el.getBoundingClientRect();
-    container.scrollTo({ left: Math.max(0, container.scrollLeft + elRect.left - containerRect.left - 16), behavior: "smooth" });
+  const roundMatches: Record<RoundId, BracketMatch[]> = {
+    r32: r32Matches, r16: r16Matches, qf: qfMatches, sf: sfMatches, final: [finalMatch],
   };
+  const current = roundMatches[round];
+  const half = Math.ceil(current.length / 2);
+  const leftMatches  = current.slice(0, half);
+  const rightMatches = round === "final" ? [] : current.slice(half);
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {/* Not yet open banner */}
       {allUnconfirmed && (
         <div style={{
-          background: "rgba(139,92,246,0.08)",
-          border: "1px solid rgba(139,92,246,0.2)",
+          background: "color-mix(in srgb, var(--sc) 8%, transparent)",
+          border: "1px solid color-mix(in srgb, var(--sc) 25%, transparent)",
           borderRadius: 14, padding: "16px 20px",
           display: "flex", alignItems: "center", gap: 12,
         }}>
-          <Trophy size={16} style={{ color: "#8B5CF6", flexShrink: 0 }} />
-          <span style={{ fontSize: 14, color: "#8B5CF6", fontWeight: 600, fontFamily: "var(--font-ui)" }}>
+          <Trophy size={16} style={{ color: "var(--sc)", flexShrink: 0 }} />
+          <span style={{ fontSize: 14, color: "var(--sc)", fontWeight: 600, fontFamily: "var(--font-ui)" }}>
             Bracket not yet open. Team positions will be filled after the group stage concludes.
           </span>
         </div>
@@ -304,91 +348,68 @@ export function KnockoutBracket({ groupId: _groupId }: { groupId?: string }) {
 
       {/* Legend */}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3" style={{
-        background: "rgba(18,14,38,0.32)",
-        backdropFilter: "blur(40px) saturate(180%)",
-        WebkitBackdropFilter: "blur(40px) saturate(180%)",
-        border: "1px solid rgba(255,255,255,0.1)",
-        borderRadius: 14, padding: 16,
-        fontSize: 12,
+        background: "var(--sf)", border: "1px solid var(--br)", borderRadius: 14, padding: 16, fontSize: 12,
       }}>
         <div className="flex items-center gap-2">
-          <div className="w-5 h-3 rounded-sm shrink-0"
-            style={{ border: "1px dashed rgba(255,255,255,0.18)", background: "rgba(255,255,255,0.04)" }} />
-          <span style={{ color: "rgba(255,255,255,0.4)" }}>TBD</span>
+          <div className="w-5 h-3 rounded-sm shrink-0" style={{ border: "1.5px dashed var(--br)", background: "var(--ip)" }} />
+          <span style={{ color: "var(--t2)" }}>TBD</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-5 h-3 rounded-sm shrink-0"
-            style={{ background: "rgba(0,255,136,0.08)", border: "1px solid rgba(0,255,136,0.25)" }} />
-          <span style={{ color: "rgba(255,255,255,0.4)" }}>Confirmed</span>
+          <div className="w-5 h-3 rounded-sm shrink-0" style={{ background: "color-mix(in srgb, var(--ac) 8%, transparent)", border: "1px solid color-mix(in srgb, var(--ac) 30%, transparent)" }} />
+          <span style={{ color: "var(--t2)" }}>Confirmed</span>
         </div>
         <div className="col-span-2 sm:col-span-1 flex items-center gap-2">
-          <div className="w-5 h-3 rounded-sm shrink-0"
-            style={{ border: "1px solid rgba(212,175,55,0.3)", boxShadow: "0 0 8px rgba(212,175,55,0.2)" }} />
-          <span style={{ color: "rgba(255,255,255,0.4)" }}>Final match</span>
+          <div className="w-5 h-3 rounded-sm shrink-0" style={{ border: "1px solid var(--sc)", boxShadow: "0 0 8px color-mix(in srgb, var(--sc) 30%, transparent)" }} />
+          <span style={{ color: "var(--t2)" }}>Final match</span>
         </div>
       </div>
 
-      {/* Mobile round navigation — jump to any stage in the horizontal scroll */}
-      <div className="sm:hidden flex gap-1.5 overflow-x-auto pb-1" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
-        {ROUND_TABS.map(tab => (
-          <button key={tab.id} onClick={() => scrollToRound(tab.id)}
-            className="flex-none flex items-center gap-1.5 px-3 min-h-[44px] rounded-full text-xs font-bold uppercase tracking-wider whitespace-nowrap transition-all active:scale-95"
-            style={{ background: "rgba(139,92,246,0.1)", color: "#8B5CF6", border: "1px solid rgba(139,92,246,0.25)" }}>
-            {tab.label}
-            <span style={{ fontSize: 9, color: "rgba(139,92,246,0.5)" }}>{tab.count}</span>
-          </button>
-        ))}
+      {/* Round selector */}
+      <div className="flex gap-1.5 overflow-x-auto pb-1" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
+        {ROUND_TABS.map(tab => {
+          const active = round === tab.id;
+          const count = roundMatches[tab.id].length;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => setRound(tab.id)}
+              className="flex-none flex items-center gap-1.5 px-4 min-h-[44px] rounded-full text-xs font-black uppercase tracking-wider whitespace-nowrap transition-all active:scale-95"
+              style={active
+                ? { background: "var(--ac)", color: "var(--at)", boxShadow: "0 4px 16px color-mix(in srgb, var(--ac) 35%, transparent)" }
+                : { background: "var(--sf)", color: "var(--t2)", border: "1px solid var(--br)" }}
+            >
+              {tab.label}
+              <span style={{ fontSize: 9, opacity: 0.7 }}>{count}</span>
+            </button>
+          );
+        })}
       </div>
 
-      {/* Scrollable bracket: horizontal scroll on mobile */}
-      <div className="relative w-full max-w-full">
-        {/* Right-edge fade signals more content to the right */}
-        <div className="pointer-events-none absolute right-0 top-0 bottom-4 w-14 z-10 sm:hidden"
-          style={{ background: "linear-gradient(to left, rgba(8,12,22,0.95) 0%, transparent 100%)" }} />
-        <div ref={scrollRef} className="overflow-x-auto w-full pb-4" style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
-          <div className="flex gap-4 min-w-max">
-            <StageColumn id="round-r32" title="Round of 32" matches={r32Matches} color="#8B5CF6" />
-            <div className="flex flex-col justify-center">
-              <ChevronRight size={20} style={{ color: "rgba(255,255,255,0.25)" }} />
-            </div>
-            <StageColumn id="round-r16" title="Round of 16" matches={r16Matches} color="#8B5CF6" />
-            <div className="flex flex-col justify-center">
-              <ChevronRight size={20} style={{ color: "rgba(255,255,255,0.25)" }} />
-            </div>
-            <StageColumn id="round-qf" title="Quarter-Finals" matches={qfMatches} color="#8B5CF6" />
-            <div className="flex flex-col justify-center">
-              <ChevronRight size={20} style={{ color: "rgba(255,255,255,0.25)" }} />
-            </div>
-            <StageColumn id="round-sf" title="Semi-Finals" matches={sfMatches} color="#8B5CF6" />
-            <div className="flex flex-col justify-center">
-              <ChevronRight size={20} style={{ color: "rgba(255,255,255,0.25)" }} />
-            </div>
-            {/* Final */}
-            <div id="round-final" className="min-w-[220px]">
-              <div className="flex items-center gap-2 mb-3 pb-2 border-b border-white/[0.06]">
-                <Trophy size={14} style={{ color: "#D4AF37" }} />
-                <span className="label-caps">Final</span>
-                <span style={{ fontSize: 10, color: "rgba(255,255,255,0.25)" }}>
-                  {finalMatch.city} · {finalMatch.timeConfirmed === false ? "Date TBD" : finalMatch.date}
-                </span>
-              </div>
-              <BracketMatchCard match={finalMatch} highlight />
-            </div>
+      {/* Two-column draw: left / right sides of the bracket */}
+      {round === "final" ? (
+        <div className="max-w-md mx-auto">
+          <div className="flex items-center gap-2 mb-3 pb-2 border-b" style={{ borderColor: "var(--dv)" }}>
+            <Trophy size={14} style={{ color: "var(--sc)" }} />
+            <span className="text-[10px] font-black uppercase tracking-widest" style={{ color: "var(--mt)" }}>Final</span>
+            <span style={{ fontSize: 10, color: "var(--ft)" }}>
+              {finalMatch.city} · {finalMatch.timeConfirmed === false ? "Date TBD" : finalMatch.date}
+            </span>
           </div>
+          <BracketMatchCard match={finalMatch} highlight myPick={myPicks[finalMatch.id]} />
         </div>
-      </div>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <DrawColumn title="Left Side" matches={leftMatches} myPicks={myPicks} />
+          <DrawColumn title="Right Side" matches={rightMatches} myPicks={myPicks} />
+        </div>
+      )}
 
       {/* Third place note */}
       <div style={{
-        background: "rgba(18,14,38,0.32)",
-        backdropFilter: "blur(40px) saturate(180%)",
-        WebkitBackdropFilter: "blur(40px) saturate(180%)",
-        border: "1px solid rgba(255,255,255,0.1)",
-        borderRadius: 14, padding: 16,
-        display: "flex", alignItems: "center", gap: 12,
-        fontSize: 14, color: "rgba(255,255,255,0.4)",
+        background: "var(--sf)", border: "1px solid var(--br)", borderRadius: 14, padding: 16,
+        display: "flex", alignItems: "center", gap: 12, fontSize: 14, color: "var(--t2)",
       }}>
-        <Trophy size={16} style={{ color: "rgba(255,255,255,0.25)", flexShrink: 0 }} />
+        <Trophy size={16} style={{ color: "var(--ft)", flexShrink: 0 }} />
         <span>Third place playoff: Hard Rock Stadium, Miami · July 25, 14:00 ET</span>
       </div>
     </div>
