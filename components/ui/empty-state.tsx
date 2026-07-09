@@ -13,10 +13,10 @@ export function EmptyState({ icon, title, body, cta }: EmptyStateProps) {
     <div
       className="flex flex-col items-center text-center"
       style={{
-        background: "rgba(255,255,255,0.07)",
+        background: "color-mix(in srgb, var(--tx) 6%, transparent)",
         backdropFilter: "blur(24px)",
         WebkitBackdropFilter: "blur(24px)",
-        border: "1px solid rgba(255,255,255,0.12)",
+        border: "1px solid color-mix(in srgb, var(--tx) 10%, transparent)",
         borderRadius: 22,
         padding: "40px 24px",
       }}
@@ -33,7 +33,7 @@ export function EmptyState({ icon, title, body, cta }: EmptyStateProps) {
           fontFamily: "var(--font-display)",
           fontSize: 22,
           fontWeight: 800,
-          color: "#ffffff",
+          color: "var(--tx)",
           margin: "0 0 8px",
         }}
       >
@@ -43,7 +43,7 @@ export function EmptyState({ icon, title, body, cta }: EmptyStateProps) {
       <p
         style={{
           fontSize: 14,
-          color: "rgba(255,255,255,0.5)",
+          color: "var(--t2)",
           margin: "0 0 24px",
           lineHeight: 1.55,
         }}
@@ -56,8 +56,8 @@ export function EmptyState({ icon, title, body, cta }: EmptyStateProps) {
           href={cta.href}
           className="px-6 py-3 rounded-xl font-bold"
           style={{
-            background: "linear-gradient(135deg,#00FF88,#00D4FF)",
-            color: "#0B141B",
+            background: "var(--ac)",
+            color: "var(--at)",
           }}
         >
           {cta.label}

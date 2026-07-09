@@ -2,10 +2,10 @@ export const dynamic = "force-dynamic";
 
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { getCurrentUserProfile } from "@/lib/services/user-group";
-import { ShareGroup } from "@/components/sharing/share-group";
-import { NeonBar } from "@/components/ui/neon-bar";
 import { EmptyState } from "@/components/ui/empty-state";
-import { Trophy, Users, DollarSign, ArrowRight, Plus, LogIn, KeyRound } from "lucide-react";
+import { GroupCard } from "@/components/groups/group-card";
+import { GroupsHeaderActions } from "@/components/groups/groups-header-actions";
+import { Trophy, Plus, LogIn } from "lucide-react";
 import Link from "next/link";
 import { serverT } from "@/lib/server-locale";
 import { ENABLE_BETA_FEATURES } from "@/lib/feature-flags";
@@ -24,11 +24,11 @@ export default async function GroupsPage() {
     return (
       <div className="space-y-6 pb-32">
         <div>
-          <div style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: "0.12em", color: "#00D4FF", fontFamily: "var(--font-ui)", marginBottom: 4 }}>Groups</div>
-          <h1 className="font-display text-4xl sm:text-5xl uppercase tracking-tight text-white">{serverT("grp_title")}</h1>
+          <div style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--ac)", fontFamily: "var(--font-ui)", marginBottom: 4 }}>Groups</div>
+          <h1 className="font-display text-4xl sm:text-5xl uppercase tracking-tight" style={{ color: "var(--tx)" }}>{serverT("grp_title")}</h1>
         </div>
         <EmptyState
-          icon={<Trophy size={32} style={{ color: "#00D4FF" }} />}
+          icon={<Trophy size={32} style={{ color: "var(--ac)" }} />}
           title={serverT("grp_compete")}
           body={serverT("grp_create_or")}
         />
@@ -36,7 +36,7 @@ export default async function GroupsPage() {
           <Link href="/signup?next=/create-group">
             <button
               className="flex items-center gap-2 px-5 py-3 rounded-xl font-bold text-sm uppercase tracking-wider transition-all hover:-translate-y-0.5"
-              style={{ background: "linear-gradient(135deg, #00FF88, #00D4FF)", color: "#0B141B", boxShadow: "0 0 20px rgba(0,255,136,0.25)" }}
+              style={{ background: "var(--ac)", color: "var(--at)", boxShadow: "0 0 20px color-mix(in srgb, var(--ac) 30%, transparent)" }}
             >
               <Plus size={16} /> {serverT("grp_create")}
             </button>
@@ -44,9 +44,9 @@ export default async function GroupsPage() {
           <Link href="/signup?next=/join/enter">
             <button
               className="flex items-center gap-2 px-5 py-3 rounded-xl font-bold text-sm uppercase tracking-wider transition-all hover:-translate-y-0.5"
-              style={{ background: "rgba(0,212,255,0.1)", border: "1px solid rgba(0,212,255,0.25)", color: "#00D4FF" }}
+              style={{ background: "color-mix(in srgb, var(--ac) 10%, transparent)", border: "1px solid color-mix(in srgb, var(--ac) 30%, transparent)", color: "var(--ac)" }}
             >
-              <KeyRound size={15} /> {serverT("grp_join_pk")}
+              <LogIn size={15} /> {serverT("grp_join_pk")}
             </button>
           </Link>
         </div>
@@ -56,7 +56,7 @@ export default async function GroupsPage() {
 
   const { data: memberships } = await sbAdmin()
     .from("group_members")
-    .select(`group_id, is_ad_free, groups ( id, name, passkey, max_members, enrollment_fee_cents, admin_id, buy_in_amount, payment_link )`)
+    .select(`group_id, is_ad_free, groups ( id, name, passkey, max_members, enrollment_fee_cents, admin_id, buy_in_amount, payment_link, group_type )`)
     .eq("user_id", userProfile.id)
     .order("joined_at", { ascending: false });
 
@@ -74,40 +74,31 @@ export default async function GroupsPage() {
 
   const groups = (memberships ?? []) as unknown as Array<{
     group_id: string; is_ad_free: boolean;
-    groups: { id: string; name: string; passkey: string; max_members: number; enrollment_fee_cents: number; admin_id: string; buy_in_amount: number; payment_link: string | null } | null;
+    groups: {
+      id: string; name: string; passkey: string; max_members: number;
+      enrollment_fee_cents: number; admin_id: string; buy_in_amount: number;
+      payment_link: string | null; group_type: string | null;
+    } | null;
   }>;
 
   return (
     <div className="space-y-6 pb-32">
       <div className="flex items-end justify-between flex-wrap gap-3">
         <div>
-          <div style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: "0.12em", color: "#00D4FF", fontFamily: "var(--font-ui)", marginBottom: 4 }}>{serverT("grp_your")}</div>
-          <h1 className="font-display text-4xl sm:text-5xl uppercase tracking-tight text-white">My Groups</h1>
+          <div style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--ac)", fontFamily: "var(--font-ui)", marginBottom: 4 }}>{serverT("grp_your")}</div>
+          <h1 className="font-display text-4xl sm:text-5xl uppercase tracking-tight" style={{ color: "var(--tx)" }}>My Groups</h1>
           {ENABLE_BETA_FEATURES && (
-            <Link href="/groups/beta" className="text-[10px] font-bold uppercase tracking-widest inline-block mt-1" style={{ color: "#10b981" }}>
+            <Link href="/groups/beta" className="text-[10px] font-bold uppercase tracking-widest inline-block mt-1" style={{ color: "var(--ac)" }}>
               Try the Beta groups view →
             </Link>
           )}
         </div>
-        <div className="flex gap-2">
-          <Link href="/join/enter">
-            <button className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-sm uppercase tracking-wider transition-all hover:-translate-y-0.5"
-              style={{ background: "rgba(0,212,255,0.1)", border: "1px solid rgba(0,212,255,0.25)", color: "#00D4FF" }}>
-              <LogIn size={15} /> Join Group
-            </button>
-          </Link>
-          <Link href="/create-group">
-            <button className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-sm uppercase tracking-wider transition-all hover:-translate-y-0.5"
-              style={{ background: "linear-gradient(135deg, #00FF88, #00D4FF)", color: "#0B141B", boxShadow: "0 0 20px rgba(0,255,136,0.25)" }}>
-              <Plus size={16} /> {serverT("common_new_group")}
-            </button>
-          </Link>
-        </div>
+        <GroupsHeaderActions />
       </div>
 
       {groups.length === 0 ? (
         <EmptyState
-          icon={<Trophy size={32} style={{ color: "#00D4FF" }} />}
+          icon={<Trophy size={32} style={{ color: "var(--ac)" }} />}
           title={serverT("grp_none")}
           body={serverT("grp_none_sub")}
           cta={{ label: serverT("grp_create"), href: "/create-group" }}
@@ -117,62 +108,20 @@ export default async function GroupsPage() {
           {groups.map((m) => {
             const g = m.groups;
             if (!g) return null;
-            const isAdmin   = g.admin_id === userProfile.id;
-            const isAdFree  = m.is_ad_free;
-            const memberCount = memberCounts[m.group_id] ?? 0;
-            const hasBuyIn  = g.buy_in_amount > 0;
-            const adFreeFee = ((g.enrollment_fee_cents ?? 200) / 100).toFixed(0);
             return (
-              <div key={m.group_id} className="rounded-2xl overflow-hidden transition-all duration-200 hover:-translate-y-0.5"
-                style={{ background: "rgba(18,14,38,0.32)", backdropFilter: "blur(40px) saturate(180%)", WebkitBackdropFilter: "blur(40px) saturate(180%)", border: "1px solid rgba(255,255,255,0.14)" }}>
-                <NeonBar />
-                <div className="px-5 py-4 border-b" style={{ borderColor: "rgba(255,255,255,0.07)" }}>
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      <h2 className="font-display text-xl uppercase font-black truncate text-white">{g.name}</h2>
-                      <div className="flex items-center gap-2 mt-1 flex-wrap">
-                        {isAdmin && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: "rgba(251,191,36,0.12)", color: "#fbbf24", border: "1px solid rgba(251,191,36,0.2)" }}>Admin</span>}
-                        {isAdFree && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: "rgba(0,255,136,0.12)", color: "#00FF88",  border: "1px solid rgba(0,255,136,0.2)"  }}>★ Ad-free</span>}
-                      </div>
-                    </div>
-                    <div className="text-right shrink-0">
-                      <div className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.3)" }}>Passkey</div>
-                      <div className="font-mono font-black text-lg" style={{ color: "#00D4FF" }}>{g.passkey}</div>
-                    </div>
-                  </div>
-                </div>
-                <div className="grid grid-cols-3 divide-x" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
-                  {[
-                    { icon: Users,      label: "Members", value: `${memberCount}`, sub: "" },
-                    { icon: DollarSign, label: "Entry",   value: hasBuyIn ? `$${g.buy_in_amount}` : "Free", sub: hasBuyIn ? "Prize pot buy-in" : `$${adFreeFee} removes ads` },
-                    { icon: Trophy,     label: "Type",    value: "2026 WC",        sub: "" },
-                  ].map(({ icon: Icon, label, value, sub }) => (
-                    <div key={label} className="px-4 py-3 text-center" style={{ borderColor: "rgba(255,255,255,0.06)" }}>
-                      <Icon size={15} className="mx-auto mb-1" style={{ color: "#00D4FF" }} />
-                      <div className="font-display text-lg font-black text-white leading-tight">{value}</div>
-                      {sub && <div className="text-[9px] font-bold uppercase tracking-wide mt-0.5" style={{ color: "rgba(255,255,255,0.35)" }}>{sub}</div>}
-                      <div className="text-[10px] uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.3)" }}>{label}</div>
-                    </div>
-                  ))}
-                </div>
-                <div className="px-4 py-3 flex gap-2 border-t" style={{ borderColor: "rgba(255,255,255,0.07)" }}>
-                  <Link href={`/groups/${m.group_id}`} className="flex-1">
-                    <button className="w-full py-2.5 rounded-xl font-bold text-sm uppercase tracking-wider flex items-center justify-center gap-2"
-                      style={{ background: "linear-gradient(135deg, #00FF88, #00D4FF)", color: "#0B141B" }}>
-                      {serverT("common_view_group")} <ArrowRight size={14} />
-                    </button>
-                  </Link>
-                  <ShareGroup groupName={g.name} adminName={userProfile.name} passkey={g.passkey} compact paymentLink={g.payment_link} />
-                  {isAdmin && (
-                    <Link href={`/admin/${m.group_id}`}>
-                      <button className="px-3 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider"
-                        style={{ background: "rgba(0,212,255,0.1)", border: "1px solid rgba(0,212,255,0.2)", color: "#00D4FF" }}>
-                        Admin
-                      </button>
-                    </Link>
-                  )}
-                </div>
-              </div>
+              <GroupCard
+                key={m.group_id}
+                id={g.id}
+                name={g.name}
+                passkey={g.passkey}
+                adminName={userProfile.name}
+                memberCount={memberCounts[m.group_id] ?? 0}
+                buyInAmount={g.buy_in_amount}
+                groupType={g.group_type ?? "tournament"}
+                isAdmin={g.admin_id === userProfile.id}
+                isAdFree={m.is_ad_free}
+                paymentLink={g.payment_link}
+              />
             );
           })}
         </div>
