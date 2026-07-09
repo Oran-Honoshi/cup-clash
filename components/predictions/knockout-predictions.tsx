@@ -27,10 +27,8 @@ function toMatchType(m: ScheduleMatch): Match {
 }
 
 const glassCard = {
-  background: "rgba(18,14,38,0.32)",
-  backdropFilter: "blur(40px) saturate(180%)",
-  WebkitBackdropFilter: "blur(40px) saturate(180%)",
-  border: "1px solid rgba(255,255,255,0.14)",
+  background: "var(--sf)",
+  border: "1px solid var(--br)",
 } as const;
 
 const STAGE_ORDER = ["R32", "R16", "QF", "SF", "3rd", "Final"] as const;
@@ -46,22 +44,22 @@ interface ScorePrediction { home: string; away: string; }
 function PendingMatchCard({ match }: { match: ScheduleMatch }) {
   return (
     <div style={{
-      background: "rgba(18,14,38,0.28)",
-      border: "1px solid rgba(255,255,255,0.06)",
+      background: "var(--sf)",
+      border: "1px solid var(--br)",
       borderRadius: 16, padding: "12px 14px", opacity: 0.65,
     }}>
       <div className="flex items-center gap-2 mb-2">
-        <HelpCircle size={12} style={{ color: "rgba(255,255,255,0.3)" }} />
-        <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.35)" }}>
+        <HelpCircle size={12} style={{ color: "var(--ft)" }} />
+        <span className="ta-section-label">
           Awaiting confirmation
         </span>
       </div>
       <div className="flex items-center justify-center gap-3 text-center">
-        <span className="text-xs font-bold" style={{ color: "rgba(255,255,255,0.4)" }}>{match.home}</span>
-        <span className="text-[10px]" style={{ color: "rgba(255,255,255,0.2)" }}>vs</span>
-        <span className="text-xs font-bold" style={{ color: "rgba(255,255,255,0.4)" }}>{match.away}</span>
+        <span className="ta-team-name" style={{ fontSize: 12, color: "var(--mt)" }}>{match.home}</span>
+        <span className="ta-meta" style={{ fontSize: 10, color: "var(--ft)" }}>vs</span>
+        <span className="ta-team-name" style={{ fontSize: 12, color: "var(--mt)" }}>{match.away}</span>
       </div>
-      <div className="flex items-center justify-center gap-1 mt-2 text-[10px]" style={{ color: "rgba(255,255,255,0.25)" }}>
+      <div className="flex items-center justify-center gap-1 mt-2 ta-meta">
         <Lock size={9} /> Predictions open once both teams are confirmed
       </div>
     </div>
@@ -91,27 +89,27 @@ function KnockoutCard({ match, prediction, onChange, flashStatus }: {
   }, [match.kickoff_at, dateConfirmed]);
 
   const cardStyle = {
-    open:   { background: "rgba(18,14,38,0.55)", border: "1px solid rgba(0,255,136,0.25)"  },
-    saved:  { background: "rgba(30,20,10,0.55)", border: "1px solid rgba(251,191,36,0.25)" },
-    locked: { background: "rgba(18,14,38,0.45)", border: "1px solid rgba(255,255,255,0.07)" },
+    open:   { background: "var(--sf)", border: "1px solid var(--ac)" },
+    saved:  { background: "var(--sf)", border: "1px solid rgba(251,191,36,0.35)" },
+    locked: { background: "var(--sf)", border: "1px solid var(--br)" },
   }[status];
 
   return (
     <div style={{ ...cardStyle, borderRadius: 16, padding: "10px 14px", opacity: locked ? 0.7 : 1 }}>
       <div className="flex items-center justify-between mb-2">
-        <div className="flex items-center gap-3 text-[10px]" style={{ color: "rgba(255,255,255,0.35)" }}>
+        <div className="flex items-center gap-3 ta-meta">
           <span className="flex items-center gap-1" suppressHydrationWarning><Clock size={9} />{localTimeStr}</span>
           {match.stadium && <span className="hidden sm:flex items-center gap-1"><MapPin size={9} />{match.city ?? match.stadium}</span>}
         </div>
         {status === "saved" && (
-          <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full"
+          <span className="ta-subtab-label flex items-center gap-1 px-2.5 py-0.5 rounded-full"
             style={{ background: "rgba(251,191,36,0.12)", color: "#fbbf24", border: "1px solid rgba(251,191,36,0.25)" }}>
             <CheckCircle2 size={10} /> Saved
           </span>
         )}
         {status === "locked" && (
-          <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full"
-            style={{ background: "rgba(255,255,255,0.05)", color: "rgba(255,255,255,0.3)" }}>
+          <span className="ta-subtab-label flex items-center gap-1 px-2.5 py-0.5 rounded-full"
+            style={{ background: "var(--ip)", color: "var(--mt)" }}>
             <Lock size={9} /> Locked
           </span>
         )}
@@ -120,26 +118,26 @@ function KnockoutCard({ match, prediction, onChange, flashStatus }: {
       <div className="flex items-center gap-3">
         <div className="flex-1 flex flex-col items-center gap-1">
           <FlagBadge code={match.homeFlagCode ?? "un"} size="sm" />
-          <span className="font-display text-xs uppercase font-black text-center text-white">
+          <span className="ta-team-name text-center" style={{ fontSize: 12, color: "var(--tx)" }}>
             {(match.home ?? "").substring(0, 3).toUpperCase()}
           </span>
         </div>
         <div className="flex items-center gap-1.5 shrink-0">
           <div style={{
             display: "flex", alignItems: "center", gap: 6, borderRadius: 8,
-            border: flashStatus === "success" ? "1.5px solid #00e5a0" : flashStatus === "error" ? "1.5px solid #f87171" : "1.5px solid transparent",
+            border: flashStatus === "success" ? "1.5px solid var(--ac)" : flashStatus === "error" ? "1.5px solid #f87171" : "1.5px solid transparent",
             padding: "3px 6px",
-            background: flashStatus === "success" ? "rgba(0,229,160,0.06)" : flashStatus === "error" ? "rgba(248,113,113,0.06)" : "transparent",
+            background: flashStatus === "success" ? "rgba(0,207,128,0.06)" : flashStatus === "error" ? "rgba(248,113,113,0.06)" : "transparent",
             transition: "border-color 0.3s, background 0.3s",
           }}>
             <ScoreInputCC value={prediction.home} onChange={v => onChange(v, prediction.away)} disabled={locked} />
-            <span style={{ fontFamily: "var(--font-mono)", fontSize: 16, fontWeight: 700, color: "rgba(255,255,255,0.25)" }}>:</span>
+            <span className="ta-score" style={{ fontSize: 16 }}>:</span>
             <ScoreInputCC value={prediction.away} onChange={v => onChange(prediction.home, v)} disabled={locked} />
           </div>
         </div>
         <div className="flex-1 flex flex-col items-center gap-1">
           <FlagBadge code={match.awayFlagCode ?? "un"} size="sm" />
-          <span className="font-display text-xs uppercase font-black text-center text-white">
+          <span className="ta-team-name text-center" style={{ fontSize: 12, color: "var(--tx)" }}>
             {(match.away ?? "").substring(0, 3).toUpperCase()}
           </span>
         </div>
@@ -227,7 +225,7 @@ export function KnockoutPredictions({ groupId, userId, allMatches = [] }: Knocko
   if (!knockoutMatches.length) {
     return (
       <div className="rounded-2xl p-5 text-center" style={glassCard}>
-        <p className="text-sm" style={{ color: "rgba(255,255,255,0.4)" }}>
+        <p className="ta-body">
           No knockout matches open for predictions yet.
         </p>
       </div>
@@ -239,12 +237,12 @@ export function KnockoutPredictions({ groupId, userId, allMatches = [] }: Knocko
       <div className="rounded-2xl px-4 py-3" style={{ ...glassCard, borderRadius: 18 }}>
         <div className="flex items-center justify-between">
           <div>
-            <div className="text-[10px] font-bold uppercase tracking-widest mb-0.5" style={{ color: "rgba(255,255,255,0.35)" }}>
+            <div className="ta-section-label mb-0.5">
               Matches Predicted
             </div>
             <div className="flex items-baseline gap-1">
-              <span className="text-2xl font-black font-mono" style={{ color: "#00FF88" }}>{predictedCount}</span>
-              <span className="text-sm font-bold" style={{ color: "rgba(255,255,255,0.3)" }}>/ {predictableMatches.length}</span>
+              <span className="text-2xl font-black font-mono" style={{ color: "var(--ac)" }}>{predictedCount}</span>
+              <span className="text-sm font-bold" style={{ color: "var(--ft)" }}>/ {predictableMatches.length}</span>
             </div>
           </div>
         </div>
@@ -256,7 +254,7 @@ export function KnockoutPredictions({ groupId, userId, allMatches = [] }: Knocko
         return (
           <div key={stage} className="space-y-2">
             <div className="flex items-center gap-2 px-1">
-              <span className="font-display text-lg uppercase tracking-tight text-white">{STAGE_LABELS[stage] ?? stage}</span>
+              <span className="ta-match-label" style={{ color: "var(--tx)" }}>{STAGE_LABELS[stage] ?? stage}</span>
             </div>
             <div className="flex flex-col gap-2">
               {stageMatches.map(match => (

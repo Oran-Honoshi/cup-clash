@@ -40,7 +40,7 @@ export interface LeaderboardListProps {
 }
 
 const RANK_LABELS = ["1st", "2nd", "3rd"];
-const RANK_COLORS = ["#fbbf24", "#94a3b8", "#f97316"];
+const RANK_COLORS = ["var(--sc)", "#94a3b8", "#f97316"];
 
 function buildGhostPlayer(members: Member[]): Member {
   const avg = members.length
@@ -50,9 +50,9 @@ function buildGhostPlayer(members: Member[]): Member {
 }
 
 function DeltaBadge({ delta }: { delta: number }) {
-  if (delta === 0) return <Minus size={12} style={{ color: "rgba(255,255,255,0.2)" }} />;
+  if (delta === 0) return <Minus size={12} style={{ color: "var(--mt)" }} />;
   if (delta > 0) return (
-    <span className="flex items-center gap-0.5 text-[10px] font-bold" style={{ color: "#00FF88" }}>
+    <span className="flex items-center gap-0.5 text-[10px] font-bold" style={{ color: "var(--ac)" }}>
       <TrendingUp size={11} />+{delta}
     </span>
   );
@@ -67,31 +67,31 @@ const PODIUM_BAR_STYLES = [
   // 2nd (left) — silver
   { background: "rgba(196,201,212,0.1)",     border: "1px solid rgba(196,201,212,0.35)", borderBottom: "none" },
   // 1st (center) — gold wash
-  { background: "var(--color-background-warning)", border: "1.5px solid #fbbf24",        borderBottom: "none" },
+  { background: "color-mix(in srgb, var(--sc) 12%, transparent)", border: "1.5px solid var(--sc)", borderBottom: "none" },
   // 3rd (right) — bronze
   { background: "rgba(249,115,22,0.1)",      border: "1px solid rgba(249,115,22,0.35)",  borderBottom: "none" },
 ] as const;
 
 const PODIUM_BAR_HEIGHTS = [64, 80, 50]; // 2nd, 1st, 3rd
 const PODIUM_ACTUAL_RANKS = [2, 1, 3];
-const PODIUM_POINT_COLORS = ["rgba(255,255,255,0.7)", "#fbbf24", "#f97316"];
-const PODIUM_RING_COLORS_FULL = ["#c4c9d4", "#fbbf24", "#f97316"]; // silver, gold, bronze
+const PODIUM_POINT_COLORS = ["var(--t2)", "var(--sc)", "#f97316"];
+const PODIUM_RING_COLORS_FULL = ["#c4c9d4", "var(--sc)", "#f97316"]; // silver, gold, bronze
 
 // ── Compact (dashboard Home tab carousel) ──────────────────────────────────
 
 const COMPACT_PODIUM_ORDER = [1, 0, 2] as const; // left=2nd, center=1st, right=3rd
 const COMPACT_PODIUM_HEIGHTS = [80, 110, 60];
 const COMPACT_PODIUM_AVATAR_SIZES: Array<"sm" | "md"> = ["sm", "md", "sm"];
-const COMPACT_PODIUM_COLORS = ["#c4c9d4", "#ffaa00", "#cd7f45"];
-const COMPACT_PODIUM_RING_COLORS = ["#c4c9d4", "#ffaa00", "#cd7f45"];
+const COMPACT_PODIUM_COLORS = ["#c4c9d4", "var(--sc)", "#cd7f45"];
+const COMPACT_PODIUM_RING_COLORS = ["#c4c9d4", "var(--sc)", "#cd7f45"];
 const COMPACT_PODIUM_BG = [
-  "#1c3a1c",                          // 2nd — neutral surface
-  "var(--color-background-warning)", // 1st — gold wash
-  "#1c3a1c",                          // 3rd — neutral surface
+  "var(--sf)",                                                     // 2nd — neutral surface
+  "color-mix(in srgb, var(--sc) 12%, transparent)",                // 1st — gold wash
+  "var(--sf)",                                                     // 3rd — neutral surface
 ];
 const COMPACT_PODIUM_BORDER = [
   "1px solid rgba(196,201,212,0.35)",
-  "1.5px solid #ffaa00",
+  "1.5px solid var(--sc)",
   "1px solid rgba(205,127,69,0.4)",
 ];
 
@@ -111,19 +111,19 @@ function CompactBoard({
   return (
     <div className="px-4 py-4 space-y-4">
       {/* Meta */}
-      <div className="font-barlow font-bold uppercase text-center" style={{ fontSize: 9, letterSpacing: 2, color: "#3a7a3a" }}>
+      <div className="ta-section-label text-center">
         {groupName} · {members.length} members
       </div>
 
-      <div className="font-display font-black uppercase text-center" style={{ fontSize: 22, color: "#e0f2e0" }}>
+      <div className="ta-screen-title uppercase text-center" style={{ fontSize: 22, color: "var(--tx)" }}>
         Leaderboard
       </div>
 
       {members.length === 0 ? (
-        <div className="rounded-2xl px-4 py-8 text-center" style={{ background: "var(--color-background-secondary)", border: "0.5px solid var(--color-border-tertiary)", borderRadius: "var(--border-radius-lg)" }}>
-          <Trophy size={22} style={{ color: "#3a7a3a", margin: "0 auto 8px" }} />
-          <div className="font-barlow font-bold uppercase" style={{ fontSize: 12, color: "#a0c8a0" }}>No members yet</div>
-          <div className="font-barlow mt-1" style={{ fontSize: 11, color: "#3a7a3a" }}>Invite friends to see the standings here.</div>
+        <div className="rounded-2xl px-4 py-8 text-center" style={{ background: "var(--sf)", border: "0.5px solid var(--br)", borderRadius: "var(--border-radius-lg)" }}>
+          <Trophy size={22} style={{ color: "var(--mt)", margin: "0 auto 8px" }} />
+          <div className="ta-team-name" style={{ fontSize: 12, color: "var(--t2)" }}>No members yet</div>
+          <div className="ta-meta mt-1">Invite friends to see the standings here.</div>
         </div>
       ) : (
         <>
@@ -142,15 +142,15 @@ function CompactBoard({
                     style={{ width: 96, display: "flex", flexDirection: "column", alignItems: "center", gap: 4, background: "none", border: "none", cursor: "pointer", padding: 0 }}
                   >
                     <div style={{ height: 16, display: "flex", alignItems: "flex-end", marginBottom: 2 }}>
-                      {rank === 1 && <Crown size={15} fill="#ffaa00" style={{ color: "#ffaa00" }} />}
+                      {rank === 1 && <Crown size={15} fill="var(--sc)" style={{ color: "var(--sc)" }} />}
                     </div>
                     <UserAvatar
                       name={member.name}
                       avatarUrl={member.avatarUrl}
                       size={COMPACT_PODIUM_AVATAR_SIZES[pos]}
-                      ringColor={isMe && rank !== 1 ? "#00e5a0" : COMPACT_PODIUM_RING_COLORS[pos]}
+                      ringColor={isMe && rank !== 1 ? "var(--ac)" : COMPACT_PODIUM_RING_COLORS[pos]}
                     />
-                    <span className="font-barlow font-bold uppercase text-center truncate w-full px-1" style={{ fontSize: 11, color: isMe ? "#00e5a0" : "#a0c8a0" }}>
+                    <span className="ta-team-name text-center truncate w-full px-1" style={{ fontSize: 11, color: isMe ? "var(--ac)" : "var(--tx)" }}>
                       {member.name}
                     </span>
                     <div style={{
@@ -162,8 +162,8 @@ function CompactBoard({
                       boxShadow: rank === 1 ? "0 -4px 20px rgba(255,170,0,0.15)" : undefined,
                       display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 2,
                     }}>
-                      <span className="font-barlow font-black" style={{ fontSize: 18, color: COMPACT_PODIUM_COLORS[pos] }}>{member.points}</span>
-                      <span className="font-barlow font-bold" style={{ fontSize: 9, color: "#5a9a5a" }}>{ordinal(rank)}</span>
+                      <span className="ta-lb-points" style={{ fontSize: 18, color: COMPACT_PODIUM_COLORS[pos] }}>{member.points}</span>
+                      <span className="ta-meta" style={{ fontSize: 9 }}>{ordinal(rank)}</span>
                     </div>
                   </button>
                 );
@@ -179,15 +179,15 @@ function CompactBoard({
           {/* Section divider — podium (top 3) vs full standings (#4 onward) */}
           {rest.length > 0 && (
             <div className="flex items-center gap-2 pt-1">
-              <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.08)" }} />
-              <span className="font-barlow font-bold uppercase" style={{ fontSize: 9, letterSpacing: 1.5, color: "#3a7a3a" }}>Full Standings</span>
-              <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.08)" }} />
+              <div style={{ flex: 1, height: 1, background: "var(--dv)" }} />
+              <span className="ta-section-label">Full Standings</span>
+              <div style={{ flex: 1, height: 1, background: "var(--dv)" }} />
             </div>
           )}
 
           {/* Remaining rows */}
           {rest.length > 0 && (
-            <div className="rounded-2xl overflow-hidden" style={{ background: "var(--color-background-secondary)", border: "0.5px solid var(--color-border-tertiary)", borderRadius: "var(--border-radius-lg)" }}>
+            <div className="rounded-2xl overflow-hidden" style={{ background: "var(--sf)", border: "0.5px solid var(--br)", borderRadius: "var(--border-radius-lg)" }}>
               {rest.map((member, i) => {
                 const rank = i + 4;
                 const isMe = member.id === currentUserId;
@@ -200,15 +200,15 @@ function CompactBoard({
                       borderTop: "none",
                       borderLeft: "none",
                       borderRight: "none",
-                      borderBottom: i < rest.length - 1 ? "1px solid #162a16" : "none",
-                      background: isMe ? "rgba(0,229,160,0.05)" : "none",
-                      outline: isMe ? "1px solid #00e5a0" : undefined,
+                      borderBottom: i < rest.length - 1 ? "1px solid var(--dv)" : "none",
+                      background: isMe ? "color-mix(in srgb, var(--ac) 5%, transparent)" : "none",
+                      outline: isMe ? "1px solid var(--ac)" : undefined,
                       cursor: "pointer",
                     }}>
-                    <span className="font-barlow font-bold" style={{ fontSize: 12, color: "#5a9a5a", width: 20, textAlign: "center", flexShrink: 0 }}>{rank}</span>
-                    <UserAvatar name={member.name} avatarUrl={member.avatarUrl} size="xs" ringColor={isMe ? "#00e5a0" : undefined} />
-                    <span className="font-barlow font-bold truncate flex-1" style={{ fontSize: 13, color: isMe ? "#00e5a0" : "#a0c8a0" }}>{member.name}</span>
-                    <span className="font-barlow font-bold" style={{ fontSize: 13, color: isMe ? "#00e5a0" : "#7ab07a", flexShrink: 0 }}>{member.points}</span>
+                    <span className="ta-meta" style={{ fontSize: 12, width: 20, textAlign: "center", flexShrink: 0 }}>{rank}</span>
+                    <UserAvatar name={member.name} avatarUrl={member.avatarUrl} size="xs" ringColor={isMe ? "var(--ac)" : undefined} />
+                    <span className="ta-team-name truncate flex-1" style={{ fontSize: 13, color: isMe ? "var(--ac)" : "var(--tx)" }}>{member.name}</span>
+                    <span className="ta-lb-points" style={{ fontSize: 13, color: isMe ? "var(--ac)" : "var(--tx)", flexShrink: 0 }}>{member.points}</span>
                   </button>
                 );
               })}
@@ -240,14 +240,14 @@ function FullBoard({
       <div
         className="rounded-2xl px-6 py-12 text-center"
         style={{
-          background: "var(--color-background-secondary)",
-          border: "0.5px solid var(--color-border-tertiary)",
+          background: "var(--sf)",
+          border: "0.5px solid var(--br)",
           borderRadius: "var(--border-radius-lg)",
         }}
       >
-        <Trophy size={28} style={{ color: "rgba(255,255,255,0.2)", margin: "0 auto 12px" }} />
-        <div className="font-display text-lg uppercase text-white">No players yet</div>
-        <div className="text-sm mt-1" style={{ color: "rgba(255,255,255,0.4)" }}>
+        <Trophy size={28} style={{ color: "var(--mt)", margin: "0 auto 12px" }} />
+        <div className="ta-team-name text-lg" style={{ color: "var(--tx)" }}>No players yet</div>
+        <div className="ta-body mt-1">
           Invite friends to your group to start the leaderboard.
         </div>
       </div>
@@ -265,7 +265,7 @@ function FullBoard({
               style={{ background: "rgba(250,204,21,0.1)", border: "1px solid rgba(250,204,21,0.2)" }}
             >
               <Target size={11} style={{ color: "#facc15" }} />
-              <span className="text-[10px] font-bold" style={{ color: "rgba(255,255,255,0.7)" }}>
+              <span className="text-[10px] font-bold" style={{ color: "var(--t2)" }}>
                 {totalExact} exact
               </span>
             </div>
@@ -273,10 +273,10 @@ function FullBoard({
           {totalCorrect > 0 && (
             <div
               className="flex items-center gap-1.5 rounded-full px-3 py-1"
-              style={{ background: "rgba(0,255,136,0.08)", border: "1px solid rgba(0,255,136,0.2)" }}
+              style={{ background: "color-mix(in srgb, var(--ac) 8%, transparent)", border: "1px solid color-mix(in srgb, var(--ac) 20%, transparent)" }}
             >
-              <TrendingUp size={11} style={{ color: "#00FF88" }} />
-              <span className="text-[10px] font-bold" style={{ color: "rgba(255,255,255,0.7)" }}>
+              <TrendingUp size={11} style={{ color: "var(--ac)" }} />
+              <span className="text-[10px] font-bold" style={{ color: "var(--t2)" }}>
                 {totalCorrect} correct
               </span>
             </div>
@@ -287,7 +287,7 @@ function FullBoard({
               style={{ background: "rgba(251,191,36,0.08)", border: "1px solid rgba(251,191,36,0.15)" }}
             >
               <Star size={11} style={{ color: "#fbbf24" }} />
-              <span className="text-[10px] font-bold" style={{ color: "rgba(255,255,255,0.5)" }}>
+              <span className="text-[10px] font-bold" style={{ color: "var(--mt)" }}>
                 best 3rd scoring pending
               </span>
             </div>
@@ -322,32 +322,30 @@ function FullBoard({
               >
                 {/* Crown slot — reserved height on every column so avatars stay aligned */}
                 <div style={{ height: 20, display: "flex", alignItems: "flex-end", marginBottom: 4 }}>
-                  {rank === 1 && <Crown size={16} fill="#fbbf24" style={{ color: "#fbbf24" }} />}
+                  {rank === 1 && <Crown size={16} fill="var(--sc)" style={{ color: "var(--sc)" }} />}
                 </div>
 
                 {/* Avatar */}
                 <div style={{
                   borderRadius: "50%",
-                  boxShadow: rank === 1 ? "0 0 14px rgba(251,191,36,0.4)" : "none",
+                  boxShadow: rank === 1 ? "0 0 14px color-mix(in srgb, var(--sc) 40%, transparent)" : "none",
                 }}>
                   <UserAvatar
                     name={member.name}
                     avatarUrl={member.avatarUrl}
                     size="md"
-                    ringColor={isMe && rank !== 1 ? "#00FF88" : PODIUM_RING_COLORS_FULL[pos]}
+                    ringColor={isMe && rank !== 1 ? "var(--ac)" : PODIUM_RING_COLORS_FULL[pos]}
                   />
                 </div>
 
                 {/* Name — outside the bar so it never gets clipped */}
                 <div
+                  className="ta-team-name"
                   style={{
                     marginTop: 5,
                     marginBottom: 3,
-                    fontFamily: "var(--font-ui)",
-                    fontWeight: 800,
                     fontSize: 10,
-                    color: isMe ? "#00FF88" : "white",
-                    textTransform: "uppercase",
+                    color: isMe ? "var(--ac)" : "var(--tx)",
                     textAlign: "center",
                     width: "100%",
                     padding: "0 2px",
@@ -375,7 +373,7 @@ function FullBoard({
                 >
                   <div
                     style={{
-                      fontFamily: "var(--font-mono)",
+                      fontFamily: "var(--font-barlow)",
                       fontWeight: 900,
                       fontSize: 18,
                       lineHeight: 1,
@@ -384,16 +382,7 @@ function FullBoard({
                   >
                     {member.points}
                   </div>
-                  <div
-                    style={{
-                      fontSize: 9,
-                      color: RANK_COLORS[rank - 1],
-                      fontWeight: 700,
-                      textTransform: "uppercase",
-                      letterSpacing: "0.1em",
-                      fontFamily: "var(--font-ui)",
-                    }}
-                  >
+                  <div className="ta-meta" style={{ color: RANK_COLORS[rank - 1] }}>
                     {RANK_LABELS[rank - 1]}
                   </div>
                 </div>
@@ -411,9 +400,9 @@ function FullBoard({
       {/* ── Section divider — podium (top 3) vs full standings ─── */}
       {top3.length >= 2 && tableDisplay.length > 0 && (
         <div className="flex items-center gap-2 px-1 py-3">
-          <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.08)" }} />
-          <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.3)" }}>Full Standings</span>
-          <div style={{ flex: 1, height: 1, background: "rgba(255,255,255,0.08)" }} />
+          <div style={{ flex: 1, height: 1, background: "var(--dv)" }} />
+          <span className="ta-section-label">Full Standings</span>
+          <div style={{ flex: 1, height: 1, background: "var(--dv)" }} />
         </div>
       )}
 
@@ -421,31 +410,30 @@ function FullBoard({
       <div
         className="rounded-2xl overflow-hidden"
         style={{
-          background: "var(--color-background-secondary)",
-          border: "0.5px solid var(--color-border-tertiary)",
+          background: "var(--sf)",
+          border: "0.5px solid var(--br)",
           borderRadius: "var(--border-radius-lg)",
-          boxShadow: "0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.06)",
+          boxShadow: "0 8px 32px var(--shad), inset 0 1px 0 var(--dv)",
         }}
       >
         {/* Header */}
         <div
           className="flex items-center justify-between px-5 py-4 border-b"
-          style={{ borderColor: "rgba(255,255,255,0.07)" }}
+          style={{ borderColor: "var(--br)" }}
         >
           <div className="flex items-center gap-2.5">
-            <Trophy size={18} strokeWidth={1.5} style={{ color: "#fbbf24" }} />
-            <span className="font-display text-xl uppercase text-white tracking-wide">Leaderboard</span>
+            <Trophy size={18} strokeWidth={1.5} style={{ color: "var(--sc)" }} />
+            <span className="ta-screen-title" style={{ fontSize: 20, color: "var(--tx)" }}>Leaderboard</span>
           </div>
           <div className="flex items-center gap-3">
             {showGhost && (
               <span
-                className="text-[10px] font-bold uppercase tracking-widest flex items-center gap-1"
-                style={{ color: "rgba(255,255,255,0.3)" }}
+                className="ta-section-label flex items-center gap-1"
               >
                 <Ghost size={11} /> Benchmark
               </span>
             )}
-            <span className="text-xs" style={{ color: "rgba(255,255,255,0.3)" }}>
+            <span className="ta-meta">
               {members.length} players
             </span>
           </div>
@@ -454,27 +442,28 @@ function FullBoard({
         {/* Column headers */}
         <div
           className="hidden sm:grid grid-cols-[2rem_2.5rem_1fr_3rem_4rem_1.5rem] gap-2 items-center px-5 py-2 border-b"
-          style={{ background: "rgba(255,255,255,0.03)", borderColor: "rgba(255,255,255,0.05)" }}
+          style={{ background: "var(--dv)", borderColor: "var(--br)" }}
         >
           <div />
           <div />
-          <div className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.3)" }}>Player</div>
-          <div className="text-[10px] font-bold uppercase tracking-widest text-center" style={{ color: "rgba(255,255,255,0.3)" }}>Δ</div>
-          <div className="text-[10px] font-bold uppercase tracking-widest text-right" style={{ color: "rgba(255,255,255,0.3)" }}>Pts</div>
+          <div className="ta-section-label">Player</div>
+          <div className="ta-section-label text-center">Δ</div>
+          <div className="ta-section-label text-right">Pts</div>
           <div />
         </div>
 
         {/* Rows: 4th place onward */}
         <div
-          className="p-2 space-y-1.5"
+          className="p-2"
           style={{
             ...(scrollable && { overflowY: "auto", maxHeight: 340 }),
           }}
         >
-          {tableDisplay.map((member) => {
+          {tableDisplay.map((member, i) => {
             const isCurrentUser = member.id === currentUserId;
             const isGhost       = member.isGhost;
             const realRank      = isGhost ? null : sorted.findIndex(m => m.id === member.id) + 1;
+            const isLast        = i === tableDisplay.length - 1;
 
             const activate = () => { if (!isGhost) onSelect(member); };
             return (
@@ -494,19 +483,20 @@ function FullBoard({
                   isGhost && "opacity-50",
                 )}
                 style={{
-                  background: isCurrentUser ? "rgba(0,255,136,0.1)" : "rgba(255,255,255,0.03)",
-                  border: isCurrentUser ? "0.5px solid rgba(0,255,136,0.3)" : "0.5px solid var(--color-border-tertiary)",
+                  background: isCurrentUser ? "color-mix(in srgb, var(--ac) 10%, transparent)" : "transparent",
+                  border: isCurrentUser ? "0.5px solid color-mix(in srgb, var(--ac) 30%, transparent)" : "0.5px solid transparent",
+                  borderBottom: isLast ? undefined : (isCurrentUser ? undefined : "0.5px solid var(--dv)"),
                 }}
-                onMouseEnter={(e: { currentTarget: HTMLElement }) => { if (!isGhost && !isCurrentUser) e.currentTarget.style.background = "rgba(255,255,255,0.06)"; }}
-                onMouseLeave={(e: { currentTarget: HTMLElement }) => { if (!isGhost && !isCurrentUser) e.currentTarget.style.background = "rgba(255,255,255,0.03)"; }}
+                onMouseEnter={(e: { currentTarget: HTMLElement }) => { if (!isGhost && !isCurrentUser) e.currentTarget.style.background = "var(--ip)"; }}
+                onMouseLeave={(e: { currentTarget: HTMLElement }) => { if (!isGhost && !isCurrentUser) e.currentTarget.style.background = "transparent"; }}
               >
                 {/* Rank */}
                 <div className="w-6 sm:w-8 text-center shrink-0">
                   <span
                     className="text-xs font-bold"
                     style={{
-                      fontFamily: "var(--font-mono)",
-                      color: isCurrentUser ? "#00FF88" : "rgba(255,255,255,0.3)",
+                      fontFamily: "var(--font-barlow)",
+                      color: isCurrentUser ? "var(--ac)" : "var(--mt)",
                     }}
                   >
                     {isGhost ? "-" : realRank}
@@ -518,12 +508,12 @@ function FullBoard({
                   {isGhost ? (
                     <div
                       className="h-9 w-9 rounded-full flex items-center justify-center"
-                      style={{ border: "1px dashed rgba(255,255,255,0.15)", background: "rgba(255,255,255,0.04)" }}
+                      style={{ border: "1px dashed var(--br)", background: "var(--dv)" }}
                     >
-                      <Ghost size={15} style={{ color: "rgba(255,255,255,0.2)" }} />
+                      <Ghost size={15} style={{ color: "var(--mt)" }} />
                     </div>
                   ) : (
-                    <UserAvatar name={member.name} avatarUrl={member.avatarUrl} size="sm" ringColor={isCurrentUser ? "#00FF88" : undefined} />
+                    <UserAvatar name={member.name} avatarUrl={member.avatarUrl} size="sm" ringColor={isCurrentUser ? "var(--ac)" : undefined} />
                   )}
                 </div>
 
@@ -531,15 +521,15 @@ function FullBoard({
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <span
-                      className="text-sm font-bold truncate"
-                      style={{ color: isCurrentUser ? "#00FF88" : isGhost ? "rgba(255,255,255,0.3)" : "rgba(255,255,255,0.9)" }}
+                      className="ta-team-name truncate"
+                      style={{ color: isCurrentUser ? "var(--ac)" : isGhost ? "var(--mt)" : "var(--tx)" }}
                     >
                       {member.name}
                     </span>
                     {isCurrentUser && (
                       <span
                         className="text-[9px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded-full shrink-0"
-                        style={{ background: "rgba(0,255,136,0.15)", color: "#00FF88", border: "1px solid rgba(0,255,136,0.25)" }}
+                        style={{ background: "color-mix(in srgb, var(--ac) 15%, transparent)", color: "var(--ac)", border: "1px solid color-mix(in srgb, var(--ac) 25%, transparent)" }}
                       >
                         You
                       </span>
@@ -547,7 +537,7 @@ function FullBoard({
                     {isGhost && (
                       <span
                         className="text-[9px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded-full shrink-0"
-                        style={{ background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.3)" }}
+                        style={{ background: "var(--dv)", color: "var(--mt)" }}
                       >
                         Benchmark
                       </span>
@@ -555,7 +545,7 @@ function FullBoard({
                   </div>
                   <div className="flex items-center gap-1.5 mt-0.5">
                     {!isGhost && <FlagBadge code={countryFlagCode(member.country ?? "")} size="sm" />}
-                    <span className="text-[11px] truncate" style={{ color: "rgba(255,255,255,0.3)" }}>
+                    <span className="ta-meta truncate">
                       {member.country}
                     </span>
                   </div>
@@ -570,11 +560,11 @@ function FullBoard({
                         <div
                           key={label}
                           className="flex items-center gap-0.5 rounded-full px-1.5 py-0.5"
-                          style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}
+                          style={{ background: "var(--dv)", border: "1px solid var(--br)" }}
                         >
-                          <Icon size={9} style={{ color: "rgba(255,255,255,0.4)" }} />
-                          <span className="text-[9px] font-bold" style={{ color: "rgba(255,255,255,0.35)" }}>{label}:</span>
-                          <span className="text-[9px] font-black" style={{ color: value > 0 ? "rgba(255,255,255,0.7)" : "rgba(255,255,255,0.2)", fontFamily: "var(--font-mono)" }}>{value}</span>
+                          <Icon size={9} style={{ color: "var(--mt)" }} />
+                          <span className="text-[9px] font-bold" style={{ color: "var(--ft)" }}>{label}:</span>
+                          <span className="text-[9px] font-black" style={{ color: value > 0 ? "var(--t2)" : "var(--ft)", fontFamily: "var(--font-barlow)" }}>{value}</span>
                         </div>
                       ))}
                     </div>
@@ -589,12 +579,11 @@ function FullBoard({
                 {/* Points */}
                 <div className="w-12 sm:w-16 text-right shrink-0">
                   <span
+                    className="ta-lb-points"
                     style={{
-                      fontFamily: "var(--font-mono)",
-                      fontWeight: 900,
-                      fontSize: "clamp(16px, 5vw, 22px)",
+                      fontSize: "clamp(16px, 5vw, 17px)",
                       lineHeight: 1,
-                      color: isCurrentUser ? "#00FF88" : isGhost ? "rgba(255,255,255,0.2)" : "white",
+                      color: isCurrentUser ? "var(--ac)" : isGhost ? "var(--ft)" : "var(--tx)",
                     }}
                   >
                     {member.points}
@@ -606,7 +595,7 @@ function FullBoard({
                   <ChevronRight
                     size={14}
                     className="shrink-0 group-hover:translate-x-0.5 transition-transform"
-                    style={{ color: "rgba(255,255,255,0.15)" }}
+                    style={{ color: "var(--mt)" }}
                   />
                 )}
               </div>
@@ -618,11 +607,11 @@ function FullBoard({
         {showGhost && (
           <div
             className="px-5 py-2.5 border-t flex items-center gap-2 text-[10px]"
-            style={{ borderColor: "rgba(255,255,255,0.05)", background: "rgba(255,255,255,0.02)", color: "rgba(255,255,255,0.3)" }}
+            style={{ borderColor: "var(--br)", background: "var(--dv)", color: "var(--mt)" }}
           >
             <Ghost size={11} />
-            <span>
-              <strong style={{ color: "rgba(255,255,255,0.5)" }}>The Expert</strong> shows the group average, a benchmark to beat.
+            <span className="ta-body">
+              <strong style={{ color: "var(--t2)" }}>The Expert</strong> shows the group average, a benchmark to beat.
             </span>
           </div>
         )}

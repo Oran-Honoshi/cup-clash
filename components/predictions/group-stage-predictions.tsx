@@ -19,12 +19,10 @@ import { createClient } from "@/lib/supabase/client";
 import { useLocale } from "@/components/i18n/locale-provider";
 import { interpolate, type Translations } from "@/lib/i18n";
 
-// ── Glass tokens ──────────────────────────────────────────────────────────────
+// ── Theme A tokens (Stadium Night) ──────────────────────────────────────────────
 const glassCard = {
-  background: "rgba(18,14,38,0.32)",
-  backdropFilter: "blur(40px) saturate(180%)",
-  WebkitBackdropFilter: "blur(40px) saturate(180%)",
-  border: "1px solid rgba(255,255,255,0.14)",
+  background: "var(--sf)",
+  border: "1px solid var(--br)",
 } as const;
 
 // ── Time-based locking ────────────────────────────────────────────────────────
@@ -166,9 +164,9 @@ function MatchCard({ match, prediction, onChange, globalLocked, stagePoints, mat
   }
 
   const cardStyle = {
-    open:   { background: "rgba(18,14,38,0.55)",  border: "1px solid rgba(0,255,136,0.25)"   },
-    saved:  { background: "rgba(30,20,10,0.55)",  border: "1px solid rgba(251,191,36,0.25)"  },
-    locked: { background: "rgba(18,14,38,0.45)",  border: "1px solid rgba(255,255,255,0.07)" },
+    open:   { background: "var(--sf)", border: "1px solid var(--ac)" },
+    saved:  { background: "var(--sf)", border: "1px solid rgba(251,191,36,0.35)" },
+    locked: { background: "var(--sf)", border: "1px solid var(--br)" },
   }[status];
 
   return (
@@ -176,7 +174,7 @@ function MatchCard({ match, prediction, onChange, globalLocked, stagePoints, mat
 
       {/* Row 1 — meta strip */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
-        <div style={{ fontSize: 10, color: "rgba(255,255,255,0.35)", fontFamily: "var(--font-ui)" }}>
+        <div className="ta-meta">
           <span suppressHydrationWarning>{localTimeStr}</span>
           {stagePoints?.useProgressive && (
             <span style={{ marginLeft: 8, color: "#fbbf24", fontWeight: 700 }}>
@@ -185,20 +183,20 @@ function MatchCard({ match, prediction, onChange, globalLocked, stagePoints, mat
           )}
         </div>
         {status === "open" && countdown && (
-          <span className="flex items-center text-[10px] font-bold uppercase tracking-widest px-2.5 py-0.5 rounded-full"
-            style={{ background: "rgba(0,255,136,0.12)", color: "#00FF88", border: "1px solid rgba(0,255,136,0.25)", fontFamily: "var(--font-ui)" }}>
+          <span className="ta-subtab-label flex items-center px-2.5 py-0.5 rounded-full"
+            style={{ background: "rgba(0,207,128,0.12)", color: "var(--ac)", border: "1px solid rgba(0,207,128,0.3)" }}>
             {countdown}
           </span>
         )}
         {status === "saved" && (
-          <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest px-2.5 py-0.5 rounded-full"
-            style={{ background: "rgba(251,191,36,0.12)", color: "#fbbf24", border: "1px solid rgba(251,191,36,0.25)", fontFamily: "var(--font-ui)" }}>
+          <span className="ta-subtab-label flex items-center gap-1 px-2.5 py-0.5 rounded-full"
+            style={{ background: "rgba(251,191,36,0.12)", color: "#fbbf24", border: "1px solid rgba(251,191,36,0.25)" }}>
             <CheckCircle2 size={10} /> {t("pred_saved")}
           </span>
         )}
         {status === "locked" && (
-          <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-widest px-2.5 py-0.5 rounded-full"
-            style={{ background: "rgba(255,255,255,0.05)", color: "rgba(255,255,255,0.3)", fontFamily: "var(--font-ui)" }}>
+          <span className="ta-subtab-label flex items-center gap-1 px-2.5 py-0.5 rounded-full"
+            style={{ background: "var(--ip)", color: "var(--mt)" }}>
             <Lock size={9} /> {t("pred_locked")}
           </span>
         )}
@@ -208,7 +206,7 @@ function MatchCard({ match, prediction, onChange, globalLocked, stagePoints, mat
       <div className="flex items-center gap-3">
         <div className="flex-1 flex flex-col items-center gap-1">
           <FlagBadge code={match.homeFlagCode ?? "un"} size="sm" />
-          <span className="font-display text-xs uppercase font-black text-center text-white">
+          <span className="ta-team-name text-center" style={{ fontSize: 12, color: "var(--tx)" }}>
             {(match.home ?? "").substring(0, 3).toUpperCase()}
           </span>
         </div>
@@ -216,21 +214,21 @@ function MatchCard({ match, prediction, onChange, globalLocked, stagePoints, mat
           <div style={{
             display: "flex", alignItems: "center", gap: 6,
             borderRadius: 8,
-            border: flashStatus === "success" ? "1.5px solid #00e5a0" : flashStatus === "error" ? "1.5px solid #f87171" : "1.5px solid transparent",
+            border: flashStatus === "success" ? "1.5px solid var(--ac)" : flashStatus === "error" ? "1.5px solid #f87171" : "1.5px solid transparent",
             padding: "3px 6px",
-            background: flashStatus === "success" ? "rgba(0,229,160,0.06)" : flashStatus === "error" ? "rgba(248,113,113,0.06)" : "transparent",
+            background: flashStatus === "success" ? "rgba(0,207,128,0.06)" : flashStatus === "error" ? "rgba(248,113,113,0.06)" : "transparent",
             transition: "border-color 0.3s, background 0.3s",
           }}>
             <ScoreInputCC value={prediction.home} onChange={v => onChange(v, prediction.away)} disabled={matchLocked} />
-            <span style={{ fontFamily: "var(--font-mono)", fontSize: 16, fontWeight: 700, color: "rgba(255,255,255,0.25)" }}>:</span>
+            <span className="ta-score" style={{ fontSize: 16 }}>:</span>
             <ScoreInputCC value={prediction.away} onChange={v => onChange(prediction.home, v)} disabled={matchLocked} />
           </div>
-          {flashStatus === "success" && <span style={{ fontSize: 11, color: "#00e5a0", fontWeight: 700 }}>✓</span>}
+          {flashStatus === "success" && <span style={{ fontSize: 11, color: "var(--ac)", fontWeight: 700 }}>✓</span>}
           {flashStatus === "error" && <span style={{ fontSize: 11, color: "#f87171", fontWeight: 700 }}>!</span>}
         </div>
         <div className="flex-1 flex flex-col items-center gap-1">
           <FlagBadge code={match.awayFlagCode ?? "un"} size="sm" />
-          <span className="font-display text-xs uppercase font-black text-center text-white">
+          <span className="ta-team-name text-center" style={{ fontSize: 12, color: "var(--tx)" }}>
             {(match.away ?? "").substring(0, 3).toUpperCase()}
           </span>
         </div>
@@ -239,8 +237,8 @@ function MatchCard({ match, prediction, onChange, globalLocked, stagePoints, mat
       {/* Result badge row — finished matches */}
       {matchResult && !matchResult.isLive && (
         <div className="flex items-center justify-between mt-2 pt-2"
-          style={{ borderTop: "1px solid rgba(255,255,255,0.07)" }}>
-          <span className="text-[10px] font-mono font-bold" style={{ color: "rgba(255,255,255,0.45)" }}>
+          style={{ borderTop: "1px solid var(--dv)" }}>
+          <span className="ta-score" style={{ fontSize: 16 }}>
             {matchResult.homeScore}–{matchResult.awayScore}
           </span>
           <PredictionBadge
@@ -254,7 +252,7 @@ function MatchCard({ match, prediction, onChange, globalLocked, stagePoints, mat
       {/* Live indicator */}
       {matchResult?.isLive && (
         <div className="flex items-center gap-1.5 mt-2 pt-2"
-          style={{ borderTop: "1px solid rgba(255,255,255,0.07)" }}>
+          style={{ borderTop: "1px solid var(--dv)" }}>
           <span className="inline-block w-1.5 h-1.5 rounded-full bg-red-400 animate-pulse shrink-0" />
           <span className="text-[10px] font-bold uppercase tracking-wider" style={{ color: "#f87171" }}>Live now</span>
         </div>
@@ -262,17 +260,17 @@ function MatchCard({ match, prediction, onChange, globalLocked, stagePoints, mat
 
       {/* Group member predictions revealed when live */}
       {matchResult?.isLive && livePreds && livePreds.length > 0 && (
-        <div className="mt-2 pt-2 space-y-1.5" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
-          <div style={{ fontSize: 9, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "rgba(255,255,255,0.3)", fontFamily: "var(--font-ui)", marginBottom: 6 }}>
+        <div className="mt-2 pt-2 space-y-1.5" style={{ borderTop: "1px solid var(--dv)" }}>
+          <div className="ta-section-label" style={{ marginBottom: 6 }}>
             What your group predicted
           </div>
           {livePreds.map((m, i) => (
             <div key={i} style={{ display: "flex", alignItems: "center", gap: 6 }}>
               <MemberAvatar name={m.name} avatarUrl={m.avatarUrl} size="xs" />
-              <span style={{ fontSize: 11, flex: 1, color: "rgba(255,255,255,0.55)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              <span className="ta-body" style={{ fontSize: 11, flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                 {m.name}
               </span>
-              <span style={{ fontFamily: "var(--font-mono)", fontWeight: 700, fontSize: 11, color: "rgba(255,255,255,0.85)", flexShrink: 0 }}>
+              <span className="ta-score" style={{ fontSize: 15, flexShrink: 0 }}>
                 {m.homeScore}–{m.awayScore}
               </span>
             </div>
@@ -287,12 +285,12 @@ function MatchCard({ match, prediction, onChange, globalLocked, stagePoints, mat
 function GroupTable({ standings }: { standings: TeamStanding[] }) {
   if (!standings.length) return null;
   return (
-    <div className="rounded-xl overflow-hidden" style={{ border: "1px solid rgba(255,255,255,0.08)" }}>
-      <div className="grid grid-cols-[1fr_auto_auto_auto] sm:grid-cols-[1fr_auto_auto_auto_auto_auto_auto] gap-2 px-3 py-2 text-[10px] font-bold uppercase tracking-widest"
-        style={{ background: "rgba(255,255,255,0.03)", color: "rgba(255,255,255,0.3)", borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
+    <div className="rounded-xl overflow-hidden" style={{ border: "1px solid var(--br)" }}>
+      <div className="ta-section-label grid grid-cols-[1fr_auto_auto_auto] sm:grid-cols-[1fr_auto_auto_auto_auto_auto_auto] gap-2 px-3 py-2"
+        style={{ background: "var(--ip)", borderBottom: "1px solid var(--br)" }}>
         <div>Team</div>
         {["P","W","D","L","GD","Pts"].map(h => (
-          <div key={h} className={`w-6 text-center${["W","D","L"].includes(h) ? " hidden sm:block" : ""}`} style={h==="Pts" ? { color: "#00D4FF" } : undefined}>{h}</div>
+          <div key={h} className={`w-6 text-center${["W","D","L"].includes(h) ? " hidden sm:block" : ""}`} style={h==="Pts" ? { color: "var(--ac)" } : undefined}>{h}</div>
         ))}
       </div>
       {standings.map((team, i) => {
@@ -302,24 +300,24 @@ function GroupTable({ standings }: { standings: TeamStanding[] }) {
           <div key={team.name}
             className="grid grid-cols-[1fr_auto_auto_auto] sm:grid-cols-[1fr_auto_auto_auto_auto_auto_auto] gap-2 items-center px-3 py-2"
             style={{
-              borderBottom: i < standings.length - 1 ? "1px solid rgba(255,255,255,0.05)" : undefined,
-              background: qualifies ? "rgba(0,255,136,0.04)" : undefined,
-              borderLeft: qualifies ? "2px solid rgba(0,255,136,0.5)" : thirdPlace ? "2px solid rgba(251,191,36,0.35)" : "2px solid transparent",
+              borderBottom: i < standings.length - 1 ? "1px solid var(--dv)" : undefined,
+              background: qualifies ? "rgba(0,207,128,0.04)" : undefined,
+              borderLeft: qualifies ? "2px solid var(--ac)" : thirdPlace ? "2px solid rgba(251,191,36,0.35)" : "2px solid transparent",
             }}>
             <div className="flex items-center gap-2 min-w-0">
-              <span className="text-xs font-black w-3 shrink-0" style={{ color: qualifies ? "#00FF88" : "rgba(255,255,255,0.25)" }}>{i + 1}</span>
+              <span className="text-xs font-black w-3 shrink-0" style={{ color: qualifies ? "var(--ac)" : "var(--ft)" }}>{i + 1}</span>
               <FlaggedTeam name={team.name} flagCode={team.flagCode} size="xs" />
-              {qualifies && <span className="hidden sm:inline text-[9px] font-bold px-1 rounded shrink-0" style={{ background: "rgba(0,255,136,0.12)", color: "#00FF88" }}>Q</span>}
+              {qualifies && <span className="hidden sm:inline text-[9px] font-bold px-1 rounded shrink-0" style={{ background: "rgba(0,207,128,0.12)", color: "var(--ac)" }}>Q</span>}
             </div>
-            <div className="w-6 text-center text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>{team.played}</div>
-            <div className="w-6 text-center text-xs hidden sm:block" style={{ color: "#00FF88" }}>{team.won}</div>
-            <div className="w-6 text-center text-xs hidden sm:block" style={{ color: "rgba(255,255,255,0.4)" }}>{team.drawn}</div>
+            <div className="w-6 text-center text-xs" style={{ color: "var(--mt)" }}>{team.played}</div>
+            <div className="w-6 text-center text-xs hidden sm:block" style={{ color: "var(--ac)" }}>{team.won}</div>
+            <div className="w-6 text-center text-xs hidden sm:block" style={{ color: "var(--mt)" }}>{team.drawn}</div>
             <div className="w-6 text-center text-xs hidden sm:block" style={{ color: "#f87171" }}>{team.lost}</div>
             <div className="w-6 text-center text-xs font-bold"
-              style={{ color: team.gd > 0 ? "#00FF88" : team.gd < 0 ? "#f87171" : "rgba(255,255,255,0.4)" }}>
+              style={{ color: team.gd > 0 ? "var(--ac)" : team.gd < 0 ? "#f87171" : "var(--mt)" }}>
               {team.gd > 0 ? `+${team.gd}` : team.gd}
             </div>
-            <div className="w-6 text-center font-black text-sm" style={{ fontFamily: "var(--font-mono)", color: "#00D4FF" }}>{team.pts}</div>
+            <div className="w-6 text-center font-black text-sm" style={{ fontFamily: "var(--font-mono)", color: "var(--ac)" }}>{team.pts}</div>
           </div>
         );
       })}
@@ -351,21 +349,21 @@ function QualifiersSummary({ predictions, allComplete, allMatches }: { predictio
     <div className="rounded-2xl p-5 space-y-5" style={glassCard}>
       <div className="flex items-center gap-2.5">
         <Trophy size={18} strokeWidth={1.5} style={{ color: "#fbbf24" }} />
-        <span className="font-display text-xl uppercase tracking-tight text-white">{t("pred_title")} — </span>
-        {!allComplete && <span className="ml-auto text-[10px] font-bold" style={{ color: "rgba(255,255,255,0.3)" }}>{t("pred_qual_hint")}</span>}
+        <span className="ta-match-label" style={{ color: "var(--tx)" }}>{t("pred_title")} — </span>
+        {!allComplete && <span className="ta-meta ml-auto">{t("pred_qual_hint")}</span>}
       </div>
       {top1.length > 0 && (
         <div>
-          <div className="text-[10px] font-bold uppercase tracking-widest mb-2 flex items-center gap-1.5" style={{ color: "rgba(255,255,255,0.35)" }}>
-            <Star size={10} style={{ color: "#00D4FF" }} /> {t("pred_grp_winners")}
+          <div className="ta-section-label mb-2 flex items-center gap-1.5">
+            <Star size={10} style={{ color: "var(--ac)" }} /> {t("pred_grp_winners")}
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
             {top1.map(({ group, team }) => (
               <div key={group} className="flex items-center gap-2 px-3 py-2 rounded-xl"
-                style={{ background: "rgba(0,255,136,0.06)", border: "1px solid rgba(0,255,136,0.15)" }}>
-                <span className="text-[10px] font-black" style={{ color: "#00D4FF" }}>Grp {group}</span>
+                style={{ background: "rgba(0,207,128,0.06)", border: "1px solid rgba(0,207,128,0.2)" }}>
+                <span className="text-[10px] font-black" style={{ color: "var(--ac)" }}>Grp {group}</span>
                 <FlaggedTeam name={team.name} flagCode={team.flagCode} size="xs" />
-                <span className="ml-auto font-mono font-black text-xs" style={{ color: "#00FF88" }}>{team.pts}pts</span>
+                <span className="ml-auto font-mono font-black text-xs" style={{ color: "var(--ac)" }}>{team.pts}pts</span>
               </div>
             ))}
           </div>
@@ -373,16 +371,16 @@ function QualifiersSummary({ predictions, allComplete, allMatches }: { predictio
       )}
       {top2.length > 0 && (
         <div>
-          <div className="text-[10px] font-bold uppercase tracking-widest mb-2 flex items-center gap-1.5" style={{ color: "rgba(255,255,255,0.35)" }}>
-            <Medal size={10} style={{ color: "#00D4FF" }} /> {t("pred_runners_up")}
+          <div className="ta-section-label mb-2 flex items-center gap-1.5">
+            <Medal size={10} style={{ color: "var(--ac)" }} /> {t("pred_runners_up")}
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
             {top2.map(({ group, team }) => (
               <div key={group} className="flex items-center gap-2 px-3 py-2 rounded-xl"
-                style={{ background: "rgba(0,212,255,0.06)", border: "1px solid rgba(0,212,255,0.15)" }}>
-                <span className="text-[10px] font-black" style={{ color: "#00D4FF" }}>Grp {group}</span>
+                style={{ background: "rgba(0,207,128,0.05)", border: "1px solid rgba(0,207,128,0.15)" }}>
+                <span className="text-[10px] font-black" style={{ color: "var(--ac)" }}>Grp {group}</span>
                 <FlaggedTeam name={team.name} flagCode={team.flagCode} size="xs" />
-                <span className="ml-auto font-mono font-black text-xs" style={{ color: "#00D4FF" }}>{team.pts}pts</span>
+                <span className="ml-auto font-mono font-black text-xs" style={{ color: "var(--ac)" }}>{team.pts}pts</span>
               </div>
             ))}
           </div>
@@ -390,8 +388,8 @@ function QualifiersSummary({ predictions, allComplete, allMatches }: { predictio
       )}
       {best8.length > 0 && (
         <div>
-          <div className="text-[10px] font-bold uppercase tracking-widest mb-2 flex items-center gap-1.5" style={{ color: "rgba(255,255,255,0.35)" }}>
-            <Users size={10} style={{ color: "#00D4FF" }} /> {t("pred_best_third")}
+          <div className="ta-section-label mb-2 flex items-center gap-1.5">
+            <Users size={10} style={{ color: "var(--ac)" }} /> {t("pred_best_third")}
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
             {best8.map(({ group, team }, i) => (
@@ -415,7 +413,7 @@ function SaveIndicator({ status }: { status: "idle"|"saving"|"saved"|"error" }) 
   if (status === "idle") return null;
   return (
     <span className="flex items-center gap-1.5 text-[11px] font-bold"
-      style={{ color: status === "saved" ? "#00FF88" : status === "error" ? "#f87171" : "rgba(255,255,255,0.4)" }}>
+      style={{ color: status === "saved" ? "var(--ac)" : status === "error" ? "#f87171" : "var(--mt)" }}>
       {status === "saving" && <BallLoader size="inline" label={null} />}
       {status === "saved"  && <Check size={11} />}
       {status === "error"  && <AlertCircle size={11} />}
@@ -621,28 +619,28 @@ export function GroupStagePredictions({ groupId, locked = false, userId, isAdFre
         {/* Match counter — prominent */}
         <div className="flex items-center justify-between mb-3">
           <div>
-            <div className="text-[10px] font-bold uppercase tracking-widest mb-0.5" style={{ color: "rgba(255,255,255,0.35)" }}>
+            <div className="ta-section-label mb-0.5">
               Matches Predicted
             </div>
             <div className="flex items-baseline gap-1">
-              <span className="text-2xl font-black font-mono" style={{ color: "#00FF88" }}>{predictedMatchCount}</span>
-              <span className="text-sm font-bold" style={{ color: "rgba(255,255,255,0.3)" }}>/ {totalGroupMatches}</span>
+              <span className="text-2xl font-black font-mono" style={{ color: "var(--ac)" }}>{predictedMatchCount}</span>
+              <span className="text-sm font-bold" style={{ color: "var(--ft)" }}>/ {totalGroupMatches}</span>
             </div>
           </div>
           <div className="text-right">
-            <div className="text-[10px] font-bold uppercase tracking-widest mb-0.5" style={{ color: "rgba(255,255,255,0.35)" }}>
+            <div className="ta-section-label mb-0.5">
               {t("pred_progress")}
             </div>
             <div className="flex items-center gap-2 justify-end">
-              <span className="text-sm font-black font-mono" style={{ color: "#00D4FF" }}>{completedCount} / 12</span>
+              <span className="text-sm font-black font-mono" style={{ color: "var(--ac)" }}>{completedCount} / 12</span>
             </div>
           </div>
         </div>
-        <div className="overflow-hidden" style={{ height: 6, borderRadius: 3, background: "rgba(255,255,255,0.08)" }}>
+        <div className="overflow-hidden" style={{ height: 6, borderRadius: 3, background: "var(--ip)" }}>
           <div className="h-full transition-all duration-500"
-            style={{ width: `${(predictedMatchCount / totalGroupMatches) * 100}%`, background: "linear-gradient(90deg, #00D4FF, #00FF88)", borderRadius: 3 }} />
+            style={{ width: `${(predictedMatchCount / totalGroupMatches) * 100}%`, background: "var(--ac)", borderRadius: 3 }} />
         </div>
-        <p className="text-[10px] mt-1.5" style={{ color: "rgba(255,255,255,0.25)" }}>
+        <p className="ta-meta mt-1.5">
           {t("pred_autosave_hint")}
         </p>
       </div>
@@ -656,17 +654,16 @@ export function GroupStagePredictions({ groupId, locked = false, userId, isAdFre
           const teams    = getGroupTeams(g, allMatches);
           return (
             <button key={g} onClick={() => setActiveGroup(g)}
-              className="flex items-center gap-1.5 px-3 py-2 min-h-[44px] text-xs font-bold uppercase tracking-wider transition-all shrink-0"
+              className="ta-subtab-label flex items-center gap-1.5 px-3 py-2 min-h-[44px] transition-all shrink-0"
               style={isActive ? {
-                background: "rgba(0,212,255,0.12)",
-                color: "#00D4FF",
-                border: "1px solid rgba(0,212,255,0.35)",
+                background: "var(--ac)",
+                color: "var(--at)",
+                border: "1px solid transparent",
                 borderRadius: 100,
-                boxShadow: "0 0 12px rgba(0,212,255,0.15)",
               } : {
-                background: "rgba(255,255,255,0.05)",
-                color: "rgba(255,255,255,0.5)",
-                border: "1px solid rgba(255,255,255,0.1)",
+                background: "var(--ip)",
+                color: "var(--t2)",
+                border: "1px solid var(--br)",
                 borderRadius: 100,
               }}>
               Grp {g}
@@ -678,7 +675,7 @@ export function GroupStagePredictions({ groupId, locked = false, userId, isAdFre
                   </span>
                 ))}
               </span>
-              {complete && <Check size={10} style={{ color: "#00FF88" }} />}
+              {complete && <Check size={10} style={{ color: isActive ? "var(--at)" : "var(--ac)" }} />}
             </button>
           );
         })}
@@ -699,13 +696,13 @@ export function GroupStagePredictions({ groupId, locked = false, userId, isAdFre
           {/* Group header */}
           <div className="flex items-center justify-between px-1 overflow-hidden">
             <div className="min-w-0 flex-1">
-              <h2 className="font-display text-2xl uppercase tracking-tight text-white font-black">Group {activeGroup}</h2>
-              <p className="text-[10px] truncate" style={{ color: "rgba(255,255,255,0.3)" }}>{groupTeams.map(t => t.name).join(" · ")}</p>
+              <h2 className="ta-match-label" style={{ fontSize: 22, color: "var(--tx)" }}>Group {activeGroup}</h2>
+              <p className="ta-meta truncate">{groupTeams.map(t => t.name).join(" · ")}</p>
             </div>
             <div className="flex items-center gap-2 shrink-0 ml-2">
               {groupComplete && (
                 <span className="flex items-center gap-1.5 text-xs font-bold px-2.5 py-1 rounded-full"
-                  style={{ background: "rgba(0,255,136,0.1)", color: "#00FF88", border: "1px solid rgba(0,255,136,0.2)" }}>
+                  style={{ background: "rgba(0,207,128,0.1)", color: "var(--ac)", border: "1px solid rgba(0,207,128,0.25)" }}>
                   <CheckCircle2 size={11} /> {t("common_complete")}
                 </span>
               )}
@@ -734,16 +731,16 @@ export function GroupStagePredictions({ groupId, locked = false, userId, isAdFre
           {standings.some(t => t.played > 0) && (
             <div className="p-4" style={{ ...glassCard, borderRadius: 18 }}>
               <div className="flex items-center gap-2 mb-3">
-                <ArrowUpDown size={14} strokeWidth={1.5} style={{ color: "#00D4FF" }} />
-                <span className="font-display text-lg uppercase tracking-tight text-white">{t("pred_pred_table")}</span>
+                <ArrowUpDown size={14} strokeWidth={1.5} style={{ color: "var(--ac)" }} />
+                <span className="ta-match-label" style={{ fontSize: 16, color: "var(--tx)" }}>{t("pred_pred_table")}</span>
               </div>
               <GroupTable standings={standings} />
               <div className="mt-3 flex gap-4">
-                <div className="flex items-center gap-1.5 text-[10px]" style={{ color: "rgba(255,255,255,0.3)" }}>
-                  <div className="w-2 h-2 rounded-sm" style={{ background: "rgba(0,255,136,0.3)" }} /> {t("pred_top2")}
+                <div className="ta-meta flex items-center gap-1.5">
+                  <div className="w-2 h-2 rounded-sm" style={{ background: "var(--ac)" }} /> {t("pred_top2")}
                 </div>
-                <div className="flex items-center gap-1.5 text-[10px]" style={{ color: "rgba(255,255,255,0.3)" }}>
-                  <div className="w-2 h-2 rounded-sm" style={{ background: "rgba(251,191,36,0.3)" }} /> {t("pred_third_may")}
+                <div className="ta-meta flex items-center gap-1.5">
+                  <div className="w-2 h-2 rounded-sm" style={{ background: "rgba(251,191,36,0.4)" }} /> {t("pred_third_may")}
                 </div>
               </div>
             </div>
@@ -771,14 +768,14 @@ export function GroupStagePredictions({ groupId, locked = false, userId, isAdFre
               onClick={() => activeIdx > 0 && setActiveGroup(GROUPS[activeIdx - 1])}
               disabled={activeIdx === 0}
               className="flex-1 flex items-center justify-center gap-1.5 min-h-[44px] rounded-xl text-xs font-bold transition-all disabled:opacity-30"
-              style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.5)" }}>
+              style={{ background: "var(--ip)", border: "1px solid var(--br)", color: "var(--t2)" }}>
               <ChevronLeft size={13} /> Group {GROUPS[activeIdx - 1] ?? ""}
             </button>
             <button
               onClick={() => activeIdx < GROUPS.length - 1 && setActiveGroup(GROUPS[activeIdx + 1])}
               disabled={activeIdx === GROUPS.length - 1}
               className="flex-1 flex items-center justify-center gap-1.5 min-h-[44px] rounded-xl text-xs font-bold transition-all disabled:opacity-30"
-              style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.5)" }}>
+              style={{ background: "var(--ip)", border: "1px solid var(--br)", color: "var(--t2)" }}>
               Group {GROUPS[activeIdx + 1] ?? ""} <ChevronRight size={13} />
             </button>
           </div>

@@ -74,9 +74,9 @@ export function MatchCarousel({ matches, groupId }: MatchCarouselProps) {
           className={cn("flex items-center justify-center rounded-lg transition-all", FOCUS_RING)}
           style={{
             width: 24, height: 24,
-            border: "1px solid rgba(255,255,255,0.15)",
+            border: "1px solid var(--br)",
             background: "transparent",
-            color: active === 0 ? "rgba(255,255,255,0.2)" : "rgba(255,255,255,0.6)",
+            color: active === 0 ? "var(--ft)" : "var(--t2)",
             cursor: active === 0 ? "not-allowed" : "pointer",
           }}
         >
@@ -93,7 +93,7 @@ export function MatchCarousel({ matches, groupId }: MatchCarouselProps) {
               height: 6,
               width: i === active ? 20 : 6,
               borderRadius: 3,
-              background: i === active ? "#00D4FF" : "rgba(255,255,255,0.2)",
+              background: i === active ? "var(--ac)" : "var(--br)",
               transition: "all 0.25s",
             }}
           />
@@ -106,9 +106,9 @@ export function MatchCarousel({ matches, groupId }: MatchCarouselProps) {
           className={cn("flex items-center justify-center rounded-lg transition-all", FOCUS_RING)}
           style={{
             width: 24, height: 24,
-            border: "1px solid rgba(255,255,255,0.15)",
+            border: "1px solid var(--br)",
             background: "transparent",
-            color: active === matches.length - 1 ? "rgba(255,255,255,0.2)" : "rgba(255,255,255,0.6)",
+            color: active === matches.length - 1 ? "var(--ft)" : "var(--t2)",
             cursor: active === matches.length - 1 ? "not-allowed" : "pointer",
           }}
         >

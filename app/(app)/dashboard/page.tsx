@@ -27,18 +27,18 @@ function GuestBanner() {
     <div
       className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
       style={{
-        background: "rgba(0,255,136,0.08)",
-        border: "1px solid rgba(0,255,136,0.2)",
+        background: "var(--ip)",
+        border: "1px solid var(--br)",
         borderRadius: 16,
         padding: "16px 20px",
         marginBottom: 24,
       }}
     >
       <div>
-        <div className="text-sm" style={{ color: "rgba(255,255,255,0.8)" }}>
+        <div className="text-sm" style={{ color: "var(--t2)" }}>
           👋 {serverT("dash_guest_banner")}
         </div>
-        <div className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.45)" }}>
+        <div className="text-xs mt-0.5 ta-meta">
           {serverT("dash_guest_sub")}
         </div>
       </div>
@@ -47,8 +47,8 @@ function GuestBanner() {
           <button
             className="font-bold text-sm"
             style={{
-              background: "linear-gradient(135deg, #00FF88, #00D4FF)",
-              color: "#0B141B",
+              background: "var(--ac)",
+              color: "var(--at)",
               borderRadius: 10,
               padding: "8px 16px",
             }}
@@ -60,8 +60,8 @@ function GuestBanner() {
           <button
             className="font-bold text-sm text-white"
             style={{
-              background: "rgba(255,255,255,0.08)",
-              border: "1px solid rgba(255,255,255,0.15)",
+              background: "var(--ip)",
+              border: "1px solid var(--br)",
               borderRadius: 10,
               padding: "8px 16px",
             }}
@@ -84,7 +84,7 @@ export default async function DashboardPage({
   // Guest mode: explore without account
   if (!userProfile) {
     return (
-      <div className="w-full max-w-full overflow-x-hidden">
+      <div className="ta-stadium-bg w-full max-w-full overflow-x-hidden">
         <GuestBanner />
         <DashboardEmptyState highlight={searchParams.action} />
       </div>
@@ -108,7 +108,7 @@ export default async function DashboardPage({
   // No groups: show rich empty state with clear paths
   if (!allGroups.length) {
     return (
-      <div className="w-full max-w-full overflow-x-hidden space-y-6">
+      <div className="ta-stadium-bg w-full max-w-full overflow-x-hidden space-y-6">
         <WelcomeModal forceOpen={false} />
         <DashboardEmptyState />
         <AdBanner isAdFree={false} isCorporate={false} />
@@ -144,7 +144,7 @@ export default async function DashboardPage({
   const isAdmin       = group.admin === userProfile.id;
 
   return (
-    <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+    <div className="ta-stadium-bg" style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", overflow: "hidden" }}>
       <GroupPersistRedirect groups={allGroups} basePath="/dashboard" />
       <OnboardingTour />
       <WelcomeModal />

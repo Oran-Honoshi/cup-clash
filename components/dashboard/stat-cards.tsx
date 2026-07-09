@@ -7,25 +7,28 @@ interface StatCardsProps {
 }
 
 export function StatCards({ rank, points, totalPlayers, exactScores }: StatCardsProps) {
-  const sep = <span style={{ color: "rgba(255,255,255,0.2)" }}>·</span>;
+  const sep = <span style={{ color: "var(--dv)" }}>·</span>;
 
   return (
-    <div className="flex items-baseline gap-3 px-1" style={{ fontFamily: "var(--font-mono)" }}>
-      <span className="text-2xl font-black" style={{ color: "#00FF88" }}>
+    <div
+      className="flex items-baseline gap-3 px-4 py-3"
+      style={{ background: "var(--sf)", border: "1px solid var(--br)", borderRadius: 14 }}
+    >
+      <span className="ta-stat-number" style={{ color: "var(--ac)" }}>
         {rank ? `#${rank}` : "--"}
       </span>
       {rank && totalPlayers > 0 && (
-        <span className="text-xs" style={{ color: "rgba(255,255,255,0.3)" }}>
-          of {totalPlayers}
-        </span>
+        <span className="ta-section-label">of {totalPlayers}</span>
       )}
       {sep}
-      <span className="text-base" style={{ color: "rgba(255,255,255,0.55)" }}>
-        <span className="font-black text-white">{points}</span> pts
+      <span className="flex items-baseline gap-1.5">
+        <span className="ta-stat-number" style={{ color: "var(--tx)" }}>{points}</span>
+        <span className="ta-section-label">pts</span>
       </span>
       {sep}
-      <span className="text-base" style={{ color: "rgba(255,255,255,0.55)" }}>
-        <span className="font-black" style={{ color: "#fbbf24" }}>{exactScores}</span> exact
+      <span className="flex items-baseline gap-1.5">
+        <span className="ta-stat-number" style={{ color: "var(--sc)" }}>{exactScores}</span>
+        <span className="ta-section-label">exact</span>
       </span>
     </div>
   );

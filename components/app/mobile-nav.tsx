@@ -49,24 +49,24 @@ function MoreDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
       <div
         className="rounded-t-3xl"
         style={{
-          background: "rgba(8,12,22,0.97)",
-          border: "1px solid rgba(255,255,255,0.1)",
-          boxShadow: "0 -8px 40px rgba(0,0,0,0.5)",
+          background: "var(--nv)",
+          border: "1px solid var(--br)",
+          boxShadow: "0 -8px 40px var(--shad)",
         }}
         onClick={e => e.stopPropagation()}
       >
         {/* Handle */}
         <div className="flex justify-center pt-3 pb-2">
-          <div className="w-10 h-1 rounded-full" style={{ background: "rgba(255,255,255,0.2)" }} />
+          <div className="w-10 h-1 rounded-full" style={{ background: "var(--mt)" }} />
         </div>
 
         {/* Header */}
-        <div className="flex items-center justify-between px-5 pb-3 border-b" style={{ borderColor: "rgba(255,255,255,0.07)" }}>
-          <span className="font-display text-base uppercase font-black text-white tracking-wide">More</span>
+        <div className="flex items-center justify-between px-5 pb-3 border-b" style={{ borderColor: "var(--dv)" }}>
+          <span className="font-display text-base uppercase font-black tracking-wide" style={{ color: "var(--tx)" }}>More</span>
           <button
             onClick={onClose}
             className="h-8 w-8 flex items-center justify-center rounded-xl"
-            style={{ background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.5)" }}
+            style={{ background: "var(--ip)", color: "var(--mt)" }}
           >
             <X size={15} />
           </button>
@@ -83,8 +83,8 @@ function MoreDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
                 onClick={onClose}
                 className="flex items-center gap-4 px-4 py-3.5 rounded-2xl transition-colors"
                 style={active
-                  ? { background: "rgba(0,255,136,0.1)", color: "#00FF88" }
-                  : { color: "rgba(255,255,255,0.75)" }}
+                  ? { background: "color-mix(in srgb, var(--ac) 10%, transparent)", color: "var(--ac)" }
+                  : { color: "var(--t2)" }}
               >
                 <Icon size={20} strokeWidth={active ? 2.5 : 1.75} />
                 <span className="font-bold text-sm">{label}</span>
@@ -143,10 +143,8 @@ export function MobileNav() {
         ref={navRef}
         className="fixed bottom-0 left-0 right-0 z-40 lg:hidden border-t"
         style={{
-          background: "rgba(8, 12, 22, 0.9)",
-          backdropFilter: "blur(24px)",
-          WebkitBackdropFilter: "blur(24px)",
-          borderColor: "#0c1c0c",
+          background: "var(--nv)",
+          borderColor: "var(--br)",
           willChange: "transform",
         }}
       >
@@ -162,8 +160,8 @@ export function MobileNav() {
             const label = "labelKey" in item ? t(item.labelKey) : item.staticLabel;
             const Icon  = item.icon;
             const active = pathname === item.href || (item.href !== "/dashboard" && item.href !== "/predictions" && pathname.startsWith(item.href));
-            const activeColor   = "#00e5a0";
-            const inactiveColor = "#2a5a2a";
+            const activeColor   = "var(--ac)";
+            const inactiveColor = "var(--mt)";
             const tourId = item.href === "/predictions" ? "tour-nav-picks"
               : item.href === "/schedule" ? "tour-nav-schedule"
               : undefined;
@@ -180,13 +178,8 @@ export function MobileNav() {
                   style={{ color: active ? activeColor : inactiveColor }}
                 />
                 <span
-                  className="font-barlow uppercase"
-                  style={{
-                    fontSize: 9,
-                    fontWeight: 700,
-                    letterSpacing: "0.5px",
-                    color: active ? activeColor : inactiveColor,
-                  }}
+                  className="ta-nav-label"
+                  style={{ color: active ? activeColor : inactiveColor }}
                 >
                   {label}
                 </span>
@@ -211,16 +204,11 @@ export function MobileNav() {
             <MoreHorizontal
               size={20}
               strokeWidth={(moreOpen || isMoreActive) ? 2.5 : 1.75}
-              style={{ color: (moreOpen || isMoreActive) ? "#00e5a0" : "#2a5a2a" }}
+              style={{ color: (moreOpen || isMoreActive) ? "var(--ac)" : "var(--mt)" }}
             />
             <span
-              className="font-barlow uppercase"
-              style={{
-                fontSize: 9,
-                fontWeight: 700,
-                letterSpacing: "0.5px",
-                color: (moreOpen || isMoreActive) ? "#00e5a0" : "#2a5a2a",
-              }}
+              className="ta-nav-label"
+              style={{ color: (moreOpen || isMoreActive) ? "var(--ac)" : "var(--mt)" }}
             >
               More
             </span>
@@ -229,7 +217,7 @@ export function MobileNav() {
                 width: 20,
                 height: 2,
                 borderRadius: 1,
-                background: (isMoreActive && !moreOpen) ? "#00e5a0" : "transparent",
+                background: (isMoreActive && !moreOpen) ? "var(--ac)" : "transparent",
               }}
             />
           </button>

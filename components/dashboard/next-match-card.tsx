@@ -109,49 +109,27 @@ export function NextMatchCard({ match, groupId = "", cardLabel }: NextMatchCardP
 
   return (
     <div
-      className="w-full max-w-full overflow-hidden"
-      style={{
-        background: "var(--color-background-secondary)",
-        border: "1px solid rgba(0,212,255,0.35)",
-        borderRadius: "var(--border-radius-lg)",
-        boxShadow: "0 12px 40px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.18)",
-      }}
+      className="ta-hero-card w-full max-w-full overflow-hidden"
+      style={{ boxShadow: `0 12px 40px var(--shad)` }}
     >
       {/* Top accent line */}
-      <NeonBar gradient="linear-gradient(90deg,#00D4FF,#00FF88)" height={2.5} />
+      <NeonBar gradient="var(--ac)" height={2.5} />
 
       <div className="p-5">
         {/* Header */}
         <div className="flex items-start justify-between gap-2 mb-5">
           <div className="min-w-0">
             <div
-              className="flex items-center gap-1.5 mb-0.5"
-              style={{
-                fontSize: 10,
-                fontWeight: 700,
-                textTransform: "uppercase",
-                letterSpacing: "0.14em",
-                color: "#00D4FF",
-                fontFamily: "var(--font-ui)",
-              }}
+              className="ta-section-label flex items-center gap-1.5 mb-0.5"
+              style={isLive ? { color: "var(--ac)" } : undefined}
             >
               {isLive && <LiveDot />}
               {cardLabel ?? (isLive ? "Live Match" : "Next Match")}
             </div>
-            <div
-              style={{
-                fontSize: 9,
-                fontWeight: 700,
-                textTransform: "uppercase",
-                letterSpacing: "0.1em",
-                color: "rgba(255,255,255,0.35)",
-                fontFamily: "var(--font-ui)",
-                marginBottom: 2,
-              }}
-            >
+            <div className="ta-match-label" style={{ color: "var(--t2)", marginBottom: 2 }}>
               {getStageLabel(match)}
             </div>
-            <div className="text-xs font-mono" style={{ color: "rgba(255,255,255,0.4)" }} suppressHydrationWarning>
+            <div className="ta-meta" suppressHydrationWarning>
               {formattedTime}
             </div>
           </div>
@@ -160,11 +138,11 @@ export function NextMatchCard({ match, groupId = "", cardLabel }: NextMatchCardP
               "flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest rounded-full px-2.5 py-1 shrink-0 whitespace-nowrap",
               isLocked
                 ? "bg-red-500/15 border border-red-500/30 text-red-400"
-                : "border text-slate-400"
+                : "border"
             )}
             style={{
               marginTop: 1,
-              ...(!isLocked ? { borderColor: "rgba(255,255,255,0.1)", background: "rgba(255,255,255,0.05)" } : {}),
+              ...(!isLocked ? { borderColor: "var(--br)", background: "var(--ip)", color: "var(--mt)" } : {}),
             }}
           >
             <Lock size={10} />
@@ -177,7 +155,7 @@ export function NextMatchCard({ match, groupId = "", cardLabel }: NextMatchCardP
           {/* Home team */}
           <div className="flex-1 min-w-0 flex flex-col items-center gap-2">
             <FlagBadge code={homeFlagCode} size="md" />
-            <span className="font-display text-sm uppercase font-black text-center leading-tight text-white w-full truncate px-1">
+            <span className="ta-team-name text-center leading-tight w-full truncate px-1" style={{ color: "var(--tx)" }}>
               {match.home}
             </span>
           </div>
@@ -187,13 +165,13 @@ export function NextMatchCard({ match, groupId = "", cardLabel }: NextMatchCardP
             {saveState === "saved" ? (
               <>
                 <ScoreDisplay value={homeScore} />
-                <span className="font-barlow text-2xl font-black" style={{ color: "#1c4a1c" }}>–</span>
+                <span className="font-barlow text-2xl font-black" style={{ color: "var(--mt)" }}>–</span>
                 <ScoreDisplay value={awayScore} />
               </>
             ) : (
               <>
                 <ScoreInputCC value={homeScore} onChange={setHomeScore} disabled={isLocked} />
-                <span className="font-barlow text-2xl font-black" style={{ color: "#1c4a1c" }}>–</span>
+                <span className="font-barlow text-2xl font-black" style={{ color: "var(--mt)" }}>–</span>
                 <ScoreInputCC value={awayScore} onChange={setAwayScore} disabled={isLocked} />
               </>
             )}
@@ -202,24 +180,21 @@ export function NextMatchCard({ match, groupId = "", cardLabel }: NextMatchCardP
           {/* Away team */}
           <div className="flex-1 min-w-0 flex flex-col items-center gap-2">
             <FlagBadge code={awayFlagCode} size="md" />
-            <span className="font-display text-sm uppercase font-black text-center leading-tight text-white w-full truncate px-1">
+            <span className="ta-team-name text-center leading-tight w-full truncate px-1" style={{ color: "var(--tx)" }}>
               {match.away}
             </span>
           </div>
         </div>
 
         {/* Points hint */}
-        <div
-          className="mt-4 flex items-center justify-center gap-4 font-barlow"
-          style={{ color: "#3a7a3a", fontSize: 11, letterSpacing: "0.5px" }}
-        >
-          <span><span className="font-bold" style={{ color: "#5aaa6a" }}>+10</span> correct outcome</span>
-          <span style={{ color: "#1c3a1c" }}>·</span>
-          <span><span className="font-bold" style={{ color: "#00e5a0" }}>+25</span> exact score</span>
+        <div className="ta-meta mt-4 flex items-center justify-center gap-4">
+          <span><span className="font-bold" style={{ color: "var(--ac)" }}>+10</span> correct outcome</span>
+          <span style={{ color: "var(--dv)" }}>·</span>
+          <span><span className="font-bold" style={{ color: "var(--ac)" }}>+25</span> exact score</span>
         </div>
 
         {saveState === "error" && errorMsg && (
-          <div className="mt-3 flex items-center gap-2 text-xs" style={{ color: "#f87171" }}>
+          <div className="mt-3 flex items-center gap-2 text-xs text-red-400">
             <AlertCircle size={13} />{errorMsg}
           </div>
         )}
@@ -229,13 +204,13 @@ export function NextMatchCard({ match, groupId = "", cardLabel }: NextMatchCardP
           {saveState === "locked" ? (
             <div
               className="text-center text-xs font-bold uppercase tracking-widest"
-              style={{ color: "rgba(255,255,255,0.3)" }}
+              style={{ color: "var(--mt)" }}
             >
               Predictions locked
             </div>
           ) : saveState === "saved" ? (
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-1.5 font-barlow font-bold" style={{ color: "#00e5a0", fontSize: 13, letterSpacing: "0.5px" }}>
+              <div className="flex items-center gap-1.5 font-barlow font-bold" style={{ color: "var(--ac)", fontSize: 13, letterSpacing: "0.5px" }}>
                 <CheckCircle size={15} /> PREDICTION SAVED
               </div>
               <Button
@@ -273,9 +248,9 @@ function ScoreDisplay({ value }: { value: string }) {
         width: 46,
         height: 46,
         borderRadius: 10,
-        background: "#091808",
-        border: "2px solid #00e5a0",
-        color: "#00e5a0",
+        background: "var(--sf)",
+        border: "2px solid var(--ac)",
+        color: "var(--sc)",
         fontSize: 26,
       }}
     >

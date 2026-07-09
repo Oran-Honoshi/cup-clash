@@ -52,8 +52,14 @@ function AdBannerInner({ isAdFree, isCorporate }: AdBannerProps) {
   const h = isMobile ? 250 : 90;
 
   return (
-    <div className="flex justify-center w-full overflow-hidden py-2">
-      <div ref={containerRef} style={{ width: w, height: h }} />
+    <div className="flex justify-center w-full py-2">
+      <div
+        className="flex flex-col items-center gap-1.5 overflow-hidden p-2"
+        style={{ minHeight: 56, background: "var(--ip)", border: "1px dashed var(--br)", borderRadius: 8 }}
+      >
+        <span className="ta-section-label">Sponsored</span>
+        <div ref={containerRef} style={{ width: w, height: h }} />
+      </div>
     </div>
   );
 }

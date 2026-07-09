@@ -10,7 +10,7 @@ interface MiniLeaderboardProps {
   currentUserId?: string;
 }
 
-const RANK_COLORS = ["#fbbf24", "#94a3b8", "#f97316", "rgba(255,255,255,0.3)", "rgba(255,255,255,0.3)"];
+const RANK_COLORS = ["var(--ac)", "var(--t2)", "var(--t2)", "var(--mt)", "var(--mt)"];
 
 export function MiniLeaderboard({ members, groupId, currentUserId }: MiniLeaderboardProps) {
   const top5        = sortMembersForRanking(members).slice(0, 5);
@@ -23,9 +23,9 @@ export function MiniLeaderboard({ members, groupId, currentUserId }: MiniLeaderb
       className="w-full max-w-full"
       style={{
         borderRadius: 18,
-        background: "rgba(12, 18, 32, 0.78)",
-        border: "1px solid rgba(255,255,255,0.08)",
-        boxShadow: "0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.06)",
+        background: "var(--sf)",
+        border: "1px solid var(--br)",
+        boxShadow: `0 8px 32px var(--shad)`,
         overflow: "hidden",
       }}
     >
@@ -36,12 +36,13 @@ export function MiniLeaderboard({ members, groupId, currentUserId }: MiniLeaderb
           alignItems: "center",
           gap: 8,
           padding: "13px 18px",
-          borderBottom: "1px solid rgba(255,255,255,0.07)",
+          borderBottom: "1px solid var(--dv)",
         }}
       >
-        <Trophy size={15} strokeWidth={1.5} style={{ color: "#fbbf24", flexShrink: 0 }} />
+        <Trophy size={15} strokeWidth={1.5} style={{ color: "var(--ac)", flexShrink: 0 }} />
         <span
-          className="font-display text-lg uppercase text-white tracking-wide"
+          className="font-display text-lg uppercase tracking-wide"
+          style={{ color: "var(--tx)" }}
         >
           Top Players
         </span>
@@ -54,8 +55,8 @@ export function MiniLeaderboard({ members, groupId, currentUserId }: MiniLeaderb
             display: "flex",
             gap: 8,
             padding: "8px 18px",
-            borderBottom: "1px solid rgba(255,255,255,0.05)",
-            background: "rgba(255,255,255,0.02)",
+            borderBottom: "1px solid var(--dv)",
+            background: "color-mix(in srgb, var(--tx) 2%, transparent)",
             flexWrap: "wrap",
           }}
         >
@@ -67,12 +68,12 @@ export function MiniLeaderboard({ members, groupId, currentUserId }: MiniLeaderb
                 gap: 5,
                 borderRadius: 999,
                 padding: "3px 10px",
-                background: "rgba(250,204,21,0.1)",
-                border: "1px solid rgba(250,204,21,0.2)",
+                background: "var(--ip)",
+                border: "1px solid var(--br)",
               }}
             >
-              <Target size={10} style={{ color: "#facc15" }} />
-              <span style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.7)" }}>
+              <Target size={10} style={{ color: "var(--t2)" }} />
+              <span style={{ fontSize: 10, fontWeight: 700, color: "var(--t2)" }}>
                 {totalExact} exact
               </span>
             </div>
@@ -85,12 +86,12 @@ export function MiniLeaderboard({ members, groupId, currentUserId }: MiniLeaderb
                 gap: 5,
                 borderRadius: 999,
                 padding: "3px 10px",
-                background: "rgba(0,255,136,0.08)",
-                border: "1px solid rgba(0,255,136,0.2)",
+                background: "color-mix(in srgb, var(--ac) 8%, transparent)",
+                border: "1px solid color-mix(in srgb, var(--ac) 20%, transparent)",
               }}
             >
-              <TrendingUp size={10} style={{ color: "#00FF88" }} />
-              <span style={{ fontSize: 10, fontWeight: 700, color: "rgba(255,255,255,0.7)" }}>
+              <TrendingUp size={10} style={{ color: "var(--ac)" }} />
+              <span style={{ fontSize: 10, fontWeight: 700, color: "var(--t2)" }}>
                 {totalCorrect} correct
               </span>
             </div>
@@ -109,8 +110,8 @@ export function MiniLeaderboard({ members, groupId, currentUserId }: MiniLeaderb
               alignItems: "center",
               gap: 10,
               padding: "9px 18px",
-              borderBottom: i < top5.length - 1 ? "1px solid rgba(255,255,255,0.05)" : "none",
-              background: isMe ? "rgba(0,255,136,0.06)" : "transparent",
+              borderBottom: i < top5.length - 1 ? "1px solid var(--dv)" : "none",
+              background: isMe ? "color-mix(in srgb, var(--ac) 6%, transparent)" : "transparent",
             }}
           >
             {/* Rank */}
@@ -134,11 +135,12 @@ export function MiniLeaderboard({ members, groupId, currentUserId }: MiniLeaderb
             {/* Name + chips */}
             <div style={{ flex: 1, minWidth: 0, overflow: "hidden" }}>
               <span
+                className="ta-body"
                 style={{
                   display: "block",
                   fontWeight: 700,
                   fontSize: 13,
-                  color: isMe ? "#00FF88" : "rgba(255,255,255,0.85)",
+                  color: isMe ? "var(--ac)" : "var(--tx)",
                   overflow: "hidden",
                   textOverflow: "ellipsis",
                   whiteSpace: "nowrap",
@@ -162,13 +164,13 @@ export function MiniLeaderboard({ members, groupId, currentUserId }: MiniLeaderb
                         gap: 2,
                         borderRadius: 999,
                         padding: "1px 5px",
-                        background: "rgba(255,255,255,0.05)",
-                        border: "1px solid rgba(255,255,255,0.08)",
+                        background: "var(--dv)",
+                        border: "1px solid var(--br)",
                       }}
                     >
                       <span style={{ fontSize: 8 }}>{emoji}</span>
-                      <span style={{ fontSize: 8, fontWeight: 700, color: "rgba(255,255,255,0.35)" }}>{label}:</span>
-                      <span style={{ fontSize: 8, fontWeight: 900, color: value > 0 ? "rgba(255,255,255,0.7)" : "rgba(255,255,255,0.2)", fontFamily: "var(--font-mono)" }}>{value}</span>
+                      <span style={{ fontSize: 8, fontWeight: 700, color: "var(--ft)" }}>{label}:</span>
+                      <span style={{ fontSize: 8, fontWeight: 900, color: value > 0 ? "var(--t2)" : "var(--ft)", fontFamily: "var(--font-mono)" }}>{value}</span>
                     </div>
                   ))}
                 </div>
@@ -177,11 +179,9 @@ export function MiniLeaderboard({ members, groupId, currentUserId }: MiniLeaderb
 
             {/* Points */}
             <span
+              className="ta-lb-points"
               style={{
-                fontFamily: "var(--font-mono)",
-                fontWeight: 900,
-                fontSize: 17,
-                color: isMe ? "#00FF88" : "white",
+                color: isMe ? "var(--ac)" : "var(--tx)",
                 flexShrink: 0,
               }}
             >
@@ -202,9 +202,9 @@ export function MiniLeaderboard({ members, groupId, currentUserId }: MiniLeaderb
           fontWeight: 700,
           textTransform: "uppercase",
           letterSpacing: "0.12em",
-          color: "#00D4FF",
-          borderTop: "1px solid rgba(255,255,255,0.05)",
-          background: "rgba(0,212,255,0.03)",
+          color: "var(--ac)",
+          borderTop: "1px solid var(--dv)",
+          background: "color-mix(in srgb, var(--ac) 3%, transparent)",
         }}
       >
         View full leaderboard →

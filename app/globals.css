@@ -615,3 +615,79 @@ h1, h2, h3, h4 {
   color: rgba(255, 255, 255, 0.7) !important;
   background: transparent !important;
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   THEME A — "STADIUM NIGHT" (app-wide skin, new default)
+   Composes with --accent/--accent-glow (per-country tint, set by
+   ThemeProvider): Theme A owns structural colors (bg/surface/nav/
+   text/border/hero-card); --accent keeps driving country-specific
+   highlights on top, unchanged. ThemeProvider's no-country default
+   now points --accent at this theme's --ac green as the baseline.
+   ═══════════════════════════════════════════════════════════════ */
+:root {
+  --bg:   #10141D;
+  --sf:   #1A1F2B;
+  --nv:   #12171F;
+  --tx:   #FFFFFF;
+  --t2:   rgba(255, 255, 255, .65);
+  --mt:   rgba(255, 255, 255, .4);
+  --ft:   rgba(255, 255, 255, .35);
+  --ac:   #00CF80;
+  --at:   #0A1020;
+  --sc:   #FFD700;
+  --br:   rgba(255, 255, 255, .1);
+  --dv:   rgba(255, 255, 255, .06);
+  --ip:   rgba(255, 255, 255, .08);
+  --shad: rgba(0, 0, 0, .6);
+  --hb:   rgba(26, 31, 43, .9);
+  --he:   1px solid rgba(255, 255, 255, .13);
+  --hr:   22px;
+
+  --font-dmsans: var(--font-dmsans, 'DM Sans', sans-serif);
+}
+
+.font-dmsans { font-family: var(--font-dmsans); }
+
+/* ── Typography mapping (spec Step 2) ── */
+.ta-logo          { font-family: var(--font-barlow); font-weight: 800; font-size: 21px; letter-spacing: 1.5px; }
+.ta-screen-title   { font-family: var(--font-barlow); font-weight: 900; font-size: 32px; letter-spacing: 1px; }
+.ta-match-label    { font-family: var(--font-barlow); font-weight: 600; font-size: 18px; text-transform: uppercase; letter-spacing: 0.5px; }
+.ta-team-name      { font-family: var(--font-barlow); font-weight: 900; font-size: 16px; text-transform: uppercase; }
+.ta-score          { font-family: var(--font-barlow); font-weight: 900; font-size: 39px; color: var(--sc); }
+.ta-stat-number    { font-family: var(--font-barlow); font-weight: 900; font-size: 30px; }
+.ta-lb-points      { font-family: var(--font-barlow); font-weight: 900; font-size: 17px; }
+.ta-nav-label      { font-family: var(--font-dmsans); font-weight: 800; font-size: 9px; text-transform: uppercase; letter-spacing: 0.5px; }
+.ta-subtab-label   { font-family: var(--font-dmsans); font-weight: 800; font-size: 11px; text-transform: uppercase; letter-spacing: 0.7px; }
+.ta-body           { font-family: var(--font-dmsans); font-weight: 400; font-size: 13px; line-height: 1.55; color: var(--t2); }
+.ta-section-label  { font-family: var(--font-dmsans); font-weight: 800; font-size: 9px; text-transform: uppercase; letter-spacing: 1.5px; color: var(--ft); }
+.ta-meta           { font-family: var(--font-dmsans); font-weight: 500; font-size: 11px; color: var(--mt); }
+
+/* ── Hero card (next-match, etc.) ── */
+.ta-hero-card {
+  background: var(--hb);
+  border: var(--he);
+  border-radius: var(--hr);
+}
+
+/* ── Stadium background — main scroll area only (Home / Schedule / Match
+   Center). 78% dark overlay of --bg over the photo, so the image reads at
+   low opacity behind cards. Never applied to nav/header/modals. ── */
+.ta-stadium-bg {
+  position: relative;
+  background-color: var(--bg);
+}
+.ta-stadium-bg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(rgba(16, 20, 29, .78), rgba(16, 20, 29, .78)), url('/images/theme-a-stadium-bg.png');
+  background-size: cover;
+  background-position: center top;
+  background-repeat: no-repeat;
+  pointer-events: none;
+  z-index: 0;
+}
+.ta-stadium-bg > * {
+  position: relative;
+  z-index: 1;
+}

@@ -28,11 +28,8 @@ interface BonusQuestionsProps {
 }
 
 const glassCard = {
-  background: "rgba(18,14,38,0.32)",
-  backdropFilter: "blur(20px) saturate(160%)",
-  WebkitBackdropFilter: "blur(20px) saturate(160%)",
-  border: "1px solid rgba(255,255,255,0.14)",
-  boxShadow: "0 12px 40px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.18)",
+  background: "var(--sf)",
+  border: "1px solid var(--br)",
   borderRadius: 22,
 } as const;
 
@@ -48,13 +45,13 @@ function BonusCountryPicker({ value, onSelect, isLocked }: { value: string; onSe
   return (
     <div className="space-y-2">
       <div className="relative">
-        <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: "rgba(255,255,255,0.4)" }} />
+        <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: "var(--mt)" }} />
         <input type="text" placeholder="Search country…" value={search}
           onChange={e => setSearch(e.target.value)} disabled={isLocked}
           className="w-full pl-8 pr-3 py-2 rounded-xl text-sm focus:outline-none disabled:opacity-40"
-          style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", color: "#fff" }}
-          onFocus={e => { e.target.style.border = "1px solid #00D4FF"; }}
-          onBlur={e => { e.target.style.border = "1px solid rgba(255,255,255,0.12)"; }}
+          style={{ background: "var(--ip)", border: "1px solid var(--br)", color: "var(--tx)" }}
+          onFocus={e => { e.target.style.border = "1px solid var(--ac)"; }}
+          onBlur={e => { e.target.style.border = "1px solid var(--br)"; }}
         />
       </div>
       <div className="grid grid-cols-8 sm:grid-cols-12 gap-1.5 max-h-40 overflow-y-auto">
@@ -65,17 +62,17 @@ function BonusCountryPicker({ value, onSelect, isLocked }: { value: string; onSe
               disabled={isLocked} onClick={() => { onSelect(c.name); setSearch(""); }}
               className={cn("flex flex-col items-center gap-0.5 p-1.5 rounded-lg transition-all", isLocked && "opacity-40 cursor-not-allowed", FOCUS_RING)}
               style={isSelected
-                ? { border: "1px solid rgba(0,255,136,0.4)", background: "rgba(0,255,136,0.1)" }
-                : { border: "1px solid rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.04)" }}>
+                ? { border: "1px solid var(--ac)", background: "rgba(0,207,128,0.12)" }
+                : { border: "1px solid var(--br)", background: "var(--ip)" }}>
               <FlagBadge code={c.flagCode} label={c.name} size="sm" />
-              <span className="text-[8px] font-bold truncate w-full text-center" style={{ color: "rgba(255,255,255,0.5)" }}>
+              <span className="text-[8px] font-bold truncate w-full text-center" style={{ color: "var(--t2)" }}>
                 {(c.code ?? c.flagCode).toUpperCase()}
               </span>
             </button>
           );
         })}
       </div>
-      {value && <div className="text-xs font-bold" style={{ color: "#0891B2" }}>✓ {value}</div>}
+      {value && <div className="text-xs font-bold" style={{ color: "var(--ac)" }}>✓ {value}</div>}
     </div>
   );
 }
@@ -169,15 +166,15 @@ export function BonusQuestions({ groupId, userId }: BonusQuestionsProps) {
     return (
       <div className="space-y-4">
         <div className="flex items-center gap-2 px-1">
-          <HelpCircle size={16} style={{ color: "#00D4FF" }} />
-          <span className="text-xs font-black uppercase tracking-widest" style={{ color: "#00D4FF" }}>
+          <HelpCircle size={16} style={{ color: "var(--ac)" }} />
+          <span className="ta-match-label" style={{ color: "var(--ac)" }}>
             Bonus Questions
           </span>
         </div>
         <div className="p-6 text-center" style={glassCard}>
-          <HelpCircle size={26} className="mx-auto mb-3" style={{ color: "rgba(255,255,255,0.25)" }} />
-          <p className="text-sm font-bold text-white mb-1">No bonus questions yet</p>
-          <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>
+          <HelpCircle size={26} className="mx-auto mb-3" style={{ color: "var(--ft)" }} />
+          <p className="text-sm font-bold mb-1" style={{ color: "var(--tx)" }}>No bonus questions yet</p>
+          <p className="ta-body">
             Check back once your group admin sets them up.
           </p>
         </div>
@@ -188,8 +185,8 @@ export function BonusQuestions({ groupId, userId }: BonusQuestionsProps) {
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2 px-1">
-        <HelpCircle size={16} style={{ color: "#00D4FF" }} />
-        <span className="text-xs font-black uppercase tracking-widest" style={{ color: "#00D4FF" }}>
+        <HelpCircle size={16} style={{ color: "var(--ac)" }} />
+        <span className="ta-match-label" style={{ color: "var(--ac)" }}>
           Bonus Questions
         </span>
       </div>
@@ -209,12 +206,12 @@ export function BonusQuestions({ groupId, userId }: BonusQuestionsProps) {
         return (
           <div key={q.id} className="p-5" style={glassCard}>
             <div className="flex items-start justify-between gap-3 mb-4">
-              <div className="font-display text-lg uppercase font-black text-white leading-snug">
+              <div className="ta-body" style={{ color: "var(--tx)" }}>
                 {q.question}
               </div>
               <div className="flex items-center gap-2 shrink-0">
                 <span className="text-xs font-bold px-2 py-0.5 rounded-full"
-                  style={{ background: "rgba(0,212,255,0.1)", color: "#00D4FF", border: "1px solid rgba(0,212,255,0.25)", fontFamily: "var(--font-mono)" }}>
+                  style={{ background: "rgba(0,207,128,0.1)", color: "var(--ac)", border: "1px solid rgba(0,207,128,0.25)", fontFamily: "var(--font-mono)" }}>
                   +{q.points_awarded} pts
                 </span>
                 {isLocked && (
@@ -227,14 +224,14 @@ export function BonusQuestions({ groupId, userId }: BonusQuestionsProps) {
             </div>
 
             {q.is_resolved ? (
-              <div className="rounded-xl px-4 py-3" style={{ background: "rgba(0,255,136,0.06)", border: "1px solid rgba(0,255,136,0.2)" }}>
-                <div className="text-xs font-bold uppercase tracking-wider mb-1" style={{ color: "rgba(255,255,255,0.4)" }}>Correct answer</div>
-                <div className="font-bold text-sm" style={{ color: "#00FF88" }}>{q.correct_answer}</div>
+              <div className="rounded-xl px-4 py-3" style={{ background: "rgba(0,207,128,0.06)", border: "1px solid rgba(0,207,128,0.2)" }}>
+                <div className="ta-section-label mb-1">Correct answer</div>
+                <div className="font-bold text-sm" style={{ color: "var(--ac)" }}>{q.correct_answer}</div>
                 {currentAnswer && (
-                  <div className="text-xs mt-1" style={{ color: "rgba(255,255,255,0.4)" }}>
+                  <div className="ta-meta mt-1">
                     Your answer: {currentAnswer}
                     {currentAnswer.trim().toLowerCase() === (q.correct_answer ?? "").trim().toLowerCase()
-                      ? <span className="ml-2 font-bold" style={{ color: "#00FF88" }}>✓ +{q.points_awarded} pts</span>
+                      ? <span className="ml-2 font-bold" style={{ color: "var(--ac)" }}>✓ +{q.points_awarded} pts</span>
                       : <span className="ml-2" style={{ color: "#f87171" }}>✗</span>}
                   </div>
                 )}
@@ -254,10 +251,10 @@ export function BonusQuestions({ groupId, userId }: BonusQuestionsProps) {
                     onChange={e => updateAnswer(q.id, e.target.value)}
                     placeholder="Enter a number…"
                     disabled={isLocked}
-                    className="w-full rounded-xl px-4 py-3 text-sm outline-none disabled:opacity-40"
-                    style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", color: "#fff" }}
-                    onFocus={e => { e.target.style.borderColor = "rgba(245,158,11,0.5)"; }}
-                    onBlur={e => { e.target.style.borderColor = "rgba(255,255,255,0.12)"; }}
+                    className="ta-score w-full rounded-xl px-4 py-3 outline-none disabled:opacity-40"
+                    style={{ fontSize: 20, textAlign: "left", background: "var(--ip)", border: "1px solid var(--br)" }}
+                    onFocus={e => { e.target.style.borderColor = "var(--ac)"; }}
+                    onBlur={e => { e.target.style.borderColor = "var(--br)"; }}
                   />
                 )}
                 {q.question_type === "open_text" && (
@@ -268,22 +265,22 @@ export function BonusQuestions({ groupId, userId }: BonusQuestionsProps) {
                     placeholder="Type your answer…"
                     disabled={isLocked}
                     className="w-full rounded-xl px-4 py-3 text-sm outline-none disabled:opacity-40"
-                    style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", color: "#fff" }}
-                    onFocus={e => { e.target.style.borderColor = "rgba(0,212,255,0.5)"; }}
-                    onBlur={e => { e.target.style.borderColor = "rgba(255,255,255,0.12)"; }}
+                    style={{ background: "var(--ip)", border: "1px solid var(--br)", color: "var(--tx)" }}
+                    onFocus={e => { e.target.style.borderColor = "var(--ac)"; }}
+                    onBlur={e => { e.target.style.borderColor = "var(--br)"; }}
                   />
                 )}
 
                 {!isLocked && (isSaving || isSaved) && (
                   <div className="flex items-center gap-1.5 mt-2 text-xs font-bold"
-                    style={{ color: isSaved ? "#00FF88" : "rgba(255,255,255,0.4)" }}>
+                    style={{ color: isSaved ? "var(--ac)" : "var(--mt)" }}>
                     {isSaving ? <BallLoader size="inline" label={null} /> : <Check size={11} />}
                     {isSaving ? "Saving…" : "Answer saved ✓"}
                   </div>
                 )}
 
                 {q.lock_at && !isLocked && (
-                  <div className="flex items-center gap-1.5 mt-2 text-xs" style={{ color: "rgba(255,255,255,0.35)" }}>
+                  <div className="flex items-center gap-1.5 mt-2 ta-meta">
                     <Lock size={10} />
                     Locks {new Date(q.lock_at).toLocaleString("en-GB")}
                   </div>
@@ -294,7 +291,7 @@ export function BonusQuestions({ groupId, userId }: BonusQuestionsProps) {
         );
       })}
 
-      <p className="text-xs text-center" style={{ color: "rgba(255,255,255,0.35)" }}>
+      <p className="ta-body text-center">
         ✓ Answers save automatically
       </p>
     </div>

@@ -111,9 +111,9 @@ export function PredictionsClient({
     flex: "none",
     width: "85%",
     scrollSnapAlign: "start",
-    background: "#0c1c0c",
+    background: "var(--sf)",
     borderRadius: 14,
-    border: "1px solid #1a3a1a",
+    border: "1px solid var(--br)",
     padding: 12,
     boxSizing: "border-box",
   };
@@ -126,14 +126,14 @@ export function PredictionsClient({
 
       {/* Page header */}
       <div className="pt-2 pb-3">
-        <div className="font-barlow font-bold uppercase" style={{ fontSize: 9, letterSpacing: 2, color: "#3a7a3a" }}>
+        <div className="ta-section-label">
           FIFA World Cup 2026
         </div>
-        <h1 className="font-barlow font-black uppercase" style={{ fontSize: 28, color: "#e0f2e0", lineHeight: 1.1 }}>
+        <h1 className="ta-screen-title" style={{ color: "var(--tx)", lineHeight: 1.1 }}>
           My Picks
         </h1>
         {groupName && (
-          <div className="font-barlow font-bold mt-1" style={{ fontSize: 10, color: "#3a7a3a" }}>
+          <div className="ta-meta mt-1">
             {groupName}
           </div>
         )}
@@ -143,7 +143,7 @@ export function PredictionsClient({
       <div
         className="sticky top-0 z-20 -mx-4 sm:-mx-6 px-4 sm:px-6"
         style={{
-          background: "rgba(6,4,15,0.92)",
+          background: "rgba(18,23,31,0.92)",
           backdropFilter: "blur(12px)",
           WebkitBackdropFilter: "blur(12px)",
         }}
@@ -159,15 +159,13 @@ export function PredictionsClient({
               <button
                 key={tab.key}
                 onClick={() => { setActiveTab(tab.key); scrollToSection(i); }}
-                className="font-barlow font-black uppercase shrink-0"
+                className="ta-subtab-label shrink-0"
                 style={{
-                  fontSize: 10,
-                  letterSpacing: 0.8,
                   padding: "6px 12px",
                   borderRadius: 20,
-                  border: active ? "1px solid #00e5a0" : "1px solid #1a3a1a",
-                  background: active ? "#162a16" : "transparent",
-                  color: active ? "#00e5a0" : "#3a7a3a",
+                  border: "1px solid transparent",
+                  background: active ? "var(--ac)" : "var(--ip)",
+                  color: active ? "var(--at)" : "var(--t2)",
                   cursor: "pointer",
                   transition: "all 0.15s",
                 }}
@@ -179,10 +177,7 @@ export function PredictionsClient({
         </div>
 
         {/* Progress counter */}
-        <div
-          className="font-barlow font-bold pb-2"
-          style={{ fontSize: 9, color: "#3a7a3a", letterSpacing: 1 }}
-        >
+        <div className="ta-meta pb-2">
           {predictedCount}/{groupStageMatchIds.length} MATCHES PREDICTED
         </div>
       </div>
@@ -202,10 +197,10 @@ export function PredictionsClient({
         {/* ── Section 1: GROUP STAGE ─────────────────────────────── */}
         <div ref={el => { sectionRefs.current[0] = el; }} style={cardStyle}>
           <div className="flex items-center justify-between mb-3">
-            <span className="font-barlow font-black uppercase" style={{ fontSize: 12, fontWeight: 700, color: "#e0f2e0" }}>
+            <span className="ta-match-label" style={{ color: "var(--tx)" }}>
               Group Stage
             </span>
-            <span className="font-barlow font-bold" style={{ fontSize: 10, color: "#3a7a3a" }}>
+            <span className="ta-meta">
               {predictedCount}/{groupStageMatchIds.length} PREDICTED
             </span>
           </div>
@@ -222,7 +217,7 @@ export function PredictionsClient({
         {/* ── Section 2: KNOCKOUT ───────────────────────────────── */}
         <div ref={el => { sectionRefs.current[1] = el; }} style={cardStyle}>
           <div className="mb-3">
-            <span className="font-barlow font-black uppercase" style={{ fontSize: 12, fontWeight: 700, color: "#e0f2e0" }}>
+            <span className="ta-match-label" style={{ color: "var(--tx)" }}>
               Knockout
             </span>
           </div>
@@ -232,7 +227,7 @@ export function PredictionsClient({
         {/* ── Section 3: TOURNAMENT PICKS ───────────────────────── */}
         <div ref={el => { sectionRefs.current[2] = el; }} style={cardStyle}>
           <div className="mb-3">
-            <span className="font-barlow font-black uppercase" style={{ fontSize: 12, fontWeight: 700, color: "#e0f2e0" }}>
+            <span className="ta-match-label" style={{ color: "var(--tx)" }}>
               Tournament Picks
             </span>
           </div>
@@ -242,7 +237,7 @@ export function PredictionsClient({
         {/* ── Section 4: BONUS QUESTIONS ────────────────────────── */}
         <div ref={el => { sectionRefs.current[3] = el; }} style={cardStyle}>
           <div className="mb-3">
-            <span className="font-barlow font-black uppercase" style={{ fontSize: 12, fontWeight: 700, color: "#e0f2e0" }}>
+            <span className="ta-match-label" style={{ color: "var(--tx)" }}>
               Bonus Questions
             </span>
           </div>

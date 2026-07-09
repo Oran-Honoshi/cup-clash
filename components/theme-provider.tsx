@@ -11,8 +11,8 @@ interface ThemeContextValue {
 
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
-// Default: Neon Mint + Electric Cyan
-const BRAND_ACCENT      = "0 255 136";    // #00FF88
+// Default: Theme A "Stadium Night" accent green (--ac) + Electric Cyan
+const BRAND_ACCENT      = "0 207 128";    // #00CF80 (Theme A --ac)
 const BRAND_ACCENT_GLOW = "0 212 255";    // #00D4FF
 
 const STORAGE_KEY = "cupclash_country";

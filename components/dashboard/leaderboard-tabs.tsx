@@ -32,7 +32,12 @@ export function LeaderboardTabs({ members, currentUserId, groupId, isAdFree, isC
   return (
     <div className="space-y-5">
       {/* Tab bar */}
-      <div role="tablist" aria-label="Leaderboard view" className="flex gap-1 p-1 glass rounded-2xl">
+      <div
+        role="tablist"
+        aria-label="Leaderboard view"
+        className="flex gap-1 p-1 rounded-2xl"
+        style={{ background: "var(--sf)", border: "1px solid var(--br)" }}
+      >
         {TABS.map((tab) => (
           <button
             key={tab.id}
@@ -41,17 +46,16 @@ export function LeaderboardTabs({ members, currentUserId, groupId, isAdFree, isC
             aria-selected={active === tab.id}
             onClick={() => setActive(tab.id)}
             className={cn(
-              "flex-1 flex items-center justify-center gap-1 sm:gap-2 px-1.5 sm:px-4 py-2.5 rounded-xl text-[10px] sm:text-sm font-bold uppercase tracking-wider transition-all duration-200",
-              active === tab.id
-                ? "text-white"
-                : "text-pitch-500 hover:text-pitch-300",
+              "ta-subtab-label flex-1 flex items-center justify-center gap-1 sm:gap-2 px-1.5 sm:px-4 py-2.5 rounded-xl transition-all duration-200",
               FOCUS_RING_INSET,
             )}
             style={active === tab.id ? {
               backgroundColor: "rgb(var(--accent) / 0.15)",
               color: "rgb(var(--accent-glow))",
               boxShadow: "inset 0 0 0 1px rgb(var(--accent) / 0.2)",
-            } : undefined}
+            } : { color: "var(--mt)" }}
+            onMouseEnter={(e) => { if (active !== tab.id) e.currentTarget.style.color = "var(--t2)"; }}
+            onMouseLeave={(e) => { if (active !== tab.id) e.currentTarget.style.color = "var(--mt)"; }}
           >
             <tab.icon size={14} />
             <span className="sm:hidden">{tab.mobileLabel}</span>

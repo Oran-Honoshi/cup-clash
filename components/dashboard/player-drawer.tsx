@@ -40,9 +40,9 @@ const TOURNEY_LABELS: Record<string, string> = {
 };
 
 function TypeIcon({ type }: { type: MemberPrediction["type"] }) {
-  if (type === "exact")   return <span style={{ color: "#facc15" }}>✅</span>;
-  if (type === "correct") return <span style={{ color: "#00FF88" }}>☑️</span>;
-  return <span style={{ color: "rgba(255,255,255,0.3)" }}>❌</span>;
+  if (type === "exact")   return <span style={{ color: "var(--sc)" }}>✅</span>;
+  if (type === "correct") return <span style={{ color: "var(--ac)" }}>☑️</span>;
+  return <span style={{ color: "var(--ft)" }}>❌</span>;
 }
 
 function MatchRow({ item }: { item: MemberPrediction }) {
@@ -51,29 +51,29 @@ function MatchRow({ item }: { item: MemberPrediction }) {
       className="flex items-center gap-2 py-1.5 px-2.5 rounded-lg mb-1"
       style={{
         background: item.type === "exact"
-          ? "rgba(250,204,21,0.06)"
+          ? "color-mix(in srgb, var(--sc) 6%, transparent)"
           : item.type === "correct"
-            ? "rgba(0,255,136,0.05)"
-            : "var(--color-background-secondary)",
-        border: "0.5px solid var(--color-border-tertiary)",
+            ? "color-mix(in srgb, var(--ac) 5%, transparent)"
+            : "var(--ip)",
+        border: "0.5px solid var(--br)",
         borderRadius: "var(--border-radius-lg)",
       }}
     >
       <FlagBadge code={item.homeFlagCode} label={item.home} size="sm" />
-      <span className="text-[10px]" style={{ color: "rgba(255,255,255,0.3)" }}>vs</span>
+      <span className="text-[10px]" style={{ color: "var(--ft)" }}>vs</span>
       <FlagBadge code={item.awayFlagCode} label={item.away} size="sm" />
       <div className="flex-1 min-w-0 ml-0.5">
-        <span className="text-[11px] font-bold truncate" style={{ color: "rgba(255,255,255,0.85)" }}>
+        <span className="text-[11px] font-bold truncate" style={{ color: "var(--tx)" }}>
           {item.home} {item.actual} {item.away}
         </span>
-        <span className="text-[10px] ml-1.5" style={{ color: "rgba(255,255,255,0.4)" }}>
+        <span className="text-[10px] ml-1.5" style={{ color: "var(--mt)" }}>
           Pred: {item.predicted}
         </span>
       </div>
       <TypeIcon type={item.type} />
       <span
         className="text-[10px] font-bold w-10 text-right shrink-0"
-        style={{ color: item.pts > 0 ? (item.type === "exact" ? "#facc15" : "#00FF88") : "rgba(255,255,255,0.25)" }}
+        style={{ color: item.pts > 0 ? (item.type === "exact" ? "var(--sc)" : "var(--ac)") : "var(--ft)" }}
       >
         {item.pts > 0 ? `+${item.pts}` : "0"}
       </span>
@@ -93,27 +93,27 @@ function CollapsibleSection({
 }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <div className="overflow-hidden mb-3" style={{ background: "var(--color-background-secondary)", border: "0.5px solid var(--color-border-tertiary)", borderRadius: "var(--border-radius-lg)" }}>
+    <div className="overflow-hidden mb-3" style={{ background: "var(--ip)", border: "0.5px solid var(--br)", borderRadius: "var(--border-radius-lg)" }}>
       <button
         type="button"
         onClick={() => setOpen(o => !o)}
         className="w-full flex items-center justify-between px-4 py-2.5"
-        style={{ borderBottom: open ? "1px solid rgba(255,255,255,0.07)" : "none" }}
+        style={{ borderBottom: open ? "1px solid var(--dv)" : "none" }}
       >
         <div className="flex items-center gap-2">
           {icon}
-          <span className="text-[11px] font-bold uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.6)" }}>{title}</span>
+          <span className="ta-section-label">{title}</span>
           {count !== undefined && (
-            <span className="text-[10px] px-1.5 py-0.5 rounded-full" style={{ background: "rgba(255,255,255,0.07)", color: "rgba(255,255,255,0.4)" }}>
+            <span className="text-[10px] px-1.5 py-0.5 rounded-full" style={{ background: "var(--ip)", color: "var(--mt)" }}>
               {count}
             </span>
           )}
         </div>
         <div className="flex items-center gap-2">
           {pts !== undefined && pts > 0 && (
-            <span className="text-[11px] font-bold" style={{ color: "#00FF88" }}>+{pts}pts</span>
+            <span className="text-[11px] font-bold" style={{ color: "var(--ac)" }}>+{pts}pts</span>
           )}
-          {open ? <ChevronDown size={13} style={{ color: "rgba(255,255,255,0.3)" }} /> : <ChevronRightIcon size={13} style={{ color: "rgba(255,255,255,0.3)" }} />}
+          {open ? <ChevronDown size={13} style={{ color: "var(--ft)" }} /> : <ChevronRightIcon size={13} style={{ color: "var(--ft)" }} />}
         </div>
       </button>
       {open && <div className="p-2">{children}</div>}
@@ -201,7 +201,7 @@ export function PlayerDrawer({ userId, groupId, name, avatarUrl, country, points
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             aria-hidden="true"
             className="fixed inset-0 z-50"
-            style={{ background: "rgba(0,0,0,0.6)", backdropFilter: "blur(4px)" }}
+            style={{ background: "var(--shad)", backdropFilter: "blur(4px)" }}
             onClick={onClose}
           />
 
@@ -213,18 +213,16 @@ export function PlayerDrawer({ userId, groupId, name, avatarUrl, country, points
             transition={{ type: "spring", damping: 28, stiffness: 280 }}
             className="fixed right-0 top-0 bottom-0 z-50 w-full sm:w-96 overflow-y-auto"
             style={{
-              background: "rgba(8,6,20,0.95)",
-              backdropFilter: "blur(24px)",
-              WebkitBackdropFilter: "blur(24px)",
-              borderLeft: "1px solid rgba(0,212,255,0.15)",
-              boxShadow: "-8px 0 40px rgba(0,0,0,0.1)",
+              background: "var(--sf)",
+              borderLeft: "1px solid var(--br)",
+              boxShadow: "-8px 0 40px var(--shad)",
               paddingBottom: "env(safe-area-inset-bottom, 0px)",
             }}
           >
             {/* Header */}
             <div
               className="sticky top-0 px-5 py-4 flex items-center justify-between"
-              style={{ borderBottom: "1px solid rgba(255,255,255,0.08)", background: "rgba(18,14,38,0.6)", backdropFilter: "blur(12px)" }}
+              style={{ borderBottom: "1px solid var(--br)", background: "var(--nv)" }}
             >
               <div className="flex items-center gap-3">
                 <div className="relative shrink-0">
@@ -234,11 +232,11 @@ export function PlayerDrawer({ userId, groupId, name, avatarUrl, country, points
                   </div>
                 </div>
                 <div>
-                  <div className="font-display text-xl uppercase font-black" style={{ color: "white" }}>{name}</div>
+                  <div className="ta-team-name" style={{ color: "var(--tx)" }}>{name}</div>
                   <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold" style={{ color: "#00D4FF" }}>Rank #{rank}</span>
-                    <span className="text-xs" style={{ color: "rgba(255,255,255,0.3)" }}>·</span>
-                    <span className="text-xs font-black" style={{ color: "white" }}>{totalPoints} pts</span>
+                    <span className="text-xs font-bold" style={{ color: "var(--ac)" }}>Rank #{rank}</span>
+                    <span className="text-xs" style={{ color: "var(--ft)" }}>·</span>
+                    <span className="text-xs font-black" style={{ color: "var(--tx)" }}>{totalPoints} pts</span>
                   </div>
                 </div>
               </div>
@@ -247,16 +245,16 @@ export function PlayerDrawer({ userId, groupId, name, avatarUrl, country, points
                 aria-label="Close player details"
                 onClick={onClose}
                 className={`p-2 rounded-xl ${FOCUS_RING}`}
-                style={{ background: closeHover ? "rgba(255,255,255,0.1)" : "transparent", transition: "background 0.15s" }}
+                style={{ background: closeHover ? "var(--ip)" : "transparent", transition: "background 0.15s" }}
                 onMouseEnter={() => setCloseHover(true)}
                 onMouseLeave={() => setCloseHover(false)}
               >
-                <X size={18} style={{ color: "rgba(255,255,255,0.6)" }} />
+                <X size={18} style={{ color: "var(--t2)" }} />
               </button>
             </div>
 
             {/* Point breakdown chips */}
-            <div className="px-5 py-3 flex flex-wrap gap-2" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+            <div className="px-5 py-3 flex flex-wrap gap-2" style={{ borderBottom: "1px solid var(--dv)" }}>
               {[
                 { icon: Volleyball, label: "GS",     value: stats.gsPts        },
                 { icon: Trophy,     label: "KO",     value: stats.knockoutPts  },
@@ -266,26 +264,26 @@ export function PlayerDrawer({ userId, groupId, name, avatarUrl, country, points
                 <div
                   key={label}
                   className="flex items-center gap-1 rounded-full px-2.5 py-1"
-                  style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}
+                  style={{ background: "var(--ip)", border: "1px solid var(--br)" }}
                 >
-                  <Icon size={11} style={{ color: "rgba(255,255,255,0.5)" }} />
-                  <span className="text-[10px] font-bold" style={{ color: "rgba(255,255,255,0.5)" }}>{label}:</span>
-                  <span className="text-[11px] font-black" style={{ color: value > 0 ? "white" : "rgba(255,255,255,0.3)", fontFamily: "var(--font-mono)" }}>{value}</span>
+                  <Icon size={11} style={{ color: "var(--t2)" }} />
+                  <span className="text-[10px] font-bold" style={{ color: "var(--t2)" }}>{label}:</span>
+                  <span className="text-[11px] font-black" style={{ color: value > 0 ? "var(--tx)" : "var(--ft)", fontFamily: "var(--font-mono)" }}>{value}</span>
                 </div>
               ))}
             </div>
 
             {/* Accuracy stats */}
-            <div className="grid grid-cols-3 gap-2 px-5 py-3" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+            <div className="grid grid-cols-3 gap-2 px-5 py-3" style={{ borderBottom: "1px solid var(--dv)" }}>
               {[
-                { icon: Target,     label: "Exact",   value: stats.exactCount,   color: "#facc15" },
-                { icon: TrendingUp, label: "Correct", value: stats.outcomeCount, color: "#00FF88" },
+                { icon: Target,     label: "Exact",   value: stats.exactCount,   color: "var(--sc)" },
+                { icon: TrendingUp, label: "Correct", value: stats.outcomeCount, color: "var(--ac)" },
                 { icon: XCircle,    label: "Missed",  value: stats.missedCount,  color: "#f87171" },
               ].map(({ icon: Icon, label, value, color }) => (
-                <div key={label} className="p-2.5 text-center" style={{ background: "var(--color-background-secondary)", border: "0.5px solid var(--color-border-tertiary)", borderRadius: "var(--border-radius-lg)" }}>
+                <div key={label} className="p-2.5 text-center" style={{ background: "var(--ip)", border: "0.5px solid var(--br)", borderRadius: "var(--border-radius-lg)" }}>
                   <Icon size={14} className="mx-auto mb-1" style={{ color }} />
-                  <div className="font-black text-lg" style={{ color: "white" }}>{value}</div>
-                  <div className="text-[10px] uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.4)" }}>{label}</div>
+                  <div className="ta-stat-number" style={{ color: "var(--tx)" }}>{value}</div>
+                  <div className="ta-section-label">{label}</div>
                 </div>
               ))}
             </div>
@@ -296,8 +294,8 @@ export function PlayerDrawer({ userId, groupId, name, avatarUrl, country, points
                 <div className="py-8 flex justify-center"><BallLoader size="sm" label={null} /></div>
               ) : history.length === 0 && tournamentPicks.length === 0 && !bestThird?.enabled ? (
                 <div className="py-8 text-center space-y-2">
-                  <Zap size={28} className="mx-auto" style={{ color: "rgba(255,255,255,0.2)" }} />
-                  <p className="text-sm" style={{ color: "rgba(255,255,255,0.35)" }}>
+                  <Zap size={28} className="mx-auto" style={{ color: "var(--ft)" }} />
+                  <p className="ta-body">
                     No scored predictions yet. Check back after games are played.
                   </p>
                 </div>
@@ -307,14 +305,14 @@ export function PlayerDrawer({ userId, groupId, name, avatarUrl, country, points
                   {hasGS && (
                     <CollapsibleSection
                       title="Group Stage"
-                      icon={<Volleyball size={13} style={{ color: "rgba(255,255,255,0.6)" }} />}
+                      icon={<Volleyball size={13} style={{ color: "var(--t2)" }} />}
                       count={gsMatches.length}
                       pts={stats.gsPts}
                       defaultOpen={false}
                     >
                       {gsLetters.map(letter => (
                         <div key={letter} className="mb-2">
-                          <div className="text-[9px] font-bold uppercase tracking-widest px-3 py-1 mb-1" style={{ color: "rgba(255,255,255,0.3)" }}>
+                          <div className="ta-section-label px-3 py-1 mb-1">
                             Group {letter}
                           </div>
                           {gsByLetter[letter].map(item => (
@@ -336,7 +334,7 @@ export function PlayerDrawer({ userId, groupId, name, avatarUrl, country, points
                     >
                       {koStages.map(stage => (
                         <div key={stage} className="mb-2">
-                          <div className="text-[9px] font-bold uppercase tracking-widest px-3 py-1 mb-1" style={{ color: "rgba(255,255,255,0.3)" }}>
+                          <div className="ta-section-label px-3 py-1 mb-1">
                             {STAGE_LABELS[stage] ?? stage}
                           </div>
                           {koByStage[stage].map(item => (
@@ -356,15 +354,15 @@ export function PlayerDrawer({ userId, groupId, name, avatarUrl, country, points
                       pts={stats.bestThirdPts}
                       defaultOpen={true}
                     >
-                      <div className="divide-y" style={{ borderColor: "rgba(255,255,255,0.05)" }}>
+                      <div className="divide-y" style={{ borderColor: "var(--dv)" }}>
                         {bestThird.picks.map(pick => (
                           <div key={pick.slot} className="flex items-center justify-between px-3 py-1.5">
-                            <span className="text-sm" style={{ color: "rgba(255,255,255,0.8)" }}>{pick.team}</span>
+                            <span className="text-sm" style={{ color: "var(--t2)" }}>{pick.team}</span>
                             <div className="flex items-center gap-2">
                               {pick.pointsEarned > 0 && (
-                                <span className="text-[10px] font-bold" style={{ color: "#00FF88" }}>+{pick.pointsEarned}pts</span>
+                                <span className="text-[10px] font-bold" style={{ color: "var(--ac)" }}>+{pick.pointsEarned}pts</span>
                               )}
-                              <span className="text-base font-bold" style={{ color: pick.correct ? "#00FF88" : "rgba(255,255,255,0.2)" }}>
+                              <span className="text-base font-bold" style={{ color: pick.correct ? "var(--ac)" : "var(--ft)" }}>
                                 {pick.correct ? "✓" : "✗"}
                               </span>
                             </div>
@@ -382,26 +380,26 @@ export function PlayerDrawer({ userId, groupId, name, avatarUrl, country, points
                       pts={stats.bonusPts}
                       defaultOpen={true}
                     >
-                      <div className="divide-y" style={{ borderColor: "rgba(255,255,255,0.05)" }}>
+                      <div className="divide-y" style={{ borderColor: "var(--dv)" }}>
                         {tournamentPicks.map(pick => (
                           <div key={pick.predType} className="flex items-center justify-between px-3 py-2">
                             <div>
-                              <div className="text-[10px] uppercase tracking-widest mb-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>
+                              <div className="ta-section-label mb-0.5">
                                 {TOURNEY_LABELS[pick.predType] ?? pick.predType}
                               </div>
-                              <div className="text-sm font-bold" style={{ color: "rgba(255,255,255,0.85)" }}>
+                              <div className="text-sm font-bold" style={{ color: "var(--tx)" }}>
                                 {pick.predValue ?? "—"}
                               </div>
                             </div>
                             <div className="flex items-center gap-2">
                               {pick.status === "pending" && (
-                                <span className="text-[10px]" style={{ color: "rgba(255,255,255,0.3)" }}>pending</span>
+                                <span className="text-[10px]" style={{ color: "var(--ft)" }}>pending</span>
                               )}
                               {pick.status === "correct" && (
-                                <span className="text-[10px] font-bold" style={{ color: "#00FF88" }}>+{pick.pointsEarned}pts</span>
+                                <span className="text-[10px] font-bold" style={{ color: "var(--ac)" }}>+{pick.pointsEarned}pts</span>
                               )}
                               {pick.status !== "pending" && (
-                                <span className="text-base font-bold" style={{ color: pick.status === "correct" ? "#00FF88" : "rgba(255,255,255,0.2)" }}>
+                                <span className="text-base font-bold" style={{ color: pick.status === "correct" ? "var(--ac)" : "var(--ft)" }}>
                                   {pick.status === "correct" ? "✓" : "✗"}
                                 </span>
                               )}

@@ -108,17 +108,21 @@ export function KnockoutMatchCard({ match, groupId }: KnockoutMatchCardProps) {
   const canEdit = saveState === "saved" && !isLocked;
 
   return (
-    <Card variant="glass-accent" className="overflow-hidden">
+    <Card
+      variant="glass-accent"
+      className="overflow-hidden"
+      style={{ background: "var(--sf)", border: "1px solid var(--br)", boxShadow: "0 4px 24px var(--shad)" }}
+    >
       <div className="h-px w-full" style={{ background: "linear-gradient(90deg, transparent, rgb(var(--accent)/0.6), transparent)" }} />
       <div className="p-5 space-y-4">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <div className="label-caps mb-0.5">Knockout Match</div>
-            <div className="text-xs text-pitch-400 font-mono">{formattedTime}</div>
+            <div className="ta-match-label mb-0.5" style={{ color: "var(--t2)" }}>Knockout Match</div>
+            <div className="ta-meta">{formattedTime}</div>
           </div>
           <div className={cn("flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest rounded-full px-2.5 py-1 border",
-            isLocked ? "text-danger bg-danger/10 border-danger/20" : "text-pitch-400 bg-white/[0.04] border-white/[0.08]")}>
+            isLocked ? "text-danger bg-danger/10 border-danger/20" : "text-[var(--mt)] bg-[var(--ip)] border-[var(--br)]")}>
             <Lock size={10} />
             {isLocked ? "Locked" : "Locks 5 min before"}
           </div>
@@ -128,17 +132,17 @@ export function KnockoutMatchCard({ match, groupId }: KnockoutMatchCardProps) {
         <div className="flex items-center gap-3">
           <div className="flex-1 flex flex-col items-center gap-1.5">
             <FlagBadge code={match.homeFlagCode ?? "un"} size="lg" />
-            <span className="font-display text-lg uppercase text-white text-center">{match.home}</span>
+            <span className="ta-team-name text-center text-[var(--tx)]">{match.home}</span>
           </div>
           <div className="flex items-center gap-2 shrink-0">
             {canEdit ? (
               <div className="flex items-center gap-2">
-                <div className="w-12 h-12 flex items-center justify-center font-display text-3xl text-white rounded-xl border"
+                <div className="w-12 h-12 flex items-center justify-center ta-score rounded-xl border"
                   style={{ backgroundColor: "rgb(var(--accent)/0.12)", borderColor: "rgb(var(--accent)/0.4)", color: "rgb(var(--accent-glow))" }}>
                   {homeScore}
                 </div>
-                <span className="font-display text-2xl text-pitch-500">–</span>
-                <div className="w-12 h-12 flex items-center justify-center font-display text-3xl text-white rounded-xl border"
+                <span className="font-display text-2xl text-[var(--mt)]">–</span>
+                <div className="w-12 h-12 flex items-center justify-center ta-score rounded-xl border"
                   style={{ backgroundColor: "rgb(var(--accent)/0.12)", borderColor: "rgb(var(--accent)/0.4)", color: "rgb(var(--accent-glow))" }}>
                   {awayScore}
                 </div>
@@ -147,23 +151,23 @@ export function KnockoutMatchCard({ match, groupId }: KnockoutMatchCardProps) {
               <div className="flex items-center gap-2">
                 <input type="number" min="0" max="99" value={homeScore} disabled={isLocked}
                   onChange={e => setHomeScore(e.target.value)} placeholder="–" aria-label={`${match.home} score`}
-                  className="w-12 h-12 text-center font-display text-3xl text-white rounded-xl bg-white/[0.06] border border-white/[0.12] focus:outline-none focus:border-accent [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none disabled:opacity-40" />
-                <span className="font-display text-2xl text-pitch-500">–</span>
+                  className="w-12 h-12 text-center ta-score rounded-xl bg-[var(--ip)] border border-[var(--br)] focus:outline-none focus:border-accent [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none disabled:opacity-40" />
+                <span className="font-display text-2xl text-[var(--mt)]">–</span>
                 <input type="number" min="0" max="99" value={awayScore} disabled={isLocked}
                   onChange={e => setAwayScore(e.target.value)} placeholder="–" aria-label={`${match.away} score`}
-                  className="w-12 h-12 text-center font-display text-3xl text-white rounded-xl bg-white/[0.06] border border-white/[0.12] focus:outline-none focus:border-accent [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none disabled:opacity-40" />
+                  className="w-12 h-12 text-center ta-score rounded-xl bg-[var(--ip)] border border-[var(--br)] focus:outline-none focus:border-accent [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none disabled:opacity-40" />
               </div>
             )}
           </div>
           <div className="flex-1 flex flex-col items-center gap-1.5">
             <FlagBadge code={match.awayFlagCode ?? "un"} size="lg" />
-            <span className="font-display text-lg uppercase text-white text-center">{match.away}</span>
+            <span className="ta-team-name text-center text-[var(--tx)]">{match.away}</span>
           </div>
         </div>
 
         {/* Advancement pick: who goes through */}
-        <div className="border-t border-white/[0.06] pt-4">
-          <div className="label-caps mb-2.5 flex items-center gap-1.5">
+        <div className="border-t border-[var(--dv)] pt-4">
+          <div className="ta-match-label mb-2.5 flex items-center gap-1.5" style={{ color: "var(--t2)" }}>
             <ArrowRight size={11} /> Who advances? <span className="text-success ml-auto">+20 pts</span>
           </div>
           <div className="grid grid-cols-2 gap-2">
@@ -179,7 +183,7 @@ export function KnockoutMatchCard({ match, groupId }: KnockoutMatchCardProps) {
                   onClick={() => setAdvancementPick(team)}
                   className={cn(
                     "flex items-center gap-2 px-3 py-2.5 rounded-xl border transition-all font-bold text-sm",
-                    active ? "text-white" : "text-pitch-400 border-white/[0.08] bg-white/[0.02] hover:border-white/20",
+                    active ? "text-[var(--tx)]" : "text-[var(--mt)] border-[var(--br)] bg-[var(--sf)] hover:border-white/20",
                     (isLocked || canEdit) && "cursor-not-allowed opacity-60",
                     FOCUS_RING,
                   )}
@@ -200,7 +204,7 @@ export function KnockoutMatchCard({ match, groupId }: KnockoutMatchCardProps) {
         </div>
 
         {/* Points hint */}
-        <div className="flex items-center justify-center gap-4 text-[11px] text-pitch-400">
+        <div className="flex items-center justify-center gap-4 text-[11px] text-[var(--mt)]">
           <span><span className="text-success font-bold">+10</span> correct 90-min outcome</span>
           <span className="opacity-30">·</span>
           <span><span style={{ color: "rgb(var(--accent-glow))" }} className="font-bold">+25</span> exact</span>
@@ -214,13 +218,13 @@ export function KnockoutMatchCard({ match, groupId }: KnockoutMatchCardProps) {
 
         {/* Action */}
         {saveState === "locked" ? (
-          <div className="text-center text-xs font-bold uppercase tracking-widest text-pitch-500">Predictions locked</div>
+          <div className="text-center text-xs font-bold uppercase tracking-widest text-[var(--mt)]">Predictions locked</div>
         ) : saveState === "saved" ? (
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1.5 text-sm font-bold uppercase tracking-widest text-success">
               <CheckCircle size={15} /> Prediction saved
             </div>
-            <button type="button" onClick={() => setSaveState("idle")} className={`text-xs text-pitch-500 hover:text-white transition-colors uppercase tracking-widest rounded ${FOCUS_RING}`}>Edit</button>
+            <button type="button" onClick={() => setSaveState("idle")} className={`text-xs text-[var(--mt)] hover:text-[var(--tx)] transition-colors uppercase tracking-widest rounded ${FOCUS_RING}`}>Edit</button>
           </div>
         ) : (
           <Button onClick={handleSubmit}

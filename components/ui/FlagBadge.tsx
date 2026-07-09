@@ -48,7 +48,7 @@ export function FlagBadge({ code, size = "md", label, className }: FlagBadgeProp
       style={{
         width: px,
         height: px,
-        border: "1.5px solid var(--color-border-secondary)",
+        border: "1.5px solid var(--br)",
       }}
     >
       {showImage ? (

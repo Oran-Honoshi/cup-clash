@@ -45,13 +45,13 @@ interface PlayerRow {
   assists: number;
 }
 
-const RANK_COLORS: Record<number, string> = { 1: "#d97706", 2: "#64748b", 3: "#b45309" };
+const RANK_COLORS: Record<number, string> = { 1: "var(--sc)", 2: "#64748b", 3: "#b45309" };
 const RANK_LABELS: Record<number, string>  = { 1: "1st", 2: "2nd", 3: "3rd" };
 
 const DARK_CARD_STYLE = {
-  background: "rgba(12, 18, 32, 0.78)",
-  border: "1px solid rgba(255,255,255,0.08)",
-  boxShadow: "0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.06)",
+  background: "var(--sf)",
+  border: "1px solid var(--br)",
+  boxShadow: "0 8px 32px var(--shad), inset 0 1px 0 var(--dv)",
 } as const;
 
 function StatRow({ rank, player, stat, statLabel }: {
@@ -68,8 +68,8 @@ function StatRow({ rank, player, stat, statLabel }: {
   return (
     <div
       className="flex items-center gap-3 px-5 py-3.5 border-b last:border-0 transition-colors"
-      style={{ borderColor: "rgba(255,255,255,0.06)" }}
-      onMouseEnter={e  => { (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.04)"; }}
+      style={{ borderColor: "var(--dv)" }}
+      onMouseEnter={e  => { (e.currentTarget as HTMLElement).style.background = "var(--ip)"; }}
       onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}
     >
       <div className="w-8 text-center shrink-0">
@@ -85,15 +85,15 @@ function StatRow({ rank, player, stat, statLabel }: {
       </div>
 
       <div className="flex-1 min-w-0">
-        <div className="font-bold text-white text-sm truncate">{displayName}</div>
-        <div className="text-[11px] text-pitch-500 truncate">{player.team_name}</div>
+        <div className="ta-team-name truncate" style={{ color: "var(--tx)" }}>{displayName}</div>
+        <div className="ta-meta truncate">{player.team_name}</div>
       </div>
 
       <div className="text-right shrink-0">
-        <div className="font-display text-2xl" style={{ color: "rgb(var(--accent-glow))" }}>
+        <div className="ta-lb-points" style={{ fontSize: 22, color: "rgb(var(--accent-glow))" }}>
           {stat}
         </div>
-        <div className="text-[10px] text-pitch-500 uppercase tracking-widest">{statLabel}</div>
+        <div className="ta-meta uppercase tracking-widest">{statLabel}</div>
       </div>
     </div>
   );
@@ -103,8 +103,8 @@ function EmptyState() {
   return (
     <div className="px-5 py-10 text-center space-y-1">
       <div className="text-2xl">⏳</div>
-      <div className="text-sm font-bold" style={{ color: "rgba(255,255,255,0.4)" }}>No data yet</div>
-      <div className="text-xs" style={{ color: "rgba(255,255,255,0.2)" }}>Stats update after each match</div>
+      <div className="ta-team-name" style={{ color: "var(--mt)" }}>No data yet</div>
+      <div className="ta-meta">Stats update after each match</div>
     </div>
   );
 }
@@ -128,19 +128,19 @@ export function TopScorersLeaderboard() {
 
   return (
     <div className="rounded-2xl overflow-hidden" style={DARK_CARD_STYLE}>
-      <div className="flex items-center gap-2.5 px-5 py-4 border-b" style={{ borderColor: "rgba(255,255,255,0.07)" }}>
-        <Star size={18} className="text-warning" />
-        <span className="font-display text-xl uppercase text-white tracking-tight">Top Scorers</span>
-        <span className="ml-auto label-caps">{loading ? "…" : `Top ${players.length}`}</span>
+      <div className="flex items-center gap-2.5 px-5 py-4 border-b" style={{ borderColor: "var(--br)" }}>
+        <Star size={18} style={{ color: "var(--sc)" }} />
+        <span className="ta-screen-title" style={{ fontSize: 20, color: "var(--tx)" }}>Top Scorers</span>
+        <span className="ta-section-label ml-auto">{loading ? "…" : `Top ${players.length}`}</span>
       </div>
 
-      <div className="px-5 py-2 border-b flex items-center gap-2 text-[11px] text-pitch-500" style={{ borderColor: "rgba(255,255,255,0.05)" }}>
-        <TrendingUp size={11} />
-        Updated after each match · Live data
+      <div className="px-5 py-2 border-b flex items-center gap-2" style={{ borderColor: "var(--dv)" }}>
+        <TrendingUp size={11} style={{ color: "var(--mt)" }} />
+        <span className="ta-meta">Updated after each match · Live data</span>
       </div>
 
-      <div className="px-5 py-2 border-b text-[11px] font-semibold text-center" style={{ borderColor: "rgba(255,255,255,0.05)", color: "rgb(var(--accent-glow))" }}>
-        Points awarded after the Final
+      <div className="px-5 py-2 border-b text-center" style={{ borderColor: "var(--dv)" }}>
+        <span className="ta-meta" style={{ color: "rgb(var(--accent-glow))" }}>Points awarded after the Final</span>
       </div>
 
       {loading ? (
@@ -179,19 +179,19 @@ export function TopAssistersLeaderboard() {
 
   return (
     <div className="rounded-2xl overflow-hidden" style={DARK_CARD_STYLE}>
-      <div className="flex items-center gap-2.5 px-5 py-4 border-b" style={{ borderColor: "rgba(255,255,255,0.07)" }}>
+      <div className="flex items-center gap-2.5 px-5 py-4 border-b" style={{ borderColor: "var(--br)" }}>
         <Users size={18} style={{ color: "rgb(var(--accent-glow))" }} />
-        <span className="font-display text-xl uppercase text-white tracking-tight">Top Assisters</span>
-        <span className="ml-auto label-caps">{loading ? "…" : `Top ${players.length}`}</span>
+        <span className="ta-screen-title" style={{ fontSize: 20, color: "var(--tx)" }}>Top Assisters</span>
+        <span className="ta-section-label ml-auto">{loading ? "…" : `Top ${players.length}`}</span>
       </div>
 
-      <div className="px-5 py-2 border-b flex items-center gap-2 text-[11px] text-pitch-500" style={{ borderColor: "rgba(255,255,255,0.05)" }}>
-        <TrendingUp size={11} />
-        Updated after each match · Live data
+      <div className="px-5 py-2 border-b flex items-center gap-2" style={{ borderColor: "var(--dv)" }}>
+        <TrendingUp size={11} style={{ color: "var(--mt)" }} />
+        <span className="ta-meta">Updated after each match · Live data</span>
       </div>
 
-      <div className="px-5 py-2 border-b text-[11px] font-semibold text-center" style={{ borderColor: "rgba(255,255,255,0.05)", color: "rgb(var(--accent-glow))" }}>
-        Points awarded after the Final
+      <div className="px-5 py-2 border-b text-center" style={{ borderColor: "var(--dv)" }}>
+        <span className="ta-meta" style={{ color: "rgb(var(--accent-glow))" }}>Points awarded after the Final</span>
       </div>
 
       {loading ? (

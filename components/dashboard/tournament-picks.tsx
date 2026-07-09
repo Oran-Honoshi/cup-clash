@@ -71,13 +71,10 @@ const DEFAULT_RULES: ScoringRules = {
   enable_best_third:        true,
 };
 
-// ── Glass token ───────────────────────────────────────────────────────────────
+// ── Theme A tokens (Stadium Night) ──────────────────────────────────────────────
 const glassCard = {
-  background: "rgba(18,14,38,0.32)",
-  backdropFilter: "blur(20px) saturate(160%)",
-  WebkitBackdropFilter: "blur(20px) saturate(160%)",
-  border: "1px solid rgba(255,255,255,0.14)",
-  boxShadow: "0 12px 40px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.18)",
+  background: "var(--sf)",
+  border: "1px solid var(--br)",
   borderRadius: 22,
 } as const;
 
@@ -100,18 +97,18 @@ function CountryPicker({ value, onSelect, label, pts, isLocked }: CountryPickerP
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <span className="text-xs font-bold uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.5)" }}>{label}</span>
-        <span className="text-xs font-bold" style={{ color: "#00D4FF", fontFamily: "var(--font-mono)" }}>+{pts} pts</span>
+        <span className="ta-section-label">{label}</span>
+        <span className="text-xs font-bold" style={{ color: "var(--ac)", fontFamily: "var(--font-mono)" }}>+{pts} pts</span>
       </div>
       <div className="relative">
-        <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: "rgba(255,255,255,0.4)" }} />
+        <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: "var(--mt)" }} />
         <input type="text" placeholder="Search country..." value={search}
           onChange={e => setSearch(e.target.value)}
           disabled={isLocked}
           className="w-full pl-8 pr-3 py-2 rounded-xl text-sm focus:outline-none disabled:opacity-40"
-          style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", color: "#ffffff" }}
-          onFocus={e => { e.target.style.border = "1px solid #00D4FF"; }}
-          onBlur={e => { e.target.style.border = "1px solid rgba(255,255,255,0.12)"; }}
+          style={{ background: "var(--ip)", border: "1px solid var(--br)", color: "var(--tx)" }}
+          onFocus={e => { e.target.style.border = "1px solid var(--ac)"; }}
+          onBlur={e => { e.target.style.border = "1px solid var(--br)"; }}
         />
       </div>
       <div className="grid grid-cols-8 sm:grid-cols-12 gap-1.5 max-h-48 overflow-y-auto">
@@ -124,17 +121,17 @@ function CountryPicker({ value, onSelect, label, pts, isLocked }: CountryPickerP
                 isLocked && "opacity-40 cursor-not-allowed",
                 FOCUS_RING)}
               style={isSelected
-                ? { border: "1px solid rgba(0,255,136,0.4)", background: "rgba(0,255,136,0.1)" }
-                : { border: "1px solid rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.04)" }}>
+                ? { border: "1px solid var(--ac)", background: "rgba(0,207,128,0.12)" }
+                : { border: "1px solid var(--br)", background: "var(--ip)" }}>
               <FlagBadge code={c.flagCode} label={c.name} size="sm" />
-              <span className="text-[8px] font-bold truncate w-full text-center" style={{ color: "rgba(255,255,255,0.5)" }}>
+              <span className="text-[8px] font-bold truncate w-full text-center" style={{ color: "var(--t2)" }}>
                 {(c.code ?? c.flagCode).toUpperCase()}
               </span>
             </button>
           );
         })}
       </div>
-      {value && <div className="text-xs font-bold" style={{ color: "#0891B2" }}>✓ {value}</div>}
+      {value && <div className="text-xs font-bold" style={{ color: "var(--ac)" }}>✓ {value}</div>}
     </div>
   );
 }
@@ -161,14 +158,14 @@ function BestThirdPicker({ selected, onToggle, isLocked, pts }: BestThirdPickerP
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <span className="text-xs font-bold uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.5)" }}>
+        <span className="ta-section-label">
           8 qualifying 3rd-place teams
         </span>
-        <span className="text-xs font-bold" style={{ color: "#00D4FF", fontFamily: "var(--font-mono)" }}>
+        <span className="text-xs font-bold" style={{ color: "var(--ac)", fontFamily: "var(--font-mono)" }}>
           +{pts} pts each · {selected.length}/8
         </span>
       </div>
-      <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>
+      <p className="ta-body">
         Pick which 8 of the 12 group 3rd-place finishers advance to the Round of 32.
       </p>
 
@@ -187,14 +184,14 @@ function BestThirdPicker({ selected, onToggle, isLocked, pts }: BestThirdPickerP
       )}
 
       <div className="relative">
-        <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: "rgba(255,255,255,0.4)" }} />
+        <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: "var(--mt)" }} />
         <input type="text" placeholder="Search country..." value={search}
           onChange={e => setSearch(e.target.value)}
           disabled={isLocked}
           className="w-full pl-8 pr-3 py-2 rounded-xl text-sm focus:outline-none disabled:opacity-40"
-          style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", color: "#ffffff" }}
-          onFocus={e => { e.target.style.border = "1px solid #00D4FF"; }}
-          onBlur={e => { e.target.style.border = "1px solid rgba(255,255,255,0.12)"; }}
+          style={{ background: "var(--ip)", border: "1px solid var(--br)", color: "var(--tx)" }}
+          onFocus={e => { e.target.style.border = "1px solid var(--ac)"; }}
+          onBlur={e => { e.target.style.border = "1px solid var(--br)"; }}
         />
       </div>
       <div className="grid grid-cols-8 sm:grid-cols-12 gap-1.5 max-h-48 overflow-y-auto">
@@ -209,10 +206,10 @@ function BestThirdPicker({ selected, onToggle, isLocked, pts }: BestThirdPickerP
                 (isLocked || isDisabled) && "opacity-40 cursor-not-allowed",
                 FOCUS_RING)}
               style={isSelected
-                ? { border: "1px solid rgba(0,255,136,0.4)", background: "rgba(0,255,136,0.1)" }
-                : { border: "1px solid rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.04)" }}>
+                ? { border: "1px solid var(--ac)", background: "rgba(0,207,128,0.12)" }
+                : { border: "1px solid var(--br)", background: "var(--ip)" }}>
               <FlagBadge code={c.flagCode} label={c.name} size="sm" />
-              <span className="text-[8px] font-bold truncate w-full text-center" style={{ color: "rgba(255,255,255,0.5)" }}>
+              <span className="text-[8px] font-bold truncate w-full text-center" style={{ color: "var(--t2)" }}>
                 {(c.code ?? c.flagCode).toUpperCase()}
               </span>
             </button>
@@ -220,7 +217,7 @@ function BestThirdPicker({ selected, onToggle, isLocked, pts }: BestThirdPickerP
         })}
       </div>
       {selected.length > 0 && (
-        <div className="text-xs" style={{ color: "#0891B2" }}>✓ {selected.filter(s => validNames.has(s)).join(", ")}</div>
+        <div className="text-xs" style={{ color: "var(--ac)" }}>✓ {selected.filter(s => validNames.has(s)).join(", ")}</div>
       )}
     </div>
   );
@@ -391,7 +388,7 @@ export function TournamentPicks({ groupId, userId, locked = false }: TournamentP
       {/* Auto-save status */}
       {!isLocked && (saving || saved || error) && (
         <div className="flex items-center gap-2 text-xs font-bold"
-          style={{ color: saved ? "#00FF88" : error ? "#dc2626" : "rgba(255,255,255,0.4)" }}>
+          style={{ color: saved ? "var(--ac)" : error ? "#dc2626" : "var(--mt)" }}>
           {saving && <span className="animate-spin">⟳</span>}
           {saved  && <Check size={12} />}
           {error  && <AlertCircle size={12} />}
@@ -404,9 +401,9 @@ export function TournamentPicks({ groupId, userId, locked = false }: TournamentP
         <div className="p-5" style={glassCard}>
           <div className="flex items-center gap-2 mb-4">
             <Trophy size={18} style={{ color: "#d97706" }} />
-            <span className="font-display text-xl uppercase font-black" style={{ color: "white" }}>Tournament Winner</span>
+            <span className="ta-match-label" style={{ color: "var(--tx)" }}>Tournament Winner</span>
             <span className="ml-auto text-xs font-bold px-2 py-0.5 rounded-full"
-              style={{ background: "rgba(0,255,136,0.1)", color: "#00D4FF", fontFamily: "var(--font-mono)" }}>
+              style={{ background: "rgba(0,207,128,0.1)", color: "var(--ac)", fontFamily: "var(--font-mono)" }}>
               +{rules.tournament_winner} pts
             </span>
           </div>
@@ -423,10 +420,10 @@ export function TournamentPicks({ groupId, userId, locked = false }: TournamentP
       {/* Golden Guess tiebreaker — always collected, used only to break ties */}
       <div className="p-5" style={glassCard}>
         <div className="flex items-center gap-2 mb-1">
-          <Trophy size={18} style={{ color: "#0891B2" }} />
-          <span className="font-display text-xl uppercase font-black" style={{ color: "white" }}>Golden Guess Tiebreaker</span>
+          <Trophy size={18} style={{ color: "var(--ac)" }} />
+          <span className="ta-match-label" style={{ color: "var(--tx)" }}>Golden Guess Tiebreaker</span>
         </div>
-        <p className="text-xs mb-3" style={{ color: "rgba(255,255,255,0.4)" }}>
+        <p className="ta-body mb-3">
           Guess the minute of the first goal in the Final — used only as a tiebreaker, not for points.
         </p>
         <input
@@ -438,10 +435,10 @@ export function TournamentPicks({ groupId, userId, locked = false }: TournamentP
           value={picks.finalGoalMinute}
           disabled={isLocked}
           onChange={e => updatePick("finalGoalMinute", e.target.value)}
-          className="w-full sm:w-40 pl-4 pr-3 py-2 rounded-xl text-sm focus:outline-none disabled:opacity-40"
-          style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", color: "#ffffff" }}
-          onFocus={e => { e.target.style.border = "1px solid #00D4FF"; }}
-          onBlur={e => { e.target.style.border = "1px solid rgba(255,255,255,0.12)"; }}
+          className="ta-score w-full sm:w-40 pl-4 pr-3 py-2 rounded-xl focus:outline-none disabled:opacity-40"
+          style={{ fontSize: 20, background: "var(--ip)", border: "1px solid var(--br)" }}
+          onFocus={e => { e.target.style.border = "1px solid var(--ac)"; }}
+          onBlur={e => { e.target.style.border = "1px solid var(--br)"; }}
         />
       </div>
 
@@ -449,8 +446,8 @@ export function TournamentPicks({ groupId, userId, locked = false }: TournamentP
       {rules.enable_best_third && (
         <div className="p-5" style={glassCard}>
           <div className="flex items-center gap-2 mb-1">
-            <BarChart2 size={18} style={{ color: "#0891B2" }} />
-            <span className="font-display text-xl uppercase font-black" style={{ color: "white" }}>Best 3rd-Place Teams</span>
+            <BarChart2 size={18} style={{ color: "var(--ac)" }} />
+            <span className="ta-match-label" style={{ color: "var(--tx)" }}>Best 3rd-Place Teams</span>
           </div>
           <BestThirdPicker
             selected={picks.bestThird}
@@ -466,7 +463,7 @@ export function TournamentPicks({ groupId, userId, locked = false }: TournamentP
         <div className="p-5 space-y-5" style={glassCard}>
           <div className="flex items-center gap-2">
             <Star size={18} style={{ color: "#d97706" }} />
-            <span className="font-display text-xl uppercase font-black" style={{ color: "white" }}>Awards</span>
+            <span className="ta-match-label" style={{ color: "var(--tx)" }}>Awards</span>
           </div>
           {rules.enable_scorer && (
             <PlayerPicker
@@ -518,16 +515,16 @@ export function TournamentPicks({ groupId, userId, locked = false }: TournamentP
 
       {/* Scoring rules summary — only shown if any picks are enabled */}
       {summaryRows.length > 0 && (
-        <div className="rounded-2xl p-4" style={{ background: "rgba(0,212,255,0.04)", border: "1px solid rgba(0,212,255,0.12)" }}>
-          <div className="text-xs font-bold uppercase tracking-widest mb-3" style={{ color: "rgba(255,255,255,0.5)" }}>
+        <div className="rounded-2xl p-4" style={{ background: "rgba(0,207,128,0.04)", border: "1px solid rgba(0,207,128,0.15)" }}>
+          <div className="ta-section-label mb-3">
             Points for these picks
           </div>
           <div className="grid grid-cols-2 gap-2 text-xs">
             {summaryRows.map(r => (
               <div key={r.label} className="flex items-center justify-between rounded-lg px-3 py-2"
-                style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
-                <span style={{ color: "rgba(255,255,255,0.5)" }}>{r.label}</span>
-                <span className="font-black" style={{ color: "#00D4FF", fontFamily: "var(--font-mono)" }}>+{r.pts}</span>
+                style={{ background: "var(--ip)", border: "1px solid var(--br)" }}>
+                <span style={{ color: "var(--t2)" }}>{r.label}</span>
+                <span className="font-black" style={{ color: "var(--ac)", fontFamily: "var(--font-mono)" }}>+{r.pts}</span>
               </div>
             ))}
           </div>
@@ -535,7 +532,7 @@ export function TournamentPicks({ groupId, userId, locked = false }: TournamentP
       )}
 
       {!isLocked && (
-        <p className="text-xs text-center" style={{ color: "rgba(255,255,255,0.4)" }}>
+        <p className="ta-body text-center">
           ✓ Picks save automatically · All picks lock June 11, 2026 at first kickoff
         </p>
       )}

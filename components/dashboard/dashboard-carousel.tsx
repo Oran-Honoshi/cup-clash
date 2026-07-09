@@ -28,7 +28,7 @@ interface DashboardCarouselProps {
 const PANELS = ["MATCH", "LEADERBOARD", "MY STATS"] as const;
 type PanelId = typeof PANELS[number];
 
-const PANEL_BG = "radial-gradient(ellipse at 50% 120%, #1a3810 0%, #0a1808 55%, #030c04 100%)";
+const PANEL_BG = "var(--bg)";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -43,7 +43,7 @@ function StatSkeleton({ width }: { width: number }) {
   return (
     <span
       className="inline-block rounded animate-pulse align-middle"
-      style={{ width, height: "0.8em", background: "rgba(255,255,255,0.1)" }}
+      style={{ width, height: "0.8em", background: "var(--ip)" }}
     />
   );
 }
@@ -103,50 +103,50 @@ function MyStatsPanel({ members, currentUserId, rank, totalPlayers, groupId }: {
   return (
     <div className="px-4 py-4 space-y-4">
       {/* Meta */}
-      <div className="font-barlow font-bold uppercase text-center" style={{ fontSize: 9, letterSpacing: 2, color: "#3a7a3a" }}>
+      <div className="ta-section-label text-center">
         FIFA World Cup 2026
       </div>
-      <div className="font-display font-black uppercase text-center" style={{ fontSize: 22, color: "#e0f2e0" }}>
+      <div className="font-display font-black uppercase text-center" style={{ fontSize: 22, color: "var(--tx)" }}>
         My Stats
       </div>
 
       {/* Total Pts — prioritized, full-width */}
       <div className="rounded-xl px-4 py-4 flex items-center gap-3"
-        style={{ background: "var(--color-background-secondary)", border: "1.5px solid rgba(0,229,160,0.4)", borderRadius: "var(--border-radius-lg)" }}>
-        <Trophy size={22} style={{ color: "#00e5a0", flexShrink: 0 }} />
+        style={{ background: "var(--sf)", border: "1.5px solid var(--ac)" }}>
+        <Trophy size={22} style={{ color: "var(--ac)", flexShrink: 0 }} />
         <div>
-          <div className="font-barlow font-black" style={{ fontSize: 40, lineHeight: 1, color: "#00e5a0" }}>
+          <div className="font-barlow font-black" style={{ fontSize: 40, lineHeight: 1, color: "var(--ac)" }}>
             {loading ? <StatSkeleton width={48} /> : totalPts}
           </div>
-          <div className="font-barlow uppercase mt-1" style={{ fontSize: 9, color: "#3a7a3a", letterSpacing: 1 }}>TOTAL PTS</div>
+          <div className="font-barlow uppercase mt-1" style={{ fontSize: 9, color: "var(--mt)", letterSpacing: 1 }}>TOTAL PTS</div>
         </div>
       </div>
 
       {/* Rank / Exact / Correct — 3-col row */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 }}>
-        <div className="rounded-xl px-3 py-3.5" style={{ background: "var(--color-background-secondary)", border: "0.5px solid var(--color-border-tertiary)", borderRadius: "var(--border-radius-lg)" }}>
-          <div className="font-barlow font-black" style={{ fontSize: 26, lineHeight: 1, color: "#e0f2e0" }}>#{rank}</div>
-          <div className="font-barlow uppercase mt-1" style={{ fontSize: 9, color: "#3a7a3a", letterSpacing: 1 }}>MY RANK</div>
+        <div className="rounded-xl px-3 py-3.5" style={{ background: "var(--sf)", border: "0.5px solid var(--br)" }}>
+          <div className="font-barlow font-black" style={{ fontSize: 26, lineHeight: 1, color: "var(--tx)" }}>#{rank}</div>
+          <div className="font-barlow uppercase mt-1" style={{ fontSize: 9, color: "var(--mt)", letterSpacing: 1 }}>MY RANK</div>
         </div>
-        <div className="rounded-xl px-3 py-3.5" style={{ background: "var(--color-background-secondary)", border: "0.5px solid var(--color-border-tertiary)", borderRadius: "var(--border-radius-lg)" }}>
+        <div className="rounded-xl px-3 py-3.5" style={{ background: "var(--sf)", border: "0.5px solid var(--br)" }}>
           <Target size={14} style={{ color: "#ffaa00", marginBottom: 4 }} />
           <div className="font-barlow font-black" style={{ fontSize: 26, lineHeight: 1, color: "#ffaa00" }}>
             {loading ? <StatSkeleton width={28} /> : exactCount}
           </div>
-          <div className="font-barlow uppercase mt-1" style={{ fontSize: 9, color: "#3a7a3a", letterSpacing: 1 }}>EXACT</div>
+          <div className="font-barlow uppercase mt-1" style={{ fontSize: 9, color: "var(--mt)", letterSpacing: 1 }}>EXACT</div>
         </div>
-        <div className="rounded-xl px-3 py-3.5" style={{ background: "var(--color-background-secondary)", border: "0.5px solid var(--color-border-tertiary)", borderRadius: "var(--border-radius-lg)" }}>
+        <div className="rounded-xl px-3 py-3.5" style={{ background: "var(--sf)", border: "0.5px solid var(--br)" }}>
           <TrendingUp size={14} style={{ color: "#5aaa6a", marginBottom: 4 }} />
           <div className="font-barlow font-black" style={{ fontSize: 26, lineHeight: 1, color: "#5aaa6a" }}>
             {loading ? <StatSkeleton width={28} /> : correct}
           </div>
-          <div className="font-barlow uppercase mt-1" style={{ fontSize: 9, color: "#3a7a3a", letterSpacing: 1 }}>CORRECT</div>
+          <div className="font-barlow uppercase mt-1" style={{ fontSize: 9, color: "var(--mt)", letterSpacing: 1 }}>CORRECT</div>
         </div>
       </div>
 
       {/* Wrong count */}
       <div className="rounded-xl px-3.5 py-3 flex items-center justify-between"
-        style={{ background: "var(--color-background-secondary)", border: "0.5px solid var(--color-border-tertiary)", borderRadius: "var(--border-radius-lg)" }}>
+        style={{ background: "var(--sf)", border: "0.5px solid var(--br)" }}>
         <span className="flex items-center gap-1.5 font-barlow font-bold uppercase" style={{ fontSize: 10, color: "#cc4444", letterSpacing: 1 }}>
           <XCircle size={12} style={{ color: "#cc4444" }} /> WRONG
         </span>
@@ -156,7 +156,7 @@ function MyStatsPanel({ members, currentUserId, rank, totalPlayers, groupId }: {
       </div>
 
       {/* Member count footer */}
-      <div className="text-center font-barlow" style={{ fontSize: 10, color: "#3a7a3a" }}>
+      <div className="text-center font-barlow" style={{ fontSize: 10, color: "var(--mt)" }}>
         {ordinal(rank)} of {totalPlayers} members
       </div>
     </div>
@@ -176,8 +176,8 @@ function MatchPanel({ matches, groupId, groupName, members, currentUserId }: {
     return (
       <div className="flex items-center justify-center px-4 py-8">
         <div className="text-center">
-          <div className="font-barlow font-black uppercase" style={{ fontSize: 18, color: "#e0f2e0" }}>All matches played!</div>
-          <div className="font-barlow mt-1" style={{ fontSize: 11, color: "#3a7a3a" }}>Check the leaderboard for results</div>
+          <div className="font-barlow font-black uppercase" style={{ fontSize: 18, color: "var(--tx)" }}>All matches played!</div>
+          <div className="font-barlow mt-1" style={{ fontSize: 11, color: "var(--mt)" }}>Check the leaderboard for results</div>
         </div>
       </div>
     );
@@ -185,7 +185,7 @@ function MatchPanel({ matches, groupId, groupName, members, currentUserId }: {
 
   return (
     <div id="tour-match-card" className="px-4 py-4 space-y-3">
-      <div className="font-barlow font-bold uppercase text-center" style={{ fontSize: 9, letterSpacing: 1, color: "#3a7a3a" }}>
+      <div className="ta-section-label text-center">
         {groupName} · Upcoming Matches
       </div>
       <MatchCarousel matches={matches} groupId={groupId} />
@@ -221,7 +221,7 @@ export function DashboardCarousel({
     <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}>
       {/* Panel pill tabs */}
       <div className="flex items-center justify-center gap-1.5 px-4"
-        style={{ height: 40, background: "#020c04", borderBottom: "1px solid #091509", flexShrink: 0 }}>
+        style={{ height: 40, background: "var(--nv)", borderBottom: "1px solid var(--br)", flexShrink: 0 }}>
         {PANELS.map((label, i) => (
           <button
             key={label}
@@ -233,9 +233,9 @@ export function DashboardCarousel({
               borderRadius: 20,
               fontSize: 9,
               letterSpacing: 1,
-              border:     panel === i ? "1px solid #00e5a0" : "1px solid #1a3a1a",
-              background: panel === i ? "#162a16"           : "transparent",
-              color:      panel === i ? "#00e5a0"           : "#3a7a3a",
+              border:     panel === i ? "1px solid var(--ac)" : "1px solid var(--br)",
+              background: panel === i ? "color-mix(in srgb, var(--ac) 14%, transparent)" : "transparent",
+              color:      panel === i ? "var(--ac)"           : "var(--mt)",
               cursor:     "pointer",
               transition: "all 0.15s",
             }}

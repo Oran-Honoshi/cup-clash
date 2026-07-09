@@ -153,10 +153,9 @@ function PredRow({
     const result = predResult(pred, homeScore, awayScore);
     return (
       <div className="flex items-center gap-2 mt-1.5 pt-1.5"
-        style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
-        <span className="text-[10px] font-bold uppercase tracking-widest"
-          style={{ color: "rgba(255,255,255,0.3)" }}>Your pick</span>
-        <span className="font-mono text-xs font-bold" style={{ color: "rgba(255,255,255,0.65)" }}>
+        style={{ borderTop: "1px solid var(--dv)" }}>
+        <span className="ta-section-label">Your pick</span>
+        <span className="font-mono text-xs font-bold" style={{ color: "var(--sc)" }}>
           {pred.homeScore}–{pred.awayScore}
         </span>
         <span className="ml-auto">
@@ -176,15 +175,14 @@ function PredRow({
     const onTrack = w === lw;
     return (
       <div className="flex items-center gap-2 mt-1.5 pt-1.5"
-        style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
-        <span className="text-[10px] font-bold uppercase tracking-widest"
-          style={{ color: "rgba(255,255,255,0.3)" }}>Your pick</span>
-        <span className="font-mono text-xs font-bold" style={{ color: "rgba(255,255,255,0.65)" }}>
+        style={{ borderTop: "1px solid var(--dv)" }}>
+        <span className="ta-section-label">Your pick</span>
+        <span className="font-mono text-xs font-bold" style={{ color: "var(--sc)" }}>
           {pred.homeScore}–{pred.awayScore}
         </span>
         <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold"
           style={onTrack
-            ? { background: "rgba(0,255,136,0.1)", border: "1px solid rgba(0,255,136,0.25)", color: "#00FF88" }
+            ? { background: "color-mix(in srgb, var(--ac) 10%, transparent)", border: "1px solid color-mix(in srgb, var(--ac) 25%, transparent)", color: "var(--ac)" }
             : { background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.18)", color: "#f87171" }}>
           {onTrack ? "On track" : "Behind"}
         </span>
@@ -195,11 +193,10 @@ function PredRow({
   // Upcoming: show saved prediction
   return (
     <div className="flex items-center gap-2 mt-1.5 pt-1.5"
-      style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
-      <Lock size={9} style={{ color: "rgba(255,255,255,0.3)" }} />
-      <span className="text-[10px] font-bold uppercase tracking-widest"
-        style={{ color: "rgba(255,255,255,0.3)" }}>Your pick</span>
-      <span className="font-mono text-xs font-bold" style={{ color: "#fbbf24" }}>
+      style={{ borderTop: "1px solid var(--dv)" }}>
+      <Lock size={9} style={{ color: "var(--ft)" }} />
+      <span className="ta-section-label">Your pick</span>
+      <span className="font-mono text-xs font-bold" style={{ color: "var(--sc)" }}>
         {pred.homeScore}–{pred.awayScore}
       </span>
     </div>
@@ -211,11 +208,11 @@ function PredRow({
 function GoalEvents({ events }: { events: MatchEvent[] }) {
   if (events.length === 0) return null;
   return (
-    <div className="mt-1.5 pt-1.5 space-y-0.5" style={{ borderTop: "1px solid rgba(255,255,255,0.05)" }}>
+    <div className="mt-1.5 pt-1.5 space-y-0.5" style={{ borderTop: "1px solid var(--dv)" }}>
       {events.map((e, i) => (
-        <div key={i} className="flex items-center gap-1.5 text-[11px]" style={{ color: "rgba(255,255,255,0.5)" }}>
+        <div key={i} className="flex items-center gap-1.5 text-[11px]" style={{ color: "var(--mt)" }}>
           <span>⚽</span>
-          <span className="font-mono font-bold" style={{ color: "rgba(255,255,255,0.6)" }}>
+          <span className="font-mono font-bold" style={{ color: "var(--t2)" }}>
             {e.extra != null ? `${e.minute}+${e.extra}'` : `${e.minute}'`}
           </span>
           {e.player && <span>{e.player}</span>}
@@ -223,10 +220,10 @@ function GoalEvents({ events }: { events: MatchEvent[] }) {
             <span style={{ color: "rgba(239,68,68,0.7)" }}>(OG)</span>
           )}
           {e.type === "penalty" && (
-            <span style={{ color: "rgba(255,255,255,0.35)" }}>(pen)</span>
+            <span style={{ color: "var(--ft)" }}>(pen)</span>
           )}
           {e.team && (
-            <span style={{ color: "rgba(255,255,255,0.3)" }}>· {e.team}</span>
+            <span style={{ color: "var(--ft)" }}>· {e.team}</span>
           )}
         </div>
       ))}
@@ -290,19 +287,18 @@ function MatchCard({
   const showInputs = canPredict && !pred;
   const showEditInputs = canPredict && !!pred;
 
-  // Per-state card style
+  // Per-state card style — Theme A: flat var(--sf) panel for every state so
+  // cards read as one system; isNext gets an accent border highlight, and
+  // live keeps a subtle semantic-red border so it still reads as "live"
+  // against the flat panel background.
   const cardStyle: React.CSSProperties =
     state.type === "live"
-      ? { background: "#160e0e", border: "1px solid #3a1a1a", borderRadius: 12, padding: "12px 13px" }
-      : state.type === "finished"
-        ? { background: "#0a140a", border: "1px solid #162a16", borderRadius: 12, padding: "12px 13px", opacity: 0.9 }
-        : isNext
-          ? { background: "#0e1f0e", border: "1.5px solid #00e5a0", borderRadius: 12, padding: "12px 13px" }
-          : isToday
-            ? { background: "#0e1f0e", border: "1px solid #1a3a1a", borderRadius: 12, padding: "12px 13px" }
-            : { background: "rgba(18,14,38,0.25)", border: "1px solid #1a3a1a", borderRadius: 12, padding: "12px 13px" };
+      ? { background: "var(--sf)", border: "1px solid rgba(239,68,68,0.35)", borderRadius: 12, padding: "12px 13px" }
+      : isNext
+        ? { background: "var(--sf)", border: "1.5px solid var(--ac)", borderRadius: 12, padding: "12px 13px" }
+        : { background: "var(--sf)", border: "1px solid var(--br)", borderRadius: 12, padding: "12px 13px", opacity: state.type === "finished" ? 0.9 : 1 };
 
-  const teamColor = state.type === "live" ? "#c8a0a0" : isToday ? "#a0c8a0" : "rgba(255,255,255,0.8)";
+  const teamColor = "var(--tx)";
 
   return (
     <div className="transition-all" style={cardStyle}>
@@ -311,23 +307,23 @@ function MatchCard({
       {state.type === "live" && (
         <>
           <div className="flex items-center justify-between gap-2">
-            <span className="font-barlow text-xs font-bold uppercase tracking-wide truncate" style={{ color: "#c8a0a0" }}>
+            <span className="font-barlow text-xs font-bold uppercase tracking-wide truncate" style={{ color: "var(--tx)" }}>
               {displayHome} vs {displayAway}
             </span>
             <div className="flex items-center gap-1.5 shrink-0 px-2.5 py-1 rounded-md"
-              style={{ background: "#3a1010", border: "1px solid #5a1a1a" }}>
-              <span className="inline-block rounded-full animate-pulse" style={{ width: 6, height: 6, background: "#ff4444" }} />
-              <span className="font-barlow font-bold" style={{ fontSize: 11, color: "#ff6666" }}>
+              style={{ background: "rgba(239,68,68,0.12)", border: "1px solid rgba(239,68,68,0.3)" }}>
+              <span className="inline-block rounded-full animate-pulse" style={{ width: 6, height: 6, background: "#ef4444" }} />
+              <span className="font-barlow font-bold" style={{ fontSize: 11, color: "var(--sc)" }}>
                 {state.homeScore}–{state.awayScore}
-                {state.minute != null && <span style={{ marginLeft: 4 }}>{state.minute}&apos;</span>}
+                {state.minute != null && <span style={{ marginLeft: 4, color: "#ef4444" }}>{state.minute}&apos;</span>}
               </span>
             </div>
           </div>
           {state.events.length > 0 && <GoalEvents events={state.events} />}
           {showPred && pred && (
-            <div className="flex items-center gap-2 mt-1.5 pt-1.5" style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}>
-              <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "#3a7a3a" }}>Your pick</span>
-              <span className="font-mono text-[10px] font-bold" style={{ color: "#00e5a0" }}>{pred.homeScore}–{pred.awayScore}</span>
+            <div className="flex items-center gap-2 mt-1.5 pt-1.5" style={{ borderTop: "1px solid var(--dv)" }}>
+              <span className="ta-section-label">Your pick</span>
+              <span className="font-mono text-[10px] font-bold" style={{ color: "var(--sc)" }}>{pred.homeScore}–{pred.awayScore}</span>
             </div>
           )}
           {groupId && <PredictionDistribution matchId={match.id} groupId={groupId} />}
@@ -340,13 +336,13 @@ function MatchCard({
           <div className="flex items-center justify-between gap-2">
             <div className="flex items-center gap-2 min-w-0">
               <FlagBadge code={displayHomeFlagCode} size="sm" />
-              <span className="font-barlow font-bold uppercase truncate text-xs" style={{ color: "#a0c8a0" }}>{displayHome}</span>
-              <span className="font-barlow font-black text-base tabular-nums" style={{ color: "#ffaa00" }}>{state.homeScore}–{state.awayScore}</span>
-              <span className="font-barlow font-bold uppercase truncate text-xs" style={{ color: "#a0c8a0" }}>{displayAway}</span>
+              <span className="ta-team-name truncate" style={{ fontSize: 12, color: "var(--tx)" }}>{displayHome}</span>
+              <span className="font-barlow font-black text-base tabular-nums" style={{ color: "var(--sc)" }}>{state.homeScore}–{state.awayScore}</span>
+              <span className="ta-team-name truncate" style={{ fontSize: 12, color: "var(--tx)" }}>{displayAway}</span>
               <FlagBadge code={displayAwayFlagCode} size="sm" />
             </div>
             <span className="shrink-0 font-barlow font-bold px-2 py-0.5 rounded-md"
-              style={{ background: "#162a10", border: "1px solid #2a4a10", color: "#ffaa00", fontSize: 9 }}>
+              style={{ background: "var(--ip)", border: "1px solid var(--br)", color: "var(--t2)", fontSize: 9 }}>
               FT
             </span>
           </div>
@@ -366,16 +362,16 @@ function MatchCard({
           <div className="flex items-center gap-2">
             <div className="flex items-center gap-1.5 flex-1 min-w-0">
               <FlagBadge code={displayHomeFlagCode} size="sm" />
-              <span className="font-barlow font-bold uppercase text-xs truncate" style={{ color: teamColor }}>{displayHome}</span>
+              <span className="ta-team-name truncate" style={{ fontSize: 12, color: teamColor }}>{displayHome}</span>
             </div>
-            <span className="font-barlow font-bold text-xs shrink-0" style={{ color: "#3a7a3a" }}>vs</span>
+            <span className="font-barlow font-bold text-xs shrink-0" style={{ color: "var(--mt)" }}>vs</span>
             <div className="flex items-center gap-1.5 flex-1 min-w-0 justify-end">
-              <span className="font-barlow font-bold uppercase text-xs truncate" style={{ color: teamColor }}>{displayAway}</span>
+              <span className="ta-team-name truncate" style={{ fontSize: 12, color: teamColor }}>{displayAway}</span>
               <FlagBadge code={displayAwayFlagCode} size="sm" />
             </div>
             <div className="flex flex-col items-end shrink-0 ml-2">
-              {locked && <Lock size={8} style={{ color: "rgba(255,255,255,0.25)" }} />}
-              <span className="font-mono text-[10px] font-bold" style={{ color: isNext ? "#00e5a0" : "#00D4FF" }} suppressHydrationWarning>{localTime}</span>
+              {locked && <Lock size={8} style={{ color: "var(--ft)" }} />}
+              <span className="font-mono text-[10px] font-bold" style={{ color: "var(--ac)" }} suppressHydrationWarning>{localTime}</span>
             </div>
           </div>
 
@@ -385,9 +381,9 @@ function MatchCard({
               <div style={{
                 display: "flex", alignItems: "center", gap: 4,
                 borderRadius: 8,
-                border: saveStatus === "success" ? "1.5px solid #00e5a0" : saveStatus === "error" ? "1.5px solid #f87171" : "1.5px solid transparent",
+                border: saveStatus === "success" ? "1.5px solid var(--ac)" : saveStatus === "error" ? "1.5px solid #f87171" : "1.5px solid transparent",
                 padding: "2px 5px",
-                background: saveStatus === "success" ? "rgba(0,229,160,0.06)" : saveStatus === "error" ? "rgba(248,113,113,0.06)" : "transparent",
+                background: saveStatus === "success" ? "color-mix(in srgb, var(--ac) 6%, transparent)" : saveStatus === "error" ? "rgba(248,113,113,0.06)" : "transparent",
                 transition: "border-color 0.3s, background 0.3s",
               }}>
                 <ScoreInputCC
@@ -396,7 +392,7 @@ function MatchCard({
                   size={26}
                   disabled={locked}
                 />
-                <span style={{ fontSize: 11, fontWeight: 700, color: "#1c4a1c" }}>–</span>
+                <span style={{ fontSize: 11, fontWeight: 700, color: "var(--mt)" }}>–</span>
                 <ScoreInputCC
                   value={localPred?.away ?? ""}
                   onChange={v => onLocalPredChange(match.id, localPred?.home ?? "", v)}
@@ -404,20 +400,20 @@ function MatchCard({
                   disabled={locked}
                 />
               </div>
-              {saveStatus === "success" && <span style={{ fontSize: 10, color: "#00e5a0", fontWeight: 700 }}>✓ Saved</span>}
+              {saveStatus === "success" && <span style={{ fontSize: 10, color: "var(--ac)", fontWeight: 700 }}>✓ Saved</span>}
               {!saveStatus && pred && (
-                <span className="font-barlow font-bold" style={{ fontSize: 9, color: "#00e5a0", marginLeft: 2 }}>✓ Saved</span>
+                <span className="font-barlow font-bold" style={{ fontSize: 9, color: "var(--ac)", marginLeft: 2 }}>✓ Saved</span>
               )}
               <div className="flex-1" />
               <span className="font-barlow font-bold px-2 py-0.5 rounded-md"
-                style={{ background: "#162a16", border: "1px solid #2a5a2a", color: "#2a7a2a", fontSize: 9 }}>
+                style={{ background: "var(--ip)", border: "1px solid var(--br)", color: "var(--t2)", fontSize: 9 }}>
                 {stageName}
               </span>
             </div>
           )}
           {/* No-group nudge for logged-in users not in any group */}
           {noGroup && !locked && (
-            <div className="mt-2" style={{ fontSize: 10, color: "#3a7a3a" }}>
+            <div className="mt-2" style={{ fontSize: 10, color: "var(--mt)" }}>
               Join a group to predict
             </div>
           )}
@@ -663,24 +659,22 @@ export function ScheduleClient({
   }, [allMatches, savedPreds, matchStates, matchKickoffs]);
 
   const glass = {
-    background: "rgba(18,14,38,0.45)",
-    backdropFilter: "blur(24px) saturate(160%)",
-    WebkitBackdropFilter: "blur(24px) saturate(160%)",
-    border: "1px solid rgba(255,255,255,0.1)",
+    background: "var(--sf)",
+    border: "1px solid var(--br)",
   };
 
   return (
-    <div className="max-w-3xl mx-auto w-full pb-32 space-y-4 pt-4">
+    <div className="max-w-3xl mx-auto w-full pb-32 space-y-4 pt-4" style={{ background: "var(--bg)" }}>
 
       {/* ── Page header ────────────────────────────────────────── */}
       <div className="pt-2 pb-1">
-        <div className="text-[10px] font-black uppercase tracking-widest mb-1" style={{ color: "#00D4FF" }}>
+        <div className="ta-section-label mb-1">
           FIFA World Cup 2026
         </div>
-        <h1 className="font-display text-4xl sm:text-5xl uppercase font-black text-white leading-none tracking-tight">
+        <h1 className="ta-screen-title uppercase" style={{ color: "var(--tx)" }}>
           Schedule
         </h1>
-        <p className="text-xs mt-2" style={{ color: "rgba(255,255,255,0.35)" }}>
+        <p className="ta-body mt-2">
           All 104 matches · Group Stage through Final
         </p>
       </div>
@@ -689,18 +683,18 @@ export function ScheduleClient({
       {userId && allGroups.length > 0 && (
         <Card className="flex items-center gap-3 px-4 py-3" style={glass}>
           <div className="h-8 w-8 rounded-xl flex items-center justify-center shrink-0"
-            style={{ background: "rgba(0,212,255,0.12)", border: "1px solid rgba(0,212,255,0.25)" }}>
-            <Users size={14} style={{ color: "#00D4FF" }} />
+            style={{ background: "color-mix(in srgb, var(--ac) 12%, transparent)", border: "1px solid color-mix(in srgb, var(--ac) 25%, transparent)" }}>
+            <Users size={14} style={{ color: "var(--ac)" }} />
           </div>
           <div className="flex-1 min-w-0">
-            <div className="text-[10px] font-black uppercase tracking-widest mb-0.5" style={{ color: "#00D4FF" }}>
+            <div className="ta-section-label mb-0.5">
               Predicting for
             </div>
-            <div className="font-display text-base uppercase font-black truncate text-white">
+            <div className="font-display text-base uppercase font-black truncate" style={{ color: "var(--tx)" }}>
               {groupName}
             </div>
           </div>
-          <div className="text-[11px] shrink-0" style={{ color: "rgba(255,255,255,0.35)" }}>
+          <div className="text-[11px] shrink-0" style={{ color: "var(--ft)" }}>
             {predsLoading
               ? <BallLoader size="sm" label={null} />
               : <span>{predStats.made}/{predStats.total} picks</span>}
@@ -711,13 +705,13 @@ export function ScheduleClient({
       {/* ── Guest CTA ──────────────────────────────────────────── */}
       {!userId && (
         <div className="flex items-center justify-between gap-4 px-4 py-3 rounded-2xl"
-          style={{ background: "rgba(0,212,255,0.06)", border: "1px solid rgba(0,212,255,0.2)" }}>
-          <div className="text-sm" style={{ color: "rgba(255,255,255,0.65)" }}>
+          style={{ background: "color-mix(in srgb, var(--ac) 6%, transparent)", border: "1px solid color-mix(in srgb, var(--ac) 20%, transparent)" }}>
+          <div className="ta-body">
             Sign up to predict scores for every match
           </div>
           <a href="/signup"
             className="shrink-0 font-bold text-xs px-4 py-2 rounded-xl"
-            style={{ background: "linear-gradient(135deg,#00FF88,#00D4FF)", color: "#0B141B" }}>
+            style={{ background: "var(--ac)", color: "var(--at)" }}>
             Get started
           </a>
         </div>
@@ -728,26 +722,26 @@ export function ScheduleClient({
         {/* Search */}
         <div className="relative">
           <Search size={14} className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none"
-            style={{ color: "rgba(255,255,255,0.3)" }} />
+            style={{ color: "var(--ft)" }} />
           <input
             type="text"
             placeholder="Search teams…"
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
-            className="w-full rounded-2xl pl-9 pr-4 py-2.5 text-sm outline-none placeholder:text-[rgba(255,255,255,0.25)]"
-            style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", color: "#fff" }}
+            className="w-full rounded-2xl pl-9 pr-4 py-2.5 text-sm outline-none placeholder:text-[color:var(--ft)]"
+            style={{ background: "var(--ip)", border: "1px solid var(--br)", color: "var(--tx)" }}
           />
           {searchQuery && (
             <button onClick={() => setSearchQuery("")}
               className="absolute right-3 top-1/2 -translate-y-1/2"
-              style={{ color: "rgba(255,255,255,0.35)" }}>
+              style={{ color: "var(--ft)" }}>
               <XIcon size={14} />
             </button>
           )}
         </div>
 
         {/* Status tab row */}
-        <div style={{ background: "#091409", borderRadius: 10, border: "1px solid #162a16", overflow: "hidden", padding: 3, gap: 2, display: "flex" }}>
+        <div style={{ background: "var(--nv)", borderRadius: 10, border: "1px solid var(--br)", overflow: "hidden", padding: 3, gap: 2, display: "flex" }}>
           {(["live", "today", "upcoming", "done"] as const).map(tab => {
             const active = tabFilter === tab;
             const isLive = tab === "live";
@@ -756,16 +750,14 @@ export function ScheduleClient({
               <button
                 key={tab}
                 onClick={() => setTabFilter(tab)}
-                className="font-barlow font-bold uppercase"
+                className="ta-subtab-label"
                 style={{
                   flex: 1,
                   padding: "7px 0",
                   textAlign: "center",
                   borderRadius: 7,
-                  fontSize: 10,
-                  letterSpacing: 0.5,
-                  background: active ? (isLive ? "#2a1010" : "#162a16") : "transparent",
-                  color: active ? (isLive ? "#ff6666" : "#00e5a0") : "#3a6a3a",
+                  background: active ? (isLive ? "rgba(239,68,68,0.15)" : "color-mix(in srgb, var(--ac) 15%, transparent)") : "transparent",
+                  color: active ? (isLive ? "#ef4444" : "var(--ac)") : "var(--mt)",
                   border: "none",
                   cursor: "pointer",
                   transition: "all 0.15s",
@@ -781,92 +773,98 @@ export function ScheduleClient({
       {/* ── Ad between filters and match list ────────────────────── */}
       <AdBanner isAdFree={isAdFree} isCorporate={isCorporate} />
 
-      {/* ── Match count ──────────────────────────────────────────── */}
-      <div className="text-[11px] font-bold" style={{ color: "rgba(255,255,255,0.3)" }}>
-        {filtered.length} {filtered.length === 1 ? "match" : "matches"}
-      </div>
+      {/* ── Match list area — stadium photo background lives here only,
+           never behind the header/predicting-card/filters above ────── */}
+      <div className="ta-stadium-bg rounded-2xl">
+        <div className="px-1 pt-2 pb-1">
+          {/* ── Match count ──────────────────────────────────────────── */}
+          <div className="ta-meta font-bold mb-3">
+            {filtered.length} {filtered.length === 1 ? "match" : "matches"}
+          </div>
 
-      {/* ── Match list grouped by date ────────────────────────────── */}
-      {groupedDates.length === 0 ? (
-        <div className="text-center py-20 text-sm" style={{ color: "rgba(255,255,255,0.3)" }}>
-          No matches found
-        </div>
-      ) : (
-        <div className="space-y-6">
-          {groupedDates.map(([date, matches]) => {
-            const isToday = date === todayStr;
-            // If every match bucketed under this guessed date is itself unconfirmed,
-            // the date grouping is a guess too — don't present it as a real day.
-            const allUnconfirmed = matches.every(m => (matchTimeConfirmed?.[m.id] ?? m.time_confirmed) === false);
-            const refDate  = new Date(matches[0].kickoff_at);
-            const dayLabel = allUnconfirmed ? "Date TBD" : refDate.toLocaleDateString("en-GB", { weekday: "long" });
-            const dateLabel = allUnconfirmed ? "" : refDate.toLocaleDateString("en-GB", { month: "long", day: "numeric", year: "numeric" });
+          {/* ── Match list grouped by date ────────────────────────────── */}
+          {groupedDates.length === 0 ? (
+            <div className="text-center py-20 text-sm" style={{ color: "var(--ft)" }}>
+              No matches found
+            </div>
+          ) : (
+            <div className="space-y-6 pb-2">
+              {groupedDates.map(([date, matches]) => {
+                const isToday = date === todayStr;
+                // If every match bucketed under this guessed date is itself unconfirmed,
+                // the date grouping is a guess too — don't present it as a real day.
+                const allUnconfirmed = matches.every(m => (matchTimeConfirmed?.[m.id] ?? m.time_confirmed) === false);
+                const refDate  = new Date(matches[0].kickoff_at);
+                const dayLabel = allUnconfirmed ? "Date TBD" : refDate.toLocaleDateString("en-GB", { weekday: "long" });
+                const dateLabel = allUnconfirmed ? "" : refDate.toLocaleDateString("en-GB", { month: "long", day: "numeric", year: "numeric" });
 
-            return (
-              <section key={date}>
-                {/* Sticky date header */}
-                <div className="sticky top-0 z-10 flex items-center gap-3 py-2 mb-2 -mx-1 px-1"
-                  style={{ background: "rgba(6,4,15,0.85)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)" }}>
-                  <Calendar size={13} style={{ color: isToday ? "#00FF88" : "rgba(255,255,255,0.3)" }} />
-                  <div className="flex items-center gap-2">
-                    <span className="font-display text-xl uppercase font-black tracking-tight"
-                      style={{ color: isToday ? "#00e5a0" : "rgba(255,255,255,0.9)" }}
-                      suppressHydrationWarning>
-                      {dayLabel}
-                    </span>
-                    {isToday && (
-                      <span className="font-barlow text-[10px] font-bold uppercase px-2 py-0.5 rounded-full"
-                        style={{ background: "#162a16", color: "#00e5a0", border: "1px solid #1c5a1c", letterSpacing: "1px" }}>
-                        Today
+                return (
+                  <section key={date}>
+                    {/* Sticky date header */}
+                    <div className="sticky top-0 z-10 flex items-center gap-3 py-2 mb-2 -mx-1 px-1"
+                      style={{ background: "rgba(16,20,29,0.85)", backdropFilter: "blur(12px)", WebkitBackdropFilter: "blur(12px)" }}>
+                      <Calendar size={13} style={{ color: isToday ? "var(--ac)" : "var(--ft)" }} />
+                      <div className="flex items-center gap-2">
+                        <span className="ta-match-label"
+                          style={{ color: isToday ? "var(--ac)" : "var(--tx)" }}
+                          suppressHydrationWarning>
+                          {dayLabel}
+                        </span>
+                        {isToday && (
+                          <span className="font-barlow text-[10px] font-bold uppercase px-2 py-0.5 rounded-full"
+                            style={{ background: "color-mix(in srgb, var(--ac) 15%, transparent)", color: "var(--ac)", border: "1px solid color-mix(in srgb, var(--ac) 35%, transparent)", letterSpacing: "1px" }}>
+                            Today
+                          </span>
+                        )}
+                        <span className="ta-meta" suppressHydrationWarning>{dateLabel}</span>
+                      </div>
+                      <div className="flex-1 h-px" style={{ background: "var(--dv)" }} />
+                      <span className="ta-meta">
+                        {matches.length} {matches.length === 1 ? "match" : "matches"}
                       </span>
-                    )}
-                    <span className="text-sm" style={{ color: "rgba(255,255,255,0.35)" }} suppressHydrationWarning>{dateLabel}</span>
-                  </div>
-                  <div className="flex-1 h-px" style={{ background: "rgba(255,255,255,0.06)" }} />
-                  <span className="text-[10px]" style={{ color: "rgba(255,255,255,0.25)" }}>
-                    {matches.length} {matches.length === 1 ? "match" : "matches"}
-                  </span>
-                </div>
+                    </div>
 
-                {/* Match cards */}
-                <div className="space-y-2">
-                  {matches.map(m => {
-                    const state = matchStates[m.id];
-                    const pred  = savedPreds[m.id];
-                    return (
-                      <MatchCard
-                        key={m.id}
-                        match={m}
-                        state={state}
-                        pred={pred}
-                        localPred={localPreds[m.id]}
-                        onLocalPredChange={handleLocalPredChange}
-                        userId={userId}
-                        groupId={groupId}
-                        noGroup={noGroup}
-                        isToday={localDateKey(m.kickoff_at) === todayStr}
-                        isNext={m.id === nextMatchId}
-                        saveStatus={saveFlash[m.id]}
-                        teamOverride={matchTeams?.[m.id]}
-                        kickoff={matchKickoffs?.[m.id] ?? m.kickoff_at}
-                        timeConfirmed={matchTimeConfirmed?.[m.id] ?? m.time_confirmed ?? true}
-                      />
-                    );
-                  })}
-                </div>
-              </section>
-            );
-          })}
+                    {/* Match cards */}
+                    <div className="space-y-2">
+                      {matches.map(m => {
+                        const state = matchStates[m.id];
+                        const pred  = savedPreds[m.id];
+                        return (
+                          <MatchCard
+                            key={m.id}
+                            match={m}
+                            state={state}
+                            pred={pred}
+                            localPred={localPreds[m.id]}
+                            onLocalPredChange={handleLocalPredChange}
+                            userId={userId}
+                            groupId={groupId}
+                            noGroup={noGroup}
+                            isToday={localDateKey(m.kickoff_at) === todayStr}
+                            isNext={m.id === nextMatchId}
+                            saveStatus={saveFlash[m.id]}
+                            teamOverride={matchTeams?.[m.id]}
+                            kickoff={matchKickoffs?.[m.id] ?? m.kickoff_at}
+                            timeConfirmed={matchTimeConfirmed?.[m.id] ?? m.time_confirmed ?? true}
+                          />
+                        );
+                      })}
+                    </div>
+                  </section>
+                );
+              })}
+            </div>
+          )}
         </div>
-      )}
+      </div>
 
       {/* ── Stats footer ──────────────────────────────────────────── */}
       {userId && predStats.unlockable > 0 && (
         <div className="flex items-center gap-2 px-4 py-3 rounded-2xl text-sm"
           style={{ background: "rgba(251,191,36,0.06)", border: "1px solid rgba(251,191,36,0.15)" }}>
           <Zap size={14} style={{ color: "#fbbf24" }} />
-          <span style={{ color: "rgba(255,255,255,0.6)" }}>
-            <span className="font-bold text-white">{predStats.unlockable}</span> matches still open to predict
+          <span style={{ color: "var(--t2)" }}>
+            <span className="font-bold" style={{ color: "var(--tx)" }}>{predStats.unlockable}</span> matches still open to predict
           </span>
         </div>
       )}
