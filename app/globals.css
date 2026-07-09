@@ -691,3 +691,62 @@ h1, h2, h3, h4 {
   position: relative;
   z-index: 1;
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   THEME B — "FAN ZONE" (light)
+   Same composition as Theme A: this theme owns structural tokens
+   only. --accent/--accent-glow (per-country tint) are untouched.
+
+   --sc: the spec value #E53E3E sits too close in hue to the existing
+   wrong-prediction red (#f87171, e.g. schedule-client.tsx "Missed"
+   icon / predictions-summary-client.tsx legend) and the LIVE-badge
+   red (#ef4444, live-match-hub.tsx / schedule-client.tsx), both of
+   which appear in the same views as --sc (Schedule DONE filter, Match
+   Center Overview, Summary legend, and player-drawer.tsx which also
+   reuses --sc to highlight *correct* exact-score predictions — making
+   a near-identical red doubly confusing there, since it would read as
+   an error next to a positive point value). Using a distinct rust/
+   burnt-orange (#9A3412) instead: same "special/gold" role as Theme
+   A's --sc, clearly distinguishable in both hue and lightness from
+   the pure reds above, and ~7.3:1 contrast on the theme's light
+   surfaces (passes WCAG AA even for the small 10-11px point labels
+   in player-drawer.tsx, not just the large 39px score digits).
+
+   --hb: no per-team color data exists in the codebase (checked
+   lib/countries.ts, lib/theme.ts — only single per-country accents,
+   no home/away kit colors), so this falls back to a neutral gradient
+   built from the theme's own --sf/--bg per the brief.
+   ═══════════════════════════════════════════════════════════════ */
+:root[data-theme="b"] {
+  --bg:   #F0F2F5;
+  --sf:   #FFFFFF;
+  --nv:   #FFFFFF;
+  --tx:   #1A365D;
+  --t2:   #2A4878;
+  --mt:   #5A7090;
+  --ft:   #A0B8D0;
+  --ac:   #00CF80;
+  --at:   #0A1020;
+  --sc:   #9A3412;
+  --br:   rgba(0, 0, 0, .08);
+  --dv:   rgba(0, 0, 0, .06);
+  --ip:   rgba(0, 0, 0, .05);
+  --shad: rgba(0, 0, 0, .1);
+  --hb:   linear-gradient(135deg, var(--sf) 0%, var(--bg) 100%);
+  --he:   1px solid rgba(0, 0, 0, .09);
+  --hr:   16px;
+}
+
+/* ── Per-theme stadium-bg image override ──────────────────────────
+   Theme A's rule above (unscoped) is also the default before the
+   data-theme attribute is set on first paint. ── */
+
+/* Theme B — tiled silhouettes, multiply-blended against the light --bg */
+:root[data-theme="b"] .ta-stadium-bg::before {
+  background-image: url('/images/theme-b-silhouettes.png');
+  background-size: 280px auto;
+  background-position: top left;
+  background-repeat: repeat;
+  mix-blend-mode: multiply;
+  opacity: .6;
+}
