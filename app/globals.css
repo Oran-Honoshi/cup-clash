@@ -737,6 +737,33 @@ h1, h2, h3, h4 {
   --hr:   16px;
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   THEME C — "DATA FORWARD" (light)
+   No background image. --sc intentionally matches --tx (no red at
+   all) — a neutral, data-dense theme where the score digits read as
+   plain high-contrast text rather than a "highlight" color, sidestepping
+   any collision with wrong-prediction/LIVE reds by construction.
+   ═══════════════════════════════════════════════════════════════ */
+:root[data-theme="c"] {
+  --bg:   #FFFFFF;
+  --sf:   #F8F9FA;
+  --nv:   #FFFFFF;
+  --tx:   #343A40;
+  --t2:   #495057;
+  --mt:   #6C757D;
+  --ft:   #ADB5BD;
+  --ac:   #00CF80;
+  --at:   #0A1020;
+  --sc:   #343A40;
+  --br:   rgba(0, 0, 0, .09);
+  --dv:   rgba(0, 0, 0, .06);
+  --ip:   rgba(0, 0, 0, .05);
+  --shad: rgba(0, 0, 0, .08);
+  --hb:   #FFFFFF;
+  --he:   1.5px solid rgba(0, 0, 0, .1);
+  --hr:   12px;
+}
+
 /* ── Per-theme stadium-bg image override ──────────────────────────
    Theme A's rule above (unscoped) is also the default before the
    data-theme attribute is set on first paint. ── */
@@ -749,4 +776,9 @@ h1, h2, h3, h4 {
   background-repeat: repeat;
   mix-blend-mode: multiply;
   opacity: .6;
+}
+
+/* Theme C — no background image */
+:root[data-theme="c"] .ta-stadium-bg::before {
+  display: none;
 }
