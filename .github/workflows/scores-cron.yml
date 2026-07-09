@@ -1,12 +1,16 @@
 name: Live scores cron
 
 # Vercel Hobby plan caps cron jobs at 2/day, but live scores need to poll every
-# 15-30 min during match windows — so this workflow pings the endpoint instead.
+# 5 min during match windows — so this workflow pings the endpoint instead.
 # Requires repo secret SCORES_APP_URL (e.g. https://cup-clash.vercel.app) and
 # CRON_SECRET (must match the CRON_SECRET env var set in the Vercel project).
+#
+# app/api/scores/route.ts throttles the expensive per-fixture API-Football
+# calls (events, statistics) internally so this 5-min cadence doesn't multiply
+# request volume 4x on its own — see the minute-advanced checks in STEP 1/1c.
 on:
   schedule:
-    - cron: "*/20 * * * *"
+    - cron: "*/5 * * * *"
   workflow_dispatch: {}
 
 jobs:

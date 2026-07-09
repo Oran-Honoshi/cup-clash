@@ -405,6 +405,17 @@ interface ParsedCard {
   detail:      string;
 }
 
+interface ParsedSub {
+  minute:       number;
+  extra:        number | null;
+  team_id:      number;
+  team_name:    string;
+  player_in_id:   number | null;
+  player_in_name: string | null;
+  player_out_id:   number | null;
+  player_out_name: string | null;
+}
+
 async function fetchEvents(fixtureId: number): Promise<APIEvent[]> {
   try {
     const res = await fetch(`${API_BASE}/fixtures/events?fixture=${fixtureId}`, {
@@ -418,9 +429,10 @@ async function fetchEvents(fixtureId: number): Promise<APIEvent[]> {
   }
 }
 
-function parseEvents(events: APIEvent[]): { goals: ParsedGoal[]; cards: ParsedCard[] } {
+function parseEvents(events: APIEvent[]): { goals: ParsedGoal[]; cards: ParsedCard[]; subs: ParsedSub[] } {
   const goals: ParsedGoal[] = [];
   const cards: ParsedCard[] = [];
+  const subs:  ParsedSub[]  = [];
 
   for (const e of events) {
     if (e.type === "Goal") {
@@ -445,10 +457,126 @@ function parseEvents(events: APIEvent[]): { goals: ParsedGoal[]; cards: ParsedCa
         player_name: e.player.name,
         detail:      e.detail,
       });
+    } else if (e.type === "subst") {
+      // API-Football convention: `player` is the player coming ON, `assist` is who they replaced.
+      subs.push({
+        minute:          e.time.elapsed,
+        extra:           e.time.extra,
+        team_id:         e.team.id,
+        team_name:       e.team.name,
+        player_in_id:    e.player.id,
+        player_in_name:  e.player.name,
+        player_out_id:   e.assist.id,
+        player_out_name: e.assist.name,
+      });
     }
   }
 
-  return { goals, cards };
+  return { goals, cards, subs };
+}
+
+// ── Match statistics (possession/corners/cards/shots/fouls) ────────────────
+// Fetched only for currently-live fixtures, and only when the match minute has
+// advanced since the last cron tick (see shouldFetchStats below) — this is the
+// expensive per-fixture call the 5-min cadence needs to budget carefully.
+
+interface APIStatItem { type: string; value: string | number | null }
+interface APITeamStats { team: { id: number; name: string }; statistics: APIStatItem[] }
+
+async function fetchStatistics(fixtureId: number): Promise<APITeamStats[]> {
+  try {
+    const res = await fetch(`${API_BASE}/fixtures/statistics?fixture=${fixtureId}`, {
+      headers: apiHeaders(),
+    });
+    if (!res.ok) return [];
+    const data = await res.json() as { response: APITeamStats[] };
+    return data.response ?? [];
+  } catch {
+    return [];
+  }
+}
+
+interface TeamLiveStats {
+  possession:     number | null;
+  shots_on_goal:  number | null;
+  shots_total:    number | null;
+  corners:        number | null;
+  fouls:          number | null;
+  yellow_cards:   number | null;
+  red_cards:      number | null;
+  offsides:       number | null;
+}
+
+const STAT_TYPE_MAP: Record<string, keyof TeamLiveStats> = {
+  "Ball Possession": "possession",
+  "Shots on Goal":   "shots_on_goal",
+  "Total Shots":     "shots_total",
+  "Corner Kicks":    "corners",
+  "Fouls":           "fouls",
+  "Yellow Cards":    "yellow_cards",
+  "Red Cards":       "red_cards",
+  "Offsides":        "offsides",
+};
+
+function statValueToNumber(raw: string | number | null): number | null {
+  if (raw === null || raw === undefined) return null;
+  if (typeof raw === "number") return raw;
+  const n = parseInt(raw.replace("%", ""), 10);
+  return Number.isNaN(n) ? null : n;
+}
+
+function parseTeamStats(team: APITeamStats | undefined): TeamLiveStats {
+  const out: TeamLiveStats = {
+    possession: null, shots_on_goal: null, shots_total: null, corners: null,
+    fouls: null, yellow_cards: null, red_cards: null, offsides: null,
+  };
+  for (const stat of team?.statistics ?? []) {
+    const key = STAT_TYPE_MAP[stat.type];
+    if (key) out[key] = statValueToNumber(stat.value);
+  }
+  return out;
+}
+
+// Returns null (rather than a struct of nulls) when the API returned nothing
+// usable, so the UI can show "stats not available" instead of a wall of dashes.
+function buildLiveStats(
+  stats: APITeamStats[], homeTeamId: number, awayTeamId: number
+): { home: TeamLiveStats; away: TeamLiveStats } | null {
+  if (stats.length === 0) return null;
+  const homeTeam = stats.find(s => s.team.id === homeTeamId);
+  const awayTeam = stats.find(s => s.team.id === awayTeamId);
+  return { home: parseTeamStats(homeTeam), away: parseTeamStats(awayTeam) };
+}
+
+// ── Combine goals/cards/subs into the chronological matches.match_events feed ─
+
+interface MatchEventEntry {
+  minute: number;
+  extra:  number | null;
+  player: string | null;
+  assist: string | null;
+  team:   string | null;
+  type:   string;
+}
+
+function buildMatchEvents(parsed: { goals: ParsedGoal[]; cards: ParsedCard[]; subs: ParsedSub[] } | undefined): MatchEventEntry[] | null {
+  if (!parsed) return null;
+  const entries: MatchEventEntry[] = [
+    ...parsed.goals.map(g => ({
+      minute: g.minute, extra: g.extra, player: g.player_name, assist: g.assist_name, team: g.team_name,
+      type: g.detail === "Own Goal" ? "own_goal" : g.detail === "Penalty" ? "penalty" : "goal",
+    })),
+    ...parsed.cards.map(c => ({
+      minute: c.minute, extra: c.extra, player: c.player_name, assist: null, team: c.team_name,
+      type: c.detail.toLowerCase().includes("red") ? "red_card" : "yellow_card",
+    })),
+    ...parsed.subs.map(s => ({
+      minute: s.minute, extra: s.extra, player: s.player_in_name, assist: s.player_out_name, team: s.team_name,
+      type: "sub",
+    })),
+  ];
+  entries.sort((a, b) => (a.minute - b.minute) || ((a.extra ?? 0) - (b.extra ?? 0)));
+  return entries;
 }
 
 // Golden Guess tiebreaker: minute of the first goal of the match (any goal type).
@@ -829,24 +957,92 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // Fetch events for live and finished matches
-    const needsEvents = fixtures.filter(
-      f => LIVE_STATUSES.has(f.fixture.status.short) || FINISHED_STATUSES.has(f.fixture.status.short)
-    );
-    console.log(`[scores/cron]   fetching events for ${needsEvents.length} live/finished fixture(s)`);
+    // ── STEP 1c: Fetch DB matches early — needed to decide what's worth re-fetching ──
+    // Fetch DB matches for a 3-day window (covers extra-time stragglers) and
+    // any row already linked by api_fixture_id. Pulled up here (rather than
+    // where it's consumed in STEP 3) so the minute-advanced throttle below can
+    // compare against each fixture's previously-stored minute/status.
 
-    const eventsMap = new Map<number, { goals: ParsedGoal[]; cards: ParsedCard[] }>();
+    const { data: dbMatches, error: dbMatchErr } = await sb
+      .from("matches")
+      .select("id, home, away, kickoff_at, status, home_score, away_score, api_fixture_id, minute")
+      .gte("kickoff_at", `${yesterday}T00:00:00Z`)
+      .lte("kickoff_at", `${tomorrow}T23:59:59Z`);
+
+    if (dbMatchErr) console.error("[scores/cron]   matches fetch error:", dbMatchErr);
+    console.log(`[scores/cron]   DB matches in 3-day window: ${dbMatches?.length ?? 0}`);
+
+    const prevStateByFixtureId = new Map<number, { minute: number | null; status: string }>(
+      (dbMatches ?? [])
+        .filter(m => m.api_fixture_id != null)
+        .map(m => [m.api_fixture_id as number, { minute: m.minute, status: m.status }])
+    );
+
+    // Fallback goals/cards/subs when we skip re-fetching events this tick —
+    // without this, skipped fixtures would regress live_scores back to empty.
+    const { data: existingLiveScores } = await sb
+      .from("live_scores")
+      .select("api_fixture_id, raw_data")
+      .in("api_fixture_id", fixtures.map(f => f.fixture.id));
+
+    const prevRawByFixtureId = new Map<number, { goals: ParsedGoal[]; cards: ParsedCard[]; subs: ParsedSub[] }>(
+      (existingLiveScores ?? []).map(r => {
+        const raw = (r.raw_data ?? {}) as { goals?: ParsedGoal[]; cards?: ParsedCard[]; subs?: ParsedSub[] };
+        return [r.api_fixture_id as number, { goals: raw.goals ?? [], cards: raw.cards ?? [], subs: raw.subs ?? [] }];
+      })
+    );
+
+    // ── STEP 1d: Throttled events + statistics fetch ─────────────────────────
+    // Events (goals/cards/subs): re-fetch only when a fixture just went live,
+    // its minute has advanced since the last tick, or it just finished (once,
+    // for the final snapshot) — a fixture that's been "finished" since a
+    // previous tick is never re-fetched again.
+    // Statistics (possession/corners/etc): re-fetch only for currently-live
+    // fixtures whose minute has advanced — this is the expensive call the
+    // 5-min cadence needs to budget, so it's the strictest gate.
+
+    const fetchDecisions = fixtures.map(f => {
+      const status        = f.fixture.status.short;
+      const isLiveNow      = LIVE_STATUSES.has(status);
+      const isFinishedNow  = FINISHED_STATUSES.has(status);
+      const prev           = prevStateByFixtureId.get(f.fixture.id);
+      const minuteAdvanced = !prev || prev.minute !== f.fixture.status.elapsed;
+
+      const shouldFetchEvents =
+        (isLiveNow && (prev?.status !== "live" || minuteAdvanced)) ||
+        (isFinishedNow && prev?.status !== "finished");
+      const shouldFetchStats = isLiveNow && minuteAdvanced;
+
+      return { f, shouldFetchEvents, shouldFetchStats };
+    });
+
+    console.log(`[scores/cron]   fetching events for ${fetchDecisions.filter(d => d.shouldFetchEvents).length}/${fixtures.length} fixture(s) (minute-advanced throttle)`);
+    console.log(`[scores/cron]   fetching stats for ${fetchDecisions.filter(d => d.shouldFetchStats).length}/${fixtures.length} fixture(s) (minute-advanced throttle)`);
+
+    const eventsMap = new Map<number, { goals: ParsedGoal[]; cards: ParsedCard[]; subs: ParsedSub[] }>();
+    const statsMap  = new Map<number, { home: TeamLiveStats; away: TeamLiveStats } | null>();
+    const statsFetchMinute = new Map<number, number | null>();
+
     await Promise.all(
-      needsEvents.map(async f => {
-        const rawEvents = await fetchEvents(f.fixture.id);
-        eventsMap.set(f.fixture.id, parseEvents(rawEvents));
+      fetchDecisions.map(async ({ f, shouldFetchEvents, shouldFetchStats }) => {
+        if (shouldFetchEvents) {
+          const rawEvents = await fetchEvents(f.fixture.id);
+          eventsMap.set(f.fixture.id, parseEvents(rawEvents));
+        }
+        if (shouldFetchStats) {
+          const rawStats = await fetchStatistics(f.fixture.id);
+          statsMap.set(f.fixture.id, buildLiveStats(rawStats, f.teams.home.id, f.teams.away.id));
+          statsFetchMinute.set(f.fixture.id, f.fixture.status.elapsed);
+        }
       })
     );
 
     // ── STEP 2: Write to live_scores ─────────────────────────────────────────
 
     const rows = fixtures.map(f => {
-      const { goals, cards } = eventsMap.get(f.fixture.id) ?? { goals: [], cards: [] };
+      const { goals, cards, subs } = eventsMap.get(f.fixture.id)
+        ?? prevRawByFixtureId.get(f.fixture.id)
+        ?? { goals: [], cards: [], subs: [] };
       const status = f.fixture.status.short;
       const isLive = LIVE_STATUSES.has(status);
 
@@ -886,6 +1082,7 @@ export async function POST(request: NextRequest) {
           pen_away:     f.score.penalty.away,
           goals,
           cards,
+          subs,
         },
       };
     });
@@ -902,19 +1099,10 @@ export async function POST(request: NextRequest) {
     console.log("[scores/cron]   live_scores upsert OK");
 
     // ── STEP 3: Update matches table ─────────────────────────────────────────
-    // Fetch DB matches for a 3-day window (covers extra-time stragglers) and
-    // any row already linked by api_fixture_id.
+    // dbMatches was already fetched in STEP 1c (needed there for the throttle
+    // decisions); reused here to match fixtures to DB rows.
 
     console.log("[scores/cron] STEP 3: Matching fixtures to matches table...");
-
-    const { data: dbMatches, error: dbMatchErr } = await sb
-      .from("matches")
-      .select("id, home, away, kickoff_at, status, home_score, away_score, api_fixture_id, minute")
-      .gte("kickoff_at", `${yesterday}T00:00:00Z`)
-      .lte("kickoff_at", `${tomorrow}T23:59:59Z`);
-
-    if (dbMatchErr) console.error("[scores/cron]   matches fetch error:", dbMatchErr);
-    console.log(`[scores/cron]   DB matches in 3-day window: ${dbMatches?.length ?? 0}`);
 
     const newlyFinished: Array<{
       matchId:        string;
@@ -948,19 +1136,13 @@ export async function POST(request: NextRequest) {
 
       const wasFinished = dbMatch.status === "finished";
 
-      const parsedEvts = eventsMap.get(f.fixture.id);
-      const matchEvents = parsedEvts
-        ? parsedEvts.goals.map(g => ({
-            minute: g.minute,
-            extra:  g.extra,
-            player: g.player_name,
-            assist: g.assist_name,
-            team:   g.team_name,
-            type:   g.detail === "Own Goal" ? "own_goal"
-                  : g.detail === "Penalty"  ? "penalty"
-                  :                           "goal",
-          }))
-        : null;
+      // undefined (not null) when events weren't re-fetched this tick — the
+      // update below omits the key entirely so the existing DB value survives.
+      const freshEvts    = eventsMap.get(f.fixture.id);
+      const matchEvents  = freshEvts ? buildMatchEvents(freshEvts) : undefined;
+      const statsFetched = statsMap.has(f.fixture.id);
+      const freshStats   = statsMap.get(f.fixture.id) ?? null;
+      const freshStatsMinute = statsFetchMinute.get(f.fixture.id) ?? null;
 
       // For AET/PEN matches: home_score = 90-min result, home_score_et = after-ET result.
       // For FT matches: home_score = final result, home_score_et = null.
@@ -993,8 +1175,11 @@ export async function POST(request: NextRequest) {
           status:         newStatus,
           api_fixture_id: f.fixture.id,
           minute:         f.fixture.status.elapsed ?? null,
-          match_events:   matchEvents,
-          ...(dbMatch.id === "final" ? { final_first_goal_minute: firstGoalMinute(matchEvents) } : {}),
+          ...(matchEvents !== undefined ? {
+            match_events: matchEvents,
+            ...(dbMatch.id === "final" ? { final_first_goal_minute: firstGoalMinute(matchEvents) } : {}),
+          } : {}),
+          ...(statsFetched ? { live_stats: freshStats, live_stats_minute: freshStatsMinute } : {}),
         })
         .eq("id", dbMatch.id);
 
@@ -1126,18 +1311,7 @@ export async function POST(request: NextRequest) {
             }
 
             const stuckParsed = eventsMap.get(fixtureId);
-            const stuckMatchEvents = stuckParsed
-              ? stuckParsed.goals.map(g => ({
-                  minute: g.minute,
-                  extra:  g.extra,
-                  player: g.player_name,
-                  assist: g.assist_name,
-                  team:   g.team_name,
-                  type:   g.detail === "Own Goal" ? "own_goal"
-                        : g.detail === "Penalty"  ? "penalty"
-                        :                           "goal",
-                }))
-              : null;
+            const stuckMatchEvents = buildMatchEvents(stuckParsed);
 
             // Sync live_scores → "FT" + fresh events so STEP 5 aggregates player stats correctly
             const { data: lsRow } = await sb
@@ -1160,6 +1334,7 @@ export async function POST(request: NextRequest) {
                   away_score:   resolvedAway,
                   goals: stuckParsed?.goals ?? existingRaw.goals ?? [],
                   cards: stuckParsed?.cards ?? existingRaw.cards ?? [],
+                  subs:  stuckParsed?.subs  ?? existingRaw.subs  ?? [],
                 },
               }).eq("api_fixture_id", fixtureId);
               console.log(`[scores/cron] STEP 3b:   Synced live_scores fixture ${fixtureId} → FT`);

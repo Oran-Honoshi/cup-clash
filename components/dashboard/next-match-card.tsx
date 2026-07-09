@@ -19,6 +19,7 @@ interface NextMatchCardProps {
   match:      Match;
   groupId?:   string;
   cardLabel?: string;
+  onOpenMatchCenter?: (matchId: string) => void;
 }
 
 function getStageLabel(match: Match): string {
@@ -36,7 +37,7 @@ function getStageLabel(match: Match): string {
 
 type SaveState = "idle" | "saving" | "saved" | "error" | "locked";
 
-export function NextMatchCard({ match, groupId = "", cardLabel }: NextMatchCardProps) {
+export function NextMatchCard({ match, groupId = "", cardLabel, onOpenMatchCenter }: NextMatchCardProps) {
   const [homeScore, setHomeScore] = useState("");
   const [awayScore, setAwayScore] = useState("");
   const [saveState, setSaveState] = useState<SaveState>("idle");
@@ -110,7 +111,11 @@ export function NextMatchCard({ match, groupId = "", cardLabel }: NextMatchCardP
   return (
     <div
       className="ta-hero-card w-full max-w-full overflow-hidden"
-      style={{ boxShadow: `0 12px 40px var(--shad)` }}
+      style={{ boxShadow: `0 12px 40px var(--shad)`, cursor: onOpenMatchCenter ? "pointer" : undefined }}
+      onClick={onOpenMatchCenter ? () => onOpenMatchCenter(match.id) : undefined}
+      role={onOpenMatchCenter ? "button" : undefined}
+      tabIndex={onOpenMatchCenter ? 0 : undefined}
+      onKeyDown={onOpenMatchCenter ? (e => { if (e.key === "Enter" || e.key === " ") onOpenMatchCenter(match.id); }) : undefined}
     >
       {/* Top accent line */}
       <NeonBar gradient="var(--ac)" height={2.5} />
@@ -161,7 +166,7 @@ export function NextMatchCard({ match, groupId = "", cardLabel }: NextMatchCardP
           </div>
 
           {/* Score inputs */}
-          <div className="flex items-center gap-1.5 flex-none">
+          <div className="flex items-center gap-1.5 flex-none" onClick={e => e.stopPropagation()}>
             {saveState === "saved" ? (
               <>
                 <ScoreDisplay value={homeScore} />
@@ -200,7 +205,7 @@ export function NextMatchCard({ match, groupId = "", cardLabel }: NextMatchCardP
         )}
 
         {/* Action */}
-        <div className="mt-4">
+        <div className="mt-4" onClick={e => e.stopPropagation()}>
           {saveState === "locked" ? (
             <div
               className="text-center text-xs font-bold uppercase tracking-widest"

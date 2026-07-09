@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Trophy, Target, TrendingUp, XCircle } from "lucide-react";
 import { MatchCarousel } from "@/components/dashboard/match-carousel";
+import { LiveMatchHub } from "@/components/match/live-match-hub";
 import { LeaderboardList } from "@/components/dashboard/leaderboard-list";
 import { MiniLeaderboard } from "@/components/dashboard/mini-leaderboard";
 import { ENABLE_BETA_FEATURES } from "@/lib/feature-flags";
@@ -165,12 +166,13 @@ function MyStatsPanel({ members, currentUserId, rank, totalPlayers, groupId }: {
 
 // ── Match panel ───────────────────────────────────────────────────────────────
 
-function MatchPanel({ matches, groupId, groupName, members, currentUserId }: {
+function MatchPanel({ matches, groupId, groupName, members, currentUserId, onOpenMatchCenter }: {
   matches: Match[];
   groupId: string;
   groupName: string;
   members: Member[];
   currentUserId: string;
+  onOpenMatchCenter: (matchId: string) => void;
 }) {
   if (!matches.length) {
     return (
@@ -188,7 +190,7 @@ function MatchPanel({ matches, groupId, groupName, members, currentUserId }: {
       <div className="ta-section-label text-center">
         {groupName} · Upcoming Matches
       </div>
-      <MatchCarousel matches={matches} groupId={groupId} />
+      <MatchCarousel matches={matches} groupId={groupId} onOpenMatchCenter={onOpenMatchCenter} />
       {ENABLE_BETA_FEATURES && (
         <div className="space-y-1.5">
           <span className="text-[9px] font-black uppercase tracking-widest px-1.5 py-0.5 rounded-full inline-block"
@@ -216,6 +218,8 @@ export function DashboardCarousel({
   isCorporate,
 }: DashboardCarouselProps) {
   const [panel, setPanel] = useState(0);
+  const [openMatchId, setOpenMatchId] = useState<string | null>(null);
+  const openMatch = openMatchId ? matches.find(m => m.id === openMatchId) : undefined;
 
   return (
     <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}>
@@ -254,10 +258,28 @@ export function DashboardCarousel({
         background: PANEL_BG,
         paddingBottom: 24,
       }}>
-        {panel === 0 && <MatchPanel matches={matches} groupId={groupId} groupName={groupName} members={members} currentUserId={currentUserId} />}
+        {panel === 0 && <MatchPanel matches={matches} groupId={groupId} groupName={groupName} members={members} currentUserId={currentUserId} onOpenMatchCenter={setOpenMatchId} />}
         {panel === 1 && <LeaderboardPanel members={members} currentUserId={currentUserId} groupId={groupId} groupName={groupName} isAdFree={isAdFree} isCorporate={isCorporate} />}
         {panel === 2 && <MyStatsPanel members={members} currentUserId={currentUserId} rank={rank} totalPlayers={totalPlayers} groupId={groupId} />}
       </div>
+
+      {/* ── Match Center overlay ─────────────────────────────────── */}
+      {openMatch && (
+        <LiveMatchHub
+          matchId={openMatch.id}
+          home={openMatch.home}
+          away={openMatch.away}
+          homeFlagCode={openMatch.homeFlagCode}
+          awayFlagCode={openMatch.awayFlagCode}
+          kickoffAt={openMatch.time}
+          stage={openMatch.stage}
+          group={openMatch.group}
+          stadium={openMatch.stadium}
+          city={openMatch.city}
+          groupId={groupId}
+          onClose={() => setOpenMatchId(null)}
+        />
+      )}
     </div>
   );
 }

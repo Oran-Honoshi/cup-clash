@@ -11,9 +11,10 @@ import type { Match } from "@/lib/types";
 interface MatchCarouselProps {
   matches: Match[];
   groupId: string;
+  onOpenMatchCenter?: (matchId: string) => void;
 }
 
-export function MatchCarousel({ matches, groupId }: MatchCarouselProps) {
+export function MatchCarousel({ matches, groupId, onOpenMatchCenter }: MatchCarouselProps) {
   const trackRef = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(0);
 
@@ -32,7 +33,7 @@ export function MatchCarousel({ matches, groupId }: MatchCarouselProps) {
   }, [matches.length]);
 
   if (!matches.length) return null;
-  if (matches.length === 1) return <NextMatchCard match={matches[0]} groupId={groupId} />;
+  if (matches.length === 1) return <NextMatchCard match={matches[0]} groupId={groupId} onOpenMatchCenter={onOpenMatchCenter} />;
 
   return (
     <div style={{ width: "100%", overflow: "hidden" }}>
@@ -60,6 +61,7 @@ export function MatchCarousel({ matches, groupId }: MatchCarouselProps) {
               match={match}
               groupId={groupId}
               cardLabel={i === 0 ? undefined : "Upcoming"}
+              onOpenMatchCenter={onOpenMatchCenter}
             />
           </div>
         ))}

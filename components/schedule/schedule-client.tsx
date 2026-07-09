@@ -8,6 +8,7 @@ import {
   Users, Zap,
 } from "lucide-react";
 import { CopyPredictionSheet } from "@/components/predictions/copy-prediction-sheet";
+import { LiveMatchHub } from "@/components/match/live-match-hub";
 import { FlagBadge } from "@/components/ui/FlagBadge";
 import { BallLoader } from "@/components/ui/BallLoader";
 import { Card } from "@/components/ui/card";
@@ -248,6 +249,7 @@ function MatchCard({
   teamOverride,
   kickoff,
   timeConfirmed,
+  onOpenMatchCenter,
 }: {
   match: ScheduleMatch;
   state: ReturnType<typeof getMatchState>;
@@ -263,6 +265,7 @@ function MatchCard({
   teamOverride?: { home: string; away: string; homeFlagCode?: string; awayFlagCode?: string };
   kickoff: string;
   timeConfirmed: boolean;
+  onOpenMatchCenter: (matchId: string) => void;
 }) {
   const locked = state.type !== "upcoming" || isLocked(kickoff);
   const canPredict = !!userId && !!groupId && !locked && state.type === "upcoming";
@@ -301,7 +304,14 @@ function MatchCard({
   const teamColor = "var(--tx)";
 
   return (
-    <div className="transition-all" style={cardStyle}>
+    <div
+      className="transition-all cursor-pointer"
+      style={cardStyle}
+      onClick={() => onOpenMatchCenter(match.id)}
+      role="button"
+      tabIndex={0}
+      onKeyDown={e => { if (e.key === "Enter" || e.key === " ") onOpenMatchCenter(match.id); }}
+    >
 
       {/* ── Live layout ─────────────────────────────────────────── */}
       {state.type === "live" && (
@@ -377,7 +387,7 @@ function MatchCard({
 
           {/* Score inputs — shown for all upcoming unlocked matches */}
           {(showInputs || showEditInputs) && (
-            <div className="flex items-center gap-1.5 mt-2">
+            <div className="flex items-center gap-1.5 mt-2" onClick={e => e.stopPropagation()}>
               <div style={{
                 display: "flex", alignItems: "center", gap: 4,
                 borderRadius: 8,
@@ -521,6 +531,9 @@ export function ScheduleClient({
 
   // ── Copy-to-groups sheet
   const [copySheet, setCopySheet] = useState<{ matchId: string; home: number; away: number } | null>(null);
+
+  // ── Match Center overlay
+  const [openMatchId, setOpenMatchId] = useState<string | null>(null);
 
   // ── Prediction state (local editing)
   const [localPreds, setLocalPreds] = useState<Record<string, LocalPred>>(() => {
@@ -846,6 +859,7 @@ export function ScheduleClient({
                             teamOverride={matchTeams?.[m.id]}
                             kickoff={matchKickoffs?.[m.id] ?? m.kickoff_at}
                             timeConfirmed={matchTimeConfirmed?.[m.id] ?? m.time_confirmed ?? true}
+                            onOpenMatchCenter={setOpenMatchId}
                           />
                         );
                       })}
@@ -881,6 +895,29 @@ export function ScheduleClient({
           onDismiss={() => setCopySheet(null)}
         />
       )}
+
+      {/* ── Match Center overlay ─────────────────────────────────── */}
+      {openMatchId && (() => {
+        const m = allMatches.find(x => x.id === openMatchId);
+        if (!m) return null;
+        const teams = matchTeams?.[m.id];
+        return (
+          <LiveMatchHub
+            matchId={m.id}
+            home={teams?.home ?? m.home}
+            away={teams?.away ?? m.away}
+            homeFlagCode={teams?.homeFlagCode ?? m.homeFlagCode}
+            awayFlagCode={teams?.awayFlagCode ?? m.awayFlagCode}
+            kickoffAt={matchKickoffs?.[m.id] ?? m.kickoff_at}
+            stage={m.stage}
+            group={m.group}
+            stadium={m.stadium}
+            city={m.city}
+            groupId={groupId}
+            onClose={() => setOpenMatchId(null)}
+          />
+        );
+      })()}
     </div>
   );
 }
