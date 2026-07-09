@@ -1,0 +1,22 @@
+name: News aggregation cron
+
+# News moves far slower than live scores, so this polls every 20 min
+# instead of every 5. Reuses the same repo secrets as scores-cron.yml
+# (SCORES_APP_URL, CRON_SECRET).
+on:
+  schedule:
+    - cron: "*/20 * * * *"
+  workflow_dispatch: {}
+
+jobs:
+  fetch-news:
+    runs-on: ubuntu-latest
+    steps:
+      - name: POST /api/news
+        run: |
+          curl -sf -X POST "${SCORES_APP_URL}/api/news" \
+            -H "Authorization: Bearer ${CRON_SECRET}" \
+            -o - -w "\nHTTP %{http_code}\n"
+        env:
+          SCORES_APP_URL: ${{ secrets.SCORES_APP_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}

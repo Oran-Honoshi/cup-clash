@@ -5,12 +5,19 @@ import { NextResponse, type NextRequest } from "next/server";
 // /dashboard    — guest mode, welcome banner, explore groups CTA
 // /predictions  — guest mode, localStorage picks, modal on save
 // /leaderboard  — public view
-// /standings    — public view
+// /standings    — genuinely public: competition picker + WC26 group tables
+//                 (app shell chrome, same guest-mode pattern as /dashboard)
+// /scores       — genuinely public: competition picker + WC26 match list,
+//                 "coming soon" for the other 6 (app shell chrome)
 // /bracket      — public view
 // /trivia       — public view
 // /schedule     — public match schedule
 // /join/[code]  — can preview group before signing up
 // /groups       — guest sees empty state with auth-gated CTAs
+//
+// ── Fully public, no app shell (marketing/aggregator pages) ───────────────────
+// /news         — aggregated news feed, lightweight public header
+// /leagues      — "follow your leagues" picker, lightweight public header
 
 // ── Fully protected (must be signed in) ───────────────────────────────────────
 const PROTECTED_PREFIXES = [

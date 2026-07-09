@@ -1,0 +1,76 @@
+import Link from "next/link";
+import { ArrowRight } from "lucide-react";
+
+// Lightweight header for genuinely public, anonymous-visitor pages
+// (/news, /leagues). Deliberately smaller than the authenticated app
+// shell (components/app/sidebar.tsx, app-header.tsx) — no group
+// switcher, no admin/profile menu — just enough to orient a first-time
+// visitor and get them signed in.
+const PUBLIC_NAV = [
+  { href: "/news",      label: "News"      },
+  { href: "/scores",    label: "Scores"    },
+  { href: "/standings", label: "Standings" },
+  { href: "/leagues",   label: "Leagues"   },
+];
+
+export function PublicHeader({ active }: { active?: string }) {
+  return (
+    <header
+      style={{
+        background: "var(--nv)",
+        borderBottom: "1px solid var(--br)",
+        paddingTop: "env(safe-area-inset-top, 0px)",
+      }}
+    >
+      <div className="mx-auto max-w-5xl px-4 sm:px-6 flex items-center justify-between h-16 gap-4">
+        <Link href="/" className="flex items-center gap-2 shrink-0" style={{ textDecoration: "none" }}>
+          <img src="/icons/icon-192.png" width={30} height={30} alt="" style={{ borderRadius: 8, display: "block" }} />
+          <span style={{ fontFamily: "var(--font-display)", fontSize: 18, fontWeight: 800, color: "var(--tx)" }}>
+            Cup<span style={{ color: "var(--ac)" }}>Clash</span>
+          </span>
+        </Link>
+
+        <nav className="hidden sm:flex items-center gap-1 min-w-0">
+          {PUBLIC_NAV.map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className="transition-colors"
+              style={{
+                fontFamily: "var(--font-ui)",
+                fontSize: 13,
+                fontWeight: 700,
+                padding: "8px 12px",
+                borderRadius: 8,
+                color: active === item.href ? "var(--ac)" : "var(--t2)",
+                textDecoration: "none",
+              }}
+            >
+              {item.label}
+            </Link>
+          ))}
+        </nav>
+
+        <Link href="/signin" className="shrink-0" style={{ textDecoration: "none" }}>
+          <button
+            className="flex items-center gap-1.5 transition-all"
+            style={{
+              fontFamily: "var(--font-ui)",
+              fontSize: 12,
+              fontWeight: 700,
+              textTransform: "uppercase",
+              letterSpacing: "0.04em",
+              padding: "9px 16px",
+              borderRadius: 100,
+              background: "var(--ac)",
+              color: "var(--at)",
+              border: "none",
+            }}
+          >
+            Sign in <ArrowRight size={13} />
+          </button>
+        </Link>
+      </div>
+    </header>
+  );
+}
