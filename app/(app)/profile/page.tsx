@@ -7,6 +7,7 @@ import { CountrySelector } from "@/components/auth/country-selector";
 import { MemberAvatar, SOCCER_PRESETS, dicebearUrl } from "@/components/ui/member-avatar";
 import { BallLoader } from "@/components/ui/BallLoader";
 import { useTheme } from "@/components/theme-provider";
+import { ThemePicker } from "@/components/ui/theme-picker";
 import type { CountryCode } from "@/lib/types";
 import { useLocale } from "@/components/i18n/locale-provider";
 
@@ -55,7 +56,7 @@ export default function ProfilePage() {
   const [isGoogle,  setIsGoogle]  = useState(false);
   const [tab, setTab]             = useState<"auto" | "preset" | "photo">("auto");
   const fileRef = useRef<HTMLInputElement>(null);
-  const { setCountry } = useTheme();
+  const { setCountry, setAppTheme } = useTheme();
 
   useEffect(() => {
     async function load() {
@@ -68,9 +69,9 @@ export default function ProfilePage() {
         (user.identities ?? []).some((i: { provider: string }) => i.provider === "google")
       );
       const { data } = await sb.from("profiles")
-        .select("name, country, avatar_url, auto_fill_enabled, auto_fill_home, auto_fill_away").eq("id", user.id).single();
+        .select("name, country, avatar_url, auto_fill_enabled, auto_fill_home, auto_fill_away, theme_preference").eq("id", user.id).single();
       if (data) {
-        const d = data as ProfileData;
+        const d = data as ProfileData & { theme_preference?: string | null };
         setProfile({
           name:              d.name              ?? "",
           country:           d.country           ?? null,
@@ -80,6 +81,9 @@ export default function ProfilePage() {
           auto_fill_away:    d.auto_fill_away    ?? 0,
         });
         if (d.country) setCountry(d.country);
+        if (d.theme_preference && ["a", "b", "c", "d"].includes(d.theme_preference)) {
+          setAppTheme(d.theme_preference as "a" | "b" | "c" | "d");
+        }
         if (d.avatar_url?.startsWith("preset:")) setTab("preset");
         else if (d.avatar_url && !d.avatar_url.startsWith("dicebear:")) setTab("photo");
         else setTab("auto");
@@ -87,7 +91,7 @@ export default function ProfilePage() {
       setLoading(false);
     }
     load();
-  }, [setCountry]);
+  }, [setCountry, setAppTheme]);
 
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -359,6 +363,12 @@ export default function ProfilePage() {
       <div style={{ ...glassCard, padding: 20 }}>
         <div className="label-caps mb-3">{t("prof_yourTeam")}</div>
         <CountrySelector value={profile.country} onChange={code => setProfile(p => ({ ...p, country: code }))} />
+      </div>
+
+      {/* App Theme */}
+      <div style={{ ...glassCard, padding: 20 }}>
+        <div className="label-caps mb-3">App Theme</div>
+        <ThemePicker />
       </div>
 
       {/* Auto-fill safety net */}

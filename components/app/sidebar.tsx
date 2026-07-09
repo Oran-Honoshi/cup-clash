@@ -50,7 +50,7 @@ const CHAT_HREF = "/chat";
 
 export function AppSidebar() {
   const pathname  = usePathname();
-  const { setCountry } = useTheme();
+  const { setCountry, setAppTheme } = useTheme();
   const { t } = useLocale();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
@@ -72,12 +72,16 @@ export function AppSidebar() {
     if (ADMIN_EMAILS.includes(user.email ?? "")) setIsAdmin(true);
     const { data } = await sb
       .from("profiles")
-      .select("name, country, avatar_url")
+      .select("name, country, avatar_url, theme_preference")
       .eq("id", user.id)
       .single();
     if (data) {
-      setProfile(data as UserProfile);
-      if ((data as UserProfile).country) setCountry((data as UserProfile).country as CountryCode);
+      const row = data as UserProfile & { theme_preference?: string | null };
+      setProfile(row);
+      if (row.country) setCountry(row.country as CountryCode);
+      if (row.theme_preference && ["a", "b", "c", "d"].includes(row.theme_preference)) {
+        setAppTheme(row.theme_preference as "a" | "b" | "c" | "d");
+      }
     }
     setAuthLoaded(true);
   }, []);
