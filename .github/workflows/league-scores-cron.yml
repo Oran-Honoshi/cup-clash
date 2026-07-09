@@ -1,0 +1,26 @@
+name: League scores cron
+
+# Premier League / La Liga / Serie A / Bundesliga / Ligue 1 / UEFA Champions
+# League fixtures + standings. Ticks every 5 min like scores-cron.yml, but
+# app/api/league-scores/route.ts throttles internally: the full
+# fixtures+standings refresh only actually runs API-Football calls every
+# ~3h, and live-score polling only calls out when a tracked match is
+# in/near its kickoff window (both DB-only checks otherwise) — so this
+# cadence does not multiply request volume the way it looks.
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch: {}
+
+jobs:
+  ping-league-scores:
+    runs-on: ubuntu-latest
+    steps:
+      - name: POST /api/league-scores
+        run: |
+          curl -sf -X POST "${SCORES_APP_URL}/api/league-scores" \
+            -H "Authorization: Bearer ${CRON_SECRET}" \
+            -o - -w "\nHTTP %{http_code}\n"
+        env:
+          SCORES_APP_URL: ${{ secrets.SCORES_APP_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}

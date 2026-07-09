@@ -17,7 +17,12 @@ const SIZE_PX: Record<FlagBadgeSize, number> = { sm: 24, md: 32, lg: 48 };
 const HEXAGON_CLIP = "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)";
 
 interface FlagBadgeProps {
-  /** ISO 3166-1 alpha-2 lowercase, e.g. "us", "br". Subdivisions use "gb-eng", "gb-sct", "gb-wls". */
+  /**
+   * ISO 3166-1 alpha-2 lowercase, e.g. "us", "br". Subdivisions use
+   * "gb-eng", "gb-sct", "gb-wls". A full "http(s)://" URL is also accepted
+   * (club badge logos from API-Football) and rendered directly instead of
+   * being resolved against the self-hosted /flags/*.svg set.
+   */
   code?: string | null;
   size?: FlagBadgeSize;
   /** Country name for screen readers/tooltip. Omit when adjacent text already names the country. */
@@ -36,10 +41,13 @@ export function FlagBadge({ code, size = "md", label, className, shape }: FlagBa
   const px = SIZE_PX[size];
   const resolvedShape: FlagBadgeShape = shape ?? (appTheme === "d" ? "hexagon" : "circle");
 
-  const normalized = (code ?? "").trim().toLowerCase();
+  const trimmed = (code ?? "").trim();
+  const isUrl = /^https?:\/\//i.test(trimmed);
+  const normalized = trimmed.toLowerCase();
   const isPlaceholder =
-    !normalized || KNOWN_PLACEHOLDERS.has(normalized) || !VALID_CODE.test(normalized);
+    !isUrl && (!normalized || KNOWN_PLACEHOLDERS.has(normalized) || !VALID_CODE.test(normalized));
   const showImage = !isPlaceholder && !errored;
+  const imgSrc = isUrl ? trimmed : `/flags/${normalized}.svg`;
 
   const a11y = label
     ? { role: "img" as const, "aria-label": `${label} flag` }
@@ -64,7 +72,7 @@ export function FlagBadge({ code, size = "md", label, className, shape }: FlagBa
     >
       {showImage ? (
         <img
-          src={`/flags/${normalized}.svg`}
+          src={imgSrc}
           alt=""
           width={px}
           height={px}
@@ -79,7 +87,7 @@ export function FlagBadge({ code, size = "md", label, className, shape }: FlagBa
           className="font-bold uppercase select-none"
           style={{ fontSize: Math.max(8, Math.round(px * 0.32)), color: "rgba(255,255,255,0.5)" }}
         >
-          {normalized.replace(/[^a-z0-9]/gi, "").slice(0, 2).toUpperCase()}
+          {(isUrl ? (label ?? "") : normalized).replace(/[^a-z0-9]/gi, "").slice(0, 2).toUpperCase()}
         </span>
       )}
     </span>

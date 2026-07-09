@@ -2,12 +2,14 @@ export const dynamic = "force-dynamic";
 
 import { BarChart2 } from "lucide-react";
 import { GroupStandings } from "@/components/dashboard/group-standings";
+import { LeagueTable } from "@/components/leagues/league-table";
 import { CompetitionPicker } from "@/components/leagues/competition-picker";
 import { ConsumeFollowParam } from "@/components/leagues/consume-follow-param";
 import { EmptyState } from "@/components/ui/empty-state";
 import { getCurrentUserGroup } from "@/lib/services/user-group";
 import { getCompetitions, WORLD_CUP_SLUG } from "@/lib/services/competitions";
 import { getFollowedCompetitionIds } from "@/lib/services/follows";
+import { getStandings } from "@/lib/services/standings";
 
 export default async function StandingsPage({
   searchParams,
@@ -23,6 +25,9 @@ export default async function StandingsPage({
 
   const activeSlug = searchParams.competition ?? WORLD_CUP_SLUG;
   const activeCompetition = competitions.find((c) => c.slug === activeSlug) ?? competitions[0];
+
+  const standingsRows =
+    activeSlug !== WORLD_CUP_SLUG && activeCompetition ? await getStandings(activeCompetition.id) : [];
 
   return (
     <div className="space-y-6">
@@ -50,11 +55,13 @@ export default async function StandingsPage({
 
       {activeSlug === WORLD_CUP_SLUG ? (
         <GroupStandings groupId={groupId ?? "none"} />
+      ) : standingsRows.length > 0 ? (
+        <LeagueTable rows={standingsRows} />
       ) : (
         <EmptyState
           icon={<BarChart2 size={28} style={{ color: "#00D4FF" }} />}
-          title="Standings coming soon"
-          body={`We're still wiring up the table for ${activeCompetition?.name ?? "this competition"}. Follow it to get notified when it lands.`}
+          title="No standings yet"
+          body={`We haven't fetched a table for ${activeCompetition?.name ?? "this competition"} yet — check back shortly.`}
         />
       )}
     </div>

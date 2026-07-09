@@ -20,9 +20,6 @@ export function slugify(name: string): string {
   return name.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
 }
 
-// The only competition with real fixture/standings data as of Phase 1 —
-// the other 6 (Premier League, La Liga, Serie A, Bundesliga, Ligue 1, UCL)
-// show an honest "coming soon" state until a fixtures pipeline exists.
 export const WORLD_CUP_SLUG = "world-cup-2026";
 
 export async function getCompetitions(): Promise<CompetitionRow[]> {
