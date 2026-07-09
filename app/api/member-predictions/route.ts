@@ -24,6 +24,21 @@ export interface MemberPrediction {
   groupLetter:  string | null;
 }
 
+// A saved prediction for a match that hasn't finished yet — no result/points
+// to show, just what the member picked (or nothing, if unpredicted).
+export interface UpcomingPrediction {
+  matchId:      string;
+  home:         string;
+  away:         string;
+  homeFlagCode: string;
+  awayFlagCode: string;
+  predicted:    string | null;
+  stage:        string;
+  groupLetter:  string | null;
+  kickoffAt:    string;
+  status:       string;
+}
+
 export interface BestThirdPick {
   slot:         number;
   team:         string;
@@ -50,6 +65,7 @@ export interface MemberPredictionsResponse {
     bonusPts:      number;
   };
   history: MemberPrediction[];
+  upcoming: UpcomingPrediction[];
   bestThird: {
     picks:         BestThirdPick[];
     correctCount:  number;
@@ -80,6 +96,7 @@ type MatchRow = {
   status:        string;
   stage:         string;
   group_letter:  string | null;
+  kickoff_at:    string;
 };
 
 type TournamentRow = {
@@ -142,7 +159,7 @@ export async function GET(req: NextRequest) {
   if (matchIds.length > 0) {
     const { data: matchRows } = await sb
       .from("matches")
-      .select("id, home, away, home_flag, away_flag, home_score, away_score, home_score_et, away_score_et, status, stage, group_letter")
+      .select("id, home, away, home_flag, away_flag, home_score, away_score, home_score_et, away_score_et, status, stage, group_letter, kickoff_at")
       .in("id", matchIds);
     for (const m of (matchRows ?? []) as MatchRow[]) {
       matchMap[m.id] = m;
@@ -231,6 +248,25 @@ export async function GET(req: NextRequest) {
     });
   }
 
+  // Saved picks for matches not yet finished — no result to grade, just the pick itself.
+  const upcoming: UpcomingPrediction[] = [];
+  for (const p of preds) {
+    const m = matchMap[p.match_id];
+    if (!m || m.status === "finished") continue;
+    upcoming.push({
+      matchId:      p.match_id,
+      home:         m.home,
+      away:         m.away,
+      homeFlagCode: m.home_flag ?? "",
+      awayFlagCode: m.away_flag ?? "",
+      predicted:    p.home_score != null && p.away_score != null ? `${p.home_score}–${p.away_score}` : null,
+      stage:        m.stage ?? "Group",
+      groupLetter:  m.group_letter ?? null,
+      kickoffAt:    m.kickoff_at,
+      status:       m.status,
+    });
+  }
+
   const totalPoints = gsPts + knockoutPts + bestThirdPts + bonusPts;
 
   const body: MemberPredictionsResponse = {
@@ -245,6 +281,7 @@ export async function GET(req: NextRequest) {
       bonusPts,
     },
     history,
+    upcoming,
     bestThird: {
       picks:         bestThirdPicks,
       correctCount:  bestThirdCorrectCount,
