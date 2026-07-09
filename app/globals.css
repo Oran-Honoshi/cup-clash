@@ -778,7 +778,39 @@ h1, h2, h3, h4 {
   opacity: .6;
 }
 
+/* ═══════════════════════════════════════════════════════════════
+   THEME D — "CHALK TALK" (dark)
+   --ft uses the spec's WCAG-AA-passing rgba(240,255,240,.35) directly.
+   ═══════════════════════════════════════════════════════════════ */
+:root[data-theme="d"] {
+  --bg:   #1A3E2A;
+  --sf:   #2F4F4F;
+  --nv:   #152F1E;
+  --tx:   #F0FFF0;
+  --t2:   rgba(240, 255, 240, .72);
+  --mt:   rgba(240, 255, 240, .5);
+  --ft:   rgba(240, 255, 240, .35);
+  --ac:   #00CF80;
+  --at:   #0A1020;
+  --sc:   #00CF80;
+  --br:   rgba(0, 207, 128, .25);
+  --dv:   rgba(0, 207, 128, .12);
+  --ip:   rgba(0, 207, 128, .08);
+  --shad: rgba(0, 0, 0, .5);
+  --hb:   linear-gradient(145deg, #2F4F4F, #253A3A);
+  --he:   2px dashed rgba(0, 207, 128, .4);
+  --hr:   20px;
+}
+
 /* Theme C — no background image */
 :root[data-theme="c"] .ta-stadium-bg::before {
   display: none;
+}
+
+/* Theme D — chalk texture, 60% overlay of the theme's own --bg */
+:root[data-theme="d"] .ta-stadium-bg::before {
+  background-image: linear-gradient(rgba(26, 62, 42, .6), rgba(26, 62, 42, .6)), url('/images/theme-d-chalk.png');
+  background-size: cover;
+  background-position: center top;
+  background-repeat: no-repeat;
 }
