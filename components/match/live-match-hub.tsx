@@ -15,7 +15,7 @@ interface MatchEventEntry {
   player: string | null;
   assist: string | null;
   team:   string | null;
-  type:   string; // "goal" | "own_goal" | "penalty" | "yellow_card" | "red_card" | "sub"
+  type:   string; // "goal" | "own_goal" | "penalty" | "missed_penalty" | "yellow_card" | "red_card" | "sub"
 }
 
 interface TeamLiveStats {
@@ -106,6 +106,7 @@ function EventIcon({ type }: { type: string }) {
   if (type === "goal")      return <span className="text-base">⚽</span>;
   if (type === "penalty")   return <span className="text-base">⚽ <span style={{ fontSize: 9 }}>P</span></span>;
   if (type === "own_goal")  return <span className="text-base" style={{ color: "#f87171" }}>⚽ OG</span>;
+  if (type === "missed_penalty") return <span className="text-base" style={{ color: "var(--mt)" }}>❌ <span style={{ fontSize: 9 }}>P</span></span>;
   if (type === "yellow_card") return <div style={{ width: 10, height: 14, borderRadius: 2, background: "#facc15" }} />;
   if (type === "red_card")    return <div style={{ width: 10, height: 14, borderRadius: 2, background: "#ef4444" }} />;
   if (type === "sub")         return <RefreshCw size={14} style={{ color: "var(--mt)" }} />;

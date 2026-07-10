@@ -180,7 +180,9 @@ async function updateTournamentScorerPoints(sb: SupabaseClient): Promise<void> {
   for (const row of finishedRows ?? []) {
     const goals = ((row.raw_data as Record<string, unknown>)?.goals ?? []) as GoalEntry[];
     for (const g of goals) {
-      if (g.detail === "Own Goal") continue; // own goals don't count for golden boot
+      // Own goals don't count for golden boot; missed penalties never went in the net —
+      // API-Football tags both under the "Goal" event type, so `detail` is the only signal.
+      if (g.detail === "Own Goal" || g.detail === "Missed Penalty") continue;
       if (g.player_id && g.player_name) {
         const curr = tally.get(g.player_id) ?? { name: g.player_name, team: g.team_name ?? "", goals: 0, assists: 0 };
         tally.set(g.player_id, { ...curr, goals: curr.goals + 1 });
@@ -212,13 +214,19 @@ async function updateTournamentScorerPoints(sb: SupabaseClient): Promise<void> {
   );
 
   // ── 3. Upsert player_tournament_stats ────────────────────────────────────
+  // player_name is normalized to the canonical players.full_name spelling when
+  // known, rather than whichever raw API spelling happened to tally last
+  // (API-Football is inconsistent about accents/abbreviation across events —
+  // e.g. "K. Mbappe" vs "Kylian Mbappé" — even though api_player_id stays the
+  // same, so this keeps the stored name durably consistent too).
 
   const statsRows = allIds.map(id => {
     const t = tally.get(id)!;
+    const canonicalName = apiIdToFullName.get(id) ?? null;
     return {
       api_player_id: id,
-      player_name:   t.name,
-      full_name:     apiIdToFullName.get(id) ?? null,
+      player_name:   canonicalName ?? t.name,
+      full_name:     canonicalName,
       team_name:     t.team,
       goals:         t.goals,
       assists:       t.assists,
@@ -559,20 +567,48 @@ interface MatchEventEntry {
   type:   string;
 }
 
-function buildMatchEvents(parsed: { goals: ParsedGoal[]; cards: ParsedCard[]; subs: ParsedSub[] } | undefined): MatchEventEntry[] | null {
+// API-Football spells the same player differently across events/endpoints
+// (e.g. "K. Mbappe" vs "Kylian Mbappé") even though the numeric player_id is
+// stable — look up the canonical players.full_name by id so everything we
+// write to match_events uses one consistent spelling per person.
+function canonicalPlayerName(id: number | null, raw: string | null, byId: Map<number, string>): string | null {
+  if (id != null) {
+    const canon = byId.get(id);
+    if (canon) return canon;
+  }
+  return raw;
+}
+
+function buildMatchEvents(
+  parsed: { goals: ParsedGoal[]; cards: ParsedCard[]; subs: ParsedSub[] } | undefined,
+  playerNameById: Map<number, string>
+): MatchEventEntry[] | null {
   if (!parsed) return null;
   const entries: MatchEventEntry[] = [
     ...parsed.goals.map(g => ({
-      minute: g.minute, extra: g.extra, player: g.player_name, assist: g.assist_name, team: g.team_name,
-      type: g.detail === "Own Goal" ? "own_goal" : g.detail === "Penalty" ? "penalty" : "goal",
+      minute: g.minute, extra: g.extra,
+      player: canonicalPlayerName(g.player_id, g.player_name, playerNameById),
+      assist: canonicalPlayerName(g.assist_id, g.assist_name, playerNameById),
+      team:   g.team_name,
+      // "Missed Penalty" is API-Football's event type for a penalty that did NOT
+      // go in — it must never render (or score) as a goal.
+      type: g.detail === "Own Goal"      ? "own_goal"
+          : g.detail === "Missed Penalty" ? "missed_penalty"
+          : g.detail === "Penalty"        ? "penalty"
+          : "goal",
     })),
     ...parsed.cards.map(c => ({
-      minute: c.minute, extra: c.extra, player: c.player_name, assist: null, team: c.team_name,
+      minute: c.minute, extra: c.extra,
+      player: canonicalPlayerName(c.player_id, c.player_name, playerNameById),
+      assist: null, team: c.team_name,
       type: c.detail.toLowerCase().includes("red") ? "red_card" : "yellow_card",
     })),
     ...parsed.subs.map(s => ({
-      minute: s.minute, extra: s.extra, player: s.player_in_name, assist: s.player_out_name, team: s.team_name,
-      type: "sub",
+      minute: s.minute, extra: s.extra,
+      player: canonicalPlayerName(s.player_in_id,  s.player_in_name,  playerNameById),
+      assist: canonicalPlayerName(s.player_out_id, s.player_out_name, playerNameById),
+      team:   s.team_name,
+      type:   "sub",
     })),
   ];
   entries.sort((a, b) => (a.minute - b.minute) || ((a.extra ?? 0) - (b.extra ?? 0)));
@@ -972,6 +1008,15 @@ export async function POST(request: NextRequest) {
     if (dbMatchErr) console.error("[scores/cron]   matches fetch error:", dbMatchErr);
     console.log(`[scores/cron]   DB matches in 3-day window: ${dbMatches?.length ?? 0}`);
 
+    // Canonical player name lookup, used when writing match_events below so the
+    // same person is always stored under one spelling regardless of which
+    // spelling API-Football attached to a given event.
+    const { data: playerNameRows } = await sb.from("players").select("api_player_id, full_name");
+    const playerNameById = new Map<number, string>(
+      ((playerNameRows ?? []) as Array<{ api_player_id: number; full_name: string }>)
+        .map(p => [p.api_player_id, p.full_name])
+    );
+
     const prevStateByFixtureId = new Map<number, { minute: number | null; status: string }>(
       (dbMatches ?? [])
         .filter(m => m.api_fixture_id != null)
@@ -1139,7 +1184,7 @@ export async function POST(request: NextRequest) {
       // undefined (not null) when events weren't re-fetched this tick — the
       // update below omits the key entirely so the existing DB value survives.
       const freshEvts    = eventsMap.get(f.fixture.id);
-      const matchEvents  = freshEvts ? buildMatchEvents(freshEvts) : undefined;
+      const matchEvents  = freshEvts ? buildMatchEvents(freshEvts, playerNameById) : undefined;
       const statsFetched = statsMap.has(f.fixture.id);
       const freshStats   = statsMap.get(f.fixture.id) ?? null;
       const freshStatsMinute = statsFetchMinute.get(f.fixture.id) ?? null;
@@ -1311,7 +1356,7 @@ export async function POST(request: NextRequest) {
             }
 
             const stuckParsed = eventsMap.get(fixtureId);
-            const stuckMatchEvents = buildMatchEvents(stuckParsed);
+            const stuckMatchEvents = buildMatchEvents(stuckParsed, playerNameById);
 
             // Sync live_scores → "FT" + fresh events so STEP 5 aggregates player stats correctly
             const { data: lsRow } = await sb
