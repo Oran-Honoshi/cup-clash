@@ -87,7 +87,10 @@ export function FlagBadge({ code, size = "md", label, className, shape }: FlagBa
           className="font-bold uppercase select-none"
           style={{ fontSize: Math.max(8, Math.round(px * 0.32)), color: "rgba(255,255,255,0.5)" }}
         >
-          {(isUrl ? (label ?? "") : normalized).replace(/[^a-z0-9]/gi, "").slice(0, 2).toUpperCase()}
+          {/* normalized is only ever a (possibly invalid) code — when code is
+              absent entirely it's "", so fall back to the label's initials
+              rather than rendering a blank badge. */}
+          {(isUrl ? (label ?? "") : (normalized || label || "")).replace(/[^a-z0-9]/gi, "").slice(0, 2).toUpperCase()}
         </span>
       )}
     </span>

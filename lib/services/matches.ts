@@ -219,3 +219,71 @@ export async function getLiveScores(): Promise<Array<{
 export function getTournamentStart(): Date {
   return new Date("2026-06-11T19:00:00Z");
 }
+
+// ── Recent results per followed team ─────────────────────────────────────────
+
+export interface TeamRecentResult {
+  matchId: string;
+  opponent: string;
+  opponentFlag: string | null;
+  isHome: boolean;
+  homeScore: number | null;
+  awayScore: number | null;
+  kickoffAt: string;
+  outcome: "W" | "D" | "L";
+}
+
+// One query for the union of all followed teams' finished matches, then
+// sliced to `perTeamLimit` per team in memory — avoids N+1 queries for a
+// "My Teams" list of a handful of teams.
+export async function getRecentResultsByTeam(
+  teamIds: string[],
+  perTeamLimit = 5
+): Promise<Map<string, TeamRecentResult[]>> {
+  const byTeam = new Map<string, TeamRecentResult[]>();
+  if (teamIds.length === 0) return byTeam;
+
+  const orFilter = teamIds
+    .map((id) => `home_team_id.eq.${id},away_team_id.eq.${id}`)
+    .join(",");
+
+  const { data } = await sb()
+    .from("matches")
+    .select("id, home, away, home_flag, away_flag, kickoff_at, home_score, away_score, home_team_id, away_team_id")
+    .eq("status", "finished")
+    .or(orFilter)
+    .order("kickoff_at", { ascending: false });
+
+  for (const m of (data ?? []) as Array<{
+    id: string; home: string; away: string;
+    home_flag: string | null; away_flag: string | null;
+    kickoff_at: string; home_score: number | null; away_score: number | null;
+    home_team_id: string | null; away_team_id: string | null;
+  }>) {
+    for (const teamId of teamIds) {
+      if (m.home_team_id !== teamId && m.away_team_id !== teamId) continue;
+      const list = byTeam.get(teamId) ?? [];
+      if (list.length >= perTeamLimit) continue;
+
+      const isHome = m.home_team_id === teamId;
+      const own = isHome ? m.home_score : m.away_score;
+      const opp = isHome ? m.away_score : m.home_score;
+      const outcome: TeamRecentResult["outcome"] =
+        own == null || opp == null ? "D" : own > opp ? "W" : own < opp ? "L" : "D";
+
+      list.push({
+        matchId: m.id,
+        opponent: isHome ? m.away : m.home,
+        opponentFlag: isHome ? m.away_flag : m.home_flag,
+        isHome,
+        homeScore: m.home_score,
+        awayScore: m.away_score,
+        kickoffAt: m.kickoff_at,
+        outcome,
+      });
+      byTeam.set(teamId, list);
+    }
+  }
+
+  return byTeam;
+}

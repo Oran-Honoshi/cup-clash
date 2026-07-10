@@ -10,9 +10,12 @@ import { DashboardEmptyState } from "@/components/dashboard/empty-state";
 import { AdBanner }          from "@/components/ads/ad-banner";
 import { GroupPersistRedirect } from "@/components/app/group-persist-redirect";
 import { OnboardingTour }    from "@/components/onboarding/onboarding-tour";
+import { MyTeamsSection, type MyTeamEntry } from "@/components/dashboard/my-teams-section";
 import { getMembers, getGroup } from "@/lib/services/groups";
-import { getUpcomingMatches }   from "@/lib/services/matches";
+import { getUpcomingMatches, getRecentResultsByTeam } from "@/lib/services/matches";
 import { getCurrentUserProfile } from "@/lib/services/user-group";
+import { getFollowedTeamIds } from "@/lib/services/follows";
+import { getTeamsByIds } from "@/lib/services/teams";
 import Link from "next/link";
 
 function sbAdmin() {
@@ -105,11 +108,24 @@ export default async function DashboardPage({
     })
     .filter(Boolean) as Array<{ id: string; name: string; passkey: string }>;
 
+  // My Teams — real followed teams + their last 5 finished results.
+  const followedTeamIds = await getFollowedTeamIds(userProfile.id);
+  const followedTeamIdList = Array.from(followedTeamIds);
+  const [followedTeams, resultsByTeam] = await Promise.all([
+    getTeamsByIds(followedTeamIdList),
+    getRecentResultsByTeam(followedTeamIdList, 5),
+  ]);
+  const myTeams: MyTeamEntry[] = followedTeams.map((team) => ({
+    team,
+    results: resultsByTeam.get(team.id) ?? [],
+  }));
+
   // No groups: show rich empty state with clear paths
   if (!allGroups.length) {
     return (
       <div className="ta-stadium-bg w-full max-w-full overflow-x-hidden space-y-6">
         <WelcomeModal forceOpen={false} />
+        <MyTeamsSection teams={myTeams} />
         <DashboardEmptyState />
         <AdBanner isAdFree={false} isCorporate={false} />
       </div>
@@ -172,6 +188,8 @@ export default async function DashboardPage({
           </span>
         </Link>
       )}
+
+      <MyTeamsSection teams={myTeams} />
 
       {/* 3-panel carousel — fills remaining space */}
       <div className="-mx-4 sm:-mx-6" style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}>

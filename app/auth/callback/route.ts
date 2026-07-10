@@ -20,8 +20,14 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(new URL("/signin?error=oauth_failed", requestUrl.origin));
   }
 
-  // Password reset: exchange code then send to update-password page
-  const destination = type === "recovery" ? "/update-password" : next;
+  // Password reset: exchange code then send to update-password page.
+  // Everything else routes through the one-time "Pick your teams" onboarding
+  // gate — it's a no-op passthrough for anyone who's already completed it
+  // (existing accounts are backfilled, see migration 042), so this is safe
+  // for both new-account confirmations and returning-user OAuth logins.
+  const destination = type === "recovery"
+    ? "/update-password"
+    : `/onboarding/teams?next=${encodeURIComponent(next)}`;
 
   // Build the response first — @supabase/ssr v0.3+ uses setAll which writes
   // cookies directly onto this response object before it is returned.

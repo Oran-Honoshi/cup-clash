@@ -1,8 +1,11 @@
 export const dynamic = "force-dynamic";
 
+import Link from "next/link";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { Newspaper, ExternalLink } from "lucide-react";
 import { EmptyState } from "@/components/ui/empty-state";
+import { createClient } from "@/lib/supabase/server";
+import { getFollowedCompetitionIds, getFollowedTeamIds } from "@/lib/services/follows";
 
 function sbAdmin() {
   return createAdminClient(
@@ -37,8 +40,18 @@ function relativeTime(iso: string | null): string {
 export default async function NewsPage({
   searchParams,
 }: {
-  searchParams: { team?: string; competition?: string };
+  searchParams: { team?: string; competition?: string; followed?: string };
 }) {
+  const sbSession = createClient();
+  const { data: { user } } = await sbSession.auth.getUser();
+  const userId = user?.id ?? null;
+
+  const wantsFollowedOnly = searchParams.followed === "1" && !!userId;
+  const [followedTeamIds, followedCompetitionIds] = wantsFollowedOnly
+    ? await Promise.all([getFollowedTeamIds(userId), getFollowedCompetitionIds(userId)])
+    : [new Set<string>(), new Set<string>()];
+  const hasAnyFollow = followedTeamIds.size > 0 || followedCompetitionIds.size > 0;
+
   const sb = sbAdmin();
   let query = sb
     .from("news_articles")
@@ -50,6 +63,15 @@ export default async function NewsPage({
   if (searchParams.team) query = query.contains("team_ids", [searchParams.team]);
   if (searchParams.competition) query = query.contains("competition_ids", [searchParams.competition]);
 
+  // "Following" toggle — an article matches if it's tagged with ANY followed
+  // team OR ANY followed competition (array-overlap OR across both columns).
+  if (wantsFollowedOnly) {
+    const orParts: string[] = [];
+    if (followedTeamIds.size) orParts.push(`team_ids.ov.{${Array.from(followedTeamIds).join(",")}}`);
+    if (followedCompetitionIds.size) orParts.push(`competition_ids.ov.{${Array.from(followedCompetitionIds).join(",")}}`);
+    query = orParts.length ? query.or(orParts.join(",")) : query.eq("id", "00000000-0000-0000-0000-000000000000");
+  }
+
   const [{ data }, { data: sourceRows }] = await Promise.all([
     query,
     sb.from("news_sources").select("id, name"),
@@ -59,26 +81,82 @@ export default async function NewsPage({
 
   return (
     <div className="space-y-6">
-      <div>
-        <div style={{ fontFamily: "var(--font-ui)", fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--ac)", marginBottom: 4 }}>
-          Intel
+      <div className="flex items-start justify-between gap-4 flex-wrap">
+        <div>
+          <div style={{ fontFamily: "var(--font-ui)", fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "var(--ac)", marginBottom: 4 }}>
+            Intel
+          </div>
+          <h1 style={{ fontFamily: "var(--font-display)", fontSize: 36, fontWeight: 800, textTransform: "uppercase", color: "var(--tx)", margin: 0 }}>
+            Football News
+          </h1>
+          <p style={{ fontSize: 14, color: "var(--mt)", fontFamily: "var(--font-ui)", marginTop: 4 }}>
+            {(searchParams.team || searchParams.competition)
+              ? "Filtered feed — clear the filter to see everything."
+              : wantsFollowedOnly
+              ? hasAnyFollow
+                ? "Stories tagged with your followed teams and competitions."
+                : "You aren't following anything yet — showing nothing. Pick some teams first."
+              : "Aggregated from trusted sources. Tap a headline to read the full story."}
+          </p>
         </div>
-        <h1 style={{ fontFamily: "var(--font-display)", fontSize: 36, fontWeight: 800, textTransform: "uppercase", color: "var(--tx)", margin: 0 }}>
-          Football News
-        </h1>
-        <p style={{ fontSize: 14, color: "var(--mt)", fontFamily: "var(--font-ui)", marginTop: 4 }}>
-          {(searchParams.team || searchParams.competition)
-            ? "Filtered feed — clear the filter to see everything."
-            : "Aggregated from trusted sources. Tap a headline to read the full story."}
-        </p>
+
+        {userId && (
+          <div
+            style={{
+              background: "var(--nv, var(--sf))",
+              borderRadius: 10,
+              border: "1px solid var(--br)",
+              overflow: "hidden",
+              padding: 3,
+              gap: 2,
+              display: "flex",
+              flexShrink: 0,
+            }}
+          >
+            {[{ key: "all", label: "All News", href: "/news" }, { key: "followed", label: "Following", href: "/news?followed=1" }].map((t) => {
+              const isActive = t.key === "followed" ? wantsFollowedOnly : !wantsFollowedOnly;
+              return (
+                <Link
+                  key={t.key}
+                  href={t.href}
+                  style={{
+                    padding: "7px 14px",
+                    textAlign: "center",
+                    borderRadius: 7,
+                    fontFamily: "var(--font-ui)",
+                    fontSize: 12,
+                    fontWeight: 700,
+                    textTransform: "uppercase",
+                    letterSpacing: "0.04em",
+                    background: isActive ? "color-mix(in srgb, var(--ac) 15%, transparent)" : "transparent",
+                    color: isActive ? "var(--ac)" : "var(--mt)",
+                    textDecoration: "none",
+                    whiteSpace: "nowrap",
+                  }}
+                >
+                  {t.label}
+                </Link>
+              );
+            })}
+          </div>
+        )}
       </div>
 
       {articles.length === 0 ? (
-        <EmptyState
-          icon={<Newspaper size={28} style={{ color: "var(--ac)" }} />}
-          title="No stories yet"
-          body="Check back soon — new headlines are fetched every 20 minutes."
-        />
+        wantsFollowedOnly && !hasAnyFollow ? (
+          <EmptyState
+            icon={<Newspaper size={28} style={{ color: "var(--ac)" }} />}
+            title="Nothing followed yet"
+            body="Follow a few teams or competitions and their stories will show up here."
+            cta={{ label: "Pick your teams", href: "/leagues?tab=teams" }}
+          />
+        ) : (
+          <EmptyState
+            icon={<Newspaper size={28} style={{ color: "var(--ac)" }} />}
+            title="No stories yet"
+            body="Check back soon — new headlines are fetched every 20 minutes."
+          />
+        )
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {articles.map((a) => (

@@ -90,10 +90,11 @@ export default function SignUpPage() {
 
     setLoading(false);
 
-    // If already logged in (email confirm OFF) — go straight to dashboard
+    // If already logged in (email confirm OFF) — route through the one-time
+    // "Pick your teams" onboarding step before landing on their destination.
     if (isLoggedIn) {
       const next = new URLSearchParams(window.location.search).get("next") ?? "/dashboard";
-      window.location.replace(next);
+      window.location.replace(`/onboarding/teams?next=${encodeURIComponent(next)}`);
       return;
     }
 
