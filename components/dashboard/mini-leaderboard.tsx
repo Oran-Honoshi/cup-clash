@@ -20,7 +20,7 @@ export function MiniLeaderboard({ members, groupId, currentUserId }: MiniLeaderb
 
   return (
     <div
-      className="w-full max-w-full"
+      className="w-full max-w-full cc-elevated"
       style={{
         borderRadius: 18,
         background: "var(--sf)",

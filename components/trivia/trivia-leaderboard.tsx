@@ -40,7 +40,7 @@ export function TriviaLeaderboard({ scores = [], currentUserId }: TriviaLeaderbo
   const allPlayed = scores.length > 0 && scores.every(s => s.total > 0);
 
   return (
-    <div className="rounded-2xl overflow-hidden"
+    <div className="rounded-2xl overflow-hidden cc-elevated"
       style={{
         background: "rgba(18,14,38,0.32)",
         backdropFilter: "blur(40px) saturate(180%)",

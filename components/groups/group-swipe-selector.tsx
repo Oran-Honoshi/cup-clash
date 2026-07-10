@@ -11,6 +11,10 @@ interface GroupSwipeSelectorProps {
   basePath: string;
 }
 
+// Left/right inset so the first/last tile is never flush against the
+// screen edge, and the next tile visibly peeks in to signal scrollability.
+const PEEK_PADDING = 20;
+
 export function GroupSwipeSelector({ groups, activeGroupId, basePath }: GroupSwipeSelectorProps) {
   const { setSelectedGroupId, refreshPredictions } = useGroupContext();
   const router = useRouter();
@@ -31,7 +35,7 @@ export function GroupSwipeSelector({ groups, activeGroupId, basePath }: GroupSwi
     const tile      = activeRef.current;
     const container = containerRef.current;
     if (!tile || !container) return;
-    container.scrollTo({ left: tile.offsetLeft - 14, behavior: "instant" });
+    container.scrollTo({ left: tile.offsetLeft - PEEK_PADDING, behavior: "instant" });
   }, [activeGroupId]);
 
   return (
@@ -47,12 +51,14 @@ export function GroupSwipeSelector({ groups, activeGroupId, basePath }: GroupSwi
         borderBottom: "1px solid #0c1c0c",
         display: "flex",
         alignItems: "center",
-        padding: "6px 14px",
+        padding: `6px ${PEEK_PADDING}px`,
         overflowX: "auto",
         overflowY: "hidden",
         scrollbarWidth: "none",
         WebkitOverflowScrolling: "touch",
         touchAction: "pan-x",
+        scrollPaddingLeft: PEEK_PADDING,
+        scrollPaddingRight: PEEK_PADDING,
         gap: 8,
       } as React.CSSProperties}
     >

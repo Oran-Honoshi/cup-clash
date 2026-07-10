@@ -93,7 +93,7 @@ function CollapsibleSection({
 }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
-    <div className="overflow-hidden mb-3" style={{ background: "var(--ip)", border: "0.5px solid var(--br)", borderRadius: "var(--border-radius-lg)" }}>
+    <div className="overflow-hidden mb-3 cc-elevated" style={{ background: "var(--ip)", border: "0.5px solid var(--br)", borderRadius: "var(--border-radius-lg)" }}>
       <button
         type="button"
         onClick={() => setOpen(o => !o)}
@@ -211,7 +211,7 @@ export function PlayerDrawer({ userId, groupId, name, avatarUrl, country, points
             aria-label={`${name} player details`}
             initial={{ x: "100%" }} animate={{ x: 0 }} exit={{ x: "100%" }}
             transition={{ type: "spring", damping: 28, stiffness: 280 }}
-            className="fixed right-0 top-0 bottom-0 z-50 w-full sm:w-96 overflow-y-auto"
+            className="fixed right-0 top-0 bottom-0 z-50 w-full sm:w-96 overflow-y-auto cc-elevated"
             style={{
               background: "var(--sf)",
               borderLeft: "1px solid var(--br)",
@@ -280,7 +280,7 @@ export function PlayerDrawer({ userId, groupId, name, avatarUrl, country, points
                 { icon: TrendingUp, label: "Correct", value: stats.outcomeCount, color: "var(--ac)" },
                 { icon: XCircle,    label: "Missed",  value: stats.missedCount,  color: "#f87171" },
               ].map(({ icon: Icon, label, value, color }) => (
-                <div key={label} className="p-2.5 text-center" style={{ background: "var(--ip)", border: "0.5px solid var(--br)", borderRadius: "var(--border-radius-lg)" }}>
+                <div key={label} className="p-2.5 text-center cc-elevated" style={{ background: "var(--ip)", border: "0.5px solid var(--br)", borderRadius: "var(--border-radius-lg)" }}>
                   <Icon size={14} className="mx-auto mb-1" style={{ color }} />
                   <div className="ta-stat-number" style={{ color: "var(--tx)" }}>{value}</div>
                   <div className="ta-section-label">{label}</div>

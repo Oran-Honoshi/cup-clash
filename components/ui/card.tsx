@@ -43,10 +43,13 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(function Card(
   return (
     <div
       ref={ref}
-      className={cn("relative rounded-2xl transition-all duration-200", className)}
+      className={cn(
+        "relative rounded-2xl transition-all duration-200 cc-elevated",
+        interactive && "cc-elevated-interactive",
+        className
+      )}
       style={{
         ...variantStyle[variant],
-        ...(interactive ? { cursor: "pointer" } : {}),
       }}
       {...rest}
     >

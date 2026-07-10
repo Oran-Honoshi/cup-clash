@@ -39,7 +39,7 @@ export function GroupCard({
   const typeLabel  = groupType === "single_match" ? "Single Match" : "Full Tournament";
 
   return (
-    <Card variant="glass" className="overflow-hidden" style={{ background: "var(--sf)", border: "1px solid var(--br)", boxShadow: "0 4px 24px var(--shad)" }}>
+    <Card variant="glass" className="overflow-hidden" style={{ background: "var(--sf)", border: "1px solid var(--br)" }}>
       <div className="h-1" style={{ background: "linear-gradient(90deg, transparent, var(--ac), transparent)" }} />
 
       {/* Header */}

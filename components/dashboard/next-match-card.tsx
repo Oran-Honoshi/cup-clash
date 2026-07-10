@@ -110,7 +110,7 @@ export function NextMatchCard({ match, groupId = "", cardLabel, onOpenMatchCente
 
   return (
     <div
-      className="ta-hero-card w-full max-w-full overflow-hidden"
+      className={cn("ta-hero-card w-full max-w-full overflow-hidden cc-elevated", onOpenMatchCenter && "cc-elevated-interactive")}
       style={{ boxShadow: `0 12px 40px var(--shad)`, cursor: onOpenMatchCenter ? "pointer" : undefined }}
       onClick={onOpenMatchCenter ? () => onOpenMatchCenter(match.id) : undefined}
       role={onOpenMatchCenter ? "button" : undefined}

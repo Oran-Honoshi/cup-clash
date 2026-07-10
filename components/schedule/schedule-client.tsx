@@ -305,7 +305,7 @@ function MatchCard({
 
   return (
     <div
-      className="transition-all cursor-pointer"
+      className="transition-all cursor-pointer cc-elevated cc-elevated-interactive"
       style={cardStyle}
       onClick={() => onOpenMatchCenter(match.id)}
       role="button"

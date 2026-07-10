@@ -223,30 +223,34 @@ export function DashboardCarousel({
 
   return (
     <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}>
-      {/* Panel pill tabs */}
-      <div className="flex items-center justify-center gap-1.5 px-4"
-        style={{ height: 40, background: "var(--nv)", borderBottom: "1px solid var(--br)", flexShrink: 0 }}>
-        {PANELS.map((label, i) => (
-          <button
-            key={label}
-            id={label === "LEADERBOARD" ? "tour-group-preds" : undefined}
-            onClick={() => setPanel(i)}
-            className="font-barlow font-bold uppercase shrink-0"
-            style={{
-              padding: "5px 13px",
-              borderRadius: 20,
-              fontSize: 9,
-              letterSpacing: 1,
-              border:     panel === i ? "1px solid var(--ac)" : "1px solid var(--br)",
-              background: panel === i ? "color-mix(in srgb, var(--ac) 14%, transparent)" : "transparent",
-              color:      panel === i ? "var(--ac)"           : "var(--mt)",
-              cursor:     "pointer",
-              transition: "all 0.15s",
-            }}
-          >
-            {label}
-          </button>
-        ))}
+      {/* Panel pill tabs — independent floating pills, no shared bar behind them */}
+      <div className="flex items-center justify-center gap-2 px-4"
+        style={{ height: 40, flexShrink: 0 }}>
+        {PANELS.map((label, i) => {
+          const active = panel === i;
+          return (
+            <button
+              key={label}
+              id={label === "LEADERBOARD" ? "tour-group-preds" : undefined}
+              onClick={() => setPanel(i)}
+              className="font-barlow font-bold uppercase shrink-0"
+              style={{
+                padding: "5px 13px",
+                borderRadius: 20,
+                fontSize: 9,
+                letterSpacing: 1,
+                border:     active ? "1px solid var(--ac)" : "1px solid var(--br)",
+                background: active ? "color-mix(in srgb, var(--ac) 14%, transparent)" : "var(--sf)",
+                color:      active ? "var(--ac)" : "var(--mt)",
+                boxShadow:  active ? "0 2px 12px -1px color-mix(in srgb, var(--ac) 40%, transparent)" : "0 1px 6px -1px var(--shad)",
+                cursor:     "pointer",
+                transition: "all 0.15s",
+              }}
+            >
+              {label}
+            </button>
+          );
+        })}
       </div>
 
       {/* Active panel — vertically scrollable */}

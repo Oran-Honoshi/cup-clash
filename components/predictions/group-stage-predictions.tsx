@@ -170,7 +170,7 @@ function MatchCard({ match, prediction, onChange, globalLocked, stagePoints, mat
   }[status];
 
   return (
-    <div style={{ ...cardStyle, borderRadius: 16, padding: "8px 12px", opacity: matchLocked ? 0.7 : 1, width: "100%" }}>
+    <div className="cc-elevated" style={{ ...cardStyle, borderRadius: 16, padding: "8px 12px", opacity: matchLocked ? 0.7 : 1, width: "100%" }}>
 
       {/* Row 1 — meta strip */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
@@ -346,7 +346,7 @@ function QualifiersSummary({ predictions, allComplete, allMatches }: { predictio
   if (!qualifiers.length) return null;
 
   return (
-    <div className="rounded-2xl p-5 space-y-5" style={glassCard}>
+    <div className="rounded-2xl p-5 space-y-5 cc-elevated" style={glassCard}>
       <div className="flex items-center gap-2.5">
         <Trophy size={18} strokeWidth={1.5} style={{ color: "#fbbf24" }} />
         <span className="ta-match-label" style={{ color: "var(--tx)" }}>{t("pred_title")} — </span>
@@ -615,7 +615,7 @@ export function GroupStagePredictions({ groupId, locked = false, userId, isAdFre
     <div className="w-full max-w-full space-y-4 overflow-x-clip">
 
       {/* Progress + save status */}
-      <div className="rounded-2xl px-4 py-3" style={{ ...glassCard, borderRadius: 18 }}>
+      <div className="rounded-2xl px-4 py-3 cc-elevated" style={{ ...glassCard, borderRadius: 18 }}>
         {/* Match counter — prominent */}
         <div className="flex items-center justify-between mb-3">
           <div>
@@ -729,7 +729,7 @@ export function GroupStagePredictions({ groupId, locked = false, userId, isAdFre
 
           {/* Predicted table — collapsible below matches */}
           {standings.some(t => t.played > 0) && (
-            <div className="p-4" style={{ ...glassCard, borderRadius: 18 }}>
+            <div className="p-4 cc-elevated" style={{ ...glassCard, borderRadius: 18 }}>
               <div className="flex items-center gap-2 mb-3">
                 <ArrowUpDown size={14} strokeWidth={1.5} style={{ color: "var(--ac)" }} />
                 <span className="ta-match-label" style={{ fontSize: 16, color: "var(--tx)" }}>{t("pred_pred_table")}</span>

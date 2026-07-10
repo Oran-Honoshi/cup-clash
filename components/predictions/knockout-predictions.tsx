@@ -43,7 +43,7 @@ interface ScorePrediction { home: string; away: string; }
 // ── Pending / unconfirmed placeholder match ─────────────────────────────────
 function PendingMatchCard({ match }: { match: ScheduleMatch }) {
   return (
-    <div style={{
+    <div className="cc-elevated" style={{
       background: "var(--sf)",
       border: "1px solid var(--br)",
       borderRadius: 16, padding: "12px 14px", opacity: 0.65,
@@ -95,7 +95,7 @@ function KnockoutCard({ match, prediction, onChange, flashStatus }: {
   }[status];
 
   return (
-    <div style={{ ...cardStyle, borderRadius: 16, padding: "10px 14px", opacity: locked ? 0.7 : 1 }}>
+    <div className="cc-elevated" style={{ ...cardStyle, borderRadius: 16, padding: "10px 14px", opacity: locked ? 0.7 : 1 }}>
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-3 ta-meta">
           <span className="flex items-center gap-1" suppressHydrationWarning><Clock size={9} />{localTimeStr}</span>
@@ -224,7 +224,7 @@ export function KnockoutPredictions({ groupId, userId, allMatches = [] }: Knocko
 
   if (!knockoutMatches.length) {
     return (
-      <div className="rounded-2xl p-5 text-center" style={glassCard}>
+      <div className="rounded-2xl p-5 text-center cc-elevated" style={glassCard}>
         <p className="ta-body">
           No knockout matches open for predictions yet.
         </p>
@@ -234,7 +234,7 @@ export function KnockoutPredictions({ groupId, userId, allMatches = [] }: Knocko
 
   return (
     <div className="w-full max-w-full space-y-4">
-      <div className="rounded-2xl px-4 py-3" style={{ ...glassCard, borderRadius: 18 }}>
+      <div className="rounded-2xl px-4 py-3 cc-elevated" style={{ ...glassCard, borderRadius: 18 }}>
         <div className="flex items-center justify-between">
           <div>
             <div className="ta-section-label mb-0.5">

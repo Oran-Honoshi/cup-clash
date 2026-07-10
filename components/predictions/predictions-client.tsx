@@ -195,7 +195,7 @@ export function PredictionsClient({
       >
 
         {/* ── Section 1: GROUP STAGE ─────────────────────────────── */}
-        <div ref={el => { sectionRefs.current[0] = el; }} style={cardStyle}>
+        <div ref={el => { sectionRefs.current[0] = el; }} className="cc-elevated" style={cardStyle}>
           <div className="flex items-center justify-between mb-3">
             <span className="ta-match-label" style={{ color: "var(--tx)" }}>
               Group Stage
@@ -215,7 +215,7 @@ export function PredictionsClient({
         </div>
 
         {/* ── Section 2: KNOCKOUT ───────────────────────────────── */}
-        <div ref={el => { sectionRefs.current[1] = el; }} style={cardStyle}>
+        <div ref={el => { sectionRefs.current[1] = el; }} className="cc-elevated" style={cardStyle}>
           <div className="mb-3">
             <span className="ta-match-label" style={{ color: "var(--tx)" }}>
               Knockout
@@ -225,7 +225,7 @@ export function PredictionsClient({
         </div>
 
         {/* ── Section 3: TOURNAMENT PICKS ───────────────────────── */}
-        <div ref={el => { sectionRefs.current[2] = el; }} style={cardStyle}>
+        <div ref={el => { sectionRefs.current[2] = el; }} className="cc-elevated" style={cardStyle}>
           <div className="mb-3">
             <span className="ta-match-label" style={{ color: "var(--tx)" }}>
               Tournament Picks
@@ -235,7 +235,7 @@ export function PredictionsClient({
         </div>
 
         {/* ── Section 4: BONUS QUESTIONS ────────────────────────── */}
-        <div ref={el => { sectionRefs.current[3] = el; }} style={cardStyle}>
+        <div ref={el => { sectionRefs.current[3] = el; }} className="cc-elevated" style={cardStyle}>
           <div className="mb-3">
             <span className="ta-match-label" style={{ color: "var(--tx)" }}>
               Bonus Questions

@@ -120,7 +120,7 @@ function CompactBoard({
       </div>
 
       {members.length === 0 ? (
-        <div className="rounded-2xl px-4 py-8 text-center" style={{ background: "var(--sf)", border: "0.5px solid var(--br)", borderRadius: "var(--border-radius-lg)" }}>
+        <div className="rounded-2xl px-4 py-8 text-center cc-elevated" style={{ background: "var(--sf)", border: "0.5px solid var(--br)", borderRadius: "var(--border-radius-lg)" }}>
           <Trophy size={22} style={{ color: "var(--mt)", margin: "0 auto 8px" }} />
           <div className="ta-team-name" style={{ fontSize: 12, color: "var(--t2)" }}>No members yet</div>
           <div className="ta-meta mt-1">Invite friends to see the standings here.</div>
@@ -153,7 +153,7 @@ function CompactBoard({
                     <span className="ta-team-name text-center truncate w-full px-1" style={{ fontSize: 11, color: isMe ? "var(--ac)" : "var(--tx)" }}>
                       {member.name}
                     </span>
-                    <div style={{
+                    <div className="cc-elevated cc-elevated-interactive" style={{
                       width: 80, height: COMPACT_PODIUM_HEIGHTS[pos],
                       borderRadius: "var(--border-radius-lg) var(--border-radius-lg) 0 0",
                       background: COMPACT_PODIUM_BG[pos],
@@ -187,7 +187,7 @@ function CompactBoard({
 
           {/* Remaining rows */}
           {rest.length > 0 && (
-            <div className="rounded-2xl overflow-hidden" style={{ background: "var(--sf)", border: "0.5px solid var(--br)", borderRadius: "var(--border-radius-lg)" }}>
+            <div className="rounded-2xl overflow-hidden cc-elevated" style={{ background: "var(--sf)", border: "0.5px solid var(--br)", borderRadius: "var(--border-radius-lg)" }}>
               {rest.map((member, i) => {
                 const rank = i + 4;
                 const isMe = member.id === currentUserId;
@@ -238,7 +238,7 @@ function FullBoard({
   if (members.length === 0) {
     return (
       <div
-        className="rounded-2xl px-6 py-12 text-center"
+        className="rounded-2xl px-6 py-12 text-center cc-elevated"
         style={{
           background: "var(--sf)",
           border: "0.5px solid var(--br)",
@@ -359,6 +359,7 @@ function FullBoard({
 
                 {/* Bar — shows only points + rank label */}
                 <div
+                  className="cc-elevated cc-elevated-interactive"
                   style={{
                     width: "100%",
                     height: PODIUM_BAR_HEIGHTS[pos],
@@ -408,7 +409,7 @@ function FullBoard({
 
       {/* ── Main card ───────────────────────────────────── */}
       <div
-        className="rounded-2xl overflow-hidden"
+        className="rounded-2xl overflow-hidden cc-elevated"
         style={{
           background: "var(--sf)",
           border: "0.5px solid var(--br)",

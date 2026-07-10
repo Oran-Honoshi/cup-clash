@@ -14,12 +14,7 @@ export function LeaguesTabs({ active, basePath }: LeaguesTabsProps) {
   return (
     <div
       style={{
-        background: "var(--nv, var(--sf))",
-        borderRadius: 10,
-        border: "1px solid var(--br)",
-        overflow: "hidden",
-        padding: 3,
-        gap: 2,
+        gap: 8,
         display: "flex",
         maxWidth: 320,
       }}
@@ -34,13 +29,15 @@ export function LeaguesTabs({ active, basePath }: LeaguesTabsProps) {
               flex: 1,
               padding: "7px 0",
               textAlign: "center",
-              borderRadius: 7,
+              borderRadius: 10,
               fontFamily: "var(--font-ui)",
               fontSize: 12,
               fontWeight: 700,
               textTransform: "uppercase",
               letterSpacing: "0.06em",
-              background: isActive ? "color-mix(in srgb, var(--ac) 15%, transparent)" : "transparent",
+              background: isActive ? "color-mix(in srgb, var(--ac) 15%, transparent)" : "var(--sf)",
+              border: isActive ? "1px solid color-mix(in srgb, var(--ac) 35%, transparent)" : "1px solid var(--br)",
+              boxShadow: isActive ? "0 2px 12px -1px color-mix(in srgb, var(--ac) 30%, transparent)" : "0 1px 6px -1px var(--shad)",
               color: isActive ? "var(--ac)" : "var(--mt)",
               textDecoration: "none",
               transition: "all 0.15s",

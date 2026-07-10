@@ -171,7 +171,7 @@ export function BonusQuestions({ groupId, userId }: BonusQuestionsProps) {
             Bonus Questions
           </span>
         </div>
-        <div className="p-6 text-center" style={glassCard}>
+        <div className="p-6 text-center cc-elevated" style={glassCard}>
           <HelpCircle size={26} className="mx-auto mb-3" style={{ color: "var(--ft)" }} />
           <p className="text-sm font-bold mb-1" style={{ color: "var(--tx)" }}>No bonus questions yet</p>
           <p className="ta-body">
@@ -204,7 +204,7 @@ export function BonusQuestions({ groupId, userId }: BonusQuestionsProps) {
         const isSaved  = saved[q.id]  ?? false;
 
         return (
-          <div key={q.id} className="p-5" style={glassCard}>
+          <div key={q.id} className="p-5 cc-elevated" style={glassCard}>
             <div className="flex items-start justify-between gap-3 mb-4">
               <div className="ta-body" style={{ color: "var(--tx)" }}>
                 {q.question}

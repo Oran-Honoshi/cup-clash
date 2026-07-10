@@ -250,7 +250,7 @@ export function PredictionsSummaryClient({ userId, groups, matches }: Props) {
 
       {/* Filters */}
       {showFilters && (
-        <div className="flex flex-col gap-3 px-4 py-3 rounded-2xl" style={{ background: "var(--sf)", border: "1px solid var(--br)" }}>
+        <div className="flex flex-col gap-3 px-4 py-3 rounded-2xl cc-elevated" style={{ background: "var(--sf)", border: "1px solid var(--br)" }}>
           <div>
             <div className="text-[10px] font-black uppercase tracking-wider mb-2" style={{ color: "var(--mt)" }}>Groups</div>
             <div className="flex flex-wrap gap-2">
@@ -292,7 +292,7 @@ export function PredictionsSummaryClient({ userId, groups, matches }: Props) {
       )}
 
       {/* Sticky comparison table */}
-      <div className="relative rounded-2xl overflow-hidden" style={{ background: "var(--sf)", border: "1px solid var(--br)" }}>
+      <div className="relative rounded-2xl overflow-hidden cc-elevated" style={{ background: "var(--sf)", border: "1px solid var(--br)" }}>
         {loading ? (
           <div className="py-16 flex items-center justify-center">
             <BallLoader size="md" label="Loading your predictions…" />

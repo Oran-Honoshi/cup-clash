@@ -11,7 +11,7 @@ export function StatCards({ rank, points, totalPlayers, exactScores }: StatCards
 
   return (
     <div
-      className="flex items-baseline gap-3 px-4 py-3"
+      className="flex items-baseline gap-3 px-4 py-3 cc-elevated"
       style={{ background: "var(--sf)", border: "1px solid var(--br)", borderRadius: 14 }}
     >
       <span className="ta-stat-number" style={{ color: "var(--ac)" }}>

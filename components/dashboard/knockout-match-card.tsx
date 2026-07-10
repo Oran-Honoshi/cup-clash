@@ -111,7 +111,7 @@ export function KnockoutMatchCard({ match, groupId }: KnockoutMatchCardProps) {
     <Card
       variant="glass-accent"
       className="overflow-hidden"
-      style={{ background: "var(--sf)", border: "1px solid var(--br)", boxShadow: "0 4px 24px var(--shad)" }}
+      style={{ background: "var(--sf)", border: "1px solid var(--br)" }}
     >
       <div className="h-px w-full" style={{ background: "linear-gradient(90deg, transparent, rgb(var(--accent)/0.6), transparent)" }} />
       <div className="p-5 space-y-4">

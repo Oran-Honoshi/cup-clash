@@ -31,12 +31,11 @@ export function LeaderboardTabs({ members, currentUserId, groupId, isAdFree, isC
 
   return (
     <div className="space-y-5">
-      {/* Tab bar */}
+      {/* Tab bar — independent floating pills, no shared bar behind them */}
       <div
         role="tablist"
         aria-label="Leaderboard view"
-        className="flex gap-1 p-1 rounded-2xl"
-        style={{ background: "var(--sf)", border: "1px solid var(--br)" }}
+        className="flex gap-2"
       >
         {TABS.map((tab) => (
           <button
@@ -50,10 +49,16 @@ export function LeaderboardTabs({ members, currentUserId, groupId, isAdFree, isC
               FOCUS_RING_INSET,
             )}
             style={active === tab.id ? {
-              backgroundColor: "rgb(var(--accent) / 0.15)",
+              background: "rgb(var(--accent) / 0.15)",
               color: "rgb(var(--accent-glow))",
-              boxShadow: "inset 0 0 0 1px rgb(var(--accent) / 0.2)",
-            } : { color: "var(--mt)" }}
+              border: "1px solid rgb(var(--accent) / 0.35)",
+              boxShadow: "0 2px 12px -1px rgb(var(--accent) / 0.3)",
+            } : {
+              background: "var(--sf)",
+              color: "var(--mt)",
+              border: "1px solid var(--br)",
+              boxShadow: "0 1px 6px -1px var(--shad)",
+            }}
             onMouseEnter={(e) => { if (active !== tab.id) e.currentTarget.style.color = "var(--t2)"; }}
             onMouseLeave={(e) => { if (active !== tab.id) e.currentTarget.style.color = "var(--mt)"; }}
           >

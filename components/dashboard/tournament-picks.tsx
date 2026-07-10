@@ -398,7 +398,7 @@ export function TournamentPicks({ groupId, userId, locked = false }: TournamentP
 
       {/* Tournament Winner — only if enabled */}
       {rules.enable_winner && (
-        <div className="p-5" style={glassCard}>
+        <div className="p-5 cc-elevated" style={glassCard}>
           <div className="flex items-center gap-2 mb-4">
             <Trophy size={18} style={{ color: "#d97706" }} />
             <span className="ta-match-label" style={{ color: "var(--tx)" }}>Tournament Winner</span>
@@ -418,7 +418,7 @@ export function TournamentPicks({ groupId, userId, locked = false }: TournamentP
       )}
 
       {/* Golden Guess tiebreaker — always collected, used only to break ties */}
-      <div className="p-5" style={glassCard}>
+      <div className="p-5 cc-elevated" style={glassCard}>
         <div className="flex items-center gap-2 mb-1">
           <Trophy size={18} style={{ color: "var(--ac)" }} />
           <span className="ta-match-label" style={{ color: "var(--tx)" }}>Golden Guess Tiebreaker</span>
@@ -444,7 +444,7 @@ export function TournamentPicks({ groupId, userId, locked = false }: TournamentP
 
       {/* Best 3rd place — only if enabled */}
       {rules.enable_best_third && (
-        <div className="p-5" style={glassCard}>
+        <div className="p-5 cc-elevated" style={glassCard}>
           <div className="flex items-center gap-2 mb-1">
             <BarChart2 size={18} style={{ color: "var(--ac)" }} />
             <span className="ta-match-label" style={{ color: "var(--tx)" }}>Best 3rd-Place Teams</span>
@@ -460,7 +460,7 @@ export function TournamentPicks({ groupId, userId, locked = false }: TournamentP
 
       {/* Awards — only if at least one award type is enabled */}
       {hasPlayerAwards && (
-        <div className="p-5 space-y-5" style={glassCard}>
+        <div className="p-5 space-y-5 cc-elevated" style={glassCard}>
           <div className="flex items-center gap-2">
             <Star size={18} style={{ color: "#d97706" }} />
             <span className="ta-match-label" style={{ color: "var(--tx)" }}>Awards</span>

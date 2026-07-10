@@ -127,7 +127,7 @@ export function TopScorersLeaderboard() {
   }, []);
 
   return (
-    <div className="rounded-2xl overflow-hidden" style={DARK_CARD_STYLE}>
+    <div className="rounded-2xl overflow-hidden cc-elevated" style={DARK_CARD_STYLE}>
       <div className="flex items-center gap-2.5 px-5 py-4 border-b" style={{ borderColor: "var(--br)" }}>
         <Star size={18} style={{ color: "var(--sc)" }} />
         <span className="ta-screen-title" style={{ fontSize: 20, color: "var(--tx)" }}>Top Scorers</span>
@@ -178,7 +178,7 @@ export function TopAssistersLeaderboard() {
   }, []);
 
   return (
-    <div className="rounded-2xl overflow-hidden" style={DARK_CARD_STYLE}>
+    <div className="rounded-2xl overflow-hidden cc-elevated" style={DARK_CARD_STYLE}>
       <div className="flex items-center gap-2.5 px-5 py-4 border-b" style={{ borderColor: "var(--br)" }}>
         <Users size={18} style={{ color: "rgb(var(--accent-glow))" }} />
         <span className="ta-screen-title" style={{ fontSize: 20, color: "var(--tx)" }}>Top Assisters</span>
