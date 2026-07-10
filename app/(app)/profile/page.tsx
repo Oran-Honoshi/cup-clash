@@ -8,6 +8,7 @@ import { MemberAvatar, SOCCER_PRESETS, dicebearUrl } from "@/components/ui/membe
 import { BallLoader } from "@/components/ui/BallLoader";
 import { useTheme } from "@/components/theme-provider";
 import { ThemePicker } from "@/components/ui/theme-picker";
+import { DeleteAccountSection } from "@/components/account/delete-account";
 import type { CountryCode } from "@/lib/types";
 import { useLocale } from "@/components/i18n/locale-provider";
 
@@ -474,6 +475,8 @@ export default function ProfilePage() {
         {saved && <Check size={16} />}
         {saving ? t("prof_saving") : saved ? t("prof_saved") : t("prof_saveChanges")}
       </button>
+
+      <DeleteAccountSection />
     </div>
   );
 }
