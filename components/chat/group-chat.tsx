@@ -6,8 +6,7 @@ import { Send, Image as ImageIcon, X, MessageCircle } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useLocale } from "@/components/i18n/locale-provider";
 import { cn } from "@/lib/utils";
-import { flagUrl } from "@/lib/countries";
-import NextImage from "next/image";
+import { UserAvatar } from "@/components/ui/UserAvatar";
 
 interface ChatMessage {
   id: string;
@@ -21,32 +20,6 @@ interface ChatMessage {
 
 interface GifResult {
   id: string; url: string; preview: string; title: string;
-}
-
-const COUNTRY_FLAGS: Record<string, string> = {
-  "Argentina": "ar", "Brazil": "br", "France": "fr", "England": "gb-eng",
-  "Germany": "de",   "Spain": "es",  "Israel": "il",  "USA": "us",
-};
-
-function Avatar({ name, country, avatarUrl }: { name: string; country: string; avatarUrl: string | null }) {
-  const flag = COUNTRY_FLAGS[country];
-  if (avatarUrl) return (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img src={avatarUrl} alt={name} className="h-8 w-8 rounded-full object-cover shrink-0" />
-  );
-  return (
-    <div className="h-8 w-8 rounded-full overflow-hidden shrink-0 relative"
-      style={{ border: "2px solid rgba(0,212,255,0.2)" }}>
-      {flag ? (
-        <NextImage src={flagUrl(flag, 20)} alt={country} fill className="object-cover" unoptimized />
-      ) : (
-        <div className="h-full w-full flex items-center justify-center text-xs font-bold"
-          style={{ background: "linear-gradient(135deg, #00D4FF, #00FF88)", color: "#0B141B" }}>
-          {name[0].toUpperCase()}
-        </div>
-      )}
-    </div>
-  );
 }
 
 interface GroupChatProps {
@@ -211,7 +184,7 @@ export function GroupChat({ groupId, currentUserId, currentUserName, isPaid, inl
                 {!isOwn && (
                   <div className="w-8 shrink-0">
                     {showAvatar && profile && (
-                      <Avatar name={profile.name} country={profile.country} avatarUrl={profile.avatar_url} />
+                      <UserAvatar name={profile.name} avatarUrl={profile.avatar_url} size="sm" teamCountry={profile.country} />
                     )}
                   </div>
                 )}
@@ -384,7 +357,7 @@ export function GroupChat({ groupId, currentUserId, currentUserName, isPaid, inl
                     {!isOwn && (
                       <div className="w-8 shrink-0">
                         {showAvatar && profile && (
-                          <Avatar name={profile.name} country={profile.country} avatarUrl={profile.avatar_url} />
+                          <UserAvatar name={profile.name} avatarUrl={profile.avatar_url} size="sm" teamCountry={profile.country} />
                         )}
                       </div>
                     )}

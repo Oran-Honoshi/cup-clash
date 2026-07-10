@@ -4,8 +4,10 @@ import { useState, useEffect, useRef } from "react";
 import { Camera, Check, AlertCircle, Upload, RefreshCw, X, Zap, Mail } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { CountrySelector } from "@/components/auth/country-selector";
-import { MemberAvatar, SOCCER_PRESETS, dicebearUrl } from "@/components/ui/member-avatar";
+import { SOCCER_PRESETS, dicebearUrl } from "@/components/ui/member-avatar";
+import { UserAvatar } from "@/components/ui/UserAvatar";
 import { BallLoader } from "@/components/ui/BallLoader";
+import { getTeamColor } from "@/lib/countries";
 import { useTheme } from "@/components/theme-provider";
 import { ThemePicker } from "@/components/ui/theme-picker";
 import { DeleteAccountSection } from "@/components/account/delete-account";
@@ -167,6 +169,7 @@ export default function ProfilePage() {
   }
 
   const autoAvatarUrl = dicebearUrl(profile.name || "player", 160);
+  const teamColor = getTeamColor(profile.country);
   const TABS = [
     { id: "auto",   label: t("prof_autoAvatar"), mobileLabel: t("prof_autoAvatar") },
     { id: "preset", label: t("prof_soccerRole"), mobileLabel: t("prof_soccerRole") },
@@ -212,12 +215,26 @@ export default function ProfilePage() {
       )}
 
       {/* Avatar section */}
-      <div style={{ ...glassCard, padding: 24 }}>
-        <div className="flex items-center gap-4 mb-5">
+      <div
+        style={{
+          ...glassCard,
+          padding: 24,
+          position: "relative",
+          overflow: "hidden",
+          ...(teamColor && {
+            backgroundImage: `radial-gradient(120% 100% at 15% 0%, rgb(${teamColor.accent} / 0.16), transparent 60%)`,
+          }),
+        }}
+      >
+        <div className="flex items-center gap-4 mb-5" style={{ position: "relative" }}>
           <div className="relative shrink-0">
-            <div style={{ display: "inline-flex", borderRadius: "50%", boxShadow: "0 0 0 3px rgba(0,212,255,0.25)" }}>
-              <MemberAvatar name={profile.name || "Player"} avatarUrl={profile.avatar_url} size="xl" />
-            </div>
+            <UserAvatar
+              name={profile.name || "Player"}
+              avatarUrl={profile.avatar_url}
+              size="xl"
+              ringColor={teamColor ? undefined : "rgba(0,212,255,0.25)"}
+              teamCountry={profile.country}
+            />
             {tab === "auto" && (
               <button
                 onClick={() => setProfile(p => ({ ...p, name: p.name + " " }))}

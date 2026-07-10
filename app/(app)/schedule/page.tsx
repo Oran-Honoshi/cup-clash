@@ -124,9 +124,17 @@ export default async function SchedulePage({
   > = {};
   let isAdFree    = false;
   let isCorporate = false;
+  let userCountry: string | null = null;
 
   if (user) {
     userId = user.id;
+
+    const { data: profileRow } = await sbAdmin()
+      .from("profiles")
+      .select("country")
+      .eq("id", user.id)
+      .maybeSingle();
+    userCountry = (profileRow as { country: string | null } | null)?.country ?? null;
 
     const { data: memberships } = await sbAdmin()
       .from("group_members")
@@ -199,6 +207,7 @@ export default async function SchedulePage({
         initialPredictions={initialPredictions}
         isAdFree={isAdFree}
         isCorporate={isCorporate}
+        userCountry={userCountry}
       />
     </>
   );

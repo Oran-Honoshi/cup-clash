@@ -125,7 +125,7 @@ export default async function DashboardPage({
     return (
       <div className="ta-stadium-bg w-full max-w-full overflow-x-hidden space-y-6">
         <WelcomeModal forceOpen={false} />
-        <MyTeamsSection teams={myTeams} />
+        <MyTeamsSection teams={myTeams} teamCountry={userProfile.country} />
         <DashboardEmptyState />
         <AdBanner isAdFree={false} isCorporate={false} />
       </div>

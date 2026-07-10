@@ -206,7 +206,7 @@ function CompactBoard({
                       cursor: "pointer",
                     }}>
                     <span className="ta-meta" style={{ fontSize: 12, width: 20, textAlign: "center", flexShrink: 0 }}>{rank}</span>
-                    <UserAvatar name={member.name} avatarUrl={member.avatarUrl} size="xs" ringColor={isMe ? "var(--ac)" : undefined} />
+                    <UserAvatar name={member.name} avatarUrl={member.avatarUrl} size="xs" ringColor={isMe ? "var(--ac)" : undefined} teamCountry={member.country} />
                     <span className="ta-team-name truncate flex-1" style={{ fontSize: 13, color: isMe ? "var(--ac)" : "var(--tx)" }}>{member.name}</span>
                     <span className="ta-lb-points" style={{ fontSize: 13, color: isMe ? "var(--ac)" : "var(--tx)", flexShrink: 0 }}>{member.points}</span>
                   </button>
@@ -514,7 +514,7 @@ function FullBoard({
                       <Ghost size={15} style={{ color: "var(--mt)" }} />
                     </div>
                   ) : (
-                    <UserAvatar name={member.name} avatarUrl={member.avatarUrl} size="sm" ringColor={isCurrentUser ? "var(--ac)" : undefined} />
+                    <UserAvatar name={member.name} avatarUrl={member.avatarUrl} size="sm" ringColor={isCurrentUser ? "var(--ac)" : undefined} teamCountry={member.country} />
                   )}
                 </div>
 

@@ -97,3 +97,20 @@ export function countryFlagCode(country: string): string {
   if (/^[a-z]{2}(-[a-z]{2,3})?$/.test(country)) return country;
   return "un";
 }
+
+export interface TeamColor {
+  /** Space-separated RGB triplet, e.g. "117 192 232" — use as `rgb(${accent})` or `rgb(${accent} / 0.3)`. */
+  accent: string;
+  accentGlow: string;
+}
+
+/**
+ * Pure country -> color lookup. Unlike ThemeProvider's --accent/--accent-glow
+ * (a single global CSS var pair for whichever country the current viewer has
+ * selected), this can be called for ANY user's country — e.g. to render each
+ * member's own team color on their own avatar in a Leaderboard.
+ */
+export function getTeamColor(country: string | null | undefined): TeamColor | null {
+  if (!country) return null;
+  return COUNTRIES[country as CountryCode]?.theme ?? null;
+}

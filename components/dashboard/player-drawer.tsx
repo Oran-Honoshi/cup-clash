@@ -226,7 +226,7 @@ export function PlayerDrawer({ userId, groupId, name, avatarUrl, country, points
             >
               <div className="flex items-center gap-3">
                 <div className="relative shrink-0">
-                  <UserAvatar name={name} avatarUrl={avatarUrl} size="lg" />
+                  <UserAvatar name={name} avatarUrl={avatarUrl} size="lg" teamCountry={country} />
                   <div className="absolute -bottom-1 -right-1">
                     <FlagBadge code={countryFlagCode(country)} label={country} size="sm" />
                   </div>

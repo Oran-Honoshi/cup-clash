@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ChevronRight, Shield } from "lucide-react";
 import { FlagBadge } from "@/components/ui/FlagBadge";
+import { getTeamColor } from "@/lib/countries";
 import type { TeamRow } from "@/lib/services/teams";
 import type { TeamRecentResult } from "@/lib/services/matches";
 
@@ -11,6 +12,8 @@ export interface MyTeamEntry {
 
 interface MyTeamsSectionProps {
   teams: MyTeamEntry[];
+  /** Viewer's own "Your Team" country selection — tints the empty-state accent when set. */
+  teamCountry?: string | null;
 }
 
 const OUTCOME_COLOR: Record<TeamRecentResult["outcome"], string> = {
@@ -34,7 +37,8 @@ function ResultDot({ outcome }: { outcome: TeamRecentResult["outcome"] }) {
   );
 }
 
-export function MyTeamsSection({ teams }: MyTeamsSectionProps) {
+export function MyTeamsSection({ teams, teamCountry }: MyTeamsSectionProps) {
+  const teamColor = getTeamColor(teamCountry);
   return (
     <div
       className="-mx-4 sm:-mx-6 px-4 sm:px-6"
@@ -60,7 +64,9 @@ export function MyTeamsSection({ teams }: MyTeamsSectionProps) {
         >
           <div
             className="flex items-center justify-center shrink-0 rounded-xl"
-            style={{ width: 36, height: 36, background: "var(--ip)", color: "var(--ac)" }}
+            style={teamColor
+              ? { width: 36, height: 36, background: `rgb(${teamColor.accent} / 0.14)`, color: `rgb(${teamColor.accent})` }
+              : { width: 36, height: 36, background: "var(--ip)", color: "var(--ac)" }}
           >
             <Shield size={16} />
           </div>

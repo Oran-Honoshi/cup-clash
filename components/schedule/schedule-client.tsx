@@ -18,6 +18,7 @@ import { PredictionDistribution } from "@/components/dashboard/prediction-distri
 import { AdBanner } from "@/components/ads/ad-banner";
 import { createClient } from "@/lib/supabase/client";
 import { WC2026_MATCHES, STAGE_LABELS, type ScheduleMatch } from "@/lib/schedule";
+import { getTeamColor } from "@/lib/countries";
 import { cn } from "@/lib/utils";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
@@ -63,6 +64,8 @@ export interface ScheduleClientProps {
   initialPredictions: Record<string, UserPrediction>;
   isAdFree: boolean;
   isCorporate: boolean;
+  /** Viewer's own "Your Team" country selection — tints the exact-score confetti burst. */
+  userCountry?: string | null;
 }
 
 // ── Constants ──────────────────────────────────────────────────────────────────
@@ -139,17 +142,66 @@ function predResult(pred: UserPrediction, homeScore: number, awayScore: number):
 
 // ── Prediction Row ─────────────────────────────────────────────────────────────
 
+// Cup Clash brand colors — used when the viewer hasn't picked a "Your Team" country
+const DEFAULT_CONFETTI_COLORS = ["#2A398D", "#E61D25", "#D4AF37", "#FFFFFF"];
+
+// Only celebrate matches finished within this window — otherwise a user with
+// several historical exact scores gets every one of them fired at once the
+// first time they open Schedule after this feature ships (localStorage has
+// no "seen" keys yet for any of them).
+const CONFETTI_RECENCY_MS = 6 * 60 * 60 * 1000; // 6 hours
+
 function PredRow({
   pred,
   homeScore,
   awayScore,
   type,
+  matchId,
+  kickoff,
+  userCountry,
 }: {
   pred: UserPrediction;
   homeScore?: number;
   awayScore?: number;
   type: "upcoming" | "live" | "finished";
+  matchId?: string;
+  kickoff?: string;
+  userCountry?: string | null;
 }) {
+  const isExactReveal =
+    type === "finished" && homeScore !== undefined && awayScore !== undefined &&
+    predResult(pred, homeScore, awayScore) === "exact" &&
+    !!kickoff && Date.now() - new Date(kickoff).getTime() < CONFETTI_RECENCY_MS;
+
+  // Fire a one-time confetti burst the first time this user sees an exact-score
+  // result, tinted with their own team color. localStorage dedupes per match so
+  // re-visiting Schedule for an already-seen result doesn't re-trigger it.
+  useEffect(() => {
+    if (!isExactReveal || !matchId) return;
+
+    const seenKey = `cc_confetti_seen_${matchId}`;
+    try {
+      if (localStorage.getItem(seenKey)) return;
+      localStorage.setItem(seenKey, "1");
+    } catch {
+      return;
+    }
+
+    const teamColor = getTeamColor(userCountry);
+    const colors = teamColor
+      ? [`rgb(${teamColor.accent})`, `rgb(${teamColor.accentGlow})`, "#FFFFFF"]
+      : DEFAULT_CONFETTI_COLORS;
+
+    const pkg = "canvas-confetti";
+    import(/* webpackIgnore: true */ pkg as string)
+      .then((mod: { default?: (opts: object) => void }) => {
+        const confetti = mod.default;
+        if (typeof confetti !== "function") return;
+        confetti({ particleCount: 90, spread: 75, origin: { y: 0.4 }, colors });
+      })
+      .catch(() => { /* not installed yet — skip */ });
+  }, [isExactReveal, matchId, userCountry]);
+
   if (type === "finished" && homeScore !== undefined && awayScore !== undefined) {
     const result = predResult(pred, homeScore, awayScore);
     return (
@@ -250,6 +302,7 @@ function MatchCard({
   kickoff,
   timeConfirmed,
   onOpenMatchCenter,
+  userCountry,
 }: {
   match: ScheduleMatch;
   state: ReturnType<typeof getMatchState>;
@@ -266,6 +319,7 @@ function MatchCard({
   kickoff: string;
   timeConfirmed: boolean;
   onOpenMatchCenter: (matchId: string) => void;
+  userCountry?: string | null;
 }) {
   const locked = state.type !== "upcoming" || isLocked(kickoff);
   const canPredict = !!userId && !!groupId && !locked && state.type === "upcoming";
@@ -360,7 +414,10 @@ function MatchCard({
           {showPred && pred && (
             <PredRow pred={pred} type="finished"
               homeScore={(state as { homeScore: number }).homeScore}
-              awayScore={(state as { awayScore: number }).awayScore} />
+              awayScore={(state as { awayScore: number }).awayScore}
+              matchId={match.id}
+              kickoff={kickoff}
+              userCountry={userCountry} />
           )}
         </>
       )}
@@ -452,6 +509,7 @@ export function ScheduleClient({
   initialPredictions,
   isAdFree,
   isCorporate,
+  userCountry,
 }: ScheduleClientProps) {
   const router = useRouter();
   const { setPrediction, refreshPredictions, setActiveUserId } = useGroupContext();
@@ -860,6 +918,7 @@ export function ScheduleClient({
                             kickoff={matchKickoffs?.[m.id] ?? m.kickoff_at}
                             timeConfirmed={matchTimeConfirmed?.[m.id] ?? m.time_confirmed ?? true}
                             onOpenMatchCenter={setOpenMatchId}
+                            userCountry={userCountry}
                           />
                         );
                       })}
