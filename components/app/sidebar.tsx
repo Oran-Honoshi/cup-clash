@@ -139,19 +139,19 @@ export function AppSidebar() {
     <aside
       className="hidden lg:flex fixed ltr:left-0 rtl:right-0 top-0 bottom-0 w-60 flex-col z-40 ltr:border-r rtl:border-l"
       style={{
-        background: "rgba(8, 12, 22, 0.85)",
+        background: "var(--nv)",
         backdropFilter: "blur(24px)",
         WebkitBackdropFilter: "blur(24px)",
-        borderColor: "rgba(255, 255, 255, 0.07)",
+        borderColor: "var(--br)",
       }}
     >
       {/* Logo */}
-      <div className="px-5 py-5 border-b" style={{ borderColor: "rgba(255,255,255,0.07)" }}>
+      <div className="px-5 py-5 border-b" style={{ borderColor: "var(--br)" }}>
         <Link href="/dashboard" className="flex items-center gap-2.5">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/icons/icon-192.png" alt="Cup Clash" className="h-8 w-8 rounded-xl object-cover" />
           <div>
-            <div className="font-display text-lg font-black uppercase leading-none text-white">
+            <div className="font-display text-lg font-black uppercase leading-none" style={{ color: "var(--tx)" }}>
               Cup<span style={{ background: "linear-gradient(135deg,#00FF88,#00D4FF)", WebkitBackgroundClip: "text", backgroundClip: "text", WebkitTextFillColor: "transparent" }}>Clash</span>
             </div>
             <div className="text-[9px] font-bold uppercase tracking-widest" style={{ color: "#00D4FF" }}>
@@ -171,15 +171,15 @@ export function AppSidebar() {
                 "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold transition-all",
               )}
               style={active ? {
-                background: "rgba(0, 255, 136, 0.12)",
-                color: "#00FF88",
-                border: "1px solid rgba(0, 255, 136, 0.25)",
-                boxShadow: "0 0 12px rgba(0,255,136,0.08)",
+                background: "color-mix(in srgb, var(--ac) 12%, transparent)",
+                color: "var(--ac)",
+                border: "1px solid color-mix(in srgb, var(--ac) 25%, transparent)",
+                boxShadow: "0 0 12px color-mix(in srgb, var(--ac) 8%, transparent)",
               } : {
-                color: "rgba(255,255,255,0.55)",
+                color: "var(--t2)",
               }}
-              onMouseEnter={e => { if (!active) (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.9)"; (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.06)"; }}
-              onMouseLeave={e => { if (!active) { (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.55)"; (e.currentTarget as HTMLElement).style.background = "transparent"; } }}
+              onMouseEnter={e => { if (!active) { (e.currentTarget as HTMLElement).style.color = "var(--tx)"; (e.currentTarget as HTMLElement).style.background = "var(--ip)"; } }}
+              onMouseLeave={e => { if (!active) { (e.currentTarget as HTMLElement).style.color = "var(--t2)"; (e.currentTarget as HTMLElement).style.background = "transparent"; } }}
             >
               <Icon size={17} strokeWidth={active ? 2.5 : 1.75} />
               {t(key)}
@@ -191,13 +191,13 @@ export function AppSidebar() {
         <Link href="/schedule"
           className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold transition-all"
           style={pathname === "/schedule" ? {
-            background: "rgba(0, 255, 136, 0.12)",
-            color: "#00FF88",
-            border: "1px solid rgba(0, 255, 136, 0.25)",
-            boxShadow: "0 0 12px rgba(0,255,136,0.08)",
-          } : { color: "rgba(255,255,255,0.55)" }}
-          onMouseEnter={e => { if (pathname !== "/schedule") { (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.9)"; (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.06)"; } }}
-          onMouseLeave={e => { if (pathname !== "/schedule") { (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.55)"; (e.currentTarget as HTMLElement).style.background = "transparent"; } }}
+            background: "color-mix(in srgb, var(--ac) 12%, transparent)",
+            color: "var(--ac)",
+            border: "1px solid color-mix(in srgb, var(--ac) 25%, transparent)",
+            boxShadow: "0 0 12px color-mix(in srgb, var(--ac) 8%, transparent)",
+          } : { color: "var(--t2)" }}
+          onMouseEnter={e => { if (pathname !== "/schedule") { (e.currentTarget as HTMLElement).style.color = "var(--tx)"; (e.currentTarget as HTMLElement).style.background = "var(--ip)"; } }}
+          onMouseLeave={e => { if (pathname !== "/schedule") { (e.currentTarget as HTMLElement).style.color = "var(--t2)"; (e.currentTarget as HTMLElement).style.background = "transparent"; } }}
         >
           <CalendarDays size={17} strokeWidth={pathname === "/schedule" ? 2.5 : 1.75} />
           Schedule
@@ -207,13 +207,13 @@ export function AppSidebar() {
         <Link href="/predictions/summary"
           className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold transition-all"
           style={pathname.startsWith("/predictions/summary") ? {
-            background: "rgba(0, 255, 136, 0.12)",
-            color: "#00FF88",
-            border: "1px solid rgba(0, 255, 136, 0.25)",
-            boxShadow: "0 0 12px rgba(0,255,136,0.08)",
-          } : { color: "rgba(255,255,255,0.55)" }}
-          onMouseEnter={e => { if (!pathname.startsWith("/predictions/summary")) { (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.9)"; (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.06)"; } }}
-          onMouseLeave={e => { if (!pathname.startsWith("/predictions/summary")) { (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.55)"; (e.currentTarget as HTMLElement).style.background = "transparent"; } }}
+            background: "color-mix(in srgb, var(--ac) 12%, transparent)",
+            color: "var(--ac)",
+            border: "1px solid color-mix(in srgb, var(--ac) 25%, transparent)",
+            boxShadow: "0 0 12px color-mix(in srgb, var(--ac) 8%, transparent)",
+          } : { color: "var(--t2)" }}
+          onMouseEnter={e => { if (!pathname.startsWith("/predictions/summary")) { (e.currentTarget as HTMLElement).style.color = "var(--tx)"; (e.currentTarget as HTMLElement).style.background = "var(--ip)"; } }}
+          onMouseLeave={e => { if (!pathname.startsWith("/predictions/summary")) { (e.currentTarget as HTMLElement).style.color = "var(--t2)"; (e.currentTarget as HTMLElement).style.background = "transparent"; } }}
         >
           <LayoutGrid size={17} strokeWidth={pathname.startsWith("/predictions/summary") ? 2.5 : 1.75} />
           Summary
@@ -222,9 +222,9 @@ export function AppSidebar() {
         {/* Chat */}
         <Link href={CHAT_HREF}
           className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold transition-all"
-          style={{ color: "rgba(255,255,255,0.55)" }}
-          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.9)"; (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.06)"; }}
-          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = "rgba(255,255,255,0.55)"; (e.currentTarget as HTMLElement).style.background = "transparent"; }}
+          style={{ color: "var(--t2)" }}
+          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = "var(--tx)"; (e.currentTarget as HTMLElement).style.background = "var(--ip)"; }}
+          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = "var(--t2)"; (e.currentTarget as HTMLElement).style.background = "transparent"; }}
         >
           <MessageCircle size={17} strokeWidth={1.75} />
           {t("nav_chat")}
@@ -235,10 +235,10 @@ export function AppSidebar() {
           <Link href="/testing"
             className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold transition-all"
             style={pathname === "/testing" ? {
-              background: "rgba(0,255,136,0.12)",
-              color: "#00FF88",
-              border: "1px solid rgba(0,255,136,0.25)",
-            } : { color: "rgba(255,255,255,0.35)" }}>
+              background: "color-mix(in srgb, var(--ac) 12%, transparent)",
+              color: "var(--ac)",
+              border: "1px solid color-mix(in srgb, var(--ac) 25%, transparent)",
+            } : { color: "var(--ft)" }}>
             <Shield size={17} strokeWidth={1.75} />
             Testing
           </Link>
@@ -346,27 +346,27 @@ export function AppSidebar() {
       </nav>
 
       {/* User footer */}
-      <div className="px-3 py-2 border-t" style={{ borderColor: "rgba(255,255,255,0.07)" }}>
+      <div className="px-3 py-2 border-t" style={{ borderColor: "var(--br)" }}>
         <LanguageSelector />
       </div>
 
-      <div className="px-3 py-4 border-t space-y-1" style={{ borderColor: "rgba(255,255,255,0.07)" }}>
+      <div className="px-3 py-4 border-t space-y-1" style={{ borderColor: "var(--br)" }}>
 
         {authLoaded && !profile ? (
           /* Guest card */
           <div
             style={{
-              background: "rgba(0,255,136,0.06)",
-              border: "1px solid rgba(0,255,136,0.15)",
+              background: "color-mix(in srgb, var(--ac) 6%, transparent)",
+              border: "1px solid color-mix(in srgb, var(--ac) 15%, transparent)",
               borderRadius: 16,
               padding: "14px 16px",
               margin: "0 0 4px",
             }}
           >
-            <div className="font-display text-white uppercase font-black mb-1" style={{ fontSize: 15 }}>
+            <div className="font-display uppercase font-black mb-1" style={{ fontSize: 15, color: "var(--tx)" }}>
               Ready to compete?
             </div>
-            <p className="text-xs mb-3" style={{ color: "rgba(255,255,255,0.45)" }}>
+            <p className="text-xs mb-3" style={{ color: "var(--mt)" }}>
               Save picks, join groups, and climb the leaderboard.
             </p>
             <Link href="/signup" className="block">
@@ -380,7 +380,7 @@ export function AppSidebar() {
               </button>
             </Link>
             <Link href="/signin" className="block text-center text-xs font-bold"
-              style={{ color: "rgba(255,255,255,0.4)" }}>
+              style={{ color: "var(--mt)" }}>
               Sign in
             </Link>
           </div>
@@ -392,12 +392,12 @@ export function AppSidebar() {
 
             <Link href="/profile"
               className="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all"
-              style={{ color: "rgba(255,255,255,0.75)" }}
-              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.07)"; }}
+              style={{ color: "var(--t2)" }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "var(--ip)"; }}
               onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}
             >
               <div className="h-8 w-8 rounded-full overflow-hidden shrink-0 flex items-center justify-center"
-                style={{ border: "2px solid rgba(0,255,136,0.3)" }}>
+                style={{ border: "2px solid color-mix(in srgb, var(--ac) 30%, transparent)" }}>
                 {profile?.avatar_url?.startsWith("preset:") ? (
                   <SidebarPresetAvatar presetId={profile.avatar_url.slice(7)} />
                 ) : profile?.avatar_url ? (
@@ -414,9 +414,9 @@ export function AppSidebar() {
                 )}
               </div>
               <div className="flex-1 min-w-0">
-                <div className="text-sm font-bold truncate text-white">{displayName}</div>
+                <div className="text-sm font-bold truncate" style={{ color: "var(--tx)" }}>{displayName}</div>
               </div>
-              <Settings size={14} style={{ color: "rgba(255,255,255,0.35)" }} />
+              <Settings size={14} style={{ color: "var(--ft)" }} />
             </Link>
 
             <button onClick={handleSignOut}

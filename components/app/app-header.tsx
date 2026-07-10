@@ -33,9 +33,9 @@ function MobileLanguagePicker() {
       <div
         className="flex flex-col rounded-t-3xl"
         style={{
-          background: "rgba(10,8,24,0.98)",
-          border: "1px solid rgba(255,255,255,0.12)",
-          boxShadow: "0 -8px 40px rgba(0,0,0,0.5)",
+          background: "var(--nv)",
+          border: "1px solid var(--br)",
+          boxShadow: "0 -8px 40px var(--shad)",
           maxHeight: "72dvh",
           // Always LTR — language list should read L→R regardless of app locale
           direction: "ltr",
@@ -44,17 +44,17 @@ function MobileLanguagePicker() {
 
         {/* Handle */}
         <div className="flex justify-center pt-3 pb-1 shrink-0">
-          <div className="w-10 h-1 rounded-full" style={{ background: "rgba(255,255,255,0.2)" }} />
+          <div className="w-10 h-1 rounded-full" style={{ background: "var(--dv)" }} />
         </div>
 
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-3 shrink-0 border-b"
-          style={{ borderColor: "rgba(255,255,255,0.1)" }}>
-          <span className="font-display text-lg uppercase font-black text-white">Language</span>
+          style={{ borderColor: "var(--dv)" }}>
+          <span className="font-display text-lg uppercase font-black" style={{ color: "var(--tx)" }}>Language</span>
           <button
             onClick={() => setOpen(false)}
             className="h-9 w-9 flex items-center justify-center rounded-xl"
-            style={{ background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.5)" }}>
+            style={{ background: "var(--ip)", color: "var(--mt)" }}>
             <X size={16} />
           </button>
         </div>
@@ -69,27 +69,27 @@ function MobileLanguagePicker() {
                 onClick={() => { setLocale(l as Locale); setOpen(false); }}
                 className="w-full flex items-center gap-3 px-5 py-4 text-left transition-colors"
                 style={{
-                  background: active ? "rgba(0,212,255,0.1)" : "transparent",
-                  borderBottom: "1px solid rgba(255,255,255,0.06)",
+                  background: active ? "color-mix(in srgb, var(--ac) 10%, transparent)" : "transparent",
+                  borderBottom: "1px solid var(--dv)",
                   minHeight: 56,
                 }}>
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img src={`/flags/${LOCALES[l].flagCode}.svg`} alt="" aria-hidden="true" width={28} height={20} className="shrink-0 rounded-sm object-cover" style={{ aspectRatio: "3/2" }} />
-                <span className="font-bold text-base" style={{ color: active ? "#00D4FF" : "#ffffff" }}>
+                <span className="font-bold text-base" style={{ color: active ? "var(--ac)" : "var(--tx)" }}>
                   {LOCALES[l].nativeName}
                 </span>
-                <span className="text-xs" style={{ color: "rgba(255,255,255,0.35)" }}>
+                <span className="text-xs" style={{ color: "var(--mt)" }}>
                   {LOCALES[l].name}
                 </span>
                 {(l === "he" || l === "ar") && (
                   <span className="text-[10px] px-1.5 py-0.5 rounded shrink-0"
-                    style={{ background: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.4)" }}>
+                    style={{ background: "var(--ip)", color: "var(--mt)" }}>
                     RTL
                   </span>
                 )}
                 {active && (
                   <span className="ms-auto shrink-0">
-                    <Check size={16} style={{ color: "#00D4FF" }} />
+                    <Check size={16} style={{ color: "var(--ac)" }} />
                   </span>
                 )}
               </button>
@@ -111,11 +111,11 @@ function MobileLanguagePicker() {
           width: 32,
           height: 32,
           borderRadius: 16,
-          background: "#0e1f0e",
-          border: "1px solid #1c3a1c",
+          background: "var(--ip)",
+          border: "1px solid var(--br)",
         }}
         aria-label="Change language">
-        <Globe size={16} style={{ color: "#a0c8a0" }} />
+        <Globe size={16} style={{ color: "var(--t2)" }} />
       </button>
 
       {/* Portal to <body> — escapes header's z-index stacking context */}
@@ -137,11 +137,11 @@ export function AppHeader({ title }: { title?: string }) {
     <header
       className="lg:hidden sticky top-0 z-30 flex items-center justify-between px-4 border-b"
       style={{
-        background: "rgba(8, 12, 22, 0.85)",
+        background: "var(--nv)",
         backdropFilter: "blur(24px)",
         WebkitBackdropFilter: "blur(24px)",
-        borderColor: "#0c1c0c",
-        boxShadow: "0 2px 16px rgba(0,0,0,0.4)",
+        borderColor: "var(--br)",
+        boxShadow: "0 2px 16px var(--shad)",
         paddingTop: "calc(12px + env(safe-area-inset-top))",
         paddingBottom: "12px",
         height: "calc(52px + env(safe-area-inset-top))",
@@ -159,11 +159,11 @@ export function AppHeader({ title }: { title?: string }) {
             width: 32,
             height: 32,
             borderRadius: 16,
-            background: "#0e1f0e",
-            border: "1px solid #1c3a1c",
+            background: "var(--ip)",
+            border: "1px solid var(--br)",
           }}
         >
-          <Bell size={16} style={{ color: "#a0c8a0" }} />
+          <Bell size={16} style={{ color: "var(--t2)" }} />
           {unread > 0 && (
             <span
               className="absolute flex items-center justify-center font-mono font-bold text-white"
@@ -188,8 +188,8 @@ export function AppHeader({ title }: { title?: string }) {
             width: 32,
             height: 32,
             borderRadius: 16,
-            background: "#0e1f0e",
-            border: "1px solid #1c3a1c",
+            background: "var(--ip)",
+            border: "1px solid var(--br)",
           }}
           aria-label="Sign out"
         >

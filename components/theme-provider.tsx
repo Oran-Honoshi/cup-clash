@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from "react";
 import { COUNTRIES } from "@/lib/countries";
 import type { CountryCode } from "@/lib/types";
 
@@ -27,19 +27,33 @@ const BRAND_ACCENT_GLOW = "0 212 255";    // #00D4FF
 const STORAGE_KEY      = "cupclash_country";
 const APP_THEME_STORAGE_KEY = "cupclash_app_theme";
 
-export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [country, setCountryState]   = useState<CountryCode | null>(null);
-  const [appTheme, setAppThemeState] = useState<AppTheme>("a");
+// Read persisted values synchronously during initial state creation (React
+// lazy useState initializer) rather than in a post-mount effect. Loading
+// them in a separate effect meant the "apply + persist" effect below fired
+// once already, with the stale default, before the load effect's state
+// update landed — that first write clobbered a saved theme back to "a" in
+// localStorage (and briefly flashed the default before snapping over).
+function getInitialCountry(): CountryCode | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY) as CountryCode | null;
+    if (saved && COUNTRIES[saved]) return saved;
+  } catch {}
+  return null;
+}
 
-  // Load persisted country + app theme on mount (instant, pre-profile-fetch)
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem(STORAGE_KEY) as CountryCode | null;
-      if (saved && COUNTRIES[saved]) setCountryState(saved);
-      const savedTheme = localStorage.getItem(APP_THEME_STORAGE_KEY) as AppTheme | null;
-      if (savedTheme && VALID_APP_THEMES.includes(savedTheme)) setAppThemeState(savedTheme);
-    } catch {}
-  }, []);
+function getInitialAppTheme(): AppTheme {
+  if (typeof window === "undefined") return "a";
+  try {
+    const saved = localStorage.getItem(APP_THEME_STORAGE_KEY) as AppTheme | null;
+    if (saved && VALID_APP_THEMES.includes(saved)) return saved;
+  } catch {}
+  return "a";
+}
+
+export function ThemeProvider({ children }: { children: ReactNode }) {
+  const [country, setCountryState]   = useState<CountryCode | null>(getInitialCountry);
+  const [appTheme, setAppThemeState] = useState<AppTheme>(getInitialAppTheme);
 
   // Apply CSS vars + persist whenever country changes
   useEffect(() => {
@@ -63,14 +77,18 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     try { localStorage.setItem(APP_THEME_STORAGE_KEY, appTheme); } catch {}
   }, [appTheme]);
 
-  const setCountry = (code: CountryCode | null) => {
+  // Stable identities — callers (e.g. Profile page's load effect) depend on
+  // these in a useEffect deps array; a fresh function reference every render
+  // would re-fire that effect on every theme change and refetch the stale
+  // pre-write value from Supabase, snapping the theme back.
+  const setCountry = useCallback((code: CountryCode | null) => {
     setCountryState(code);
     if (!code) { try { localStorage.removeItem(STORAGE_KEY); } catch {} }
-  };
+  }, []);
 
-  const setAppTheme = (theme: AppTheme) => {
+  const setAppTheme = useCallback((theme: AppTheme) => {
     if (VALID_APP_THEMES.includes(theme)) setAppThemeState(theme);
-  };
+  }, []);
 
   return (
     <ThemeContext.Provider value={{ country, setCountry, appTheme, setAppTheme }}>

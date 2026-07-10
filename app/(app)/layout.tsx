@@ -11,13 +11,12 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     <GroupProvider>
     <div className="relative flex overflow-hidden" style={{ height: "100dvh" }}>
 
-      {/* ── Stadium background ── */}
+      {/* ── Stadium background — theme-aware via .ta-stadium-bg (globals.css);
+          each [data-theme] block swaps/removes the image and its overlay. ── */}
       <div
-        className="fixed inset-0 z-0 bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: "url('/assets/images/stadium-bg-perspective.png')", transform: "translateZ(0)", willChange: "transform" }}
+        className="ta-stadium-bg fixed inset-0 z-0"
+        style={{ transform: "translateZ(0)", willChange: "transform" }}
       />
-      {/* Darkening overlay so text stays readable */}
-      <div className="fixed inset-0 z-0 bg-black/55" style={{ transform: "translateZ(0)" }} />
 
       {/* ── App shell (sits above the background) ── */}
       <AppSidebar />
