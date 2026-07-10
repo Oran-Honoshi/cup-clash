@@ -25,10 +25,13 @@ export function PageTransition({ children }: { children: React.ReactNode }) {
         overflowY: "auto",
         overflowX: "hidden",
         opacity: visible ? 1 : 0,
-        transform: `translateY(${visible ? 0 : 6}px)`,
+        // No transform here on purpose: a transform (even translateY(0)) or
+        // `will-change: transform` makes this div a containing block for
+        // `position: fixed` descendants, trapping any modal rendered inside
+        // a page instead of letting it cover the viewport.
         // Transition only when showing — hide is instant so there's no ghost of the old page
-        transition: visible ? "opacity 110ms ease-out, transform 110ms ease-out" : "none",
-        willChange: "opacity, transform",
+        transition: visible ? "opacity 110ms ease-out" : "none",
+        willChange: "opacity",
       }}
     >
       {children}
