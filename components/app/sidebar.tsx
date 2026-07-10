@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, Users, Trophy, Target, BarChart2,
-  GitBranch, Brain, Bell, Shield, LogOut, Settings, MessageCircle, Trash2, CalendarDays, LayoutGrid,
+  GitBranch, Brain, Bell, Shield, LogOut, Settings, MessageCircle, Trash2, CalendarDays, LayoutGrid, Newspaper,
 } from "lucide-react";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
@@ -228,6 +228,22 @@ export function AppSidebar() {
         >
           <MessageCircle size={17} strokeWidth={1.75} />
           {t("nav_chat")}
+        </Link>
+
+        {/* News */}
+        <Link href="/news"
+          className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold transition-all"
+          style={pathname.startsWith("/news") ? {
+            background: "color-mix(in srgb, var(--ac) 12%, transparent)",
+            color: "var(--ac)",
+            border: "1px solid color-mix(in srgb, var(--ac) 25%, transparent)",
+            boxShadow: "0 0 12px color-mix(in srgb, var(--ac) 8%, transparent)",
+          } : { color: "var(--t2)" }}
+          onMouseEnter={e => { if (!pathname.startsWith("/news")) { (e.currentTarget as HTMLElement).style.color = "var(--tx)"; (e.currentTarget as HTMLElement).style.background = "var(--ip)"; } }}
+          onMouseLeave={e => { if (!pathname.startsWith("/news")) { (e.currentTarget as HTMLElement).style.color = "var(--t2)"; (e.currentTarget as HTMLElement).style.background = "transparent"; } }}
+        >
+          <Newspaper size={17} strokeWidth={pathname.startsWith("/news") ? 2.5 : 1.75} />
+          News
         </Link>
 
         {/* Testing — admin only */}

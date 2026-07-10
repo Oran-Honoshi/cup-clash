@@ -1,5 +1,6 @@
 import { XMLParser } from "fast-xml-parser";
 import { createClient } from "@supabase/supabase-js";
+import { getFollowedCompetitionIds, getFollowedTeamIds } from "@/lib/services/follows";
 
 function sbAdmin() {
   return createClient(
@@ -205,4 +206,77 @@ export async function fetchAndStoreNews(): Promise<NewsFetchResult> {
   }
 
   return result;
+}
+
+export interface HeroArticle {
+  id: string;
+  title: string;
+  imageUrl: string | null;
+  linkUrl: string;
+  publishedAt: string | null;
+  sourceName: string;
+}
+
+interface ArticleRow {
+  id: string;
+  title: string;
+  image_url: string | null;
+  link_url: string;
+  published_at: string | null;
+  source_id: string;
+}
+
+// Single "hero" teaser for the Home dashboard — prefers an article tagged with
+// one of the user's followed teams/competitions, falling back to the single
+// most recent article from any source when they follow nothing (or nothing
+// followed has been published yet).
+export async function getHeroArticle(userId: string | null): Promise<HeroArticle | null> {
+  const sb = sbAdmin();
+
+  const [followedTeamIds, followedCompetitionIds] = userId
+    ? await Promise.all([getFollowedTeamIds(userId), getFollowedCompetitionIds(userId)])
+    : [new Set<string>(), new Set<string>()];
+
+  let article: ArticleRow | null = null;
+
+  if (followedTeamIds.size || followedCompetitionIds.size) {
+    const orParts: string[] = [];
+    if (followedTeamIds.size) orParts.push(`team_ids.ov.{${Array.from(followedTeamIds).join(",")}}`);
+    if (followedCompetitionIds.size) orParts.push(`competition_ids.ov.{${Array.from(followedCompetitionIds).join(",")}}`);
+    const { data } = await sb
+      .from("news_articles")
+      .select("id, title, image_url, link_url, published_at, source_id")
+      .or(orParts.join(","))
+      .order("published_at", { ascending: false, nullsFirst: false })
+      .limit(1)
+      .maybeSingle();
+    article = data as ArticleRow | null;
+  }
+
+  if (!article) {
+    const { data } = await sb
+      .from("news_articles")
+      .select("id, title, image_url, link_url, published_at, source_id")
+      .order("published_at", { ascending: false, nullsFirst: false })
+      .limit(1)
+      .maybeSingle();
+    article = data as ArticleRow | null;
+  }
+
+  if (!article) return null;
+
+  const { data: sourceRow } = await sb
+    .from("news_sources")
+    .select("name")
+    .eq("id", article.source_id)
+    .maybeSingle();
+
+  return {
+    id: article.id,
+    title: article.title,
+    imageUrl: article.image_url,
+    linkUrl: article.link_url,
+    publishedAt: article.published_at,
+    sourceName: (sourceRow as { name: string } | null)?.name ?? "Source",
+  };
 }

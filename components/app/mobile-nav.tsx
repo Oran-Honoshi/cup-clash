@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Home, Target, CalendarDays, LayoutGrid,
-  GitBranch, Brain, BarChart2, User, Bell, MoreHorizontal, X, MessageCircle, Users, Trophy,
+  GitBranch, Brain, BarChart2, User, Bell, MoreHorizontal, X, MessageCircle, Users, Trophy, Newspaper,
 } from "lucide-react";
 import { useLocale } from "@/components/i18n/locale-provider";
 import { createPortal } from "react-dom";
@@ -24,6 +24,7 @@ const NAV_ITEMS_DEF: NavItemDef[] = [
 
 const MORE_ITEMS = [
   { href: "/groups",        label: "My Groups",      icon: Users        },
+  { href: "/news",          label: "News",           icon: Newspaper    },
   { href: "/leaderboard",   label: "Leaderboard",    icon: Trophy       },
   { href: "/chat",          label: "Chat",            icon: MessageCircle },
   { href: "/bracket",       label: "Bracket",         icon: GitBranch    },

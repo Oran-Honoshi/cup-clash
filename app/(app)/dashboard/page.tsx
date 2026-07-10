@@ -11,10 +11,12 @@ import { AdBanner }          from "@/components/ads/ad-banner";
 import { GroupPersistRedirect } from "@/components/app/group-persist-redirect";
 import { OnboardingTour }    from "@/components/onboarding/onboarding-tour";
 import { MyTeamsSection, type MyTeamEntry } from "@/components/dashboard/my-teams-section";
+import { NewsHeroSection } from "@/components/dashboard/news-hero-section";
 import { getMembers, getGroup } from "@/lib/services/groups";
 import { getUpcomingMatches, getRecentResultsByTeam } from "@/lib/services/matches";
 import { getCurrentUserProfile } from "@/lib/services/user-group";
 import { getFollowedTeamIds } from "@/lib/services/follows";
+import { getHeroArticle } from "@/lib/services/news";
 import { getTeamsByIds } from "@/lib/services/teams";
 import Link from "next/link";
 
@@ -111,9 +113,10 @@ export default async function DashboardPage({
   // My Teams — real followed teams + their last 5 finished results.
   const followedTeamIds = await getFollowedTeamIds(userProfile.id);
   const followedTeamIdList = Array.from(followedTeamIds);
-  const [followedTeams, resultsByTeam] = await Promise.all([
+  const [followedTeams, resultsByTeam, heroArticle] = await Promise.all([
     getTeamsByIds(followedTeamIdList),
     getRecentResultsByTeam(followedTeamIdList, 5),
+    getHeroArticle(userProfile.id),
   ]);
   const myTeams: MyTeamEntry[] = followedTeams.map((team) => ({
     team,
@@ -126,6 +129,7 @@ export default async function DashboardPage({
       <div className="ta-stadium-bg w-full max-w-full overflow-x-hidden space-y-6">
         <WelcomeModal forceOpen={false} />
         <MyTeamsSection teams={myTeams} teamCountry={userProfile.country} />
+        <NewsHeroSection article={heroArticle} />
         <DashboardEmptyState />
         <AdBanner isAdFree={false} isCorporate={false} />
       </div>
@@ -190,6 +194,7 @@ export default async function DashboardPage({
       )}
 
       <MyTeamsSection teams={myTeams} />
+      <NewsHeroSection article={heroArticle} />
 
       {/* 3-panel carousel — fills remaining space */}
       <div className="-mx-4 sm:-mx-6" style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}>
