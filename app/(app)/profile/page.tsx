@@ -11,6 +11,8 @@ import { ThemePicker } from "@/components/ui/theme-picker";
 import { DeleteAccountSection } from "@/components/account/delete-account";
 import type { CountryCode } from "@/lib/types";
 import { useLocale } from "@/components/i18n/locale-provider";
+import { Volume2, VolumeX } from "lucide-react";
+import { getSoundEnabled, setSoundEnabled } from "@/lib/sound-preference";
 
 export const dynamic = "force-dynamic";
 
@@ -56,8 +58,17 @@ export default function ProfilePage() {
   const [userEmail, setUserEmail] = useState<string | null>(null);
   const [isGoogle,  setIsGoogle]  = useState(false);
   const [tab, setTab]             = useState<"auto" | "preset" | "photo">("auto");
+  const [soundOn, setSoundOn]     = useState(true);
   const fileRef = useRef<HTMLInputElement>(null);
   const { setCountry, setAppTheme } = useTheme();
+
+  useEffect(() => { setSoundOn(getSoundEnabled()); }, []);
+
+  function handleToggleSound() {
+    const next = !soundOn;
+    setSoundOn(next);
+    setSoundEnabled(next);
+  }
 
   useEffect(() => {
     async function load() {
@@ -370,6 +381,36 @@ export default function ProfilePage() {
       <div style={{ ...glassCard, padding: 20 }}>
         <div className="label-caps mb-3">App Theme</div>
         <ThemePicker />
+      </div>
+
+      {/* Sound effects */}
+      <div style={{ ...glassCard, padding: 20 }}>
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-2 min-w-0">
+            {soundOn ? (
+              <Volume2 size={15} style={{ color: "#00D4FF", flexShrink: 0 }} />
+            ) : (
+              <VolumeX size={15} style={{ color: "rgba(255,255,255,0.35)", flexShrink: 0 }} />
+            )}
+            <div className="min-w-0">
+              <div className="text-sm font-bold" style={{ color: "white" }}>Sound effects</div>
+              <div style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", marginTop: 2 }}>
+                Plays a short cue when you lock in a prediction
+              </div>
+            </div>
+          </div>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={soundOn}
+            aria-label="Toggle sound effects"
+            onClick={handleToggleSound}
+            className="relative h-6 w-11 rounded-full shrink-0 transition-all"
+            style={{ background: soundOn ? "#00D4FF" : "rgba(255,255,255,0.12)" }}>
+            <div className="absolute top-0.5 h-5 w-5 rounded-full bg-white shadow transition-all"
+              style={{ left: soundOn ? "22px" : "2px" }} />
+          </button>
+        </div>
       </div>
 
       {/* Auto-fill safety net */}

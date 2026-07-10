@@ -4,6 +4,7 @@ import { useRef, useEffect, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { useGroupContext } from "@/lib/contexts/group-context";
 import { BallLoader } from "@/components/ui/BallLoader";
+import { FlipCard } from "@/components/ui/flip-card";
 
 interface GroupSwipeSelectorProps {
   groups: Array<{ id: string; name: string; passkey: string }>;
@@ -69,32 +70,24 @@ export function GroupSwipeSelector({ groups, activeGroupId, basePath }: GroupSwi
             key={group.id}
             ref={isActive ? activeRef : undefined}
             onClick={() => handleSelect(group.id)}
+            aria-pressed={isActive}
             style={{
               // 60% min-width → ~1.5 tiles visible in the viewport at once
               minWidth: "calc(60% - 4px)",
               height: 44,
               flexShrink: 0,
-              borderRadius: 10,
-              padding: "0 14px",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontFamily: "var(--font-barlow, sans-serif)",
-              fontSize: 12,
-              fontWeight: 700,
-              letterSpacing: 0.5,
-              textTransform: "uppercase",
-              whiteSpace: "nowrap",
+              padding: 0,
+              border: "none",
+              background: "transparent",
               cursor: "pointer",
-              background: isActive ? "#162a16" : "#0c1c0c",
-              border: isActive ? "1px solid #00e5a0" : "1px solid #1a3a1a",
-              color: isActive ? "#00e5a0" : "#3a7a3a",
-              overflow: "hidden",
-              textOverflow: "ellipsis",
-              transition: "all 0.15s",
             }}
           >
-            {group.name}
+            <FlipCard
+              flipped={isActive}
+              duration={340}
+              front={<GroupTileFace name={group.name} active={false} />}
+              back={<GroupTileFace name={group.name} active={true} />}
+            />
           </button>
         );
       })}
@@ -105,5 +98,34 @@ export function GroupSwipeSelector({ groups, activeGroupId, basePath }: GroupSwi
       </div>
     )}
     </>
+  );
+}
+
+function GroupTileFace({ name, active }: { name: string; active: boolean }) {
+  return (
+    <div
+      style={{
+        width: "100%",
+        height: "100%",
+        borderRadius: 10,
+        padding: "0 14px",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        fontFamily: "var(--font-barlow, sans-serif)",
+        fontSize: 12,
+        fontWeight: 700,
+        letterSpacing: 0.5,
+        textTransform: "uppercase",
+        whiteSpace: "nowrap",
+        background: active ? "#162a16" : "#0c1c0c",
+        border: active ? "1px solid #00e5a0" : "1px solid #1a3a1a",
+        color: active ? "#00e5a0" : "#3a7a3a",
+        overflow: "hidden",
+        textOverflow: "ellipsis",
+      }}
+    >
+      {name}
+    </div>
   );
 }

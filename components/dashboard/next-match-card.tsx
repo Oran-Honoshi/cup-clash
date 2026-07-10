@@ -11,8 +11,10 @@ import { FlagBadge } from "@/components/ui/FlagBadge";
 import { BallLoader } from "@/components/ui/BallLoader";
 import { ScoreInputCC } from "@/components/ui/score-input-cc";
 import { LiveDot } from "@/components/ui/live-dot";
+import { FlipCard } from "@/components/ui/flip-card";
 import { FOCUS_RING } from "@/lib/a11y";
 import { cn } from "@/lib/utils";
+import { playLockInSound } from "@/lib/sound";
 import type { Match } from "@/lib/types";
 
 interface NextMatchCardProps {
@@ -105,6 +107,7 @@ export function NextMatchCard({ match, groupId = "", cardLabel, onOpenMatchCente
     }, { onConflict: "user_id,group_id,match_id" });
     if (error) { setErrorMsg(error.message); setSaveState("error"); return; }
     setSaveState("saved");
+    playLockInSound();
     window.dispatchEvent(new CustomEvent("cupclash:first_prediction"));
   };
 
@@ -213,30 +216,38 @@ export function NextMatchCard({ match, groupId = "", cardLabel, onOpenMatchCente
             >
               Predictions locked
             </div>
-          ) : saveState === "saved" ? (
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-1.5 font-barlow font-bold" style={{ color: "var(--ac)", fontSize: 13, letterSpacing: "0.5px" }}>
-                <CheckCircle size={15} /> PREDICTION SAVED
-              </div>
-              <Button
-                type="button"
-                onClick={() => setSaveState("idle")}
-                variant="outline"
-                size="xs"
-                className={FOCUS_RING}
-              >
-                Edit
-              </Button>
-            </div>
           ) : (
-            <Button
-              onClick={handleSubmit}
-              disabled={homeScore === "" || awayScore === "" || saveState === "saving"}
-              size="md" className="w-full"
-              rightIcon={saveState === "saving" ? <BallLoader size="inline" label={null} /> : <Send size={15} />}
-            >
-              {saveState === "saving" ? "Saving..." : "Lock in prediction"}
-            </Button>
+            <FlipCard
+              flipped={saveState === "saved"}
+              duration={380}
+              style={{ height: 44 }}
+              front={
+                <Button
+                  onClick={handleSubmit}
+                  disabled={homeScore === "" || awayScore === "" || saveState === "saving"}
+                  size="md" className="w-full h-full"
+                  rightIcon={saveState === "saving" ? <BallLoader size="inline" label={null} /> : <Send size={15} />}
+                >
+                  {saveState === "saving" ? "Saving..." : "Lock in prediction"}
+                </Button>
+              }
+              back={
+                <div className="h-full flex items-center justify-between">
+                  <div className="flex items-center gap-1.5 font-barlow font-bold" style={{ color: "var(--ac)", fontSize: 13, letterSpacing: "0.5px" }}>
+                    <CheckCircle size={15} /> PREDICTION SAVED
+                  </div>
+                  <Button
+                    type="button"
+                    onClick={() => setSaveState("idle")}
+                    variant="outline"
+                    size="xs"
+                    className={FOCUS_RING}
+                  >
+                    Edit
+                  </Button>
+                </div>
+              }
+            />
           )}
         </div>
 

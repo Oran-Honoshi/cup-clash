@@ -1,8 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
 import { createClient } from "@/lib/supabase/client";
 import { MemberAvatar } from "@/components/ui/member-avatar";
+import { useReducedMotion } from "@/lib/hooks/use-reduced-motion";
 
 interface PredictionDistributionProps {
   matchId: string;
@@ -45,6 +47,7 @@ export function PredictionDistribution({ matchId, groupId }: PredictionDistribut
   const [dist, setDist]             = useState<ScoreDist[]>([]);
   const [memberPreds, setMemberPreds] = useState<MemberPred[]>([]);
   const [ready, setReady]           = useState(false);
+  const reducedMotion = useReducedMotion();
 
   useEffect(() => {
     if (!matchId || !groupId) return;
@@ -147,7 +150,7 @@ export function PredictionDistribution({ matchId, groupId }: PredictionDistribut
   if (isRevealed) {
     if (memberPreds.length === 0) return null;
     return (
-      <div style={wrapperStyle}>
+      <RevealFlip reducedMotion={reducedMotion}>
         <div style={labelStyle}>What your group predicted</div>
         <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
           {memberPreds.map(m => (
@@ -166,7 +169,7 @@ export function PredictionDistribution({ matchId, groupId }: PredictionDistribut
             </div>
           ))}
         </div>
-      </div>
+      </RevealFlip>
     );
   }
 
@@ -174,7 +177,7 @@ export function PredictionDistribution({ matchId, groupId }: PredictionDistribut
   if (dist.length === 0) return null;
   const maxPct = Math.max(...dist.map(d => d.pct));
   return (
-    <div style={wrapperStyle}>
+    <RevealFlip reducedMotion={reducedMotion}>
       <div style={labelStyle}>What your group predicted</div>
       <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
         {dist.map(({ score, pct }) => (
@@ -200,6 +203,37 @@ export function PredictionDistribution({ matchId, groupId }: PredictionDistribut
           </div>
         ))}
       </div>
+    </RevealFlip>
+  );
+}
+
+// Flip-open reveal — payoff moment once the group consensus becomes visible
+// (match started, or enough members have predicted). Falls back to a plain
+// fade for prefers-reduced-motion.
+function RevealFlip({ reducedMotion, children }: { reducedMotion: boolean; children: React.ReactNode }) {
+  if (reducedMotion) {
+    return (
+      <motion.div
+        style={wrapperStyle}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.15 }}
+      >
+        {children}
+      </motion.div>
+    );
+  }
+
+  return (
+    <div style={{ perspective: 900 }}>
+      <motion.div
+        style={{ ...wrapperStyle, transformOrigin: "top" }}
+        initial={{ rotateX: -90, opacity: 0 }}
+        animate={{ rotateX: 0, opacity: 1 }}
+        transition={{ duration: 0.4, ease: [0.4, 0, 0.2, 1] }}
+      >
+        {children}
+      </motion.div>
     </div>
   );
 }
