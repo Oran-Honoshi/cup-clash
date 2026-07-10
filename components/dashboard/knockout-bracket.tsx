@@ -98,12 +98,14 @@ const ROUND_TABS = [
 
 type RoundId = typeof ROUND_TABS[number]["id"];
 
-function TeamSlot({ team }: { team: BracketTeam }) {
+function TeamSlot({ team, side }: { team: BracketTeam; side: "home" | "away" }) {
   const showHint = !team.isConfirmed && team.label && team.label !== "TBD";
+  const isHome = side === "home";
   return (
-    <div style={{
-      display: "flex", alignItems: "center", gap: 8,
-      padding: "8px 12px", borderRadius: 10,
+    <div className="flex-1 min-w-0" style={{
+      display: "flex", alignItems: "center", gap: 6,
+      flexDirection: isHome ? "row" : "row-reverse",
+      padding: "6px 8px", borderRadius: 10,
       border: team.isConfirmed ? "1px solid color-mix(in srgb, var(--ac) 30%, transparent)" : "1.5px dashed var(--br)",
       background: team.isConfirmed ? "color-mix(in srgb, var(--ac) 6%, transparent)" : "var(--ip)",
       transition: "all 0.15s",
@@ -116,12 +118,12 @@ function TeamSlot({ team }: { team: BracketTeam }) {
           <span style={{ fontSize: 8, color: "var(--ft)" }}>?</span>
         </div>
       )}
-      <div className="min-w-0 flex flex-col">
-        <span className="text-sm font-bold truncate" style={{ color: team.isConfirmed ? "var(--tx)" : "var(--ft)" }}>
+      <div className="min-w-0 flex flex-col flex-1" style={{ alignItems: isHome ? "flex-start" : "flex-end" }}>
+        <span className="ta-team-name truncate w-full" style={{ fontSize: 13, textAlign: isHome ? "left" : "right", color: team.isConfirmed ? "var(--tx)" : "var(--ft)" }}>
           {team.isConfirmed ? team.label : "TBD"}
         </span>
         {showHint && (
-          <span className="text-[9px] font-bold uppercase tracking-wide truncate" style={{ color: "var(--ft)" }}>
+          <span className="text-[9px] font-bold uppercase tracking-wide truncate w-full" style={{ textAlign: isHome ? "left" : "right", color: "var(--ft)" }}>
             {team.label}
           </span>
         )}
@@ -130,30 +132,41 @@ function TeamSlot({ team }: { team: BracketTeam }) {
   );
 }
 
-function ScoreBadges({ match }: { match: BracketMatch }) {
+function ScoreCenter({ match }: { match: BracketMatch }) {
   const hasScore = match.homeScore !== undefined && match.awayScore !== undefined;
   const hasET    = match.homeScoreET !== undefined && match.awayScoreET !== undefined;
-  const hasPen   = !!match.penaltyWinner;
-  if (!hasScore) return null;
+  if (!hasScore) {
+    return (
+      <div className="shrink-0 flex flex-col items-center px-1">
+        <span className="font-bold" style={{ fontSize: 10, color: "var(--ft)" }}>VS</span>
+      </div>
+    );
+  }
   const displayHome = hasET ? match.homeScoreET! : match.homeScore!;
   const displayAway = hasET ? match.awayScoreET! : match.awayScore!;
   return (
-    <div className="flex items-center gap-1.5 px-3 pb-1">
-      <span className="font-mono font-black text-sm" style={{ color: "var(--sc)" }}>
+    <div className="shrink-0 flex flex-col items-center gap-0.5 px-1">
+      <span className="font-mono font-black text-sm tabular-nums" style={{ color: "var(--sc)" }}>
         {displayHome}–{displayAway}
       </span>
       {hasET && (
-        <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full"
+        <span className="text-[8px] font-bold px-1 rounded-full whitespace-nowrap"
           style={{ background: "rgba(139,92,246,0.15)", border: "1px solid rgba(139,92,246,0.3)", color: "#a78bfa" }}>
           AET
         </span>
       )}
-      {hasPen && (
-        <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full"
-          style={{ background: "color-mix(in srgb, var(--sc) 14%, transparent)", border: "1px solid color-mix(in srgb, var(--sc) 32%, transparent)", color: "var(--sc)" }}>
-          PEN · {match.penaltyWinner}
-        </span>
-      )}
+    </div>
+  );
+}
+
+function PenBadgeRow({ match }: { match: BracketMatch }) {
+  if (!match.penaltyWinner) return null;
+  return (
+    <div className="flex justify-center px-3 pt-1 pb-1">
+      <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full truncate max-w-full"
+        style={{ background: "color-mix(in srgb, var(--sc) 14%, transparent)", border: "1px solid color-mix(in srgb, var(--sc) 32%, transparent)", color: "var(--sc)" }}>
+        PEN · {match.penaltyWinner}
+      </span>
     </div>
   );
 }
@@ -182,16 +195,14 @@ function BracketMatchCard({ match, highlight = false, myPick }: { match: Bracket
         }}
       >
         {highlight && <div className="h-px" style={{ background: "linear-gradient(90deg, transparent, var(--sc), transparent)" }} />}
-        <div className="p-3 space-y-1.5">
-          <TeamSlot team={match.home} />
-          <div className="flex items-center gap-2 px-3">
-            <div className="flex-1 h-px" style={{ background: "var(--dv)" }} />
-            <span className="font-bold" style={{ fontSize: 10, color: "var(--ft)" }}>VS</span>
-            <div className="flex-1 h-px" style={{ background: "var(--dv)" }} />
+        <div className="p-3">
+          <div className="flex items-center gap-1.5">
+            <TeamSlot team={match.home} side="home" />
+            <ScoreCenter match={match} />
+            <TeamSlot team={match.away} side="away" />
           </div>
-          <TeamSlot team={match.away} />
         </div>
-        <ScoreBadges match={match} />
+        <PenBadgeRow match={match} />
         <div className="px-3 pb-3 flex items-center gap-3 flex-wrap" style={{ fontSize: 10, color: "var(--mt)" }}>
           <span className="flex items-center gap-1">
             <Clock size={9} />{match.timeConfirmed === false ? "Date TBD" : `${match.date} · ${match.time}`}
