@@ -171,7 +171,7 @@ function PenBadgeRow({ match }: { match: BracketMatch }) {
   );
 }
 
-function BracketMatchCard({ match, highlight = false, myPick }: { match: BracketMatch; highlight?: boolean; myPick?: string }) {
+function BracketMatchCard({ match, highlight = false, myPick }: { match: BracketMatch; highlight?: boolean; myPick?: { score: string; pointsEarned: number | null } }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
@@ -182,7 +182,10 @@ function BracketMatchCard({ match, highlight = false, myPick }: { match: Bracket
       {myPick && (
         <div className="absolute -top-2 right-3 z-10 flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wide"
           style={{ background: "var(--ac)", color: "var(--at)", boxShadow: "0 2px 8px color-mix(in srgb, var(--ac) 50%, transparent)" }}>
-          <Target size={9} /> Your pick: {myPick}
+          <Target size={9} /> Your pick: {myPick.score}
+          {myPick.pointsEarned != null && (
+            <span style={{ marginLeft: 2 }}>· +{myPick.pointsEarned} pts</span>
+          )}
         </div>
       )}
       <Card
@@ -218,7 +221,7 @@ function DrawColumn({ title, matches, highlight = false, myPicks }: {
   title: string;
   matches: BracketMatch[];
   highlight?: boolean;
-  myPicks: Record<string, string>;
+  myPicks: Record<string, { score: string; pointsEarned: number | null }>;
 }) {
   return (
     <div className="flex-1 min-w-0">
@@ -275,7 +278,7 @@ export function KnockoutBracket({ groupId }: { groupId?: string }) {
   const [finalMatch, setFinalMatch] = useState<BracketMatch>(FINAL_MATCH);
   const [round, setRound] = useState<RoundId>("r32");
   const [userId, setUserId] = useState<string | null>(null);
-  const [myPicks, setMyPicks] = useState<Record<string, string>>({});
+  const [myPicks, setMyPicks] = useState<Record<string, { score: string; pointsEarned: number | null }>>({});
 
   // Data-fetching/advancement logic — unchanged from the pre-redesign version.
   useEffect(() => {
@@ -314,16 +317,16 @@ export function KnockoutBracket({ groupId }: { groupId?: string }) {
     if (!allIds.length) return;
     createClient()
       .from("group_predictions")
-      .select("match_id, home_score, away_score")
+      .select("match_id, home_score, away_score, points_earned")
       .eq("user_id", userId)
       .eq("group_id", groupId)
       .in("match_id", allIds)
       .then(({ data }) => {
         if (!data) return;
-        const map: Record<string, string> = {};
-        for (const row of data as { match_id: string; home_score: number | null; away_score: number | null }[]) {
+        const map: Record<string, { score: string; pointsEarned: number | null }> = {};
+        for (const row of data as { match_id: string; home_score: number | null; away_score: number | null; points_earned: number | null }[]) {
           if (row.home_score != null && row.away_score != null) {
-            map[row.match_id] = `${row.home_score}-${row.away_score}`;
+            map[row.match_id] = { score: `${row.home_score}-${row.away_score}`, pointsEarned: row.points_earned };
           }
         }
         setMyPicks(map);
