@@ -5,6 +5,16 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { scoreMatchResult } from "@/lib/services/predictions";
 import type { ScoringRules } from "@/lib/types";
+import {
+  queueTelegramLine,
+  flushTelegramQueue,
+  getTelegramFollowersForTeam,
+  isTelegramPrefEnabled,
+  telegramTranslations,
+  type TelegramQueue,
+} from "@/lib/services/telegram";
+import { getMembers } from "@/lib/services/groups";
+import { interpolate } from "@/lib/i18n";
 
 const API_BASE      = "https://v3.football.api-sports.io";
 const LEAGUE_ID     = 1;     // FIFA World Cup
@@ -1001,7 +1011,7 @@ export async function POST(request: NextRequest) {
 
     const { data: dbMatches, error: dbMatchErr } = await sb
       .from("matches")
-      .select("id, home, away, kickoff_at, status, home_score, away_score, api_fixture_id, minute")
+      .select("id, home, away, home_team_id, away_team_id, kickoff_at, status, home_score, away_score, api_fixture_id, minute")
       .gte("kickoff_at", `${yesterday}T00:00:00Z`)
       .lte("kickoff_at", `${tomorrow}T23:59:59Z`);
 
@@ -1158,6 +1168,61 @@ export async function POST(request: NextRequest) {
       penaltyWinner:  string | null;
     }> = [];
 
+    // Batched per-user Telegram notifications for this cron tick — goal
+    // alerts queued in the main loop below, result alerts queued once a
+    // match is detected newly-finished, flushed once after STEP 3/3b.
+    const telegramQueue: TelegramQueue = new Map();
+
+    function goalSignature(g: { minute: number; extra: number | null; player_id: number | null; team_id: number; detail: string }): string {
+      return `${g.minute}-${g.extra ?? ""}-${g.player_id ?? ""}-${g.team_id}-${g.detail}`;
+    }
+
+    async function queueGoalAlerts(
+      dbMatch: { home: string; away: string; home_team_id: string | null; away_team_id: string | null },
+      fixtureId: number,
+      freshGoals: ParsedGoal[]
+    ): Promise<void> {
+      const prevGoals = prevRawByFixtureId.get(fixtureId)?.goals ?? [];
+      const prevSignatures = new Set(prevGoals.map(g => goalSignature(g)));
+      const newGoals = freshGoals.filter(g => g.detail !== "Missed Penalty" && !prevSignatures.has(goalSignature(g)));
+      if (!newGoals.length) return;
+
+      for (const g of newGoals) {
+        const scoringHome = normTeam(g.team_name ?? "") === normTeam(dbMatch.home);
+        const teamId = scoringHome ? dbMatch.home_team_id : dbMatch.away_team_id;
+        if (!teamId) continue; // team not yet backfilled into public.teams — nothing to notify
+
+        const followers = await getTelegramFollowersForTeam(sb, teamId, "goals");
+        if (!followers.length) continue;
+
+        const vars = { team: g.team_name ?? "", home: dbMatch.home, away: dbMatch.away, scorer: g.player_name ?? "" };
+        for (const f of followers) {
+          const template = g.player_name ? f.t.notif_bot_goal_scorer : f.t.notif_bot_goal;
+          queueTelegramLine(telegramQueue, f.chat_id, interpolate(template, vars));
+        }
+      }
+    }
+
+    async function queueResultAlert(
+      dbMatch: { home: string; away: string; home_team_id: string | null; away_team_id: string | null },
+      homeScore: number,
+      awayScore: number
+    ): Promise<void> {
+      const teamIds = [dbMatch.home_team_id, dbMatch.away_team_id].filter((id): id is string => !!id);
+      if (!teamIds.length) return;
+
+      const followerLists = await Promise.all(teamIds.map(id => getTelegramFollowersForTeam(sb, id, "results")));
+      const seenChatIds = new Set<string>();
+      const vars = { home: dbMatch.home, away: dbMatch.away, homeScore, awayScore };
+      for (const list of followerLists) {
+        for (const f of list) {
+          if (seenChatIds.has(f.chat_id)) continue; // follows both teams — one line, not two
+          seenChatIds.add(f.chat_id);
+          queueTelegramLine(telegramQueue, f.chat_id, interpolate(f.t.notif_bot_result, vars));
+        }
+      }
+    }
+
     for (const f of fixtures) {
       const apiHome = normTeam(f.teams.home.name);
       const apiAway = normTeam(f.teams.away.name);
@@ -1188,6 +1253,10 @@ export async function POST(request: NextRequest) {
       const statsFetched = statsMap.has(f.fixture.id);
       const freshStats   = statsMap.get(f.fixture.id) ?? null;
       const freshStatsMinute = statsFetchMinute.get(f.fixture.id) ?? null;
+
+      if (freshEvts) {
+        await queueGoalAlerts(dbMatch, f.fixture.id, freshEvts.goals);
+      }
 
       // For AET/PEN matches: home_score = 90-min result, home_score_et = after-ET result.
       // For FT matches: home_score = final result, home_score_et = null.
@@ -1244,6 +1313,7 @@ export async function POST(request: NextRequest) {
           awayScoreET:   awayET,
           penaltyWinner: penWinner,
         });
+        await queueResultAlert(dbMatch, home90, away90);
         console.log(`[scores/cron]   Match ${dbMatch.id} just finished — queued for scoring`);
       }
     }
@@ -1403,6 +1473,7 @@ export async function POST(request: NextRequest) {
               console.log(`[scores/cron] STEP 3b:   ${label} match ${m.id} → finished (${resolvedHome}-${resolvedAway})`);
               // ET score not available in stuck-match recovery; admin can use score override if needed.
               newlyFinished.push({ matchId: m.id, homeScore: resolvedHome, awayScore: resolvedAway, homeScoreET: null, awayScoreET: null, penaltyWinner: null });
+              await queueResultAlert(m, resolvedHome, resolvedAway);
             }
           }
         }
@@ -1464,10 +1535,93 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // ── STEP 4b: Leaderboard movement notifications ──────────────────────────
+    // Ranks are computed live elsewhere (lib/services/groups.ts getMembers) —
+    // nothing persists a "previous rank" outside telegram_leaderboard_rank
+    // (migration 047), which exists solely to diff against here. Only worth
+    // running for groups with at least one Telegram-linked member, so this
+    // stays cheap while adoption is low.
+
+    if (newlyFinished.length > 0) {
+      console.log("[scores/cron] STEP 4b: Checking leaderboard movement for Telegram-linked groups...");
+
+      const { data: tgGroupRows } = await sb
+        .from("group_members")
+        .select("group_id, profiles!inner ( telegram_chat_id )")
+        .not("profiles.telegram_chat_id", "is", null);
+
+      const groupsWithTelegram = [...new Set(
+        ((tgGroupRows ?? []) as Array<{ group_id: string }>).map(r => r.group_id)
+      )];
+
+      if (groupsWithTelegram.length > 0) {
+        const { data: candidateGroups } = await sb.from("groups").select("id, name").in("id", groupsWithTelegram);
+
+        for (const group of (candidateGroups ?? []) as Array<{ id: string; name: string }>) {
+          const members = await getMembers(group.id);
+          if (!members.length) continue;
+
+          const memberIds = members.map(m => m.id);
+          const [{ data: prevRanks }, { data: profileRows }] = await Promise.all([
+            sb.from("telegram_leaderboard_rank").select("user_id, last_rank").eq("group_id", group.id),
+            sb.from("profiles")
+              .select("id, telegram_chat_id, notification_preferences, telegram_language_code")
+              .in("id", memberIds)
+              .not("telegram_chat_id", "is", null),
+          ]);
+
+          const prevRankMap = new Map(
+            ((prevRanks ?? []) as Array<{ user_id: string; last_rank: number }>).map(r => [r.user_id, r.last_rank])
+          );
+          const profileMap = new Map(
+            ((profileRows ?? []) as Array<{
+              id: string; telegram_chat_id: string; notification_preferences: unknown; telegram_language_code: string | null;
+            }>).map(p => [p.id, p])
+          );
+
+          const upserts: Array<{ user_id: string; group_id: string; last_rank: number; last_notified_at?: string }> = [];
+
+          members.forEach((member, index) => {
+            const newRank = index + 1;
+            const oldRank = prevRankMap.get(member.id);
+            const profile = profileMap.get(member.id);
+
+            const droppedRank = profile && oldRank !== undefined && newRank > oldRank;
+            const wantsAlert  = droppedRank && isTelegramPrefEnabled(
+              profile!.notification_preferences as Parameters<typeof isTelegramPrefEnabled>[0], "leaderboard"
+            );
+
+            if (wantsAlert) {
+              const t = telegramTranslations(profile!.telegram_language_code);
+              const line = interpolate(t.notif_bot_leaderboard_drop, { group: group.name, rank: newRank, oldRank: oldRank! });
+              queueTelegramLine(telegramQueue, profile!.telegram_chat_id, line);
+              upserts.push({ user_id: member.id, group_id: group.id, last_rank: newRank, last_notified_at: now.toISOString() });
+            } else {
+              upserts.push({ user_id: member.id, group_id: group.id, last_rank: newRank });
+            }
+          });
+
+          if (upserts.length) {
+            const { error: rankUpsertErr } = await sb
+              .from("telegram_leaderboard_rank")
+              .upsert(upserts, { onConflict: "user_id,group_id" });
+            if (rankUpsertErr) console.error(`[scores/cron] STEP 4b:   rank upsert failed for group ${group.id}:`, rankUpsertErr);
+          }
+        }
+      }
+    }
+
     // ── STEP 5: Update tournament scorer / assister points ───────────────────
     // Runs every cron tick (not just when new matches finish) so the stats
     // table and pick points stay consistent with the full live_scores history.
     await updateTournamentScorerPoints(sb);
+
+    // ── STEP 6: Flush batched Telegram notifications ─────────────────────────
+    // One message per user per tick even if multiple goals/results queued a
+    // line each — see queueTelegramLine/flushTelegramQueue.
+
+    const tgResult = await flushTelegramQueue(telegramQueue, sb);
+    console.log(`[scores/cron] STEP 6: Telegram — queued for ${telegramQueue.size} user(s), sent ${tgResult.sent}, failed ${tgResult.failed}, blocked ${tgResult.blocked}`);
 
     // ── Summary ──────────────────────────────────────────────────────────────
 
@@ -1483,6 +1637,7 @@ export async function POST(request: NextRequest) {
       finished: finishedCount,
       upcoming: rows.length - liveCount - finishedCount,
       scored:   newlyFinished.map(m => m.matchId),
+      telegram: tgResult,
       timestamp: now.toISOString(),
     });
 

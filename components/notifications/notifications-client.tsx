@@ -1,10 +1,11 @@
 "use client";
 import { useLocale } from "@/components/i18n/locale-provider";
 
-import { useState, useEffect } from "react";
-import { Bell, BellOff, Trophy, Users, MessageCircle, Check, Send, X } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { Bell, BellOff, Trophy, Users, MessageCircle, Check, Send, X, Loader2 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { subscribeToPush } from "@/lib/pwa";
+import { TELEGRAM_PREF_DEFAULTS, type TelegramPrefKey } from "@/lib/services/telegram";
 
 interface NotifSetting {
   key:     string;
@@ -22,6 +23,19 @@ const SETTINGS: NotifSetting[] = [
   { key: "newmember",   label: "New member joined",    desc: "When someone joins your group (admin only)",         icon: <Users size={18} style={{ color: "#00FF88" }} />,                    default: false },
 ];
 
+interface TelegramSetting {
+  key:  TelegramPrefKey;
+  icon: React.ReactNode;
+}
+
+const TELEGRAM_SETTINGS: TelegramSetting[] = [
+  { key: "goals",            icon: <span className="text-lg">⚽</span> },
+  { key: "results",          icon: <Trophy size={18} style={{ color: "#fbbf24" }} /> },
+  { key: "locking_reminder", icon: <span className="text-lg">⏰</span> },
+  { key: "weekly_digest",    icon: <span className="text-lg">🗓️</span> },
+  { key: "leaderboard",      icon: <span className="text-lg">📊</span> },
+];
+
 const glass = {
   background: "rgba(18,14,38,0.32)",
   backdropFilter: "blur(40px) saturate(180%)",
@@ -29,7 +43,8 @@ const glass = {
   border: "1px solid rgba(255,255,255,0.14)",
 } as const;
 
-const BOT_USERNAME = "CupClashBot";
+const POLL_INTERVAL_MS = 3000;
+const POLL_MAX_TRIES   = 40; // ~2 minutes
 
 export function NotificationsClient({ userId }: { userId: string }) {
   const { t } = useLocale();
@@ -40,11 +55,24 @@ export function NotificationsClient({ userId }: { userId: string }) {
     chat:        t("notif_chat"),
     newmember:   t("notif_new_member"),
   };
-  const [settings,       setSettings]       = useState<Record<string, boolean>>({});
-  const [pushEnabled,    setPushEnabled]     = useState(false);
-  const [loading,        setLoading]         = useState(false);
-  const [telegramChatId, setTelegramChatId]  = useState<string | null | undefined>(undefined);
-  const [tgDisconnecting, setTgDisconnecting] = useState(false);
+  const TELEGRAM_LABELS: Record<TelegramPrefKey, { label: string; desc: string }> = {
+    goals:            { label: t("notif_tg_goals"),         desc: t("notif_tg_goals_desc") },
+    results:          { label: t("notif_tg_results"),       desc: t("notif_tg_results_desc") },
+    locking_reminder: { label: t("notif_tg_locking_label"), desc: t("notif_tg_locking_desc") },
+    weekly_digest:    { label: t("notif_tg_digest"),        desc: t("notif_tg_digest_desc") },
+    leaderboard:      { label: t("notif_tg_leaderboard"),   desc: t("notif_tg_leaderboard_desc") },
+  };
+
+  const [settings,        setSettings]        = useState<Record<string, boolean>>({});
+  const [telegramSettings, setTelegramSettings] = useState<Record<TelegramPrefKey, boolean>>(TELEGRAM_PREF_DEFAULTS);
+  const [pushEnabled,     setPushEnabled]      = useState(false);
+  const [loading,         setLoading]          = useState(false);
+  const [telegramChatId,  setTelegramChatId]   = useState<string | null | undefined>(undefined);
+  const [tgDisconnecting, setTgDisconnecting]  = useState(false);
+  const [tgConnecting,    setTgConnecting]     = useState(false);
+  const [tgWaiting,       setTgWaiting]        = useState(false);
+  const [tgError,         setTgError]          = useState(false);
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     const defaults: Record<string, boolean> = {};
@@ -57,7 +85,6 @@ export function NotificationsClient({ userId }: { userId: string }) {
       setPushEnabled(Notification.permission === "granted");
     }
 
-    // Load telegram_chat_id + server-synced notification preferences from profile
     async function loadProfile() {
       const sb = createClient();
       const { data } = await sb
@@ -65,15 +92,22 @@ export function NotificationsClient({ userId }: { userId: string }) {
         .select("telegram_chat_id, notification_preferences")
         .eq("id", userId)
         .maybeSingle();
-      const row = data as { telegram_chat_id: string | null; notification_preferences: Record<string, boolean> | null } | null;
+      const row = data as {
+        telegram_chat_id: string | null;
+        notification_preferences: { push?: Record<string, boolean>; telegram?: Partial<Record<TelegramPrefKey, boolean>> } | null;
+      } | null;
       setTelegramChatId(row?.telegram_chat_id ?? null);
-      if (row?.notification_preferences) {
-        const merged = { ...defaults, ...row.notification_preferences };
+
+      if (row?.notification_preferences?.push) {
+        const merged = { ...defaults, ...row.notification_preferences.push };
         setSettings(merged);
         localStorage.setItem("cupclash_notif_settings", JSON.stringify(merged));
       }
+      setTelegramSettings({ ...TELEGRAM_PREF_DEFAULTS, ...(row?.notification_preferences?.telegram ?? {}) });
     }
     loadProfile();
+
+    return () => { if (pollRef.current) clearInterval(pollRef.current); };
   }, [userId]);
 
   const toggleSetting = (key: string) => {
@@ -81,9 +115,64 @@ export function NotificationsClient({ userId }: { userId: string }) {
       const next = { ...prev, [key]: !prev[key] };
       localStorage.setItem("cupclash_notif_settings", JSON.stringify(next));
       const sb = createClient();
-      sb.from("profiles").update({ notification_preferences: next }).eq("id", userId).then();
+      sb.from("profiles")
+        .update({ notification_preferences: { push: next, telegram: telegramSettings } })
+        .eq("id", userId)
+        .then();
       return next;
     });
+  };
+
+  const toggleTelegramSetting = (key: TelegramPrefKey) => {
+    setTelegramSettings(prev => {
+      const next = { ...prev, [key]: !prev[key] };
+      const sb = createClient();
+      sb.from("profiles")
+        .update({ notification_preferences: { push: settings, telegram: next } })
+        .eq("id", userId)
+        .then();
+      return next;
+    });
+  };
+
+  const stopPolling = () => {
+    if (pollRef.current) { clearInterval(pollRef.current); pollRef.current = null; }
+    setTgWaiting(false);
+  };
+
+  const connectTelegram = async () => {
+    setTgConnecting(true);
+    setTgError(false);
+    try {
+      const res = await fetch("/api/telegram/link-token", { method: "POST" });
+      if (!res.ok) throw new Error("link-token failed");
+      const { deepLink } = await res.json() as { deepLink: string };
+
+      window.open(deepLink, "_blank", "noopener,noreferrer");
+
+      setTgWaiting(true);
+      let tries = 0;
+      const sb = createClient();
+      pollRef.current = setInterval(async () => {
+        tries++;
+        const { data } = await sb
+          .from("profiles")
+          .select("telegram_chat_id")
+          .eq("id", userId)
+          .maybeSingle();
+        const chatId = (data as { telegram_chat_id: string | null } | null)?.telegram_chat_id ?? null;
+        if (chatId) {
+          setTelegramChatId(chatId);
+          stopPolling();
+        } else if (tries >= POLL_MAX_TRIES) {
+          stopPolling();
+        }
+      }, POLL_INTERVAL_MS);
+    } catch {
+      setTgError(true);
+    } finally {
+      setTgConnecting(false);
+    }
   };
 
   const disconnectTelegram = async () => {
@@ -125,36 +214,42 @@ export function NotificationsClient({ userId }: { userId: string }) {
             {telegramChatId ? (
               <>
                 <div className="text-sm mt-0.5" style={{ color: "rgba(255,255,255,0.45)" }}>
-                  You&apos;ll receive match reminders 1 hour before kickoff when you haven&apos;t predicted yet. Works on all devices.
+                  {t("notif_tg_desc_connected")}
                 </div>
                 <button onClick={disconnectTelegram} disabled={tgDisconnecting}
                   className="mt-3 flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-bold uppercase tracking-wider disabled:opacity-40 transition-opacity"
                   style={{ background: "rgba(220,38,38,0.08)", color: "#dc2626", border: "1px solid rgba(220,38,38,0.2)" }}>
                   <X size={12} />
-                  {tgDisconnecting ? t("notif_disconnecting") : "Disconnect"}
+                  {tgDisconnecting ? t("notif_disconnecting") : t("notif_tg_disconnect_label")}
                 </button>
               </>
             ) : (
               <>
                 <div className="text-sm mt-0.5" style={{ color: "rgba(255,255,255,0.45)" }}>
-                  Get a Telegram message 1 hour before kickoff if you haven&apos;t predicted. Reliable on all devices — no browser install needed.
+                  {t("notif_tg_desc_connect")}
                 </div>
                 {isIOS && (
                   <div className="mt-2 text-xs rounded-lg px-3 py-2"
                     style={{ background: "rgba(251,191,36,0.06)", border: "1px solid rgba(251,191,36,0.2)", color: "rgba(251,191,36,0.8)" }}>
-                    ℹ️ On iOS, browser push requires &ldquo;Add to Home Screen.&rdquo; Telegram reminders work without it.
+                    ℹ️ {t("notif_tg_ios_note")}
                   </div>
                 )}
                 {telegramChatId === null && (
-                  <a
-                    href={`https://t.me/${BOT_USERNAME}?start=${userId}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mt-3 inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold uppercase tracking-wider transition-all hover:-translate-y-0.5"
-                    style={{ background: "linear-gradient(135deg, #229ED9, #1A86BA)", color: "#ffffff" }}>
-                    <Send size={14} />
-                    Connect Telegram
-                  </a>
+                  <>
+                    <button
+                      onClick={connectTelegram}
+                      disabled={tgConnecting || tgWaiting}
+                      className="mt-3 inline-flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold uppercase tracking-wider transition-all hover:-translate-y-0.5 disabled:opacity-60"
+                      style={{ background: "linear-gradient(135deg, #229ED9, #1A86BA)", color: "#ffffff" }}>
+                      {tgWaiting
+                        ? <Loader2 size={14} className="animate-spin" />
+                        : <Send size={14} />}
+                      {tgConnecting ? t("notif_tg_connecting") : tgWaiting ? t("notif_tg_waiting") : t("notif_tg_connect_btn")}
+                    </button>
+                    {tgError && (
+                      <div className="mt-2 text-xs" style={{ color: "#dc2626" }}>{t("notif_tg_link_error")}</div>
+                    )}
+                  </>
                 )}
               </>
             )}
@@ -166,6 +261,34 @@ export function NotificationsClient({ userId }: { userId: string }) {
           )}
         </div>
       </div>
+
+      {/* Telegram per-type settings — only meaningful once connected */}
+      {telegramChatId && (
+        <div className="rounded-2xl overflow-hidden" style={glass}>
+          <div className="px-5 py-3 border-b" style={{ borderColor: "rgba(255,255,255,0.07)" }}>
+            <div className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.35)" }}>
+              {t("notif_tg_types_title")}
+            </div>
+          </div>
+          {TELEGRAM_SETTINGS.map(s => (
+            <div key={s.key}
+              className="flex items-center gap-4 px-5 py-4 border-b last:border-0"
+              style={{ borderColor: "rgba(255,255,255,0.06)" }}>
+              <div className="shrink-0 w-7 flex items-center justify-center">{s.icon}</div>
+              <div className="flex-1 min-w-0">
+                <div className="text-sm font-bold text-white">{TELEGRAM_LABELS[s.key].label}</div>
+                <div className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.35)" }}>{TELEGRAM_LABELS[s.key].desc}</div>
+              </div>
+              <button onClick={() => toggleTelegramSetting(s.key)}
+                className="relative h-6 w-11 rounded-full shrink-0 transition-all"
+                style={{ background: telegramSettings[s.key] ? "#229ED9" : "rgba(255,255,255,0.12)" }}>
+                <div className="absolute top-0.5 h-5 w-5 rounded-full bg-white shadow-md transition-all"
+                  style={{ left: telegramSettings[s.key] ? "22px" : "2px" }} />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
 
       {/* Push permission card */}
       <div className="rounded-2xl p-5" style={glass}>

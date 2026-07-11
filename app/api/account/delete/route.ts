@@ -112,6 +112,8 @@ export async function POST(req: NextRequest) {
     country: null,
     avatar_url: null,
     telegram_chat_id: null,
+    telegram_link_token: null,
+    telegram_link_token_expires_at: null,
     auto_fill_enabled: false,
     auto_fill_home: 1,
     auto_fill_away: 0,

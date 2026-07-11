@@ -1,0 +1,25 @@
+name: Telegram locking-reminder cron
+
+# Vercel Hobby plan caps cron jobs at 2/day, but "predictions locking soon"
+# reminders only mean anything if checked close to kickoff — so, like
+# scores-cron.yml, this workflow pings the endpoint on a tight interval
+# instead of relying on a single daily vercel.json cron entry.
+# Requires repo secrets SCORES_APP_URL and CRON_SECRET (shared with the
+# other cron workflows).
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch: {}
+
+jobs:
+  ping-telegram-reminders:
+    runs-on: ubuntu-latest
+    steps:
+      - name: POST /api/reminders/telegram
+        run: |
+          curl -sf -X POST "${SCORES_APP_URL}/api/reminders/telegram" \
+            -H "Authorization: Bearer ${CRON_SECRET}" \
+            -o - -w "\nHTTP %{http_code}\n"
+        env:
+          SCORES_APP_URL: ${{ secrets.SCORES_APP_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}

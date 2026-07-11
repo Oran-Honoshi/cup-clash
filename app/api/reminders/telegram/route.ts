@@ -1,5 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import {
+  isTelegramPrefEnabled,
+  queueTelegramLine,
+  flushTelegramQueue,
+  telegramTranslations,
+  type TelegramQueue,
+} from "@/lib/services/telegram";
+import { interpolate } from "@/lib/i18n";
 
 function sbAdmin() {
   return createClient(
@@ -8,17 +16,11 @@ function sbAdmin() {
   );
 }
 
-async function sendTelegram(chatId: string, text: string): Promise<boolean> {
-  const token = process.env.TELEGRAM_BOT_TOKEN;
-  if (!token) return false;
-  const res = await fetch(`https://api.telegram.org/bot${token}/sendMessage`, {
-    method:  "POST",
-    headers: { "Content-Type": "application/json" },
-    body:    JSON.stringify({ chat_id: chatId, text, parse_mode: "HTML" }),
-  });
-  return res.ok;
-}
-
+// Called every ~10-15 min by .github/workflows/telegram-reminders-cron.yml —
+// Vercel Hobby caps vercel.json crons at 2/day, so like scores-cron.yml this
+// route is pinged externally rather than scheduled in vercel.json. A daily
+// vercel cron previously "covered" this route but only actually caught a
+// match if it happened to kick off inside that one daily run's 1-hour lookahead.
 export async function POST(req: NextRequest) {
   const auth = req.headers.get("authorization");
   if (auth !== `Bearer ${process.env.CRON_SECRET}`) {
@@ -43,7 +45,8 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ sent: 0, skipped: 0, reason: "no upcoming matches in window" });
   }
 
-  let sent    = 0;
+  const queue: TelegramQueue = new Map();
+  let queued  = 0;
   let skipped = 0;
 
   for (const match of matches as Array<{ id: string; home: string; away: string }>) {
@@ -54,7 +57,7 @@ export async function POST(req: NextRequest) {
       .select(`
         user_id,
         groups!inner ( id, group_type ),
-        profiles!inner ( telegram_chat_id )
+        profiles!inner ( telegram_chat_id, notification_preferences, telegram_language_code )
       `)
       .eq("can_predict", true)
       .eq("groups.group_type", "tournament");
@@ -64,11 +67,14 @@ export async function POST(req: NextRequest) {
     type MemberRow = {
       user_id:  string;
       groups:   { id: string; group_type: string };
-      profiles: { telegram_chat_id: string | null };
+      profiles: { telegram_chat_id: string | null; notification_preferences: unknown; telegram_language_code: string | null };
     };
 
     const eligible = (members as unknown as MemberRow[]).filter(
-      m => m.profiles?.telegram_chat_id
+      m => m.profiles?.telegram_chat_id && isTelegramPrefEnabled(
+        m.profiles.notification_preferences as Parameters<typeof isTelegramPrefEnabled>[0],
+        "locking_reminder"
+      )
     );
 
     if (!eligible.length) continue;
@@ -85,20 +91,23 @@ export async function POST(req: NextRequest) {
       (existingPreds as Array<{ user_id: string }> ?? []).map(p => p.user_id)
     );
 
-    // 4. Send reminders to those who haven't predicted
+    // 4. Queue reminders for those who haven't predicted (batched per user —
+    //    a user in multiple groups covering the same match still gets one line)
     for (const member of eligible) {
       if (predictedSet.has(member.user_id)) { skipped++; continue; }
 
       const groupId = member.groups.id;
-      const text =
-        `⚽ <b>${match.home} vs ${match.away}</b> kicks off in less than 1 hour!\n\n` +
-        `You haven't predicted yet.\n` +
-        `👉 <a href="https://cupclash.live/dashboard?group=${groupId}">Submit your prediction</a>`;
+      const t = telegramTranslations(member.profiles.telegram_language_code);
+      const url = `https://cupclash.live/dashboard?group=${groupId}`;
+      const line =
+        interpolate(t.notif_bot_locking, { home: match.home, away: match.away }) + "\n" +
+        interpolate(t.notif_bot_locking_cta, { url });
 
-      const ok = await sendTelegram(member.profiles.telegram_chat_id!, text);
-      if (ok) sent++; else skipped++;
+      queueTelegramLine(queue, member.profiles.telegram_chat_id!, line);
+      queued++;
     }
   }
 
-  return NextResponse.json({ sent, skipped });
+  const { sent, failed, blocked } = await flushTelegramQueue(queue, sb);
+  return NextResponse.json({ queued, sent, failed, blocked, skipped });
 }
