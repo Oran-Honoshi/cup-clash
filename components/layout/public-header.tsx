@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import { UserAvatar } from "@/components/ui/UserAvatar";
 
 // Lightweight header for genuinely public, anonymous-visitor pages
 // (/news, /leagues). Deliberately smaller than the authenticated app
@@ -13,7 +14,12 @@ const PUBLIC_NAV = [
   { href: "/leagues",   label: "Leagues"   },
 ];
 
-export function PublicHeader({ active }: { active?: string }) {
+interface PublicHeaderUser {
+  name:      string;
+  avatarUrl: string | null;
+}
+
+export function PublicHeader({ active, user }: { active?: string; user?: PublicHeaderUser | null }) {
   return (
     <header
       style={{
@@ -51,25 +57,34 @@ export function PublicHeader({ active }: { active?: string }) {
           ))}
         </nav>
 
-        <Link href="/signin" className="shrink-0" style={{ textDecoration: "none" }}>
-          <button
-            className="flex items-center gap-1.5 transition-all"
-            style={{
-              fontFamily: "var(--font-ui)",
-              fontSize: 12,
-              fontWeight: 700,
-              textTransform: "uppercase",
-              letterSpacing: "0.04em",
-              padding: "9px 16px",
-              borderRadius: 100,
-              background: "var(--ac)",
-              color: "var(--at)",
-              border: "none",
-            }}
-          >
-            Sign in <ArrowRight size={13} />
-          </button>
-        </Link>
+        {user ? (
+          <Link href="/dashboard" className="flex items-center gap-2 shrink-0" style={{ textDecoration: "none" }}>
+            <span className="hidden sm:inline" style={{ fontFamily: "var(--font-ui)", fontSize: 13, fontWeight: 700, color: "var(--t2)" }}>
+              {user.name}
+            </span>
+            <UserAvatar name={user.name} avatarUrl={user.avatarUrl} size="sm" />
+          </Link>
+        ) : (
+          <Link href="/signin" className="shrink-0" style={{ textDecoration: "none" }}>
+            <button
+              className="flex items-center gap-1.5 transition-all"
+              style={{
+                fontFamily: "var(--font-ui)",
+                fontSize: 12,
+                fontWeight: 700,
+                textTransform: "uppercase",
+                letterSpacing: "0.04em",
+                padding: "9px 16px",
+                borderRadius: 100,
+                background: "var(--ac)",
+                color: "var(--at)",
+                border: "none",
+              }}
+            >
+              Sign in <ArrowRight size={13} />
+            </button>
+          </Link>
+        )}
       </div>
     </header>
   );
