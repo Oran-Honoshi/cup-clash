@@ -86,7 +86,7 @@ function MatchDateTime({ utcTime, timeConfirmed }: { utcTime: string; timeConfir
 function ComparisonCell({ cell }: { cell: CellInfo }) {
   if (cell.kind === "exact") {
     return (
-      <div className="flex flex-col items-center gap-0.5">
+      <div className="inline-flex flex-col items-center gap-0.5">
         <Trophy size={14} style={{ color: "var(--sc)" }} />
         <span className="text-[10px] font-black" style={{ color: "var(--sc)" }}>+{cell.pts}</span>
       </div>
@@ -94,7 +94,7 @@ function ComparisonCell({ cell }: { cell: CellInfo }) {
   }
   if (cell.kind === "correct") {
     return (
-      <div className="flex flex-col items-center gap-0.5">
+      <div className="inline-flex flex-col items-center gap-0.5">
         <Check size={14} style={{ color: "var(--ac)" }} />
         {cell.pts > 0 && <span className="text-[10px] font-black" style={{ color: "var(--ac)" }}>+{cell.pts}</span>}
       </div>
