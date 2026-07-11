@@ -175,6 +175,7 @@ export function KnockoutPredictions({ groupId, userId, allMatches = [] }: Knocko
   const matchIds = useMemo(() => knockoutMatches.map(m => m.id), [knockoutMatches]);
 
   useEffect(() => {
+    setPredictions({});
     if (!userId || !matchIds.length) return;
     const sb = createClient();
     sb.from("group_predictions")
@@ -182,12 +183,11 @@ export function KnockoutPredictions({ groupId, userId, allMatches = [] }: Knocko
       .eq("group_id", groupId).eq("user_id", userId).eq("pred_type", "match")
       .in("match_id", matchIds)
       .then(({ data }) => {
-        if (!data?.length) return;
         const loaded: Record<string, ScorePrediction> = {};
-        (data as Array<{ match_id: string; home_score: number; away_score: number }>).forEach(row => {
+        (data as Array<{ match_id: string; home_score: number; away_score: number }> ?? []).forEach(row => {
           loaded[row.match_id] = { home: String(row.home_score), away: String(row.away_score) };
         });
-        setPredictions(prev => ({ ...prev, ...loaded }));
+        setPredictions(loaded);
       });
   }, [userId, groupId, matchIds]);
 

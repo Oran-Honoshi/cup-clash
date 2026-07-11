@@ -205,6 +205,7 @@ export function PredictionsClient({
             </span>
           </div>
           <GroupStagePredictions
+            key={groupId}
             groupId={groupId}
             userId={userId}
             locked={false}
@@ -221,7 +222,7 @@ export function PredictionsClient({
               Knockout
             </span>
           </div>
-          <KnockoutPredictions groupId={groupId} userId={userId} allMatches={allMatches} />
+          <KnockoutPredictions key={groupId} groupId={groupId} userId={userId} allMatches={allMatches} />
         </div>
 
         {/* ── Section 3: TOURNAMENT PICKS ───────────────────────── */}
@@ -231,7 +232,7 @@ export function PredictionsClient({
               Tournament Picks
             </span>
           </div>
-          <TournamentPicks groupId={groupId} userId={userId} locked={false} />
+          <TournamentPicks key={groupId} groupId={groupId} userId={userId} locked={false} />
         </div>
 
         {/* ── Section 4: BONUS QUESTIONS ────────────────────────── */}
@@ -241,7 +242,7 @@ export function PredictionsClient({
               Bonus Questions
             </span>
           </div>
-          <BonusQuestions groupId={groupId} userId={userId} />
+          <BonusQuestions key={groupId} groupId={groupId} userId={userId} />
         </div>
 
       </div>
