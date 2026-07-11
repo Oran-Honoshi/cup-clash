@@ -31,15 +31,15 @@ export function FollowButton({ type, id, userId, initialFollowing, compact = fal
     setLoading(true);
     const sb = createClient();
     if (following) {
-      await sb.from("user_follows").delete()
+      const { error } = await sb.from("user_follows").delete()
         .eq("user_id", userId).eq("followed_type", type).eq("followed_id", id);
-      setFollowing(false);
+      if (!error) setFollowing(false);
     } else {
-      await sb.from("user_follows").upsert(
+      const { error } = await sb.from("user_follows").upsert(
         { user_id: userId, followed_type: type, followed_id: id },
         { onConflict: "user_id,followed_type,followed_id", ignoreDuplicates: true }
       );
-      setFollowing(true);
+      if (!error) setFollowing(true);
     }
     setLoading(false);
   };

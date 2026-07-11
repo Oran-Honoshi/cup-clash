@@ -24,11 +24,11 @@ export function ConsumeFollowParam({ userId }: { userId: string | null }) {
 
     (async () => {
       const sb = createClient();
-      await sb.from("user_follows").upsert(
+      const { error } = await sb.from("user_follows").upsert(
         { user_id: userId, followed_type: follow.type, followed_id: follow.id },
         { onConflict: "user_id,followed_type,followed_id", ignoreDuplicates: true }
       );
-      setConfirmed(follow.type);
+      if (!error) setConfirmed(follow.type);
 
       const params = new URLSearchParams(searchParams.toString());
       params.delete("follow");

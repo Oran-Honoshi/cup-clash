@@ -1,12 +1,15 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { Camera, Check, AlertCircle, Upload, RefreshCw, X, Zap, Mail } from "lucide-react";
+import { Camera, Check, AlertCircle, Upload, RefreshCw, X, Zap, Mail, Shield } from "lucide-react";
+import Link from "next/link";
 import { createClient } from "@/lib/supabase/client";
 import { CountrySelector } from "@/components/auth/country-selector";
 import { SOCCER_PRESETS, dicebearUrl } from "@/components/ui/member-avatar";
 import { UserAvatar } from "@/components/ui/UserAvatar";
 import { BallLoader } from "@/components/ui/BallLoader";
+import { FlagBadge } from "@/components/ui/FlagBadge";
+import { FollowButton } from "@/components/leagues/follow-button";
 import { getTeamColor } from "@/lib/countries";
 import { useTheme } from "@/components/theme-provider";
 import { ThemePicker } from "@/components/ui/theme-picker";
@@ -25,6 +28,12 @@ interface ProfileData {
   auto_fill_enabled: boolean;
   auto_fill_home:    number;
   auto_fill_away:    number;
+}
+
+interface FollowedTeam {
+  id:       string;
+  name:     string;
+  badgeUrl: string | null;
 }
 
 const glassCard = {
@@ -61,6 +70,8 @@ export default function ProfilePage() {
   const [isGoogle,  setIsGoogle]  = useState(false);
   const [tab, setTab]             = useState<"auto" | "preset" | "photo">("auto");
   const [soundOn, setSoundOn]     = useState(true);
+  const [followedTeams, setFollowedTeams] = useState<FollowedTeam[]>([]);
+  const [userId, setUserId]       = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
   const { setCountry, setAppTheme } = useTheme();
 
@@ -78,6 +89,20 @@ export default function ProfilePage() {
       const { data: { user } } = await sb.auth.getUser();
       if (!user) { setLoading(false); return; }
       setUserEmail(user.email ?? null);
+      setUserId(user.id);
+
+      sb.from("user_follows").select("followed_id").eq("user_id", user.id).eq("followed_type", "team")
+        .then(async ({ data: follows }) => {
+          const teamIds = (follows ?? []).map(f => (f as { followed_id: string }).followed_id);
+          if (!teamIds.length) return;
+          const { data: teams } = await sb.from("teams").select("id, name, badge_url").in("id", teamIds);
+          setFollowedTeams(
+            ((teams ?? []) as Array<{ id: string; name: string; badge_url: string | null }>)
+              .map(t => ({ id: t.id, name: t.name, badgeUrl: t.badge_url }))
+              .sort((a, b) => a.name.localeCompare(b.name))
+          );
+        });
+
       setIsGoogle(
         user.app_metadata?.provider === "google" ||
         (user.identities ?? []).some((i: { provider: string }) => i.provider === "google")
@@ -392,6 +417,38 @@ export default function ProfilePage() {
       <div style={{ ...glassCard, padding: 20 }}>
         <div className="label-caps mb-3">{t("prof_yourTeam")}</div>
         <CountrySelector value={profile.country} onChange={code => setProfile(p => ({ ...p, country: code }))} />
+      </div>
+
+      {/* My Followed Teams */}
+      <div style={{ ...glassCard, padding: 20 }}>
+        <div className="flex items-center justify-between mb-3">
+          <div className="label-caps">My Followed Teams</div>
+          <Link href="/leagues?tab=teams" style={{ fontSize: 11, fontWeight: 700, color: "#00D4FF", textDecoration: "none" }}>
+            {followedTeams.length > 0 ? "Edit" : "Add teams"}
+          </Link>
+        </div>
+        {followedTeams.length === 0 ? (
+          <div className="flex items-center gap-3 py-2">
+            <Shield size={16} style={{ color: "rgba(255,255,255,0.3)" }} />
+            <p style={{ fontSize: 12, color: "rgba(255,255,255,0.4)" }}>
+              You&apos;re not following any teams yet.
+            </p>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {followedTeams.map(team => (
+              <div key={team.id} className="flex items-center gap-3">
+                <FlagBadge code={team.badgeUrl} size="sm" label={team.name} />
+                <span className="flex-1 truncate" style={{ fontSize: 13, color: "white", fontFamily: "var(--font-ui)" }}>
+                  {team.name}
+                </span>
+                {userId && (
+                  <FollowButton type="team" id={team.id} userId={userId} initialFollowing={true} compact />
+                )}
+              </div>
+            ))}
+          </div>
+        )}
       </div>
 
       {/* App Theme */}
