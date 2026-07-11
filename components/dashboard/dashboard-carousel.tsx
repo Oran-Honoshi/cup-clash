@@ -29,7 +29,10 @@ interface DashboardCarouselProps {
 const PANELS = ["MATCH", "LEADERBOARD", "MY STATS"] as const;
 type PanelId = typeof PANELS[number];
 
-const PANEL_BG = "var(--bg)";
+// Was `var(--bg)` — identical to the page's own background, so the panel
+// read as a flat, theme-invariant slab instead of a floating tile like the
+// rest of the app's cc-elevated cards (e.g. My Groups).
+const PANEL_BG = "var(--sf)";
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -222,7 +225,7 @@ export function DashboardCarousel({
   const openMatch = openMatchId ? matches.find(m => m.id === openMatchId) : undefined;
 
   return (
-    <div style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}>
+    <div style={{ display: "flex", flexDirection: "column" }}>
       {/* Panel pill tabs — independent floating pills, no shared bar behind them */}
       <div className="flex items-center justify-center gap-2 px-4"
         style={{ height: 40, flexShrink: 0 }}>
@@ -253,13 +256,16 @@ export function DashboardCarousel({
         })}
       </div>
 
-      {/* Active panel — vertically scrollable */}
-      <div style={{
-        flex: 1, minHeight: 0,
-        overflowY: "auto",
-        WebkitOverflowScrolling: "touch",
-        overscrollBehavior: "contain",
+      {/* Active panel — flows with the page (the whole Home page scrolls as
+          one region, not this panel independently) and gets the same
+          floating-tile treatment as the rest of the app's cc-elevated cards
+          instead of a flat slab matching the page background. */}
+      <div className="cc-elevated" style={{
+        minHeight: 280,
         background: PANEL_BG,
+        border: "1px solid var(--br)",
+        borderBottom: "none",
+        borderRadius: "var(--border-radius-lg) var(--border-radius-lg) 0 0",
         paddingBottom: 24,
       }}>
         {panel === 0 && <MatchPanel matches={matches} groupId={groupId} groupName={groupName} members={members} currentUserId={currentUserId} onOpenMatchCenter={setOpenMatchId} />}

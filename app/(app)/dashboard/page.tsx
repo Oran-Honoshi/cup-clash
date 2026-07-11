@@ -165,7 +165,7 @@ export default async function DashboardPage({
   const isAdmin       = group.admin === userProfile.id;
 
   return (
-    <div className="ta-stadium-bg" style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}>
+    <div className="ta-stadium-bg" style={{ display: "flex", flexDirection: "column" }}>
       <GroupPersistRedirect groups={allGroups} basePath="/dashboard" />
       <OnboardingTour />
       <WelcomeModal />
@@ -197,11 +197,10 @@ export default async function DashboardPage({
       <MyTeamsSection teams={myTeams} />
       <NewsHeroSection article={heroArticle} />
 
-      {/* 3-panel carousel — fills remaining space, but never shrinks below a
-          usable height; once fixed content above (News, My Teams, etc.) grows
-          past the viewport, the page scrolls to reach the rest instead of
-          clipping it. */}
-      <div className="-mx-4 sm:-mx-6" style={{ flex: 1, minHeight: 320, display: "flex", flexDirection: "column" }}>
+      {/* 3-panel carousel — flows with the rest of the page (My Teams, News)
+          as one continuous scroll region instead of its own independent
+          scroll container. */}
+      <div className="-mx-4 sm:-mx-6" style={{ display: "flex", flexDirection: "column" }}>
         <DashboardCarousel
           matches={upcomingMatches}
           members={members}
