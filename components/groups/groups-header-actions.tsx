@@ -4,8 +4,9 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Plus, LogIn, KeyRound, ArrowRight, X, AlertCircle } from "lucide-react";
+import { Plus, LogIn, KeyRound, ArrowRight, X, AlertCircle, Search } from "lucide-react";
 import { BallLoader } from "@/components/ui/BallLoader";
+import { useLocale } from "@/components/i18n/locale-provider";
 
 // Bottom sheet passkey entry, mirroring the real join flow at /join/[code]
 // (which resolves against the groups.passkey column — never invite_code).
@@ -105,9 +106,18 @@ function JoinGroupSheet({ open, onClose }: { open: boolean; onClose: () => void 
 
 export function GroupsHeaderActions() {
   const [sheetOpen, setSheetOpen] = useState(false);
+  const { t } = useLocale();
 
   return (
     <div className="flex gap-2">
+      <Link href="/groups/search">
+        <button
+          className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-sm uppercase tracking-wider transition-all hover:-translate-y-0.5"
+          style={{ background: "color-mix(in srgb, var(--ac) 10%, transparent)", border: "1px solid color-mix(in srgb, var(--ac) 35%, transparent)", color: "var(--ac)" }}
+        >
+          <Search size={15} /> {t("grp_search")}
+        </button>
+      </Link>
       <button
         onClick={() => setSheetOpen(true)}
         className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-sm uppercase tracking-wider transition-all hover:-translate-y-0.5"

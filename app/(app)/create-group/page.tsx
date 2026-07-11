@@ -154,6 +154,7 @@ function CreateGroupInner() {
   const [selectedMatch,  setSelectedMatch]  = useState(FEATURED_MATCHES[0].id);
   const [showPicker,     setShowPicker]     = useState(false);
   const [corporatePrize, setCorporatePrize] = useState("");
+  const [isPublic,       setIsPublic]       = useState(false);
 
   const [buyIn,        setBuyIn]        = useState(20);
   const [memberCount,  setMemberCount]  = useState(10);
@@ -241,6 +242,7 @@ function CreateGroupInner() {
         payout_second:        (isCorporate && prizeTrack === "company") || isFriendly ? 0 : payoutSecond,
         payout_third:         (isCorporate && prizeTrack === "company") || isFriendly ? 0 : payoutThird,
         max_members:          100,
+        is_public:            isPublic,
         group_type:           groupType,
         single_match_id:      groupType === "single_match" ? selectedMatch : null,
         enrollment_fee_cents: isCorporate || isFriendly ? 0 : 200,
@@ -712,6 +714,14 @@ function CreateGroupInner() {
                     <div className="text-[10px] mt-0.5" style={{ color: "rgba(255,255,255,0.35)" }}>{desc}</div>
                   </button>
                 ))}
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3 pt-1">
+              <Toggle enabled={isPublic} onToggle={() => setIsPublic(v => !v)} />
+              <div className="flex-1 min-w-0">
+                <div className="text-sm font-bold" style={{ color: isPublic ? "white" : "rgba(255,255,255,0.7)" }}>{t("cg_discoverable")}</div>
+                <div style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", fontFamily: "var(--font-ui)" }}>{t("cg_discoverable_desc")}</div>
               </div>
             </div>
 

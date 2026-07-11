@@ -224,6 +224,18 @@ export interface Translations {
   grp_none_sub:     string;
   grp_invited_to:   string;
   grp_complete_step:string;
+  grp_search:       string;
+
+  // Groups search
+  sg_placeholder:   string;
+  sg_filter_all:    string;
+  sg_empty_title:   string;
+  sg_empty_body:    string;
+  sg_members:       string;
+  sg_join:          string;
+  sg_joining:       string;
+  sg_join_error:    string;
+  sg_preview_title: string;
 
   // Common extended
   common_new_group:    string;
@@ -284,6 +296,8 @@ export interface Translations {
   cg_group_name:      string;
   cg_company_name:    string;
   cg_group_type:      string;
+  cg_discoverable:      string;
+  cg_discoverable_desc: string;
   cg_full_tournament: string;
   cg_single_match:    string;
   cg_next_prizes:     string;
@@ -505,6 +519,18 @@ const en: Translations = {
   grp_none_sub:     "Create a group or join one with a passkey.",
   grp_invited_to:   "You're invited to join",
   grp_complete_step:"Complete the last step to join the group and start predicting.",
+  grp_search:       "Search Groups",
+
+  // Groups search
+  sg_placeholder:   "Search by group name",
+  sg_filter_all:    "All",
+  sg_empty_title:   "No public groups found",
+  sg_empty_body:    "Try a different search or check back later.",
+  sg_members:       "{count}/{max} members",
+  sg_join:          "Join",
+  sg_joining:       "Joining...",
+  sg_join_error:    "Failed to join. Please try again.",
+  sg_preview_title: "Group Preview",
   common_new_group:    "New Group",
   common_view_group:   "View Group",
   common_create_group: "Create a group",
@@ -554,6 +580,8 @@ const en: Translations = {
   cg_group_name:      "Group Name",
   cg_company_name:    "Company Group Name",
   cg_group_type:      "Group Type",
+  cg_discoverable:      "Make this group discoverable",
+  cg_discoverable_desc: "Let other users find and join this group from Search Groups.",
   cg_full_tournament: "Full Tournament",
   cg_single_match:    "Single Match",
   cg_next_prizes:     "Next: Company Prizes",
@@ -773,6 +801,18 @@ const fr: Translations = {
   grp_none_sub:     "Crée un groupe ou rejoins-en un avec un code.",
   grp_invited_to:   "Tu es invité à rejoindre",
   grp_complete_step:"Complétez la dernière étape pour rejoindre le groupe.",
+  grp_search:       "Rechercher des groupes",
+
+  // Groups search
+  sg_placeholder:   "Rechercher par nom de groupe",
+  sg_filter_all:    "Tous",
+  sg_empty_title:   "Aucun groupe public trouvé",
+  sg_empty_body:    "Essayez une autre recherche ou revenez plus tard.",
+  sg_members:       "{count}/{max} membres",
+  sg_join:          "Rejoindre",
+  sg_joining:       "Connexion...",
+  sg_join_error:    "Échec de la connexion. Veuillez réessayer.",
+  sg_preview_title: "Aperçu du groupe",
   common_new_group:    "Nouveau groupe",
   common_view_group:   "Voir le groupe",
   common_create_group: "Créer un groupe",
@@ -823,8 +863,10 @@ const fr: Translations = {
   cg_group_name:      "Group Name",
   cg_company_name:    "Company Group Name",
   cg_group_type:      "Group Type",
-  cg_full_tournament: "Full Tournament",
-  cg_single_match:    "Single Match",
+  cg_discoverable:      "Rendre ce groupe visible",
+  cg_discoverable_desc: "Permettez à d'autres utilisateurs de trouver et de rejoindre ce groupe depuis Rechercher des groupes.",
+  cg_full_tournament: "Tournoi complet",
+  cg_single_match:    "Match unique",
   cg_next_prizes:     "Next: Company Prizes",
   cg_next_scoring:    "Next: Scoring Rules",
   cg_complete:        "Complete & Launch Group",
@@ -1042,6 +1084,18 @@ const de: Translations = {
   grp_none_sub:     "Erstelle eine Gruppe oder tritt einer mit einem Code bei.",
   grp_invited_to:   "Du bist eingeladen, beizutreten",
   grp_complete_step:"Schließe den letzten Schritt ab, um der Gruppe beizutreten.",
+  grp_search:       "Gruppen suchen",
+
+  // Groups search
+  sg_placeholder:   "Nach Gruppennamen suchen",
+  sg_filter_all:    "Alle",
+  sg_empty_title:   "Keine öffentlichen Gruppen gefunden",
+  sg_empty_body:    "Versuche eine andere Suche oder schau später wieder vorbei.",
+  sg_members:       "{count}/{max} Mitglieder",
+  sg_join:          "Beitreten",
+  sg_joining:       "Beitreten...",
+  sg_join_error:    "Beitritt fehlgeschlagen. Bitte versuche es erneut.",
+  sg_preview_title: "Gruppenvorschau",
   common_new_group:    "Neue Gruppe",
   common_view_group:   "Gruppe ansehen",
   common_create_group: "Gruppe erstellen",
@@ -1092,8 +1146,10 @@ const de: Translations = {
   cg_group_name:      "Group Name",
   cg_company_name:    "Company Group Name",
   cg_group_type:      "Group Type",
-  cg_full_tournament: "Full Tournament",
-  cg_single_match:    "Single Match",
+  cg_discoverable:      "Diese Gruppe auffindbar machen",
+  cg_discoverable_desc: "Lass andere Nutzer diese Gruppe über Gruppen suchen finden und beitreten.",
+  cg_full_tournament: "Gesamtes Turnier",
+  cg_single_match:    "Einzelnes Spiel",
   cg_next_prizes:     "Next: Company Prizes",
   cg_next_scoring:    "Next: Scoring Rules",
   cg_complete:        "Complete & Launch Group",
@@ -1311,6 +1367,18 @@ const nl: Translations = {
   grp_none_sub:     "Maak een groep aan of doe mee via een code.",
   grp_invited_to:   "Je bent uitgenodigd om lid te worden van",
   grp_complete_step:"Voltooi de laatste stap om je aan te sluiten bij de groep.",
+  grp_search:       "Groepen zoeken",
+
+  // Groups search
+  sg_placeholder:   "Zoek op groepsnaam",
+  sg_filter_all:    "Alle",
+  sg_empty_title:   "Geen openbare groepen gevonden",
+  sg_empty_body:    "Probeer een andere zoekopdracht of kom later terug.",
+  sg_members:       "{count}/{max} leden",
+  sg_join:          "Aansluiten",
+  sg_joining:       "Bezig met aansluiten...",
+  sg_join_error:    "Aansluiten mislukt. Probeer het opnieuw.",
+  sg_preview_title: "Groepsvoorbeeld",
   common_new_group:    "Nieuwe groep",
   common_view_group:   "Groep bekijken",
   common_create_group: "Groep aanmaken",
@@ -1361,8 +1429,10 @@ const nl: Translations = {
   cg_group_name:      "Group Name",
   cg_company_name:    "Company Group Name",
   cg_group_type:      "Group Type",
-  cg_full_tournament: "Full Tournament",
-  cg_single_match:    "Single Match",
+  cg_discoverable:      "Maak deze groep vindbaar",
+  cg_discoverable_desc: "Laat andere gebruikers deze groep vinden en aansluiten via Groepen zoeken.",
+  cg_full_tournament: "Volledig toernooi",
+  cg_single_match:    "Eén wedstrijd",
   cg_next_prizes:     "Next: Company Prizes",
   cg_next_scoring:    "Next: Scoring Rules",
   cg_complete:        "Complete & Launch Group",
@@ -1580,6 +1650,18 @@ const es: Translations = {
   grp_none_sub:     "Crea un grupo o únete a uno con un código.",
   grp_invited_to:   "Te invitaron a unirte a",
   grp_complete_step:"Completa el último paso para unirte al grupo.",
+  grp_search:       "Buscar grupos",
+
+  // Groups search
+  sg_placeholder:   "Buscar por nombre de grupo",
+  sg_filter_all:    "Todos",
+  sg_empty_title:   "No se encontraron grupos públicos",
+  sg_empty_body:    "Prueba con otra búsqueda o vuelve más tarde.",
+  sg_members:       "{count}/{max} miembros",
+  sg_join:          "Unirse",
+  sg_joining:       "Uniéndote...",
+  sg_join_error:    "No se pudo unir. Inténtalo de nuevo.",
+  sg_preview_title: "Vista previa del grupo",
   common_new_group:    "Nuevo grupo",
   common_view_group:   "Ver grupo",
   common_create_group: "Crear grupo",
@@ -1630,8 +1712,10 @@ const es: Translations = {
   cg_group_name:      "Group Name",
   cg_company_name:    "Company Group Name",
   cg_group_type:      "Group Type",
-  cg_full_tournament: "Full Tournament",
-  cg_single_match:    "Single Match",
+  cg_discoverable:      "Hacer que este grupo sea visible",
+  cg_discoverable_desc: "Permite que otros usuarios encuentren y se unan a este grupo desde Buscar grupos.",
+  cg_full_tournament: "Torneo completo",
+  cg_single_match:    "Partido único",
   cg_next_prizes:     "Next: Company Prizes",
   cg_next_scoring:    "Next: Scoring Rules",
   cg_complete:        "Complete & Launch Group",
@@ -1849,6 +1933,18 @@ const pt: Translations = {
   grp_none_sub:     "Cria um grupo ou junta-te a um com um código.",
   grp_invited_to:   "Foste convidado para te juntares a",
   grp_complete_step:"Complete o último passo para entrar no grupo.",
+  grp_search:       "Pesquisar grupos",
+
+  // Groups search
+  sg_placeholder:   "Pesquisar por nome do grupo",
+  sg_filter_all:    "Todos",
+  sg_empty_title:   "Nenhum grupo público encontrado",
+  sg_empty_body:    "Tente outra pesquisa ou volte mais tarde.",
+  sg_members:       "{count}/{max} membros",
+  sg_join:          "Entrar",
+  sg_joining:       "Entrando...",
+  sg_join_error:    "Falha ao entrar. Tente novamente.",
+  sg_preview_title: "Pré-visualização do grupo",
   common_new_group:    "Novo grupo",
   common_view_group:   "Ver grupo",
   common_create_group: "Criar grupo",
@@ -1899,8 +1995,10 @@ const pt: Translations = {
   cg_group_name:      "Group Name",
   cg_company_name:    "Company Group Name",
   cg_group_type:      "Group Type",
-  cg_full_tournament: "Full Tournament",
-  cg_single_match:    "Single Match",
+  cg_discoverable:      "Tornar este grupo detetável",
+  cg_discoverable_desc: "Permita que outros utilizadores encontrem e entrem neste grupo a partir de Pesquisar grupos.",
+  cg_full_tournament: "Torneio completo",
+  cg_single_match:    "Jogo único",
   cg_next_prizes:     "Next: Company Prizes",
   cg_next_scoring:    "Next: Scoring Rules",
   cg_complete:        "Complete & Launch Group",
@@ -2118,6 +2216,18 @@ const he: Translations = {
   grp_none_sub:     "תפתח קבוצה או תצטרף לאחת עם קוד קבוצה.",
   grp_invited_to:   "הוזמנת להצטרף ל-",
   grp_complete_step:"השלם את השלב האחרון כדי להצטרף לקבוצה.",
+  grp_search:       "חיפוש קבוצות",
+
+  // Groups search
+  sg_placeholder:   "חיפוש לפי שם קבוצה",
+  sg_filter_all:    "הכול",
+  sg_empty_title:   "לא נמצאו קבוצות ציבוריות",
+  sg_empty_body:    "נסה חיפוש אחר או בדוק שוב מאוחר יותר.",
+  sg_members:       "{count}/{max} חברים",
+  sg_join:          "הצטרפות",
+  sg_joining:       "מצטרף...",
+  sg_join_error:    "ההצטרפות נכשלה. נסה שוב.",
+  sg_preview_title: "תצוגה מקדימה של הקבוצה",
   common_new_group:    "קבוצה חדשה",
   common_view_group:   "צפייה בקבוצה",
   common_create_group: "יצירת קבוצה",
@@ -2168,6 +2278,8 @@ const he: Translations = {
   cg_group_name:      "שם הקבוצה",
   cg_company_name:    "שם קבוצת החברה",
   cg_group_type:      "סוג הקבוצה",
+  cg_discoverable:      "הפוך קבוצה זו לניתנת לגילוי",
+  cg_discoverable_desc: "אפשר למשתמשים אחרים למצוא ולהצטרף לקבוצה זו דרך חיפוש קבוצות.",
   cg_full_tournament: "טורניר מלא",
   cg_single_match:    "משחק בודד",
   cg_next_prizes:     "הבא: פרסי חברה",
@@ -2387,6 +2499,18 @@ const ar: Translations = {
   grp_none_sub:     "سوّ مجموعة أو ادخل مع أخوياك برمز الدخول.",
   grp_invited_to:   "أنت معزوم للانضمام إلى",
   grp_complete_step:"أكمل الخطوة الأخيرة للانضمام إلى المجموعة.",
+  grp_search:       "البحث عن مجموعات",
+
+  // Groups search
+  sg_placeholder:   "البحث باسم المجموعة",
+  sg_filter_all:    "الكل",
+  sg_empty_title:   "لم يتم العثور على مجموعات عامة",
+  sg_empty_body:    "جرّب بحثًا آخر أو تحقق مرة أخرى لاحقًا.",
+  sg_members:       "{count}/{max} أعضاء",
+  sg_join:          "انضمام",
+  sg_joining:       "جارٍ الانضمام...",
+  sg_join_error:    "فشل الانضمام. حاول مرة أخرى.",
+  sg_preview_title: "معاينة المجموعة",
   common_new_group:    "مجموعة جديدة",
   common_view_group:   "عرض المجموعة",
   common_create_group: "إنشاء مجموعة",
@@ -2437,8 +2561,10 @@ const ar: Translations = {
   cg_group_name:      "Group Name",
   cg_company_name:    "Company Group Name",
   cg_group_type:      "Group Type",
-  cg_full_tournament: "Full Tournament",
-  cg_single_match:    "Single Match",
+  cg_discoverable:      "اجعل هذه المجموعة قابلة للاكتشاف",
+  cg_discoverable_desc: "اسمح للمستخدمين الآخرين بالعثور على هذه المجموعة والانضمام إليها من البحث عن مجموعات.",
+  cg_full_tournament: "البطولة الكاملة",
+  cg_single_match:    "مباراة واحدة",
   cg_next_prizes:     "Next: Company Prizes",
   cg_next_scoring:    "Next: Scoring Rules",
   cg_complete:        "Complete & Launch Group",
