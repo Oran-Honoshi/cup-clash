@@ -14,10 +14,10 @@ export default async function NotificationsPage() {
     <div className="space-y-6">
       <div>
         <div className="label-caps mb-1">Preferences</div>
-        <h1 className="font-display text-4xl sm:text-5xl uppercase tracking-tight text-white">
+        <h1 className="font-display text-4xl sm:text-5xl uppercase tracking-tight" style={{ color: "var(--tx)" }}>
           Notifications
         </h1>
-        <p className="text-sm mt-1" style={{ color: "rgba(255,255,255,0.4)" }}>
+        <p className="text-sm mt-1" style={{ color: "var(--mt)" }}>
           Choose when and how Cup Clash notifies you.
         </p>
         {ENABLE_BETA_FEATURES && (

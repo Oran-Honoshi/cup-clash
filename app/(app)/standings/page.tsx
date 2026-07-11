@@ -33,10 +33,10 @@ export default async function StandingsPage({
     <div className="space-y-6">
       <div>
         <div className="label-caps mb-1">{activeCompetition?.name ?? "World Cup 2026"}</div>
-        <h1 className="font-display text-4xl sm:text-5xl uppercase tracking-tight text-white">
+        <h1 className="font-display text-4xl sm:text-5xl uppercase tracking-tight" style={{ color: "var(--tx)" }}>
           Standings
         </h1>
-        <p className="text-sm mt-1" style={{ color: "rgba(255,255,255,0.4)" }}>
+        <p className="text-sm mt-1" style={{ color: "var(--mt)" }}>
           {activeSlug === WORLD_CUP_SLUG
             ? "All 12 groups · Updated after every match · Top 2 + 8 best 3rd-place teams advance"
             : "Pick a competition to see its table."}

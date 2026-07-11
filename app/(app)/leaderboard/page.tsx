@@ -35,12 +35,12 @@ export default async function LeaderboardPage({ searchParams }: { searchParams: 
       <div className="space-y-6 pb-32">
         <div>
           <div className="label-caps mb-1">Leaderboard</div>
-          <h1 className="font-display text-4xl sm:text-5xl uppercase tracking-tight text-white">Leaderboard</h1>
+          <h1 className="font-display text-4xl sm:text-5xl uppercase tracking-tight" style={{ color: "var(--tx)" }}>Leaderboard</h1>
         </div>
         <div className="rounded-2xl p-10 text-center" style={{ background: "rgba(255,255,255,0.07)", backdropFilter: "blur(24px)", WebkitBackdropFilter: "blur(24px)", border: "1px solid rgba(255,255,255,0.12)" }}>
           <div className="text-4xl mb-3">🏆</div>
-          <div className="font-display text-xl uppercase font-black mb-2 text-white">No group yet</div>
-          <p className="text-sm mb-4" style={{ color: "rgba(255,255,255,0.4)" }}>Join or create a group to see the leaderboard.</p>
+          <div className="font-display text-xl uppercase font-black mb-2" style={{ color: "var(--tx)" }}>No group yet</div>
+          <p className="text-sm mb-4" style={{ color: "var(--mt)" }}>Join or create a group to see the leaderboard.</p>
           <Link href="/groups" className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl font-bold text-sm uppercase tracking-wider" style={{ background: "linear-gradient(135deg, #00FF88, #00D4FF)", color: "#0B141B" }}>
             Find a group
           </Link>
@@ -70,13 +70,15 @@ export default async function LeaderboardPage({ searchParams }: { searchParams: 
   return (
     <div className="space-y-6 pb-32">
       <GroupPersistRedirect groups={allGroups} basePath="/leaderboard" />
-      <div className="flex items-start justify-between gap-4 flex-wrap">
-        <div>
-          <div className="label-caps mb-1">{group.name}</div>
-          <h1 className="font-display text-4xl sm:text-5xl uppercase tracking-tight text-white">Leaderboard</h1>
-        </div>
-        {allGroups.length > 1 && <div className="-mx-4 sm:-mx-6"><GroupSwipeSelector groups={allGroups} activeGroupId={activeGroupId} basePath="/leaderboard" /></div>}
+      <div>
+        <div className="label-caps mb-1">{group.name}</div>
+        <h1 className="font-display text-4xl sm:text-5xl uppercase tracking-tight" style={{ color: "var(--tx)" }}>Leaderboard</h1>
       </div>
+      {allGroups.length > 1 && (
+        <div className="-mx-4 sm:-mx-6">
+          <GroupSwipeSelector groups={allGroups} activeGroupId={activeGroupId} basePath="/leaderboard" />
+        </div>
+      )}
       <LeaderboardTabs members={members} currentUserId={userProfile.id} groupId={activeGroupId} isAdFree={isAdFree} isCorporate={isCorporate} />
       <AdBanner isAdFree={isAdFree} isCorporate={isCorporate} />
     </div>

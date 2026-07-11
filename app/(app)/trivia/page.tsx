@@ -21,7 +21,7 @@ export default async function TriviaPage() {
     <div className="space-y-6">
       <div>
         <div className="label-caps mb-1">{group.name}</div>
-        <h1 className="font-display text-4xl sm:text-5xl uppercase tracking-tight text-white">
+        <h1 className="font-display text-4xl sm:text-5xl uppercase tracking-tight" style={{ color: "var(--tx)" }}>
           Trivia
         </h1>
       </div>
