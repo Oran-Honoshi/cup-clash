@@ -92,7 +92,7 @@ const GROUP_SELECT = `
 // ── Get group by ID ──────────────────────────────────────────────────────────
 
 export async function getGroup(groupId: string): Promise<Group> {
-  const { data, error } = await sb()
+  const { data, error } = await sbAdmin()
     .from("groups")
     .select(GROUP_SELECT)
     .eq("id", groupId)
