@@ -15,7 +15,12 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           each [data-theme] block swaps/removes the image and its overlay. ── */}
       <div
         className="ta-stadium-bg fixed inset-0 z-0"
-        style={{ transform: "translateZ(0)", willChange: "transform" }}
+        // `.ta-stadium-bg` sets `position: relative` in globals.css, declared
+        // after Tailwind's utility layer — same specificity, later in the
+        // cascade, so it silently wins over the `fixed` class here and
+        // collapses this div to 0×viewport-height. Inline style beats any
+        // class regardless of source order, so this is the only reliable fix.
+        style={{ position: "fixed", transform: "translateZ(0)", willChange: "transform" }}
       />
 
       {/* ── App shell (sits above the background) ── */}

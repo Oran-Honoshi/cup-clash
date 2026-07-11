@@ -846,7 +846,7 @@ export function ScheduleClient({
 
       {/* ── Match list area — stadium photo background lives here only,
            never behind the header/predicting-card/filters above ────── */}
-      <div className="ta-stadium-bg rounded-2xl">
+      <div className="ta-stadium-bg rounded-2xl overflow-hidden">
         <div className="px-1 pt-2 pb-1">
           {/* ── Match count ──────────────────────────────────────────── */}
           <div className="ta-meta font-bold mb-3">
