@@ -7,6 +7,7 @@ import { DashboardPopups }   from "@/components/dashboard/dashboard-popups";
 import { GroupSwipeSelector } from "@/components/groups/group-swipe-selector";
 import { WelcomeModal }      from "@/components/ui/welcome-modal";
 import { DashboardEmptyState } from "@/components/dashboard/empty-state";
+import { ScoresSnapshotSection } from "@/components/dashboard/scores-snapshot-section";
 import { AdBanner }          from "@/components/ads/ad-banner";
 import { GroupPersistRedirect } from "@/components/app/group-persist-redirect";
 import { OnboardingTour }    from "@/components/onboarding/onboarding-tour";
@@ -93,6 +94,7 @@ export default async function DashboardPage({
       <div className="ta-stadium-bg w-full max-w-full overflow-x-hidden">
         <GuestBanner />
         <DashboardEmptyState highlight={searchParams.action} />
+        <ScoresSnapshotSection userId={null} />
       </div>
     );
   }
@@ -132,6 +134,7 @@ export default async function DashboardPage({
         <MyTeamsSection teams={myTeams} teamCountry={userProfile.country} />
         <NewsHeroSection article={heroArticle} />
         <DashboardEmptyState />
+        <ScoresSnapshotSection userId={userProfile.id} />
         <AdBanner isAdFree={false} isCorporate={false} />
       </div>
     );

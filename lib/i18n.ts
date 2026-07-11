@@ -87,6 +87,10 @@ export interface Translations {
   dash_guest_sub:    string;
   dash_create_group: string;
   dash_sign_in:      string;
+  dash_scores_title:        string;
+  dash_scores_leaderLine:   string;
+  dash_scores_resultLabel:  string;
+  dash_scores_noData:       string;
 
   // Common
   common_save:      string;
@@ -393,6 +397,10 @@ const en: Translations = {
   dash_guest_sub:    "Save predictions, create a group, or join one to get started.",
   dash_create_group: "Create Group",
   dash_sign_in:      "Sign in",
+  dash_scores_title:        "Scores & Standings",
+  dash_scores_leaderLine:   "{team} leads with {points} pts",
+  dash_scores_resultLabel:  "Latest result",
+  dash_scores_noData:       "No standings yet",
 
   common_save:      "Save",
   common_cancel:    "Cancel",
@@ -676,6 +684,10 @@ const fr: Translations = {
   dash_guest_sub:    "Enregistre tes pronos, crée un groupe ou rejoins-en un pour te lancer.",
   dash_create_group: "Créer un groupe",
   dash_sign_in:      "Se connecter",
+  dash_scores_title:        "Scores et classements",
+  dash_scores_leaderLine:   "{team} est en tête avec {points} pts",
+  dash_scores_resultLabel:  "Dernier résultat",
+  dash_scores_noData:       "Pas encore de classement",
 
   common_save:      "Enregistrer",
   common_cancel:    "Annuler",
@@ -959,6 +971,10 @@ const de: Translations = {
   dash_guest_sub:    "Speichere deine Tipps, erstelle eine Gruppe oder tritt einer bei, um loszulegen.",
   dash_create_group: "Gruppe erstellen",
   dash_sign_in:      "Anmelden",
+  dash_scores_title:        "Ergebnisse & Tabellen",
+  dash_scores_leaderLine:   "{team} führt mit {points} Punkten",
+  dash_scores_resultLabel:  "Letztes Ergebnis",
+  dash_scores_noData:       "Noch keine Tabelle",
 
   common_save:      "Speichern",
   common_cancel:    "Abbrechen",
@@ -1242,6 +1258,10 @@ const nl: Translations = {
   dash_guest_sub:    "Sla je voorspellingen op, maak een groep aan of word lid om te beginnen.",
   dash_create_group: "Groep aanmaken",
   dash_sign_in:      "Inloggen",
+  dash_scores_title:        "Uitslagen & Standen",
+  dash_scores_leaderLine:   "{team} gaat aan de leiding met {points} pt",
+  dash_scores_resultLabel:  "Laatste uitslag",
+  dash_scores_noData:       "Nog geen stand",
 
   common_save:      "Opslaan",
   common_cancel:    "Annuleren",
@@ -1525,6 +1545,10 @@ const es: Translations = {
   dash_guest_sub:    "Guarda tus pronósticos, crea un grupo o únete a uno para empezar.",
   dash_create_group: "Crear grupo",
   dash_sign_in:      "Iniciar sesión",
+  dash_scores_title:        "Resultados y clasificaciones",
+  dash_scores_leaderLine:   "{team} lidera con {points} pts",
+  dash_scores_resultLabel:  "Último resultado",
+  dash_scores_noData:       "Aún no hay clasificación",
 
   common_save:      "Guardar",
   common_cancel:    "Cancelar",
@@ -1808,6 +1832,10 @@ const pt: Translations = {
   dash_guest_sub:    "Guarda palpites, cria um grupo ou junta-te a um para começares.",
   dash_create_group: "Criar grupo",
   dash_sign_in:      "Entrar",
+  dash_scores_title:        "Resultados e classificações",
+  dash_scores_leaderLine:   "{team} lidera com {points} pts",
+  dash_scores_resultLabel:  "Último resultado",
+  dash_scores_noData:       "Ainda sem classificação",
 
   common_save:      "Salvar",
   common_cancel:    "Cancelar",
@@ -2091,6 +2119,10 @@ const he: Translations = {
   dash_guest_sub:    "תשמור ניחושים, תפתח קבוצה או תצטרף לחברים כדי להתחיל.",
   dash_create_group: "יצירת קבוצה",
   dash_sign_in:      "כניסה",
+  dash_scores_title:        "תוצאות וטבלאות",
+  dash_scores_leaderLine:   "{team} מוביל עם {points} נק'",
+  dash_scores_resultLabel:  "התוצאה האחרונה",
+  dash_scores_noData:       "עדיין אין טבלה",
 
   common_save:      "שמירה",
   common_cancel:    "ביטול",
@@ -2374,6 +2406,10 @@ const ar: Translations = {
   dash_guest_sub:    "احفظ توقعاتك، سوّ مجموعة أو ادخل مع أخوياك عشان تبدأ.",
   dash_create_group: "إنشاء مجموعة",
   dash_sign_in:      "تسجيل الدخول",
+  dash_scores_title:        "النتائج والترتيب",
+  dash_scores_leaderLine:   "{team} يتصدر برصيد {points} نقطة",
+  dash_scores_resultLabel:  "آخر نتيجة",
+  dash_scores_noData:       "لا يوجد ترتيب بعد",
 
   common_save:      "حفظ",
   common_cancel:    "إلغاء",
