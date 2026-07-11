@@ -1,5 +1,11 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  experimental: {
+    // Dynamic pages (leaderboard, dashboard, etc.) must never serve a stale
+    // client-side Router Cache entry after in-app navigation — scores/points
+    // change server-side (cron scoring) without the user triggering a fetch.
+    staleTimes: { dynamic: 0 },
+  },
   async headers() {
     return [
       {
