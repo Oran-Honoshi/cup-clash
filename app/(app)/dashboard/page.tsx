@@ -63,12 +63,13 @@ function GuestBanner() {
         </Link>
         <Link href="/signin">
           <button
-            className="font-bold text-sm text-white"
+            className="font-bold text-sm"
             style={{
               background: "var(--ip)",
               border: "1px solid var(--br)",
               borderRadius: 10,
               padding: "8px 16px",
+              color: "var(--tx)",
             }}
           >
             Sign in
@@ -164,7 +165,7 @@ export default async function DashboardPage({
   const isAdmin       = group.admin === userProfile.id;
 
   return (
-    <div className="ta-stadium-bg" style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+    <div className="ta-stadium-bg" style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}>
       <GroupPersistRedirect groups={allGroups} basePath="/dashboard" />
       <OnboardingTour />
       <WelcomeModal />
@@ -196,8 +197,11 @@ export default async function DashboardPage({
       <MyTeamsSection teams={myTeams} />
       <NewsHeroSection article={heroArticle} />
 
-      {/* 3-panel carousel — fills remaining space */}
-      <div className="-mx-4 sm:-mx-6" style={{ flex: 1, minHeight: 0, display: "flex", flexDirection: "column" }}>
+      {/* 3-panel carousel — fills remaining space, but never shrinks below a
+          usable height; once fixed content above (News, My Teams, etc.) grows
+          past the viewport, the page scrolls to reach the rest instead of
+          clipping it. */}
+      <div className="-mx-4 sm:-mx-6" style={{ flex: 1, minHeight: 320, display: "flex", flexDirection: "column" }}>
         <DashboardCarousel
           matches={upcomingMatches}
           members={members}
