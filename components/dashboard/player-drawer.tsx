@@ -222,7 +222,11 @@ export function PlayerDrawer({ userId, groupId, name, avatarUrl, country, points
             {/* Header */}
             <div
               className="sticky top-0 px-5 py-4 flex items-center justify-between"
-              style={{ borderBottom: "1px solid var(--br)", background: "var(--nv)" }}
+              style={{
+                borderBottom: "1px solid var(--br)",
+                background: "var(--nv)",
+                paddingTop: "calc(16px + env(safe-area-inset-top, 0px))",
+              }}
             >
               <div className="flex items-center gap-3">
                 <div className="relative shrink-0">
