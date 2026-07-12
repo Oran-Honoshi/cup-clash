@@ -667,6 +667,7 @@ export function LeaderboardList({
         <PlayerDrawer
           userId={selected.id}
           groupId={groupId ?? ""}
+          groupName={groupName}
           name={selected.name}
           avatarUrl={selected.avatarUrl}
           country={selected.country ?? ""}

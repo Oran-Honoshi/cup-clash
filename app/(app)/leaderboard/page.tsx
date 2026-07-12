@@ -79,7 +79,7 @@ export default async function LeaderboardPage({ searchParams }: { searchParams: 
           <GroupSwipeSelector groups={allGroups} activeGroupId={activeGroupId} basePath="/leaderboard" />
         </div>
       )}
-      <LeaderboardTabs members={members} currentUserId={userProfile.id} groupId={activeGroupId} isAdFree={isAdFree} isCorporate={isCorporate} />
+      <LeaderboardTabs members={members} currentUserId={userProfile.id} groupId={activeGroupId} groupName={group.name} isAdFree={isAdFree} isCorporate={isCorporate} />
       <AdBanner isAdFree={isAdFree} isCorporate={isCorporate} />
     </div>
   );

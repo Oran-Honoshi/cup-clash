@@ -1,20 +1,13 @@
 import { createClient } from "@supabase/supabase-js";
 import type { Group, Member } from "@/lib/types";
 import { sortMembersForRanking } from "@/lib/leaderboard-sort";
+import { sbAdmin } from "@/lib/supabase/admin";
 
 // Standard anon client for authenticated requests
 function sb() {
   return createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
-}
-
-// Service role client — bypasses RLS for server-side lookups
-function sbAdmin() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
   );
 }
 

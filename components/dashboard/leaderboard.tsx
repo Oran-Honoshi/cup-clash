@@ -7,6 +7,7 @@ interface LeaderboardProps {
   members:           Member[];
   currentUserId?:    string;
   groupId?:          string;
+  groupName?:        string;
   showGhost?:        boolean;
   scrollable?:       boolean; // inner scroll for embedded tiles (dashboard); false = page scrolls
   isAdFree?:         boolean;

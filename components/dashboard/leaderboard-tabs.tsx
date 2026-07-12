@@ -22,11 +22,12 @@ interface LeaderboardTabsProps {
   members: Member[];
   currentUserId?: string;
   groupId?: string;
+  groupName?: string;
   isAdFree?: boolean;
   isCorporate?: boolean;
 }
 
-export function LeaderboardTabs({ members, currentUserId, groupId, isAdFree, isCorporate }: LeaderboardTabsProps) {
+export function LeaderboardTabs({ members, currentUserId, groupId, groupName, isAdFree, isCorporate }: LeaderboardTabsProps) {
   const [active, setActive] = useState<Tab>("predictions");
 
   return (
@@ -71,7 +72,7 @@ export function LeaderboardTabs({ members, currentUserId, groupId, isAdFree, isC
 
       {/* Tab content */}
       {active === "predictions" && (
-        <Leaderboard members={members} currentUserId={currentUserId} groupId={groupId} isAdFree={isAdFree} isCorporate={isCorporate} />
+        <Leaderboard members={members} currentUserId={currentUserId} groupId={groupId} groupName={groupName} isAdFree={isAdFree} isCorporate={isCorporate} />
       )}
       {active === "scorers"     && <TopScorersLeaderboard />}
       {active === "assisters"   && <TopAssistersLeaderboard />}

@@ -1,8 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Target, Trophy, TrendingUp, Zap, XCircle, Star, Volleyball, Medal, ChevronDown, ChevronRight as ChevronRightIcon } from "lucide-react";
+import { X, Target, Trophy, TrendingUp, Zap, XCircle, Star, Volleyball, Medal, ChevronDown, ChevronRight as ChevronRightIcon, Users } from "lucide-react";
 import { countryFlagCode } from "@/lib/countries";
 import { FlagBadge } from "@/components/ui/FlagBadge";
 import { UserAvatar } from "@/components/ui/UserAvatar";
@@ -13,6 +14,7 @@ import type { MemberPrediction, BestThirdPick, MemberPredictionsResponse, Tourna
 interface PlayerDrawerProps {
   userId:     string;
   groupId:    string;
+  groupName?: string;
   name:       string;
   avatarUrl?: string | null;
   country:    string;
@@ -121,7 +123,7 @@ function CollapsibleSection({
   );
 }
 
-export function PlayerDrawer({ userId, groupId, name, avatarUrl, country, points, rank, open, onClose }: PlayerDrawerProps) {
+export function PlayerDrawer({ userId, groupId, groupName, name, avatarUrl, country, points, rank, open, onClose }: PlayerDrawerProps) {
   const [history,         setHistory]         = useState<MemberPrediction[]>([]);
   const [bestThird,       setBestThird]        = useState<MemberPredictionsResponse["bestThird"] | null>(null);
   const [tournamentPicks, setTournamentPicks]  = useState<TournamentPick[]>([]);
@@ -130,6 +132,14 @@ export function PlayerDrawer({ userId, groupId, name, avatarUrl, country, points
   const [stats,           setStats]            = useState({ exactCount: 0, outcomeCount: 0, missedCount: 0, gsPts: 0, knockoutPts: 0, bestThirdPts: 0, bonusPts: 0 });
   const [apiTotal,        setApiTotal]         = useState<number | null>(null);
   const [closeHover,      setCloseHover]       = useState(false);
+  const [mounted,         setMounted]          = useState(false);
+
+  // Portal to <body> — a page-transition ancestor sets `willChange: opacity`,
+  // which unconditionally creates a stacking context (per spec, regardless
+  // of the actual opacity value) and traps this drawer's z-index below the
+  // global app header's, even though the drawer is position:fixed. Portaling
+  // out of that ancestor is the only fix that survives future page changes.
+  useEffect(() => { setMounted(true); }, []);
 
   const totalPoints = dataLoaded && apiTotal !== null ? apiTotal : points;
 
@@ -193,7 +203,9 @@ export function PlayerDrawer({ userId, groupId, name, avatarUrl, country, points
   const hasKO = koMatches.length > 0;
   const hasGS = gsMatches.length > 0;
 
-  return (
+  if (!mounted) return null;
+
+  return createPortal(
     <AnimatePresence>
       {open && (
         <>
@@ -221,40 +233,50 @@ export function PlayerDrawer({ userId, groupId, name, avatarUrl, country, points
           >
             {/* Header */}
             <div
-              className="sticky top-0 px-5 py-4 flex items-center justify-between"
+              className="sticky top-0 px-5 py-4 flex flex-col gap-2"
               style={{
                 borderBottom: "1px solid var(--br)",
                 background: "var(--nv)",
                 paddingTop: "calc(16px + env(safe-area-inset-top, 0px))",
               }}
             >
-              <div className="flex items-center gap-3">
-                <div className="relative shrink-0">
-                  <UserAvatar name={name} avatarUrl={avatarUrl} size="lg" teamCountry={country} />
-                  <div className="absolute -bottom-1 -right-1">
-                    <FlagBadge code={countryFlagCode(country)} label={country} size="sm" />
+              {/* Group-context indicator — stays visible with the rest of the
+                  sticky header so it's always clear which group's data this is. */}
+              {groupName && (
+                <div className="flex items-center gap-1.5">
+                  <Users size={11} style={{ color: "var(--ac)", flexShrink: 0 }} />
+                  <span className="text-[11px] font-bold truncate" style={{ color: "var(--t2)" }}>{groupName}</span>
+                </div>
+              )}
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="relative shrink-0">
+                    <UserAvatar name={name} avatarUrl={avatarUrl} size="lg" teamCountry={country} />
+                    <div className="absolute -bottom-1 -right-1">
+                      <FlagBadge code={countryFlagCode(country)} label={country} size="sm" />
+                    </div>
+                  </div>
+                  <div>
+                    <div className="ta-team-name" style={{ color: "var(--tx)" }}>{name}</div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-bold" style={{ color: "var(--ac)" }}>Rank #{rank}</span>
+                      <span className="text-xs" style={{ color: "var(--ft)" }}>·</span>
+                      <span className="text-xs font-black" style={{ color: "var(--tx)" }}>{totalPoints} pts</span>
+                    </div>
                   </div>
                 </div>
-                <div>
-                  <div className="ta-team-name" style={{ color: "var(--tx)" }}>{name}</div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold" style={{ color: "var(--ac)" }}>Rank #{rank}</span>
-                    <span className="text-xs" style={{ color: "var(--ft)" }}>·</span>
-                    <span className="text-xs font-black" style={{ color: "var(--tx)" }}>{totalPoints} pts</span>
-                  </div>
-                </div>
+                <button
+                  type="button"
+                  aria-label="Close player details"
+                  onClick={onClose}
+                  className={`p-2 rounded-xl ${FOCUS_RING}`}
+                  style={{ background: closeHover ? "var(--ip)" : "transparent", transition: "background 0.15s" }}
+                  onMouseEnter={() => setCloseHover(true)}
+                  onMouseLeave={() => setCloseHover(false)}
+                >
+                  <X size={18} style={{ color: "var(--t2)" }} />
+                </button>
               </div>
-              <button
-                type="button"
-                aria-label="Close player details"
-                onClick={onClose}
-                className={`p-2 rounded-xl ${FOCUS_RING}`}
-                style={{ background: closeHover ? "var(--ip)" : "transparent", transition: "background 0.15s" }}
-                onMouseEnter={() => setCloseHover(true)}
-                onMouseLeave={() => setCloseHover(false)}
-              >
-                <X size={18} style={{ color: "var(--t2)" }} />
-              </button>
             </div>
 
             {/* Point breakdown chips */}
@@ -419,6 +441,7 @@ export function PlayerDrawer({ userId, groupId, name, avatarUrl, country, points
           </motion.div>
         </>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body
   );
 }
