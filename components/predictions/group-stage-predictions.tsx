@@ -445,11 +445,8 @@ export function GroupStagePredictions({ groupId, locked = false, userId, isAdFre
   const [pendingChanges,  setPendingChanges]  = useState<Record<string, boolean>>({});
   const [chipFlash,       setChipFlash]       = useState<Record<string, "success" | "error" | null>>({});
   const autoSaveTimers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
-
-  // Clear timers on unmount
-  useEffect(() => {
-    return () => { Object.values(autoSaveTimers.current).forEach(clearTimeout); };
-  }, []);
+  const predictionsRef = useRef(predictions);
+  predictionsRef.current = predictions;
 
   // Warn on navigate-away with unsaved changes
   useEffect(() => {
@@ -591,11 +588,32 @@ export function GroupStagePredictions({ groupId, locked = false, userId, isAdFre
     }
   }, [userId, groupId]);
 
+  const doAutoSaveRef = useRef(doAutoSave);
+  doAutoSaveRef.current = doAutoSave;
+
+  // Flush (not just cancel) pending debounced saves on unmount — this component
+  // is remounted via key={groupId} on every group switch, so without a flush
+  // an edit made within the 800ms debounce window right before switching
+  // groups would be silently discarded instead of saved to its group.
+  useEffect(() => {
+    return () => {
+      const pendingIds = Object.keys(autoSaveTimers.current);
+      pendingIds.forEach(id => clearTimeout(autoSaveTimers.current[id]));
+      pendingIds.forEach(id => {
+        const pred = predictionsRef.current[id];
+        if (pred && pred.home !== "" && pred.away !== "") {
+          doAutoSaveRef.current(id, pred.home, pred.away);
+        }
+      });
+    };
+  }, []);
+
   const setScore = (matchId: string, home: string, away: string) => {
     setPredictions(prev => ({ ...prev, [matchId]: { home, away } }));
     setPendingChanges(prev => ({ ...prev, [matchId]: true }));
     if (autoSaveTimers.current[matchId]) clearTimeout(autoSaveTimers.current[matchId]);
     autoSaveTimers.current[matchId] = setTimeout(() => {
+      delete autoSaveTimers.current[matchId]; // fired naturally — nothing left to flush on unmount
       doAutoSave(matchId, home, away);
     }, 800);
   };

@@ -22,6 +22,7 @@ export interface ScheduleMatch {
   away_score?: number | null;
   status?: string;
   time_confirmed?: boolean;     // false ⇒ kickoff_at/stadium/city is a guessed placeholder, not yet confirmed by API-Football
+  competitionId?: string | null; // ties this match to a row in the `competitions` table (multi-league expansion)
 }
 
 export const WC2026_MATCHES: ScheduleMatch[] = [];
@@ -31,6 +32,18 @@ export const STAGE_LABELS: Record<string, string> = {
   Group: "Group Stage", R32: "Round of 32", R16: "Round of 16",
   QF: "Quarter-Finals", SF: "Semi-Finals", "3rd": "Bronze Final", Final: "Final",
 };
+
+// Groups aren't scoped to a competition_id in the schema yet, so surfaces
+// that operate on the shared `matches` table (Knockout Predictions, group
+// Results) need a way to exclude the multi-league expansion's fixtures
+// (Bundesliga/La Liga/Premier League/Serie A stage="League", and UEFA
+// Champions League stage="UCL R16"/"UCL QF"/"UCL SF"/"UCL Final") without a
+// real per-group competition link. Matches this World Cup vocabulary only.
+export const WORLD_CUP_STAGE_LIST = ["Group", "R32", "R16", "QF", "SF", "3rd", "Final"];
+const WORLD_CUP_STAGES = new Set(WORLD_CUP_STAGE_LIST);
+export function isWorldCupStage(stage: string): boolean {
+  return WORLD_CUP_STAGES.has(stage);
+}
 
 export const HOST_CITY_FLAGS: Record<string, string> = {
   "Vancouver": "🇨🇦",  "Seattle": "🇺🇸",    "San Francisco": "🇺🇸",

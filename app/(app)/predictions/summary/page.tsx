@@ -36,9 +36,53 @@ export default async function PredictionsSummaryPage() {
 
   const matches = await getAllMatches();
 
+  // Competitions that actually have scheduled matches — only these are worth
+  // offering in the "no group selected" league filter.
+  const competitionIdsWithMatches = new Set(matches.map(m => m.competitionId).filter(Boolean));
+
+  // Each group's competition — derived from which competition the group's
+  // already-saved match predictions belong to (groups aren't scoped to a
+  // competition_id in the schema yet). Falls back to World Cup 2026, the
+  // only competition currently wired into group prediction flows, for a
+  // brand-new group with no predictions yet.
+  const matchCompetitionMap = new Map(matches.map(m => [m.id, m.competitionId]));
+
+  const [{ data: competitionRows }, { data: predRows }] = await Promise.all([
+    sb.from("competitions").select("id, name").in("id", [...competitionIdsWithMatches] as string[]),
+    sb.from("group_predictions")
+      .select("group_id, match_id")
+      .eq("user_id", user.id)
+      .eq("pred_type", "match")
+      .in("group_id", groups.map(g => g.id)),
+  ]);
+  const competitions = (competitionRows ?? []) as Array<{ id: string; name: string }>;
+  const worldCupId = competitions.find(c => c.name === "World Cup 2026")?.id ?? null;
+
+  const groupCompetitionTally: Record<string, Record<string, number>> = {};
+  for (const p of (predRows ?? []) as Array<{ group_id: string; match_id: string }>) {
+    const compId = matchCompetitionMap.get(p.match_id);
+    if (!compId) continue;
+    const tally = (groupCompetitionTally[p.group_id] ??= {});
+    tally[compId] = (tally[compId] ?? 0) + 1;
+  }
+  const groupCompetitionMap: Record<string, string> = {};
+  for (const g of groups) {
+    const tally = groupCompetitionTally[g.id];
+    const topCompId = tally
+      ? Object.entries(tally).sort((a, b) => b[1] - a[1])[0][0]
+      : null;
+    groupCompetitionMap[g.id] = topCompId ?? worldCupId ?? "";
+  }
+
   return (
     <div className="pb-32">
-      <PredictionsSummaryClient userId={user.id} groups={groups} matches={matches} />
+      <PredictionsSummaryClient
+        userId={user.id}
+        groups={groups}
+        matches={matches}
+        competitions={competitions}
+        groupCompetitionMap={groupCompetitionMap}
+      />
     </div>
   );
 }

@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { WORLD_CUP_STAGE_LIST } from "@/lib/schedule";
 
 function sbAdmin() {
   return createClient(
@@ -17,10 +18,17 @@ export async function GET(
   const { id: groupId } = params;
   const sb = sbAdmin();
 
+  // All World Cup matches (every stage, every status) — the Results tab
+  // shows the group's complete picture: finished results, live-in-progress,
+  // and upcoming matches with the prediction already locked in but no points
+  // yet. Scoped to World Cup stages only (not the multi-league expansion's
+  // "League"/"UCL R16" etc. rows) — groups aren't scoped to a competition_id
+  // yet, so without this a World Cup group's Results tab would get flooded
+  // with hundreds of unrelated league/UCL fixtures.
   const { data: matches, error: matchErr } = await sb
     .from("matches")
     .select("id, home, away, home_score, away_score, home_score_et, away_score_et, home_flag, away_flag, kickoff_at, stage, group_letter, status")
-    .in("status", ["finished", "live"])
+    .in("stage", WORLD_CUP_STAGE_LIST)
     .order("kickoff_at", { ascending: false });
 
   if (matchErr) {

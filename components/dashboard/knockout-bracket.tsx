@@ -142,19 +142,27 @@ function ScoreCenter({ match }: { match: BracketMatch }) {
       </div>
     );
   }
-  const displayHome = hasET ? match.homeScoreET! : match.homeScore!;
-  const displayAway = hasET ? match.awayScoreET! : match.awayScore!;
-  return (
-    <div className="shrink-0 flex flex-col items-center gap-0.5 px-1">
-      <span className="font-mono font-black text-sm tabular-nums" style={{ color: "var(--sc)" }}>
-        {displayHome}–{displayAway}
-      </span>
-      {hasET && (
+  if (hasET) {
+    return (
+      <div className="shrink-0 flex flex-col items-center gap-0.5 px-1">
+        <span className="font-mono font-black text-sm tabular-nums" style={{ color: "var(--sc)" }}>
+          {match.homeScoreET}–{match.awayScoreET}
+        </span>
         <span className="text-[8px] font-bold px-1 rounded-full whitespace-nowrap"
           style={{ background: "rgba(139,92,246,0.15)", border: "1px solid rgba(139,92,246,0.3)", color: "#a78bfa" }}>
           AET
         </span>
-      )}
+        <span className="font-mono font-bold whitespace-nowrap" style={{ fontSize: 8, color: "var(--ft)" }}>
+          {match.homeScore}–{match.awayScore} (90&apos;)
+        </span>
+      </div>
+    );
+  }
+  return (
+    <div className="shrink-0 flex flex-col items-center gap-0.5 px-1">
+      <span className="font-mono font-black text-sm tabular-nums" style={{ color: "var(--sc)" }}>
+        {match.homeScore}–{match.awayScore}
+      </span>
     </div>
   );
 }

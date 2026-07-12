@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Trophy, Check, X, Minus, Lock, Filter, ChevronDown } from "lucide-react";
+import { Trophy, Check, X, Minus, Lock, Filter, ChevronDown, Users } from "lucide-react";
 import { FlagBadge } from "@/components/ui/FlagBadge";
 import { BallLoader } from "@/components/ui/BallLoader";
 import type { ScheduleMatch } from "@/lib/schedule";
@@ -14,10 +14,17 @@ interface GroupInfo {
   name: string;
 }
 
+interface CompetitionInfo {
+  id:   string;
+  name: string;
+}
+
 interface Props {
-  userId:  string;
-  groups:  GroupInfo[];
-  matches: ScheduleMatch[];
+  userId:              string;
+  groups:              GroupInfo[];
+  matches:             ScheduleMatch[];
+  competitions:        CompetitionInfo[];
+  groupCompetitionMap: Record<string, string>;
 }
 
 type FilterStage = "all" | "finished" | "upcoming";
@@ -134,7 +141,7 @@ function LegendItem({ icon, label }: { icon: React.ReactNode; label: string }) {
 
 // ── Main component ────────────────────────────────────────────────────────────
 
-export function PredictionsSummaryClient({ userId, groups, matches }: Props) {
+export function PredictionsSummaryClient({ userId, groups, matches, competitions, groupCompetitionMap }: Props) {
   const [responses, setResponses] = useState<Record<string, MemberPredictionsResponse | null>>({});
   const [loading,   setLoading]   = useState(true);
 
@@ -142,6 +149,9 @@ export function PredictionsSummaryClient({ userId, groups, matches }: Props) {
   const [filterStage, setFilterStage] = useState<FilterStage>("all");
   const [onlyPredicted, setOnlyPredicted] = useState(false);
   const [showFilters, setShowFilters] = useState(false);
+  // Only used when no group is selected — otherwise the match list scopes
+  // automatically to the selected group(s)' own competition.
+  const [selectedCompetitionIds, setSelectedCompetitionIds] = useState<string[]>(() => competitions.map(c => c.id));
 
   // Single source of truth for a member's per-group predictions — the same
   // API that powers the dashboard "My Stats" panel and the player drawer.
@@ -178,7 +188,22 @@ export function PredictionsSummaryClient({ userId, groups, matches }: Props) {
     setSelectedGroupIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
   };
 
+  const toggleCompetition = (id: string) => {
+    setSelectedCompetitionIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+  };
+
   const visibleGroups = groups.filter(g => selectedGroupIds.includes(g.id));
+
+  // Which competition(s) the match list is scoped to: automatically the
+  // selected group(s)' own competition when any group is selected (so a
+  // World Cup group never shows unrelated league fixtures), otherwise
+  // whatever the user picked in the league filter below.
+  const activeCompetitionIds = useMemo(() => {
+    if (visibleGroups.length > 0) {
+      return new Set(visibleGroups.map(g => groupCompetitionMap[g.id]).filter(Boolean));
+    }
+    return new Set(selectedCompetitionIds);
+  }, [visibleGroups, groupCompetitionMap, selectedCompetitionIds]);
 
   const sortedMatches = useMemo(() => [...matches].sort((a, b) => {
     const d = stageRank(a.stage) - stageRank(b.stage);
@@ -187,6 +212,7 @@ export function PredictionsSummaryClient({ userId, groups, matches }: Props) {
   }), [matches]);
 
   const filteredMatches = useMemo(() => sortedMatches.filter(m => {
+    if (!activeCompetitionIds.has(m.competitionId ?? "")) return false;
     const finished = isMatchFinished(m);
     if (filterStage === "finished" && !finished) return false;
     if (filterStage === "upcoming" && finished) return false;
@@ -195,7 +221,7 @@ export function PredictionsSummaryClient({ userId, groups, matches }: Props) {
       if (!hasPred) return false;
     }
     return true;
-  }), [sortedMatches, filterStage, onlyPredicted, visibleGroups, lookups]);
+  }), [sortedMatches, filterStage, onlyPredicted, visibleGroups, lookups, activeCompetitionIds]);
 
   type Row =
     | { type: "section"; label: string }
@@ -248,6 +274,34 @@ export function PredictionsSummaryClient({ userId, groups, matches }: Props) {
         </button>
       </div>
 
+      {/* Sticky group-context strip — stays visible on scroll so it's always
+          clear which group(s)' data is being shown, matching the group
+          switcher on My Picks/Predictions. */}
+      <div
+        className="flex items-center gap-1.5 px-3 py-2 rounded-xl overflow-x-auto"
+        style={{
+          position: "sticky", top: 0, zIndex: 5,
+          background: "var(--nv)", border: "1px solid var(--br)",
+          backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)",
+          scrollbarWidth: "none",
+        }}
+      >
+        <Users size={12} style={{ color: "var(--ac)", flexShrink: 0 }} />
+        {visibleGroups.length === 0 ? (
+          <span className="text-xs font-bold" style={{ color: "var(--mt)" }}>No groups selected</span>
+        ) : visibleGroups.length === groups.length ? (
+          <span className="text-xs font-bold" style={{ color: "var(--tx)" }}>All groups</span>
+        ) : (
+          visibleGroups.map(g => (
+            <span key={g.id}
+              className="text-xs font-bold px-2 py-0.5 rounded-full whitespace-nowrap shrink-0"
+              style={{ background: "color-mix(in srgb, var(--ac) 12%, transparent)", color: "var(--ac)", border: "1px solid color-mix(in srgb, var(--ac) 30%, transparent)" }}>
+              {g.name}
+            </span>
+          ))
+        )}
+      </div>
+
       {/* Filters */}
       {showFilters && (
         <div className="flex flex-col gap-3 px-4 py-3 rounded-2xl cc-elevated" style={{ background: "var(--sf)", border: "1px solid var(--br)" }}>
@@ -261,6 +315,40 @@ export function PredictionsSummaryClient({ userId, groups, matches }: Props) {
               ))}
             </div>
           </div>
+
+          {/* League/tournament filter — only meaningful when no group is
+              selected, since a selected group auto-scopes to its own
+              competition. */}
+          {visibleGroups.length === 0 && competitions.length > 0 && (
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <div className="text-[10px] font-black uppercase tracking-wider" style={{ color: "var(--mt)" }}>Competitions</div>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => setSelectedCompetitionIds(competitions.map(c => c.id))}
+                    className="text-[10px] font-bold underline"
+                    style={{ color: "var(--ac)" }}
+                  >
+                    Select All
+                  </button>
+                  <button
+                    onClick={() => setSelectedCompetitionIds([])}
+                    className="text-[10px] font-bold underline"
+                    style={{ color: "var(--t2)" }}
+                  >
+                    Deselect All
+                  </button>
+                </div>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {competitions.map(c => (
+                  <FilterChip key={c.id} active={selectedCompetitionIds.includes(c.id)} onClick={() => toggleCompetition(c.id)}>
+                    {c.name}
+                  </FilterChip>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div>
             <div className="text-[10px] font-black uppercase tracking-wider mb-2" style={{ color: "var(--mt)" }}>Matches</div>

@@ -5,7 +5,7 @@ import { Lock, CheckCircle2, Clock, MapPin, HelpCircle } from "lucide-react";
 import { FlagBadge } from "@/components/ui/FlagBadge";
 import { ScoreInputCC } from "@/components/ui/score-input-cc";
 import { createClient } from "@/lib/supabase/client";
-import { STAGE_LABELS, type ScheduleMatch } from "@/lib/schedule";
+import { STAGE_LABELS, isWorldCupStage, type ScheduleMatch } from "@/lib/schedule";
 import { ENABLE_BETA_FEATURES } from "@/lib/feature-flags";
 import { KnockoutMatchCard } from "@/components/dashboard/knockout-match-card";
 import type { Match } from "@/lib/types";
@@ -157,13 +157,11 @@ export function KnockoutPredictions({ groupId, userId, allMatches = [] }: Knocko
   const [predictions, setPredictions] = useState<Record<string, ScorePrediction>>({});
   const [chipFlash,   setChipFlash]   = useState<Record<string, "success" | "error" | null>>({});
   const autoSaveTimers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
-
-  useEffect(() => {
-    return () => { Object.values(autoSaveTimers.current).forEach(clearTimeout); };
-  }, []);
+  const predictionsRef = useRef(predictions);
+  predictionsRef.current = predictions;
 
   const knockoutMatches = useMemo(
-    () => allMatches.filter(m => m.stage !== "Group" && m.status !== "finished"),
+    () => allMatches.filter(m => isWorldCupStage(m.stage) && m.stage !== "Group" && m.status !== "finished"),
     [allMatches],
   );
 
@@ -191,6 +189,25 @@ export function KnockoutPredictions({ groupId, userId, allMatches = [] }: Knocko
       });
   }, [userId, groupId, matchIds]);
 
+  const doAutoSaveRef = useRef<((matchId: string, home: string, away: string) => Promise<void>) | null>(null);
+
+  // Flush (not just cancel) pending debounced saves on unmount — this component
+  // is remounted via key={groupId} on every group switch, so without a flush
+  // an edit made within the 800ms debounce window right before switching
+  // groups would be silently discarded instead of saved to its group.
+  useEffect(() => {
+    return () => {
+      const pendingIds = Object.keys(autoSaveTimers.current);
+      pendingIds.forEach(id => clearTimeout(autoSaveTimers.current[id]));
+      pendingIds.forEach(id => {
+        const pred = predictionsRef.current[id];
+        if (pred && pred.home !== "" && pred.away !== "") {
+          doAutoSaveRef.current?.(id, pred.home, pred.away);
+        }
+      });
+    };
+  }, []);
+
   const doAutoSave = useCallback(async (matchId: string, home: string, away: string) => {
     if (!userId) return;
     const h = parseInt(home, 10), a = parseInt(away, 10);
@@ -210,11 +227,15 @@ export function KnockoutPredictions({ groupId, userId, allMatches = [] }: Knocko
       setTimeout(() => setChipFlash(prev => ({ ...prev, [matchId]: null })), 2000);
     }
   }, [userId, groupId]);
+  doAutoSaveRef.current = doAutoSave;
 
   const setScore = (matchId: string, home: string, away: string) => {
     setPredictions(prev => ({ ...prev, [matchId]: { home, away } }));
     if (autoSaveTimers.current[matchId]) clearTimeout(autoSaveTimers.current[matchId]);
-    autoSaveTimers.current[matchId] = setTimeout(() => doAutoSave(matchId, home, away), 800);
+    autoSaveTimers.current[matchId] = setTimeout(() => {
+      delete autoSaveTimers.current[matchId]; // fired naturally — nothing left to flush on unmount
+      doAutoSave(matchId, home, away);
+    }, 800);
   };
 
   const predictedCount = predictableMatches.filter(m => {

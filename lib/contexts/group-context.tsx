@@ -28,6 +28,11 @@ export function GroupProvider({ children }: { children: ReactNode }) {
   const [selectedGroupId, setSelectedGroupIdState] = useState<string | null>(null);
   const [predictions, setPredictions] = useState<PredCache>({});
   const activeUserIdRef = useRef<string | null>(null);
+  // Guards against out-of-order responses: this cache is shared app-wide and
+  // scoped only by matchId, not groupId, so if two refreshPredictions calls
+  // for different groups overlap (e.g. a fast group switch), a slower older
+  // request resolving after a newer one must not clobber it with stale data.
+  const requestSeqRef = useRef(0);
 
   useEffect(() => {
     const saved = loadSelectedGroup();
@@ -50,11 +55,13 @@ export function GroupProvider({ children }: { children: ReactNode }) {
   const refreshPredictions = useCallback(async (groupId: string, userId?: string) => {
     const uid = userId ?? activeUserIdRef.current;
     if (!uid) return;
+    const seq = ++requestSeqRef.current;
     const { data } = await createClient()
       .from("group_predictions")
       .select("match_id, home_score, away_score")
       .eq("group_id", groupId)
       .eq("user_id", uid);
+    if (seq !== requestSeqRef.current) return; // a newer request already superseded this one
     if (data) {
       const cache: PredCache = {};
       for (const row of data as { match_id: string; home_score: number; away_score: number }[]) {

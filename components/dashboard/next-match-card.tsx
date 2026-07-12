@@ -39,11 +39,46 @@ function getStageLabel(match: Match): string {
 
 type SaveState = "idle" | "saving" | "saved" | "error" | "locked";
 
+// stage -> [correct-outcome column, exact-score column] on scoring_rules, used
+// only when the group has progressive (per-stage) scoring turned on.
+const STAGE_COLS: Record<string, [string, string]> = {
+  Group: ["gs_correct_outcome",    "gs_exact_score"],
+  R32:   ["r32_correct_outcome",   "r32_exact_score"],
+  R16:   ["r16_correct_outcome",   "r16_exact_score"],
+  QF:    ["qf_correct_outcome",    "qf_exact_score"],
+  SF:    ["sf_correct_outcome",    "sf_exact_score"],
+  "3rd": ["third_correct_outcome", "third_exact_score"],
+  Final: ["final_correct_outcome", "final_exact_score"],
+};
+
 export function NextMatchCard({ match, groupId = "", cardLabel, onOpenMatchCenter }: NextMatchCardProps) {
   const [homeScore, setHomeScore] = useState("");
   const [awayScore, setAwayScore] = useState("");
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const [errorMsg,  setErrorMsg]  = useState<string | null>(null);
+  const [stagePoints, setStagePoints] = useState({ correctOutcome: 10, exactScore: 25 });
+
+  useEffect(() => {
+    if (!groupId) return;
+    let cancelled = false;
+    const stageCols = STAGE_COLS[match.stage] ?? STAGE_COLS.Group;
+    createClient()
+      .from("scoring_rules")
+      .select(`correct_outcome, exact_score, use_progressive_scoring, ${stageCols.join(", ")}`)
+      .eq("group_id", groupId)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (cancelled || !data) return;
+        const row = data as Record<string, number | boolean | null>;
+        const [outcomeCol, exactCol] = STAGE_COLS[match.stage] ?? STAGE_COLS.Group;
+        const useProgressive = Boolean(row.use_progressive_scoring);
+        setStagePoints({
+          correctOutcome: Number((useProgressive ? row[outcomeCol] : row.correct_outcome) ?? 10),
+          exactScore:     Number((useProgressive ? row[exactCol]   : row.exact_score)     ?? 25),
+        });
+      });
+    return () => { cancelled = true; };
+  }, [groupId, match.stage]);
 
   const matchDate        = new Date(match.time);
   const minutesToKickoff = differenceInMinutes(matchDate, new Date());
@@ -194,11 +229,11 @@ export function NextMatchCard({ match, groupId = "", cardLabel, onOpenMatchCente
           </div>
         </div>
 
-        {/* Points hint */}
+        {/* Points hint — reflects this group's actual scoring rules for this stage */}
         <div className="ta-meta mt-4 flex items-center justify-center gap-4">
-          <span><span className="font-bold" style={{ color: "var(--ac)" }}>+10</span> correct outcome</span>
+          <span><span className="font-bold" style={{ color: "var(--ac)" }}>+{stagePoints.correctOutcome}</span> correct outcome</span>
           <span style={{ color: "var(--dv)" }}>·</span>
-          <span><span className="font-bold" style={{ color: "var(--ac)" }}>+25</span> exact score</span>
+          <span><span className="font-bold" style={{ color: "var(--ac)" }}>+{stagePoints.exactScore}</span> exact score</span>
         </div>
 
         {saveState === "error" && errorMsg && (

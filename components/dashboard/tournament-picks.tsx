@@ -332,6 +332,8 @@ export function TournamentPicks({ groupId, userId, locked = false }: TournamentP
     setSaved(true);
     setTimeout(() => setSaved(false), 2000);
   }, [userId, groupId, isLocked]);
+  const savePicksRef = useRef(savePicks);
+  savePicksRef.current = savePicks;
 
   // Debounced auto-save on picks change
   useEffect(() => {
@@ -340,6 +342,20 @@ export function TournamentPicks({ groupId, userId, locked = false }: TournamentP
     saveTimer.current = setTimeout(() => savePicks(picksRef.current), 1000);
     return () => { if (saveTimer.current) clearTimeout(saveTimer.current); };
   }, [picks, userId, isLocked, savePicks]);
+
+  // Flush (not just cancel) a pending debounced save on unmount — this
+  // component is remounted via key={groupId} on every group switch, so
+  // without a flush, picks entered within the 1s debounce window right
+  // before switching groups would be silently discarded instead of saved.
+  useEffect(() => {
+    return () => {
+      if (saveTimer.current) {
+        clearTimeout(saveTimer.current);
+        saveTimer.current = null;
+        savePicksRef.current(picksRef.current);
+      }
+    };
+  }, []);
 
   const updatePick = (key: keyof Omit<Picks, "bestThird">, value: string) => {
     setPicks(p => ({ ...p, [key]: value }));

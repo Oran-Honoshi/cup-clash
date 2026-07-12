@@ -82,6 +82,10 @@ export default async function SchedulePage({
     status: string;
     homeScore: number | null;
     awayScore: number | null;
+    homeScore90: number | null;
+    awayScore90: number | null;
+    homeScoreET: number | null;
+    awayScoreET: number | null;
     minute: number | null;
     matchEvents: DbMatchEvent[] | null;
   }> = {};
@@ -94,6 +98,10 @@ export default async function SchedulePage({
       status:      m.status ?? "",
       homeScore:   m.home_score_et ?? m.home_score,
       awayScore:   m.away_score_et ?? m.away_score,
+      homeScore90: m.home_score,
+      awayScore90: m.away_score,
+      homeScoreET: m.home_score_et,
+      awayScoreET: m.away_score_et,
       minute:      m.minute        ?? null,
       matchEvents: m.match_events  ?? null,
     };

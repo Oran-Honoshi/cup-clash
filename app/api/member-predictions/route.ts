@@ -110,6 +110,19 @@ type RulesRow = {
   enable_best_third: boolean | null;
 };
 
+// A finished knockout match that went to extra time shows both the 90-minute
+// and final (AET) result, consistent with how the app stores both internally.
+// Kept compact (no "(90')"/"(AET)" verbosity) since the only current consumer
+// (Player Drawer) splices this inline between two team names on one line.
+function formatActualScore(m: MatchRow): string {
+  const home90 = m.home_score ?? 0;
+  const away90 = m.away_score ?? 0;
+  if (m.home_score_et == null || m.away_score_et == null) {
+    return `${home90}–${away90}`;
+  }
+  return `${home90}–${away90}→${m.home_score_et}–${m.away_score_et} AET`;
+}
+
 export async function GET(req: NextRequest) {
   const userId  = req.nextUrl.searchParams.get("userId");
   const groupId = req.nextUrl.searchParams.get("groupId");
@@ -240,7 +253,7 @@ export async function GET(req: NextRequest) {
       homeFlagCode: m.home_flag ?? "",
       awayFlagCode: m.away_flag ?? "",
       predicted:    `${p.home_score ?? 0}–${p.away_score ?? 0}`,
-      actual:       `${m.home_score_et ?? m.home_score ?? 0}–${m.away_score_et ?? m.away_score ?? 0}`,
+      actual:       formatActualScore(m),
       pts,
       type,
       stage,

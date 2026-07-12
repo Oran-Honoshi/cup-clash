@@ -35,6 +35,14 @@ interface MatchResult {
   status: string;
   homeScore: number | null;
   awayScore: number | null;
+  // True 90-minute score, alongside the raw (nullable) ET score — used
+  // together to detect "went to extra time" via nullness, not a value
+  // comparison, since a match that stayed level through ET (decided on
+  // penalties) has homeScoreET === homeScore90 despite genuinely going to ET.
+  homeScore90: number | null;
+  awayScore90: number | null;
+  homeScoreET: number | null;
+  awayScoreET: number | null;
   minute: number | null;
   matchEvents: MatchEvent[] | null;
 }
@@ -112,10 +120,13 @@ function getMatchState(matchId: string, results: Record<string, MatchResult>) {
   const status = r?.status ?? "upcoming";
 
   if (status === FINISHED_STATUS) {
+    const wentToET = r.homeScoreET != null && r.awayScoreET != null;
     return {
       type:      "finished" as const,
       homeScore: r.homeScore ?? 0,
       awayScore: r.awayScore ?? 0,
+      homeScore90: wentToET ? r.homeScore90 : null,
+      awayScore90: wentToET ? r.awayScore90 : null,
       label:     "FT",
       events:    r.matchEvents ?? [] as MatchEvent[],
     };
@@ -256,30 +267,95 @@ function PredRow({
   );
 }
 
+// ── Finished Score Line ──────────────────────────────────────────────────────
+// A finished knockout match that went to extra time shows BOTH the 90-minute
+// result and the final (AET) result — homeScore90/awayScore90 are only set
+// (non-null) when they differ from the final score.
+
+function FinishedScoreLine({
+  homeScore, awayScore, homeScore90, awayScore90,
+}: {
+  homeScore: number; awayScore: number;
+  homeScore90: number | null; awayScore90: number | null;
+}) {
+  if (homeScore90 == null || awayScore90 == null) {
+    return (
+      <span className="font-barlow font-black text-base tabular-nums" style={{ color: "var(--sc)" }}>
+        {homeScore}–{awayScore}
+      </span>
+    );
+  }
+  return (
+    <span className="flex items-baseline gap-1.5">
+      <span className="font-barlow font-black text-base tabular-nums" style={{ color: "var(--sc)" }}>
+        {homeScore90}–{awayScore90}
+      </span>
+      <span className="text-[9px] font-bold" style={{ color: "var(--ft)" }}>90&apos;</span>
+      <span className="text-[9px]" style={{ color: "var(--ft)" }}>·</span>
+      <span className="font-barlow font-black text-base tabular-nums" style={{ color: "var(--sc)" }}>
+        {homeScore}–{awayScore}
+      </span>
+      <span className="text-[9px] font-bold" style={{ color: "var(--ft)" }}>AET</span>
+    </span>
+  );
+}
+
 // ── Goal Events ────────────────────────────────────────────────────────────────
+// Only real goal-scoring event types ("goal", "penalty", "own_goal") get the
+// ⚽ scorer-line treatment — subs and cards render with their own icon/label
+// so a 3-goal match doesn't read as a 16-goal thriller (missed penalties never
+// went in, so they're excluded from goal styling too).
+
+function eventGlyph(type: string): { icon: string; iconColor?: string } {
+  switch (type) {
+    case "own_goal":       return { icon: "⚽", iconColor: "rgba(239,68,68,0.7)" };
+    case "penalty":        return { icon: "⚽" };
+    case "goal":           return { icon: "⚽" };
+    case "missed_penalty": return { icon: "❌" };
+    case "yellow_card":    return { icon: "🟨" };
+    case "red_card":       return { icon: "🟥" };
+    case "sub":             return { icon: "🔄" };
+    default:                return { icon: "⚽" };
+  }
+}
 
 function GoalEvents({ events }: { events: MatchEvent[] }) {
   if (events.length === 0) return null;
   return (
     <div className="mt-1.5 pt-1.5 space-y-0.5" style={{ borderTop: "1px solid var(--dv)" }}>
-      {events.map((e, i) => (
-        <div key={i} className="flex items-center gap-1.5 text-[11px]" style={{ color: "var(--mt)" }}>
-          <span>⚽</span>
-          <span className="font-mono font-bold" style={{ color: "var(--t2)" }}>
-            {e.extra != null ? `${e.minute}+${e.extra}'` : `${e.minute}'`}
-          </span>
-          {e.player && <span>{e.player}</span>}
-          {e.type === "own_goal" && (
-            <span style={{ color: "rgba(239,68,68,0.7)" }}>(OG)</span>
-          )}
-          {e.type === "penalty" && (
-            <span style={{ color: "var(--ft)" }}>(pen)</span>
-          )}
-          {e.team && (
-            <span style={{ color: "var(--ft)" }}>· {e.team}</span>
-          )}
-        </div>
-      ))}
+      {events.map((e, i) => {
+        const { icon, iconColor } = eventGlyph(e.type);
+        return (
+          <div key={i} className="flex items-center gap-1.5 text-[11px]" style={{ color: "var(--mt)" }}>
+            <span style={iconColor ? { color: iconColor } : undefined}>{icon}</span>
+            <span className="font-mono font-bold" style={{ color: "var(--t2)" }}>
+              {e.extra != null ? `${e.minute}+${e.extra}'` : `${e.minute}'`}
+            </span>
+            {e.player && <span>{e.player}</span>}
+            {e.type === "own_goal" && (
+              <span style={{ color: "rgba(239,68,68,0.7)" }}>(OG)</span>
+            )}
+            {e.type === "penalty" && (
+              <span style={{ color: "var(--ft)" }}>(pen)</span>
+            )}
+            {e.type === "missed_penalty" && (
+              <span style={{ color: "var(--mt)" }}>(missed pen)</span>
+            )}
+            {e.type === "yellow_card" && (
+              <span style={{ color: "var(--mt)" }}>(yellow card)</span>
+            )}
+            {e.type === "red_card" && (
+              <span style={{ color: "rgba(239,68,68,0.7)" }}>(red card)</span>
+            )}
+            {e.type === "sub" && (
+              <span style={{ color: "var(--mt)" }}>(sub)</span>
+            )}
+            {e.team && (
+              <span style={{ color: "var(--ft)" }}>· {e.team}</span>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -401,13 +477,16 @@ function MatchCard({
             <div className="flex items-center gap-2 min-w-0">
               <FlagBadge code={displayHomeFlagCode} size="sm" />
               <span className="ta-team-name truncate" style={{ fontSize: 12, color: "var(--tx)" }}>{displayHome}</span>
-              <span className="font-barlow font-black text-base tabular-nums" style={{ color: "var(--sc)" }}>{state.homeScore}–{state.awayScore}</span>
+              <FinishedScoreLine
+                homeScore={state.homeScore} awayScore={state.awayScore}
+                homeScore90={state.homeScore90} awayScore90={state.awayScore90}
+              />
               <span className="ta-team-name truncate" style={{ fontSize: 12, color: "var(--tx)" }}>{displayAway}</span>
               <FlagBadge code={displayAwayFlagCode} size="sm" />
             </div>
             <span className="shrink-0 font-barlow font-bold px-2 py-0.5 rounded-md"
               style={{ background: "var(--ip)", border: "1px solid var(--br)", color: "var(--t2)", fontSize: 9 }}>
-              FT
+              {state.homeScore90 != null ? "AET" : "FT"}
             </span>
           </div>
           {state.events.length > 0 && <GoalEvents events={state.events} />}

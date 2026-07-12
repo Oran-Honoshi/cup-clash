@@ -234,7 +234,15 @@ export function LiveMatchHub({
   const events      = data?.match_events ?? [];
   const liveStats   = data?.live_stats ?? null;
 
-  const livePoints = pred && (live || finished) ? calcLivePoints(pred, homeScore, awayScore) : null;
+  // Finished matches use the real stored points_earned (correctly graded
+  // against the group's knockout_policy and scoring rules by
+  // scoreMatchResult()) rather than re-deriving from the raw 90-minute score
+  // — calcLivePoints only applies to live in-progress matches, where no
+  // final grading exists yet and homeScore/awayScore is the only signal.
+  const livePoints = !pred ? null
+    : finished ? { pts: pred.pointsEarned ?? 0, label: pred.isExact ? "Exact" : (pred.pointsEarned ?? 0) > 0 ? "Correct" : "Missed" }
+    : live     ? calcLivePoints(pred, homeScore, awayScore)
+    : null;
 
   return (
     <div className="fixed inset-0 z-[100] flex flex-col" style={{ background: "var(--bg)" }}>
@@ -282,12 +290,18 @@ export function LiveMatchHub({
 
             <div className="flex flex-col items-center shrink-0">
               <div className="flex items-center gap-3">
-                <div className="ta-score" style={{ fontSize: "clamp(2.5rem, 8vw, 4rem)" }}>{homeScore}</div>
+                <div className="ta-score" style={{ fontSize: "clamp(2.5rem, 8vw, 4rem)" }}>
+                  {data?.home_score_et ?? homeScore}
+                </div>
                 <span className="font-black" style={{ fontSize: "1.75rem", color: "var(--mt)" }}>–</span>
-                <div className="ta-score" style={{ fontSize: "clamp(2.5rem, 8vw, 4rem)" }}>{awayScore}</div>
+                <div className="ta-score" style={{ fontSize: "clamp(2.5rem, 8vw, 4rem)" }}>
+                  {data?.away_score_et ?? awayScore}
+                </div>
               </div>
               {data?.home_score_et != null && (
-                <div className="ta-meta mt-1">AET</div>
+                <div className="ta-meta mt-1">
+                  {homeScore}–{awayScore} (90&apos;) · AET
+                </div>
               )}
             </div>
 
