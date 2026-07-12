@@ -233,11 +233,24 @@ export function PlayerDrawer({ userId, groupId, groupName, name, avatarUrl, coun
           >
             {/* Header */}
             <div
-              className="sticky top-0 px-5 py-4 flex flex-col gap-2"
+              className="sticky top-0 z-10 px-5 py-4 flex flex-col gap-2"
               style={{
                 borderBottom: "1px solid var(--br)",
+                // Opaque (not color-mix/alpha) so nothing bleeds through
+                // visually even where z-index alone wouldn't be enough.
                 background: "var(--nv)",
                 paddingTop: "calc(16px + env(safe-area-inset-top, 0px))",
+                // `position: sticky` with z-index:auto does NOT create a new
+                // stacking context (per spec), so without an explicit
+                // z-index this header stacks with normal in-flow content in
+                // DOM order — meaning any `position: relative` descendant
+                // further down the list (e.g. FlagBadge) that comes later
+                // in tree order paints ON TOP of it while scrolling. The
+                // explicit z-index above forces this header into its own
+                // stacking context, which is compared by z-index against
+                // its siblings' (z-index:auto → context-less, painted at
+                // the base level) — guaranteeing it always wins.
+                isolation: "isolate",
               }}
             >
               {/* Group-context indicator — stays visible with the rest of the
