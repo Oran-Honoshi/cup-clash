@@ -684,6 +684,31 @@ function knockoutWinner(m: BracketMatchRow): string | null {
   return m.penalty_winner ?? null;
 }
 
+// Splits an API-Football fixture's score into 90-min vs after-extra-time,
+// consistently for both the main per-tick loop (STEP 3) and the stuck-match
+// force-finish path (STEP 3b) — both need the same AET/PEN detection so a
+// stuck extra-time match doesn't end up with its final score misfiled into
+// the 90-min fields (and ET fields left null) the way qf-03/r016 once did.
+function splitKnockoutScore(
+  f: APIFixture, dbHome: string, dbAway: string
+): { home90: number; away90: number; homeET: number | null; awayET: number | null; penWinner: string | null } {
+  const isAET = f.fixture.status.short === "AET" || f.fixture.status.short === "PEN";
+  const home90 = isAET && f.score.fulltime.home != null ? f.score.fulltime.home : (f.goals.home ?? 0);
+  const away90 = isAET && f.score.fulltime.away != null ? f.score.fulltime.away : (f.goals.away ?? 0);
+  const homeET = isAET ? (f.goals.home ?? 0) : null;
+  const awayET = isAET ? (f.goals.away ?? 0) : null;
+  const penWinner = isAET
+    ? f.teams.home.winner === true  ? dbHome
+    : f.teams.away.winner === true  ? dbAway
+    : f.score.penalty.home != null && f.score.penalty.away != null
+      ? f.score.penalty.home > f.score.penalty.away ? dbHome
+      : f.score.penalty.home < f.score.penalty.away ? dbAway
+      : null
+    : null
+    : null;
+  return { home90, away90, homeET, awayET, penWinner };
+}
+
 async function findApiFixture(round: string, teamA: string, teamB: string): Promise<APIFixture | null> {
   try {
     const url = `${API_BASE}/fixtures?league=${LEAGUE_ID}&season=${SEASON}&round=${encodeURIComponent(round)}`;
@@ -1260,23 +1285,7 @@ export async function POST(request: NextRequest) {
 
       // For AET/PEN matches: home_score = 90-min result, home_score_et = after-ET result.
       // For FT matches: home_score = final result, home_score_et = null.
-      const isAET = f.fixture.status.short === "AET" || f.fixture.status.short === "PEN";
-      const home90 = isAET && f.score.fulltime.home != null ? f.score.fulltime.home : (f.goals.home ?? 0);
-      const away90 = isAET && f.score.fulltime.away != null ? f.score.fulltime.away : (f.goals.away ?? 0);
-      const homeET = isAET ? (f.goals.home ?? 0) : null;
-      const awayET = isAET ? (f.goals.away ?? 0) : null;
-
-      // Penalty winner: set when the API shows a definitive winner after pens
-      // f.teams.home.winner is true/false/null; use dbMatch team names (already normalised)
-      const penWinner = isAET
-        ? f.teams.home.winner === true  ? dbMatch.home
-        : f.teams.away.winner === true  ? dbMatch.away
-        : f.score.penalty.home != null && f.score.penalty.away != null
-          ? f.score.penalty.home > f.score.penalty.away ? dbMatch.home
-          : f.score.penalty.home < f.score.penalty.away ? dbMatch.away
-          : null
-        : null
-        : null;
+      const { home90, away90, homeET, awayET, penWinner } = splitKnockoutScore(f, dbMatch.home, dbMatch.away);
 
       const { error: updErr } = await sb
         .from("matches")
@@ -1371,10 +1380,13 @@ export async function POST(request: NextRequest) {
 
           const fixtureId = m.api_fixture_id as number;
 
-          // Use scores from the main-loop fixture if already fetched (post-STEP3 values)
-          const mainFixture = fixtures.find(f => f.fixture.id === fixtureId);
-          let resolvedHome = (mainFixture?.goals.home ?? m.home_score ?? 0) as number;
-          let resolvedAway = (mainFixture?.goals.away ?? m.away_score ?? 0) as number;
+          // Use the full fixture object from the main loop if already fetched
+          // (post-STEP3 values) — kept (not just its .goals) so a stuck AET/PEN
+          // match can still be split into 90-min vs ET below, the same way
+          // STEP 3's normal path does.
+          let resolvedFixture: APIFixture | undefined = fixtures.find(f => f.fixture.id === fixtureId);
+          let resolvedHome = (resolvedFixture?.goals.home ?? m.home_score ?? 0) as number;
+          let resolvedAway = (resolvedFixture?.goals.away ?? m.away_score ?? 0) as number;
           let shouldFinish = isHardFallback;
 
           if (!seen.has(fixtureId)) {
@@ -1386,6 +1398,7 @@ export async function POST(request: NextRequest) {
               seen.add(fixtureId);
 
               if (af) {
+                resolvedFixture = af;
                 resolvedHome = af.goals.home ?? resolvedHome;
                 resolvedAway = af.goals.away ?? resolvedAway;
                 const apiStatus = af.fixture.status.short;
@@ -1418,6 +1431,15 @@ export async function POST(request: NextRequest) {
           // we still force-close it because no match runs longer than 4 hours.
 
           if (shouldFinish) {
+            // Split into 90-min vs ET the same way STEP 3 does — this is the fix
+            // for the qf-03/r016 bug, where a stuck AET match previously had its
+            // final score dumped into home_score/away_score with ET left null.
+            const split = resolvedFixture
+              ? splitKnockoutScore(resolvedFixture, m.home, m.away)
+              : { home90: resolvedHome, away90: resolvedAway, homeET: null as number | null, awayET: null as number | null, penWinner: null as string | null };
+            if (!resolvedFixture) {
+              console.warn(`[scores/cron] STEP 3b:   No fixture score breakdown available for ${m.id} — cannot determine 90-min/ET split, storing raw score as-is.`);
+            }
             // Ensure events are fetched for this fixture
             if (!eventsMap.has(fixtureId)) {
               const rawEvts = await fetchEvents(fixtureId);
@@ -1458,9 +1480,12 @@ export async function POST(request: NextRequest) {
             const { error: finErr } = await sb
               .from("matches")
               .update({
-                status:       "finished",
-                home_score:   resolvedHome,
-                away_score:   resolvedAway,
+                status:         "finished",
+                home_score:     split.home90,
+                away_score:     split.away90,
+                home_score_et:  split.homeET,
+                away_score_et:  split.awayET,
+                penalty_winner: split.penWinner,
                 match_events: stuckMatchEvents,
                 ...(m.id === "final" ? { final_first_goal_minute: firstGoalMinute(stuckMatchEvents) } : {}),
               })
@@ -1470,10 +1495,10 @@ export async function POST(request: NextRequest) {
               console.error(`[scores/cron] STEP 3b:   Failed to force-finish ${m.id}:`, finErr);
             } else {
               const label = isHardFallback ? "Hard-forced" : "Force-finished";
-              console.log(`[scores/cron] STEP 3b:   ${label} match ${m.id} → finished (${resolvedHome}-${resolvedAway})`);
-              // ET score not available in stuck-match recovery; admin can use score override if needed.
-              newlyFinished.push({ matchId: m.id, homeScore: resolvedHome, awayScore: resolvedAway, homeScoreET: null, awayScoreET: null, penaltyWinner: null });
-              await queueResultAlert(m, resolvedHome, resolvedAway);
+              const etLabel = split.homeET != null ? ` (AET: ${split.homeET}-${split.awayET})` : "";
+              console.log(`[scores/cron] STEP 3b:   ${label} match ${m.id} → finished (${split.home90}-${split.away90}${etLabel})`);
+              newlyFinished.push({ matchId: m.id, homeScore: split.home90, awayScore: split.away90, homeScoreET: split.homeET, awayScoreET: split.awayET, penaltyWinner: split.penWinner });
+              await queueResultAlert(m, split.home90, split.away90);
             }
           }
         }
