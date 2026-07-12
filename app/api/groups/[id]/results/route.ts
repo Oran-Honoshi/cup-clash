@@ -11,6 +11,27 @@ function sbAdmin() {
   );
 }
 
+// PostgREST caps any single response at 1000 rows by default. A group's
+// group_predictions rows (members × matches, plus bonus/tournament picks)
+// blow past that for larger groups, so a plain .select() silently truncates
+// — some members' predictions go missing with no error. Page through with
+// .range() until a page comes back short.
+async function fetchAllRows<T>(
+  makeQuery: (from: number, to: number) => PromiseLike<{ data: T[] | null; error: { message: string } | null }>
+): Promise<{ data: T[]; error: { message: string } | null }> {
+  const pageSize = 1000;
+  const all: T[] = [];
+  let from = 0;
+  for (;;) {
+    const { data, error } = await makeQuery(from, from + pageSize - 1);
+    if (error) return { data: all, error };
+    all.push(...(data ?? []));
+    if (!data || data.length < pageSize) break;
+    from += pageSize;
+  }
+  return { data: all, error: null };
+}
+
 export async function GET(
   _req: NextRequest,
   { params }: { params: { id: string } }
@@ -40,11 +61,14 @@ export async function GET(
     return NextResponse.json({ matches: [], predictions: [] });
   }
 
-  const { data: predictions, error: predErr } = await sb
-    .from("group_predictions")
-    .select("user_id, match_id, home_score, away_score, points_earned, is_exact")
-    .eq("group_id", groupId)
-    .in("match_id", matchIds);
+  const { data: predictions, error: predErr } = await fetchAllRows((from, to) =>
+    sb
+      .from("group_predictions")
+      .select("user_id, match_id, home_score, away_score, points_earned, is_exact")
+      .eq("group_id", groupId)
+      .in("match_id", matchIds)
+      .range(from, to)
+  );
 
   if (predErr) {
     return NextResponse.json({ error: predErr.message }, { status: 500 });
@@ -54,8 +78,12 @@ export async function GET(
   // best-third, bonus questions) so this matches the totals shown in the
   // Leaderboard / My Stats / Player Drawer instead of only match-grid points.
   const [{ data: allPoints }, { data: bonusPoints }] = await Promise.all([
-    sb.from("group_predictions").select("user_id, points_earned").eq("group_id", groupId),
-    sb.from("bonus_answers").select("user_id, points_earned").eq("group_id", groupId),
+    fetchAllRows((from, to) =>
+      sb.from("group_predictions").select("user_id, points_earned").eq("group_id", groupId).range(from, to)
+    ),
+    fetchAllRows((from, to) =>
+      sb.from("bonus_answers").select("user_id, points_earned").eq("group_id", groupId).range(from, to)
+    ),
   ]);
 
   const totals: Record<string, number> = {};
