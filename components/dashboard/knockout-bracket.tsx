@@ -88,12 +88,25 @@ const FINAL_MATCH: BracketMatch = {
   stage: "Final",
 };
 
+const THIRD_PLACE_MATCH: BracketMatch = {
+  id: "bronze",
+  home: { label: "L SF-1", isConfirmed: false },
+  away: { label: "L SF-2", isConfirmed: false },
+  date: "Jul 18",
+  time: "16:00 ET",
+  stadium: "Hard Rock Stadium",
+  city: "Miami",
+  timeConfirmed: false,
+  stage: "Third Place",
+};
+
 const ROUND_TABS = [
-  { id: "r32",   label: "R32"   },
-  { id: "r16",   label: "R16"   },
-  { id: "qf",    label: "QF"    },
-  { id: "sf",    label: "SF"    },
-  { id: "final", label: "Final" },
+  { id: "r32",   label: "R32"    },
+  { id: "r16",   label: "R16"    },
+  { id: "qf",    label: "QF"     },
+  { id: "sf",    label: "SF"     },
+  { id: "3rd",   label: "Bronze" },
+  { id: "final", label: "Final"  },
 ] as const;
 
 type RoundId = typeof ROUND_TABS[number]["id"];
@@ -283,6 +296,7 @@ export function KnockoutBracket({ groupId }: { groupId?: string }) {
   const [r16Matches, setR16Matches] = useState<BracketMatch[]>(R16_MATCHES);
   const [qfMatches, setQfMatches] = useState<BracketMatch[]>(QF_MATCHES);
   const [sfMatches, setSfMatches] = useState<BracketMatch[]>(SF_MATCHES);
+  const [thirdPlaceMatch, setThirdPlaceMatch] = useState<BracketMatch>(THIRD_PLACE_MATCH);
   const [finalMatch, setFinalMatch] = useState<BracketMatch>(FINAL_MATCH);
   const [round, setRound] = useState<RoundId>("r32");
   const [userId, setUserId] = useState<string | null>(null);
@@ -294,7 +308,7 @@ export function KnockoutBracket({ groupId }: { groupId?: string }) {
     createClient()
       .from("matches")
       .select(SELECT)
-      .in("stage", ["R32", "R16", "QF", "SF", "Final"])
+      .in("stage", ["R32", "R16", "QF", "SF", "3rd", "Final"])
       .order("kickoff_at", { ascending: true })
       .then(({ data }) => {
         if (!data?.length) return;
@@ -303,12 +317,15 @@ export function KnockoutBracket({ groupId }: { groupId?: string }) {
         const r16 = rows.filter(m => m.stage === "R16");
         const qf  = rows.filter(m => m.stage === "QF");
         const sf  = rows.filter(m => m.stage === "SF");
+        const tp  = rows.filter(m => m.stage === "3rd");
         const fn  = rows.filter(m => m.stage === "Final");
 
         if (r32.length) setR32Matches(r32.map(m => dbMatchToBracket(m, "Round of 32")));
         if (r16.length) setR16Matches(r16.map(m => dbMatchToBracket(m, "Round of 16")));
         if (qf.length)  setQfMatches(qf.map(m => dbMatchToBracket(m, "Quarter-Final")));
         if (sf.length)  setSfMatches(sf.map(m => dbMatchToBracket(m, "Semi-Final")));
+        // Earliest kickoff wins if duplicate "3rd"-stage rows exist in the data.
+        if (tp.length)  setThirdPlaceMatch(dbMatchToBracket(tp[0], "Third Place"));
         if (fn.length)  setFinalMatch(dbMatchToBracket(fn[0], "Final"));
       });
   }, []);
@@ -321,7 +338,7 @@ export function KnockoutBracket({ groupId }: { groupId?: string }) {
   // match, for the "Your pick" overlay badge. Does not touch match/advancement fetching above.
   useEffect(() => {
     if (!userId || !groupId) return;
-    const allIds = [...r32Matches, ...r16Matches, ...qfMatches, ...sfMatches, finalMatch].map(m => m.id);
+    const allIds = [...r32Matches, ...r16Matches, ...qfMatches, ...sfMatches, thirdPlaceMatch, finalMatch].map(m => m.id);
     if (!allIds.length) return;
     createClient()
       .from("group_predictions")
@@ -339,17 +356,18 @@ export function KnockoutBracket({ groupId }: { groupId?: string }) {
         }
         setMyPicks(map);
       });
-  }, [userId, groupId, r32Matches, r16Matches, qfMatches, sfMatches, finalMatch]);
+  }, [userId, groupId, r32Matches, r16Matches, qfMatches, sfMatches, thirdPlaceMatch, finalMatch]);
 
   const allUnconfirmed = r32Matches.every(m => !m.home.isConfirmed && !m.away.isConfirmed);
 
   const roundMatches: Record<RoundId, BracketMatch[]> = {
-    r32: r32Matches, r16: r16Matches, qf: qfMatches, sf: sfMatches, final: [finalMatch],
+    r32: r32Matches, r16: r16Matches, qf: qfMatches, sf: sfMatches, "3rd": [thirdPlaceMatch], final: [finalMatch],
   };
+  const isSingleMatchRound = round === "final" || round === "3rd";
   const current = roundMatches[round];
   const half = Math.ceil(current.length / 2);
   const leftMatches  = current.slice(0, half);
-  const rightMatches = round === "final" ? [] : current.slice(half);
+  const rightMatches = isSingleMatchRound ? [] : current.slice(half);
 
   return (
     <div className="space-y-6">
@@ -419,21 +437,23 @@ export function KnockoutBracket({ groupId }: { groupId?: string }) {
           </div>
           <BracketMatchCard match={finalMatch} highlight myPick={myPicks[finalMatch.id]} />
         </div>
+      ) : round === "3rd" ? (
+        <div className="max-w-md mx-auto">
+          <div className="flex items-center gap-2 mb-3 pb-2 border-b" style={{ borderColor: "var(--dv)" }}>
+            <Trophy size={14} style={{ color: "var(--ft)" }} />
+            <span className="text-[10px] font-black uppercase tracking-widest" style={{ color: "var(--mt)" }}>Third Place Playoff</span>
+            <span style={{ fontSize: 10, color: "var(--ft)" }}>
+              {thirdPlaceMatch.city} · {thirdPlaceMatch.timeConfirmed === false ? "Date TBD" : thirdPlaceMatch.date}
+            </span>
+          </div>
+          <BracketMatchCard match={thirdPlaceMatch} myPick={myPicks[thirdPlaceMatch.id]} />
+        </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <DrawColumn title="Left Side" matches={leftMatches} myPicks={myPicks} />
           <DrawColumn title="Right Side" matches={rightMatches} myPicks={myPicks} />
         </div>
       )}
-
-      {/* Third place note */}
-      <div style={{
-        background: "var(--sf)", border: "1px solid var(--br)", borderRadius: 14, padding: 16,
-        display: "flex", alignItems: "center", gap: 12, fontSize: 14, color: "var(--t2)",
-      }}>
-        <Trophy size={16} style={{ color: "var(--ft)", flexShrink: 0 }} />
-        <span>Third place playoff: Hard Rock Stadium, Miami · July 25, 14:00 ET</span>
-      </div>
     </div>
   );
 }
