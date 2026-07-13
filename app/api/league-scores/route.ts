@@ -6,6 +6,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { runLeagueScoresCron } from "@/lib/services/league-football";
 
+// No dynamic function is called here, so without this Next's Data Cache
+// would default to force-cache on every fetch inside runLeagueScoresCron
+// (Supabase reads + API-Football calls) and could serve a stale snapshot
+// indefinitely, across deploys.
+export const dynamic = "force-dynamic";
+
 export async function POST(request: NextRequest) {
   const auth = request.headers.get("authorization");
   if (auth !== `Bearer ${process.env.CRON_SECRET}`) {

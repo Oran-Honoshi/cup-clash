@@ -8,7 +8,7 @@
 // a single cron tick does a cheap DB-only check, and only calls out to
 // API-Football when there's actually something to fetch.
 
-import { createClient } from "@supabase/supabase-js";
+import { sbAdmin } from "@/lib/supabase/admin";
 
 const API_BASE = "https://v3.football.api-sports.io";
 
@@ -34,14 +34,14 @@ function apiHeaders(): Record<string, string> {
 }
 
 function getSupabase() {
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-  return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, key);
+  return sbAdmin();
 }
 
 async function apiFetch<T>(path: string): Promise<T> {
   const res = await fetch(`${API_BASE}${path}`, {
     headers: apiHeaders(),
     signal: AbortSignal.timeout(15_000),
+    cache: "no-store",
   });
   if (!res.ok) throw new Error(`API-Football HTTP ${res.status} on ${path}`);
   return res.json() as Promise<T>;

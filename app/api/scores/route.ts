@@ -2,7 +2,8 @@
 // updates matches table, and triggers point scoring for finished matches.
 
 import { NextRequest, NextResponse } from "next/server";
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import type { SupabaseClient } from "@supabase/supabase-js";
+import { sbAdmin } from "@/lib/supabase/admin";
 import { scoreMatchResult } from "@/lib/services/predictions";
 import type { ScoringRules } from "@/lib/types";
 import {
@@ -15,6 +16,14 @@ import {
 } from "@/lib/services/telegram";
 import { getMembers } from "@/lib/services/groups";
 import { interpolate } from "@/lib/i18n";
+
+// Every internal Supabase fetch AND every API-Football fetch below must
+// carry cache: "no-store" explicitly (see apiFetch()) — this route has no
+// dynamic function call to trigger Next's automatic no-store default, so
+// without an explicit override its Data Cache would force-cache a live
+// match's events/stats/score response and silently serve that exact same
+// snapshot on every subsequent cron tick, forever, across deploys.
+export const dynamic = "force-dynamic";
 
 const API_BASE      = "https://v3.football.api-sports.io";
 const LEAGUE_ID     = 1;     // FIFA World Cup
@@ -54,12 +63,17 @@ function apiHeaders(): Record<string, string> {
   return { "x-apisports-key": process.env.API_FOOTBALL_KEY! };
 }
 
+// Wraps every API-Football call with cache: "no-store" — see the dynamic
+// export note above for why this can't be left to Next's defaults.
+function apiFetch(url: string, init?: RequestInit): Promise<Response> {
+  return fetch(url, { ...init, cache: "no-store" });
+}
+
 function getSupabase() {
   if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
     console.error("[scores] CRITICAL: SUPABASE_SERVICE_ROLE_KEY not set — upserts will likely fail RLS");
   }
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
-  return createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, key);
+  return sbAdmin();
 }
 
 // ── Scoring rules helpers (mirrored from admin/override-score) ─────────────
@@ -436,7 +450,7 @@ interface ParsedSub {
 
 async function fetchEvents(fixtureId: number): Promise<APIEvent[]> {
   try {
-    const res = await fetch(`${API_BASE}/fixtures/events?fixture=${fixtureId}`, {
+    const res = await apiFetch(`${API_BASE}/fixtures/events?fixture=${fixtureId}`, {
       headers: apiHeaders(),
     });
     if (!res.ok) return [];
@@ -503,7 +517,7 @@ interface APITeamStats { team: { id: number; name: string }; statistics: APIStat
 
 async function fetchStatistics(fixtureId: number): Promise<APITeamStats[]> {
   try {
-    const res = await fetch(`${API_BASE}/fixtures/statistics?fixture=${fixtureId}`, {
+    const res = await apiFetch(`${API_BASE}/fixtures/statistics?fixture=${fixtureId}`, {
       headers: apiHeaders(),
     });
     if (!res.ok) return [];
@@ -712,7 +726,7 @@ function splitKnockoutScore(
 async function findApiFixture(round: string, teamA: string, teamB: string): Promise<APIFixture | null> {
   try {
     const url = `${API_BASE}/fixtures?league=${LEAGUE_ID}&season=${SEASON}&round=${encodeURIComponent(round)}`;
-    const res = await fetch(url, { headers: apiHeaders() });
+    const res = await apiFetch(url, { headers: apiHeaders() });
     if (!res.ok) return null;
     const data = await res.json() as { response: APIFixture[] };
     const a = normTeam(teamA), b = normTeam(teamB);
@@ -803,7 +817,7 @@ async function advanceStage(sb: SupabaseClient, from: string, to: string, apiRou
   const url = `${API_BASE}/fixtures?league=${LEAGUE_ID}&season=${SEASON}&round=${encodeURIComponent(apiRound)}`;
   let apiFixtures: APIFixture[] = [];
   try {
-    const res = await fetch(url, { headers: apiHeaders() });
+    const res = await apiFetch(url, { headers: apiHeaders() });
     if (res.ok) {
       const data = await res.json() as { response: APIFixture[] };
       apiFixtures = data.response ?? [];
@@ -952,8 +966,8 @@ export async function POST(request: NextRequest) {
     console.log("[scores/cron]   today URL:", todayUrl);
 
     const [liveRes, todayRes] = await Promise.all([
-      fetch(liveUrl,  { headers: apiHeaders() }),
-      fetch(todayUrl, { headers: apiHeaders() }),
+      apiFetch(liveUrl,  { headers: apiHeaders() }),
+      apiFetch(todayUrl, { headers: apiHeaders() }),
     ]);
 
     console.log("[scores/cron]   live HTTP status:", liveRes.status, liveRes.statusText);
@@ -997,7 +1011,7 @@ export async function POST(request: NextRequest) {
       console.log(`[scores/cron] STEP 1b: Re-fetching ${missingStaleIds.length} stale fixture(s) by ID:`, missingStaleIds);
       await Promise.all(
         missingStaleIds.map(async id => {
-          const res = await fetch(`${API_BASE}/fixtures?id=${id}`, { headers: apiHeaders() });
+          const res = await apiFetch(`${API_BASE}/fixtures?id=${id}`, { headers: apiHeaders() });
           if (!res.ok) { console.warn(`[scores/cron]   fixture ${id} HTTP ${res.status}`); return; }
           const data = await res.json() as { response: APIFixture[] };
           for (const f of data.response ?? []) {
@@ -1392,7 +1406,7 @@ export async function POST(request: NextRequest) {
           if (!seen.has(fixtureId)) {
             // Not fetched in main loop — re-fetch directly by fixture ID
             try {
-              const r = await fetch(`${API_BASE}/fixtures?id=${fixtureId}`, { headers: apiHeaders() });
+              const r = await apiFetch(`${API_BASE}/fixtures?id=${fixtureId}`, { headers: apiHeaders() });
               const d = await r.json() as { response: APIFixture[] };
               const af = d.response?.[0];
               seen.add(fixtureId);
