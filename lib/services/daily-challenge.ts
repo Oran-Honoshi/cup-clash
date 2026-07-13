@@ -55,8 +55,8 @@ export async function getOrCreateTodayChallenge(
     .gte("challenge_date", cutoff.toISOString().slice(0, 10));
   const excludeIds = new Set((recent ?? []).map(r => r.answer_player_id as string));
 
-  const { data: allPlayers } = await sb.from("players").select("id, full_name");
-  const candidates = (allPlayers ?? []) as { id: string; full_name: string }[];
+  const { data: allPlayers } = await sb.from("players").select("id, full_name, country");
+  const candidates = (allPlayers ?? []) as { id: string; full_name: string; country: string }[];
   const eligible = candidates.filter(p => !excludeIds.has(p.id));
   const pool = eligible.length > 0 ? eligible : candidates;
   const chosen = pool[Math.floor(Math.random() * pool.length)];
@@ -87,7 +87,7 @@ export async function getOrCreateTodayChallenge(
   // Warm the enrichment cache now so gameplay requests never block on an
   // external Wikidata/Commons call. Best-effort — a failed fetch just means
   // the age/silhouette clues degrade gracefully to "unavailable" later.
-  void getPlayerEnrichment(sb, chosen.id, chosen.full_name).catch(() => {});
+  void getPlayerEnrichment(sb, chosen.id, chosen.full_name, chosen.country).catch(() => {});
 
   return created as DailyChallengeRow;
 }

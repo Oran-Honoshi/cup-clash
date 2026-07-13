@@ -23,12 +23,13 @@ interface DBPlayer {
 }
 
 export interface PlayerPickerProps {
-  value:      string;
-  onSelect:   (name: string) => void;
-  isLocked?:  boolean;
-  includeGK?: boolean;   // false (default) = tournament picks exclude GK; true = bonus questions include GK
-  label?:     string;
-  pts?:       number;
+  value:          string;
+  onSelect:       (name: string) => void;
+  onSelectPlayer?: (player: { id: string; full_name: string }) => void; // when the caller needs the id, not just the display name (e.g. Daily Challenge, where names aren't guaranteed unique)
+  isLocked?:      boolean;
+  includeGK?:     boolean;   // false (default) = tournament picks exclude GK; true = bonus questions include GK
+  label?:         string;
+  pts?:           number;
 }
 
 // ── Position badge ─────────────────────────────────────────────────────────────
@@ -80,7 +81,7 @@ function flagCode(teamName: string): string {
 // ── Component ──────────────────────────────────────────────────────────────────
 
 export function PlayerPicker({
-  value, onSelect, isLocked = false, includeGK = false, label, pts,
+  value, onSelect, onSelectPlayer, isLocked = false, includeGK = false, label, pts,
 }: PlayerPickerProps) {
   const [players,  setPlayers]  = useState<DBPlayer[]>([]);
   const [loading,  setLoading]  = useState(true);
@@ -292,7 +293,11 @@ export function PlayerPicker({
                             key={player.id}
                             type="button"
                             disabled={isLocked}
-                            onClick={() => { onSelect(player.full_name); setSearch(""); }}
+                            onClick={() => {
+                              onSelect(player.full_name);
+                              onSelectPlayer?.({ id: player.id, full_name: player.full_name });
+                              setSearch("");
+                            }}
                             aria-pressed={active}
                             className={cn(
                               "w-full flex items-center gap-2.5 pl-5 pr-3 py-2 border-b last:border-0 text-left transition-colors disabled:opacity-40",

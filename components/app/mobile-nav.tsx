@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Home, Target, CalendarDays, LayoutGrid,
-  GitBranch, Brain, BarChart2, User, Bell, MoreHorizontal, X, MessageCircle, Users, Trophy, Newspaper,
+  GitBranch, Brain, BarChart2, User, Bell, MoreHorizontal, X, MessageCircle, Users, Trophy, Newspaper, Gamepad2,
 } from "lucide-react";
 import { useLocale } from "@/components/i18n/locale-provider";
 import { createPortal } from "react-dom";
@@ -22,20 +22,22 @@ const NAV_ITEMS_DEF: NavItemDef[] = [
   { href: "/predictions/summary", staticLabel: "Summary",            icon: LayoutGrid   },
 ];
 
-const MORE_ITEMS = [
-  { href: "/groups",        label: "My Groups",      icon: Users        },
-  { href: "/news",          label: "News",           icon: Newspaper    },
-  { href: "/leaderboard",   label: "Leaderboard",    icon: Trophy       },
-  { href: "/chat",          label: "Chat",            icon: MessageCircle },
-  { href: "/bracket",       label: "Bracket",         icon: GitBranch    },
-  { href: "/trivia",        label: "Trivia",           icon: Brain        },
-  { href: "/standings",     label: "Standings",        icon: BarChart2    },
-  { href: "/profile",       label: "Profile",          icon: User         },
-  { href: "/notifications", label: "Notifications",    icon: Bell         },
+const MORE_ITEMS: { href: string; label?: string; labelKey?: keyof Translations; icon: React.ElementType }[] = [
+  { href: "/groups",          label: "My Groups",      icon: Users        },
+  { href: "/daily-challenge", labelKey: "nav_daily_challenge", icon: Gamepad2 },
+  { href: "/news",            label: "News",           icon: Newspaper    },
+  { href: "/leaderboard",     label: "Leaderboard",    icon: Trophy       },
+  { href: "/chat",            label: "Chat",            icon: MessageCircle },
+  { href: "/bracket",         label: "Bracket",         icon: GitBranch    },
+  { href: "/trivia",          label: "Trivia",           icon: Brain        },
+  { href: "/standings",       label: "Standings",        icon: BarChart2    },
+  { href: "/profile",         label: "Profile",          icon: User         },
+  { href: "/notifications",   label: "Notifications",    icon: Bell         },
 ];
 
 function MoreDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
   const pathname = usePathname();
+  const { t } = useLocale();
   const [mounted, setMounted] = useState(false);
   useEffect(() => { setMounted(true); }, []);
 
@@ -75,8 +77,9 @@ function MoreDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
 
         {/* Items */}
         <div className="px-3 py-2">
-          {MORE_ITEMS.map(({ href, label, icon: Icon }) => {
+          {MORE_ITEMS.map(({ href, label, labelKey, icon: Icon }) => {
             const active = pathname === href || (href !== "/dashboard" && pathname.startsWith(href));
+            const text = labelKey ? t(labelKey) : label;
             return (
               <Link
                 key={href}
@@ -88,7 +91,7 @@ function MoreDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
                   : { color: "var(--t2)" }}
               >
                 <Icon size={20} strokeWidth={active ? 2.5 : 1.75} />
-                <span className="font-bold text-sm">{label}</span>
+                <span className="font-bold text-sm">{text}</span>
               </Link>
             );
           })}

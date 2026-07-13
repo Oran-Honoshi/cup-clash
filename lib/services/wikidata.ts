@@ -36,9 +36,51 @@ function pickFootballerCandidate(candidates: SearchCandidate[]): SearchCandidate
   return footballer ?? candidates[0] ?? null;
 }
 
+// `players.full_name` is frequently API-Football's abbreviated form ("R.
+// Freuler" rather than "Remo Freuler") — verified live against real data,
+// where wbsearchentities's label-prefix matching finds nothing for the
+// abbreviated form (it needs the real first name). Full-text search
+// (action=query&list=search) indexes descriptions too, so "Freuler
+// footballer Switzerland" finds the right entity even without the first
+// name — confirmed against Q16595441 (Remo Freuler). Multiple same-surname
+// players (e.g. brothers Lucas/Théo Hernández) are disambiguated by
+// checking the initial letter of each candidate's actual first name.
+const ABBREVIATED_NAME = /^([A-Za-zÀ-ÖØ-öø-ÿ])\.\s*(.+)$/;
+
+async function fullTextSearch(query: string, limit = 8): Promise<{ id: string }[]> {
+  const url = `${WIKIDATA_API}?action=query&list=search&srsearch=${encodeURIComponent(query)}&format=json&srlimit=${limit}`;
+  const res = await wdFetch(url);
+  if (!res.ok) return [];
+  const json = await res.json();
+  return ((json.query?.search ?? []) as { title: string }[]).map(r => ({ id: r.title }));
+}
+
+async function resolveAbbreviatedName(initial: string, surname: string, country: string): Promise<string | null> {
+  const candidates = await fullTextSearch(`${surname} footballer ${country}`);
+  for (const candidate of candidates) {
+    const label = await getLabel(candidate.id);
+    if (!label) continue;
+    const firstName = label.trim().split(/\s+/)[0] ?? "";
+    const surnameMatches = label.toLowerCase().includes(surname.toLowerCase());
+    const initialMatches = firstName.toLowerCase().startsWith(initial.toLowerCase());
+    if (surnameMatches && initialMatches) return candidate.id;
+  }
+  return null;
+}
+
+async function resolvePlayerQid(playerName: string, country: string): Promise<string | null> {
+  const abbreviated = playerName.match(ABBREVIATED_NAME);
+  if (abbreviated) {
+    const [, initial, surname] = abbreviated;
+    return resolveAbbreviatedName(initial, surname, country);
+  }
+  const candidates = await searchEntity(playerName);
+  return pickFootballerCandidate(candidates)?.id ?? null;
+}
+
 // ── Statements ───────────────────────────────────────────────────────────────
 
-type StatementValue = { property: { id: string; data_type: string }; value: { type: string; content: unknown } };
+type StatementValue = { property: { id: string; data_type: string }; value: { type: string; content: unknown }; rank: "preferred" | "normal" | "deprecated" };
 type Statement = { qualifiers: { property: { id: string }; value: { content: unknown } }[] } & StatementValue;
 
 async function getStatements(qid: string, propertyId: string): Promise<Statement[]> {
@@ -66,14 +108,50 @@ function wikidataTimeToDate(content: unknown): string | null {
   return `${y}-${m}-${d}`;
 }
 
-// P54 (member of sports team) carries the player's whole club history, each
-// entry qualified with P580 (start) / P582 (end). The current club is the
-// most recent entry with no end date.
+// P54 (member of sports team) carries the player's whole history — both
+// clubs AND national team call-ups — each entry qualified with P580
+// (start) / P582 (end). Verified live against a real player (Remo Freuler)
+// that neither "no end date" nor "latest start year" reliably identifies
+// the current *club*: his only open-ended entry was his national team
+// call-up (ongoing since 2017), while his actual current club (Bologna)
+// was recorded with qualifiers but no open end date either. What DID mark
+// it correctly was Wikidata's own `rank: "preferred"` — its standard
+// convention for "this is the currently-valid value among several" — so
+// that takes priority, with the no-end-date heuristic only as a fallback
+// for players whose Wikidata entry doesn't use rank this way.
+function startYear(qualifiers: Statement["qualifiers"]): number {
+  const start = qualifiers.find(q => q.property.id === "P580");
+  const time = (start?.value.content as { time?: string } | undefined)?.time;
+  const match = time?.match(/^[+-](\d{4})/);
+  return match ? Number(match[1]) : 0;
+}
+
 async function getCurrentClubQid(qid: string): Promise<string | null> {
   const memberships = await getStatements(qid, "P54");
-  const current = memberships.find(m => !m.qualifiers.some(q => q.property.id === "P582"));
-  const content = (current ?? memberships[memberships.length - 1])?.value.content;
-  return typeof content === "string" ? content : null;
+
+  const withLabels = await Promise.all(
+    memberships.map(async m => {
+      const teamQid = typeof m.value.content === "string" ? m.value.content : null;
+      const label = teamQid ? await getLabel(teamQid) : null;
+      return {
+        teamQid,
+        label,
+        rank: m.rank,
+        openEnded: !m.qualifiers.some(q => q.property.id === "P582"),
+        startYear: startYear(m.qualifiers),
+      };
+    })
+  );
+
+  const clubsOnly = withLabels.filter(c => c.teamQid && c.label && !/national\s+(\w+\s+)?team/i.test(c.label));
+  const preferred = clubsOnly.find(c => c.rank === "preferred");
+  if (preferred) return preferred.teamQid;
+
+  const openEnded = clubsOnly.filter(c => c.openEnded).sort((a, b) => b.startYear - a.startYear);
+  if (openEnded[0]) return openEnded[0].teamQid;
+
+  const mostRecent = clubsOnly.sort((a, b) => b.startYear - a.startYear)[0];
+  return mostRecent?.teamQid ?? withLabels[withLabels.length - 1]?.teamQid ?? null;
 }
 
 // ── Commons photo + attribution ─────────────────────────────────────────────
@@ -84,6 +162,14 @@ export type PhotoAttribution = {
   artist: string | null;
   attributionRequired: boolean;
 };
+
+// Commons' Artist field is frequently an HTML link (verified live —
+// e.g. `<a href="//commons.wikimedia.org/wiki/User:Ago76">Ago76</a>`).
+// We display attribution as plain text, so strip markup rather than
+// risk rendering unsanitized external HTML.
+function stripHtml(value: string): string {
+  return value.replace(/<[^>]*>/g, "").trim();
+}
 
 async function getCommonsPhoto(filename: string): Promise<{ url: string; attribution: PhotoAttribution } | null> {
   const title = filename.startsWith("File:") ? filename : `File:${filename}`;
@@ -103,7 +189,7 @@ async function getCommonsPhoto(filename: string): Promise<{ url: string; attribu
     attribution: {
       licenseShortName: meta.LicenseShortName?.value ?? null,
       licenseUrl: meta.LicenseUrl?.value ?? null,
-      artist: meta.Artist?.value ?? null,
+      artist: meta.Artist?.value ? stripHtml(meta.Artist.value) : null,
       attributionRequired: meta.AttributionRequired?.value === "true",
     },
   };
@@ -144,11 +230,9 @@ async function buildFacts(qid: string, nationalityQid: string | null, clubQid: s
   return facts.slice(0, 3);
 }
 
-async function fetchFromWikidata(playerName: string): Promise<PlayerEnrichment> {
-  const candidates = await searchEntity(playerName);
-  const match = pickFootballerCandidate(candidates);
-  if (!match) return EMPTY_ENRICHMENT;
-  const qid = match.id;
+async function fetchFromWikidata(playerName: string, country: string): Promise<PlayerEnrichment> {
+  const qid = await resolvePlayerQid(playerName, country);
+  if (!qid) return EMPTY_ENRICHMENT;
 
   const [dobStatements, nationalityStatements, clubQid, imageStatements] = await Promise.all([
     getStatements(qid, "P569"),
@@ -184,7 +268,8 @@ async function fetchFromWikidata(playerName: string): Promise<PlayerEnrichment> 
 export async function getPlayerEnrichment(
   sb: SupabaseClient,
   playerId: string,
-  playerName: string
+  playerName: string,
+  country: string
 ): Promise<PlayerEnrichment> {
   const { data: cached } = await sb
     .from("player_wikidata_cache")
@@ -202,7 +287,7 @@ export async function getPlayerEnrichment(
     };
   }
 
-  const enrichment = await fetchFromWikidata(playerName);
+  const enrichment = await fetchFromWikidata(playerName, country);
   await sb.from("player_wikidata_cache").upsert({
     player_id: playerId,
     wikidata_qid: enrichment.wikidataQid,

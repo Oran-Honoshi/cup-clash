@@ -75,11 +75,11 @@ export async function POST(req: Request) {
   if (completed) {
     const { data: player } = await admin
       .from("players")
-      .select("full_name, photo")
+      .select("full_name, photo, country")
       .eq("id", challenge.answer_player_id)
       .maybeSingle();
     const enrichment = player
-      ? await getPlayerEnrichment(admin, challenge.answer_player_id, player.full_name)
+      ? await getPlayerEnrichment(admin, challenge.answer_player_id, player.full_name, player.country)
       : null;
     reveal = {
       fullName: player?.full_name ?? null,

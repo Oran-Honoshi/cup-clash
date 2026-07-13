@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, Users, Trophy, Target, BarChart2,
-  GitBranch, Brain, Bell, Shield, LogOut, Settings, MessageCircle, Trash2, CalendarDays, LayoutGrid, Newspaper,
+  GitBranch, Brain, Bell, Shield, LogOut, Settings, MessageCircle, Trash2, CalendarDays, LayoutGrid, Newspaper, Gamepad2,
 } from "lucide-react";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
@@ -42,6 +42,7 @@ const NAV_ITEMS = [
   { href: "/standings",    key: "nav_standings"     as const, icon: BarChart2       },
   { href: "/bracket",      key: "nav_bracket"       as const, icon: GitBranch       },
   { href: "/trivia",       key: "nav_trivia"        as const, icon: Brain           },
+  { href: "/daily-challenge", key: "nav_daily_challenge" as const, icon: Gamepad2   },
   { href: "/notifications",key: "nav_notifications" as const, icon: Bell            },
   { href: "/admin",        key: "common_admin"      as const, icon: Shield          },
 ];
