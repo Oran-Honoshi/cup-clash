@@ -172,7 +172,7 @@ export function PlayerPicker({
         <div className="flex items-center justify-between">
           {label && (
             <span className="text-xs font-bold uppercase tracking-widest"
-              style={{ color: "rgba(255,255,255,0.5)" }}>{label}</span>
+              style={{ color: "var(--t2)" }}>{label}</span>
           )}
           {pts !== undefined && (
             <span className="text-xs font-bold"
@@ -198,7 +198,7 @@ export function PlayerPicker({
           {selectedPlayer && flagCode(selectedPlayer.country) && (
             <FlagBadge code={flagCode(selectedPlayer.country)} label={selectedPlayer.country} size="sm" />
           )}
-          <span className="text-sm font-bold text-white flex-1 truncate">{value}</span>
+          <span className="text-sm font-bold flex-1 truncate" style={{ color: "var(--tx)" }}>{value}</span>
           {selectedPlayer && (
             <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full shrink-0"
               style={{ ...POS_STYLE[selectedPlayer.position] }}>
@@ -212,7 +212,7 @@ export function PlayerPicker({
       {/* Search */}
       <div className="relative">
         <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none"
-          style={{ color: "rgba(255,255,255,0.4)" }} />
+          style={{ color: "var(--mt)" }} />
         <input
           type="text"
           placeholder="Search player or team…"
@@ -220,9 +220,9 @@ export function PlayerPicker({
           onChange={e => setSearch(e.target.value)}
           disabled={isLocked}
           className="w-full pl-8 pr-3 py-2 rounded-xl text-sm focus:outline-none disabled:opacity-40"
-          style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", color: "#fff" }}
+          style={{ background: "var(--ip)", border: "1px solid var(--br)", color: "var(--tx)" }}
           onFocus={e => { e.target.style.borderColor = "rgba(0,212,255,0.5)"; }}
-          onBlur={e => { e.target.style.borderColor = "rgba(255,255,255,0.12)"; }}
+          onBlur={e => { e.target.style.borderColor = "var(--br)"; }}
         />
       </div>
 
@@ -233,9 +233,9 @@ export function PlayerPicker({
         </div>
       ) : (
         <div className="rounded-xl overflow-hidden max-h-80 overflow-y-auto"
-          style={{ border: "1px solid rgba(255,255,255,0.08)" }}>
+          style={{ border: "1px solid var(--br)" }}>
           {filteredGroups.length === 0 ? (
-            <div className="text-xs text-center py-4" style={{ color: "rgba(255,255,255,0.3)" }}>
+            <div className="text-xs text-center py-4" style={{ color: "var(--mt)" }}>
               No players found
             </div>
           ) : (
@@ -247,7 +247,7 @@ export function PlayerPicker({
 
               return (
                 <div key={team} className="border-b last:border-0"
-                  style={{ borderColor: "rgba(255,255,255,0.06)" }}>
+                  style={{ borderColor: "var(--br)" }}>
 
                   {/* Team header row */}
                   <button
@@ -260,32 +260,32 @@ export function PlayerPicker({
                     )}
                     style={{
                       background: isOpen
-                        ? "rgba(255,255,255,0.06)"
+                        ? "var(--ip)"
                         : hasSelect
                           ? "rgba(0,212,255,0.05)"
                           : "transparent",
                     }}>
                     <FlagBadge code={fc} label={team} size="sm" />
                     <span className="flex-1 text-sm font-bold truncate"
-                      style={{ color: hasSelect ? "#00D4FF" : teamHit && q ? "#fff" : "rgba(255,255,255,0.8)" }}>
+                      style={{ color: hasSelect ? "#00D4FF" : "var(--tx)" }}>
                       {team}
                     </span>
                     <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full shrink-0"
-                      style={{ background: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.4)" }}>
+                      style={{ background: "var(--ip)", color: "var(--t2)" }}>
                       {list.length}
                     </span>
                     {hasSelect && <Check size={11} style={{ color: "#00D4FF" }} className="shrink-0" />}
                     <ChevronDown size={13}
                       className="shrink-0 transition-transform"
                       style={{
-                        color: "rgba(255,255,255,0.3)",
+                        color: "var(--mt)",
                         transform: isOpen ? "rotate(180deg)" : "none",
                       }} />
                   </button>
 
                   {/* Players list */}
                   {isOpen && (
-                    <div style={{ background: "rgba(0,0,0,0.2)" }}>
+                    <div style={{ background: "var(--ip)" }}>
                       {list.map(player => {
                         const active = value === player.full_name;
                         return (
@@ -304,11 +304,11 @@ export function PlayerPicker({
                               FOCUS_RING
                             )}
                             style={{
-                              borderColor: "rgba(255,255,255,0.04)",
+                              borderColor: "var(--br)",
                               background: active ? "rgba(0,212,255,0.1)" : "transparent",
                             }}
                             onMouseEnter={e => {
-                              if (!active) (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.04)";
+                              if (!active) (e.currentTarget as HTMLElement).style.background = "var(--ip)";
                             }}
                             onMouseLeave={e => {
                               if (!active) (e.currentTarget as HTMLElement).style.background = "transparent";
@@ -316,7 +316,8 @@ export function PlayerPicker({
                             {/* Photo */}
                             {player.photo ? (
                               <img src={player.photo} alt={player.full_name}
-                                className="w-7 h-7 rounded-full object-cover shrink-0 bg-white/10"
+                                className="w-7 h-7 rounded-full object-cover shrink-0"
+                                style={{ background: "var(--ip)" }}
                                 onError={e => {
                                   const el = e.target as HTMLImageElement;
                                   el.style.display = "none";
@@ -324,15 +325,15 @@ export function PlayerPicker({
                                 }} />
                             ) : null}
                             <div className={cn(
-                              "w-7 h-7 rounded-full flex items-center justify-center shrink-0 bg-white/5",
+                              "w-7 h-7 rounded-full flex items-center justify-center shrink-0",
                               player.photo ? "hidden" : ""
-                            )}>
-                              <User size={13} style={{ color: "rgba(255,255,255,0.3)" }} />
+                            )} style={{ background: "var(--ip)" }}>
+                              <User size={13} style={{ color: "var(--mt)" }} />
                             </div>
 
                             {/* Name */}
                             <span className="flex-1 text-sm truncate"
-                              style={{ color: active ? "#fff" : "rgba(255,255,255,0.8)", fontWeight: active ? 700 : 400 }}>
+                              style={{ color: active ? "var(--ac)" : "var(--tx)", fontWeight: active ? 700 : 400 }}>
                               {player.full_name}
                             </span>
 
