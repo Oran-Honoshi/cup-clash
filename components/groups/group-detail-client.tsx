@@ -6,6 +6,7 @@ import { Trophy, Users, DollarSign, Target, Lock, Shield, ArrowRight, MessageCir
 import Link from "next/link";
 import { GroupChat } from "@/components/chat/group-chat";
 import { GroupStreakCard } from "@/components/daily-challenge/group-streak-card";
+import { RivalScoreboardCard } from "@/components/groups/rival-scoreboard-card";
 import { MemberAvatar } from "@/components/ui/member-avatar";
 import { MatchResultsTable } from "@/components/groups/match-results-table";
 import { useLocale } from "@/components/i18n/locale-provider";
@@ -148,6 +149,7 @@ export function GroupDetailClient({ group, rules, members, currentUserId, isAdmi
           </div>
 
           <GroupStreakCard groupId={group.id} />
+          <RivalScoreboardCard groupId={group.id} />
 
           <div className="space-y-3">
             {group.is_corporate_paid && (

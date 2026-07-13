@@ -1,28 +1,30 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Target, Trophy, TrendingUp, Zap, XCircle, Star, Volleyball, Medal, ChevronDown, ChevronRight as ChevronRightIcon, Users } from "lucide-react";
+import { X, Target, Trophy, TrendingUp, Zap, XCircle, Star, Volleyball, Medal, ChevronDown, ChevronRight as ChevronRightIcon, Users, Swords } from "lucide-react";
 import { countryFlagCode } from "@/lib/countries";
 import { FlagBadge } from "@/components/ui/FlagBadge";
 import { UserAvatar } from "@/components/ui/UserAvatar";
 import { BallLoader } from "@/components/ui/BallLoader";
 import { FOCUS_RING } from "@/lib/a11y";
 import { useGroupTitles, GroupTitleBadge } from "@/components/daily-challenge/group-title-badge";
+import { useLocale } from "@/components/i18n/locale-provider";
 import type { MemberPrediction, BestThirdPick, MemberPredictionsResponse, TournamentPick } from "@/app/api/member-predictions/route";
 
 interface PlayerDrawerProps {
-  userId:     string;
-  groupId:    string;
-  groupName?: string;
-  name:       string;
-  avatarUrl?: string | null;
-  country:    string;
-  points:     number;
-  rank:       number;
-  open:       boolean;
-  onClose:    () => void;
+  userId:        string;
+  groupId:       string;
+  groupName?:    string;
+  currentUserId?: string;
+  name:          string;
+  avatarUrl?:    string | null;
+  country:       string;
+  points:        number;
+  rank:          number;
+  open:          boolean;
+  onClose:       () => void;
 }
 
 const STAGE_ORDER = ["Group", "R32", "R16", "QF", "SF", "3rd", "Final"] as const;
@@ -124,7 +126,8 @@ function CollapsibleSection({
   );
 }
 
-export function PlayerDrawer({ userId, groupId, groupName, name, avatarUrl, country, points, rank, open, onClose }: PlayerDrawerProps) {
+export function PlayerDrawer({ userId, groupId, groupName, currentUserId, name, avatarUrl, country, points, rank, open, onClose }: PlayerDrawerProps) {
+  const { t } = useLocale();
   const [history,         setHistory]         = useState<MemberPrediction[]>([]);
   const [bestThird,       setBestThird]        = useState<MemberPredictionsResponse["bestThird"] | null>(null);
   const [tournamentPicks, setTournamentPicks]  = useState<TournamentPick[]>([]);
@@ -134,7 +137,52 @@ export function PlayerDrawer({ userId, groupId, groupName, name, avatarUrl, coun
   const [apiTotal,        setApiTotal]         = useState<number | null>(null);
   const [closeHover,      setCloseHover]       = useState(false);
   const [mounted,         setMounted]          = useState(false);
+  const [myRivalId,       setMyRivalId]        = useState<string | null | undefined>(undefined); // undefined = not yet loaded
+  const [rivalBusy,       setRivalBusy]        = useState(false);
   const titlesByUser = useGroupTitles(groupId);
+
+  const isOtherMember = !!currentUserId && currentUserId !== userId;
+
+  // Only fetches the CURRENT user's own rival pairing (not the viewed
+  // member's) — just enough to know whether to show "Challenge as Rival"
+  // or "Your Rival" for this specific drawer's subject.
+  useEffect(() => {
+    if (!open || !isOtherMember || !groupId) { setMyRivalId(undefined); return; }
+    let cancelled = false;
+    fetch(`/api/rivalries?groupId=${encodeURIComponent(groupId)}`)
+      .then(r => r.json())
+      .then((data: { rival: { rival: { userId: string } } | null }) => {
+        if (!cancelled) setMyRivalId(data.rival?.rival.userId ?? null);
+      })
+      .catch(() => { if (!cancelled) setMyRivalId(null); });
+    return () => { cancelled = true; };
+  }, [open, isOtherMember, groupId]);
+
+  const handleChallenge = useCallback(async () => {
+    if (rivalBusy) return;
+    setRivalBusy(true);
+    try {
+      const res = await fetch("/api/rivalries", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ groupId, rivalId: userId }),
+      });
+      if (res.ok) setMyRivalId(userId);
+    } finally {
+      setRivalBusy(false);
+    }
+  }, [rivalBusy, groupId, userId]);
+
+  const handleRemoveRival = useCallback(async () => {
+    if (rivalBusy) return;
+    setRivalBusy(true);
+    try {
+      const res = await fetch(`/api/rivalries?groupId=${encodeURIComponent(groupId)}`, { method: "DELETE" });
+      if (res.ok) setMyRivalId(null);
+    } finally {
+      setRivalBusy(false);
+    }
+  }, [rivalBusy, groupId]);
 
   // Portal to <body> — a page-transition ancestor sets `willChange: opacity`,
   // which unconditionally creates a stacking context (per spec, regardless
@@ -295,6 +343,31 @@ export function PlayerDrawer({ userId, groupId, groupName, name, avatarUrl, coun
                   <X size={18} style={{ color: "var(--t2)" }} />
                 </button>
               </div>
+
+              {isOtherMember && myRivalId !== undefined && (
+                myRivalId === userId ? (
+                  <button
+                    type="button"
+                    onClick={handleRemoveRival}
+                    disabled={rivalBusy}
+                    className={`flex items-center gap-1.5 self-start px-3 py-1.5 rounded-full text-xs font-bold disabled:opacity-50 ${FOCUS_RING}`}
+                    style={{ background: "color-mix(in srgb, var(--sc) 12%, transparent)", color: "var(--sc)", border: "1px solid color-mix(in srgb, var(--sc) 30%, transparent)" }}
+                  >
+                    <Swords size={13} /> {t("rival_your_rival")}
+                    <span style={{ color: "var(--ft)", fontWeight: 700 }}>· {t("rival_remove")}</span>
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={handleChallenge}
+                    disabled={rivalBusy}
+                    className={`flex items-center gap-1.5 self-start px-3 py-1.5 rounded-full text-xs font-bold disabled:opacity-50 ${FOCUS_RING}`}
+                    style={{ background: "var(--ip)", color: "var(--t2)", border: "1px solid var(--br)" }}
+                  >
+                    <Swords size={13} /> {t("rival_challenge_button")}
+                  </button>
+                )
+              )}
             </div>
 
             {/* Point breakdown chips */}

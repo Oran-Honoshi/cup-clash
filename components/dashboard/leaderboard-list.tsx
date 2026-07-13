@@ -673,6 +673,7 @@ export function LeaderboardList({
           userId={selected.id}
           groupId={groupId ?? ""}
           groupName={groupName}
+          currentUserId={currentUserId}
           name={selected.name}
           avatarUrl={selected.avatarUrl}
           country={selected.country ?? ""}

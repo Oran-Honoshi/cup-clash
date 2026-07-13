@@ -268,6 +268,20 @@ export interface Translations {
   chat_exact_score_moment: string;
   chat_react_aria:         string;
 
+  // Rival Tracker
+  rival_challenge_button: string;
+  rival_your_rival:       string;
+  rival_remove:           string;
+  rival_widget_heading:   string;
+  rival_widget_tagline:   string;
+  rival_widget_empty:     string;
+  rival_widget_points:    string;
+  rival_widget_exact:     string;
+  rival_widget_today:     string;
+  rival_widget_ahead:     string;
+  rival_widget_tied:      string;
+  rival_widget_you:       string;
+
   // Notifications
   notif_goal:         string;
   notif_result:       string;
@@ -651,6 +665,19 @@ const en: Translations = {
   chat_send_failed:  "Failed to send. Try again.",
   chat_exact_score_moment: "{name} nailed the exact score! {home} {homeScore}-{awayScore} {away} 🎯",
   chat_react_aria:         "React with an emoji",
+
+  rival_challenge_button: "Challenge as Rival",
+  rival_your_rival:       "Your Rival",
+  rival_remove:           "Remove",
+  rival_widget_heading:   "Rival Watch",
+  rival_widget_tagline:   "Head-to-head with your declared rival",
+  rival_widget_empty:     "Pick a rival from the Leaderboard to start a head-to-head battle.",
+  rival_widget_points:    "Points",
+  rival_widget_exact:     "Exact Scores",
+  rival_widget_today:     "Today",
+  rival_widget_ahead:     "{name} leads by {points} pts",
+  rival_widget_tied:      "All square",
+  rival_widget_you:       "You",
   notif_goal:  "Goal scored",
   notif_result:  "Match result",
   notif_leaderboard:  "Leaderboard change",
@@ -1025,6 +1052,19 @@ const fr: Translations = {
   chat_send_failed:  "Envoi échoué. Réessaie.",
   chat_exact_score_moment: "{name} a trouvé le score exact ! {home} {homeScore}-{awayScore} {away} 🎯",
   chat_react_aria:         "Réagir avec un emoji",
+
+  rival_challenge_button: "Défier comme rival",
+  rival_your_rival:       "Votre rival",
+  rival_remove:           "Retirer",
+  rival_widget_heading:   "Duel de rivaux",
+  rival_widget_tagline:   "Face-à-face avec votre rival déclaré",
+  rival_widget_empty:     "Choisissez un rival dans le classement pour démarrer un duel.",
+  rival_widget_points:    "Points",
+  rival_widget_exact:     "Scores exacts",
+  rival_widget_today:     "Aujourd'hui",
+  rival_widget_ahead:     "{name} mène de {points} pts",
+  rival_widget_tied:      "Match nul",
+  rival_widget_you:       "Vous",
   notif_goal:  "But marqué",
   notif_result:  "Résultat du match",
   notif_leaderboard:  "Changement de classement",
@@ -1399,6 +1439,19 @@ const de: Translations = {
   chat_send_failed:  "Senden fehlgeschlagen. Nochmal versuchen.",
   chat_exact_score_moment: "{name} hat das exakte Ergebnis getroffen! {home} {homeScore}-{awayScore} {away} 🎯",
   chat_react_aria:         "Mit einem Emoji reagieren",
+
+  rival_challenge_button: "Als Rivale herausfordern",
+  rival_your_rival:       "Dein Rivale",
+  rival_remove:           "Entfernen",
+  rival_widget_heading:   "Rivalen-Duell",
+  rival_widget_tagline:   "Direktvergleich mit deinem erklärten Rivalen",
+  rival_widget_empty:     "Wähle einen Rivalen aus der Bestenliste, um ein Duell zu starten.",
+  rival_widget_points:    "Punkte",
+  rival_widget_exact:     "Genaue Ergebnisse",
+  rival_widget_today:     "Heute",
+  rival_widget_ahead:     "{name} führt mit {points} Pkt.",
+  rival_widget_tied:      "Unentschieden",
+  rival_widget_you:       "Du",
   notif_goal:  "Tor erzielt",
   notif_result:  "Spielergebnis",
   notif_leaderboard:  "Ranglistenänderung",
@@ -1773,6 +1826,19 @@ const nl: Translations = {
   chat_send_failed:  "Verzenden mislukt. Probeer opnieuw.",
   chat_exact_score_moment: "{name} had de exacte uitslag goed! {home} {homeScore}-{awayScore} {away} 🎯",
   chat_react_aria:         "Reageer met een emoji",
+
+  rival_challenge_button: "Uitdagen als rivaal",
+  rival_your_rival:       "Jouw rivaal",
+  rival_remove:           "Verwijderen",
+  rival_widget_heading:   "Rivalenduel",
+  rival_widget_tagline:   "Rechtstreeks duel met jouw gekozen rivaal",
+  rival_widget_empty:     "Kies een rivaal uit het klassement om een duel te starten.",
+  rival_widget_points:    "Punten",
+  rival_widget_exact:     "Exacte uitslagen",
+  rival_widget_today:     "Vandaag",
+  rival_widget_ahead:     "{name} leidt met {points} pt",
+  rival_widget_tied:      "Gelijkspel",
+  rival_widget_you:       "Jij",
   notif_goal:  "Doelpunt gescoord",
   notif_result:  "Wedstrijdresultaat",
   notif_leaderboard:  "Ranglijstwijziging",
@@ -2147,6 +2213,19 @@ const es: Translations = {
   chat_send_failed:  "Error al enviar. Inténtalo de nuevo.",
   chat_exact_score_moment: "¡{name} acertó el marcador exacto! {home} {homeScore}-{awayScore} {away} 🎯",
   chat_react_aria:         "Reaccionar con un emoji",
+
+  rival_challenge_button: "Retar como rival",
+  rival_your_rival:       "Tu rival",
+  rival_remove:           "Quitar",
+  rival_widget_heading:   "Duelo de rivales",
+  rival_widget_tagline:   "Cara a cara con tu rival declarado",
+  rival_widget_empty:     "Elige un rival en la clasificación para empezar un duelo.",
+  rival_widget_points:    "Puntos",
+  rival_widget_exact:     "Marcadores exactos",
+  rival_widget_today:     "Hoy",
+  rival_widget_ahead:     "{name} va ganando por {points} pts",
+  rival_widget_tied:      "Empate",
+  rival_widget_you:       "Tú",
   notif_goal:  "Gol marcado",
   notif_result:  "Resultado del partido",
   notif_leaderboard:  "Cambio en la clasificación",
@@ -2521,6 +2600,19 @@ const pt: Translations = {
   chat_send_failed:  "Falha no envio. Tenta novamente.",
   chat_exact_score_moment: "{name} acertou o placar exato! {home} {homeScore}-{awayScore} {away} 🎯",
   chat_react_aria:         "Reagir com um emoji",
+
+  rival_challenge_button: "Desafiar como rival",
+  rival_your_rival:       "Seu rival",
+  rival_remove:           "Remover",
+  rival_widget_heading:   "Duelo de rivais",
+  rival_widget_tagline:   "Frente a frente com seu rival declarado",
+  rival_widget_empty:     "Escolha um rival no ranking para começar um duelo.",
+  rival_widget_points:    "Pontos",
+  rival_widget_exact:     "Placares exatos",
+  rival_widget_today:     "Hoje",
+  rival_widget_ahead:     "{name} lidera por {points} pts",
+  rival_widget_tied:      "Empatados",
+  rival_widget_you:       "Você",
   notif_goal:  "Golo marcado",
   notif_result:  "Resultado da partida",
   notif_leaderboard:  "Mudança no ranking",
@@ -2895,6 +2987,19 @@ const he: Translations = {
   chat_send_failed:  "השליחה נכשלה. נסה שוב.",
   chat_exact_score_moment: "{name} קלע בול לתוצאה המדויקת! {home} {homeScore}-{awayScore} {away} 🎯",
   chat_react_aria:         "הגיבו עם אימוג'י",
+
+  rival_challenge_button: "אתגר כיריב",
+  rival_your_rival:       "היריב שלך",
+  rival_remove:           "הסר",
+  rival_widget_heading:   "קרב יריבים",
+  rival_widget_tagline:   "עימות ישיר מול היריב שהכרזת עליו",
+  rival_widget_empty:     "בחר יריב מטבלת הדירוג כדי להתחיל עימות.",
+  rival_widget_points:    "נקודות",
+  rival_widget_exact:     "תוצאות מדויקות",
+  rival_widget_today:     "היום",
+  rival_widget_ahead:     "{name} מוביל/ה ב-{points} נק'",
+  rival_widget_tied:      "תיקו",
+  rival_widget_you:       "אתה",
   notif_goal:  "שער נכנס",
   notif_result:  "תוצאת משחק",
   notif_leaderboard:  "שינוי בדירוג",
@@ -3269,6 +3374,19 @@ const ar: Translations = {
   chat_send_failed:  "ما انرسلت. جرب ثاني.",
   chat_exact_score_moment: "{name} خمّن النتيجة بالظبط! {home} {homeScore}-{awayScore} {away} 🎯",
   chat_react_aria:         "تفاعل بإيموجي",
+
+  rival_challenge_button: "تحدّاه كغريم",
+  rival_your_rival:       "غريمك",
+  rival_remove:           "إزالة",
+  rival_widget_heading:   "مواجهة الغرماء",
+  rival_widget_tagline:   "مواجهة مباشرة مع غريمك المُعلن",
+  rival_widget_empty:     "اختار غريم من لوحة الترتيب عشان تبدأ مواجهة.",
+  rival_widget_points:    "النقاط",
+  rival_widget_exact:     "نتائج مضبوطة",
+  rival_widget_today:     "النهارده",
+  rival_widget_ahead:     "{name} متقدم بـ {points} نقطة",
+  rival_widget_tied:      "تعادل",
+  rival_widget_you:       "انت",
   notif_goal:  "هدف يسجل",
   notif_result:  "نتيجة الماتش",
   notif_leaderboard:  "تغيير في الترتيب",
