@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
-import { createClient as createAdminClient } from "@supabase/supabase-js";
+import { sbAdmin } from "@/lib/supabase/admin";
 import { ScheduleClient }      from "@/components/schedule/schedule-client";
 import { GroupPersistRedirect } from "@/components/app/group-persist-redirect";
 import { GroupSwipeSelector }   from "@/components/groups/group-swipe-selector";
@@ -19,13 +19,6 @@ export const metadata: Metadata = {
     type: "website",
   },
 };
-
-function sbAdmin() {
-  return createAdminClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
-}
 
 type DbMatchEvent = {
   minute: number;

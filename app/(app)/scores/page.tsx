@@ -1,7 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import type { Metadata } from "next";
-import { createClient as createAdminClient } from "@supabase/supabase-js";
+import { sbAdmin } from "@/lib/supabase/admin";
 import { CalendarClock } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { CompetitionPicker } from "@/components/leagues/competition-picker";
@@ -15,13 +15,6 @@ export const metadata: Metadata = {
   title: "Scores — Cup Clash",
   description: "Live scores and match results for World Cup 2026 and top football leagues.",
 };
-
-function sbAdmin() {
-  return createAdminClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
-}
 
 export default async function ScoresPage({
   searchParams,

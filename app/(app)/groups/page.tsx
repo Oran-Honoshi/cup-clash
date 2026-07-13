@@ -1,6 +1,6 @@
 export const dynamic = "force-dynamic";
 
-import { createClient as createAdminClient } from "@supabase/supabase-js";
+import { sbAdmin } from "@/lib/supabase/admin";
 import { getCurrentUserProfile } from "@/lib/services/user-group";
 import { EmptyState } from "@/components/ui/empty-state";
 import { GroupCard } from "@/components/groups/group-card";
@@ -9,13 +9,6 @@ import { Trophy, Plus, LogIn } from "lucide-react";
 import Link from "next/link";
 import { serverT } from "@/lib/server-locale";
 import { ENABLE_BETA_FEATURES } from "@/lib/feature-flags";
-
-function sbAdmin() {
-  return createAdminClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
-}
 
 export default async function GroupsPage() {
   const userProfile = await getCurrentUserProfile();

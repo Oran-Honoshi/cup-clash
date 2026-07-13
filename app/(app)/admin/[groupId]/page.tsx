@@ -1,7 +1,7 @@
 export const dynamic = "force-dynamic";
 
 import { redirect }            from "next/navigation";
-import { createClient as createAdminClient } from "@supabase/supabase-js";
+import { sbAdmin } from "@/lib/supabase/admin";
 import { AdminPanel }          from "@/components/admin/admin-panel";
 import { ScoringRulesEditor }  from "@/components/admin/scoring-rules-editor";
 import { GroupRulesEditor }    from "@/components/admin/group-rules-editor";
@@ -14,13 +14,6 @@ import { SplitPotPanel }       from "@/components/admin/split-pot-panel";
 import { getGroup, getMembers } from "@/lib/services/groups";
 import { getCurrentUserProfile } from "@/lib/services/user-group";
 import Link from "next/link";
-
-function sbAdmin() {
-  return createAdminClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
-}
 
 export default async function AdminGroupPage({ params }: { params: { groupId: string } }) {
   const userProfile = await getCurrentUserProfile();

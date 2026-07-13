@@ -1,7 +1,7 @@
 import { serverT } from "@/lib/server-locale";
 export const dynamic = "force-dynamic";
 
-import { createClient as createAdminClient } from "@supabase/supabase-js";
+import { sbAdmin } from "@/lib/supabase/admin";
 import { DashboardCarousel }  from "@/components/dashboard/dashboard-carousel";
 import { DashboardPopups }   from "@/components/dashboard/dashboard-popups";
 import { GroupSwipeSelector } from "@/components/groups/group-swipe-selector";
@@ -20,13 +20,6 @@ import { getFollowedTeamIds } from "@/lib/services/follows";
 import { getHeroArticle } from "@/lib/services/news";
 import { getTeamsByIds } from "@/lib/services/teams";
 import Link from "next/link";
-
-function sbAdmin() {
-  return createAdminClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
-}
 
 function GuestBanner() {
   return (

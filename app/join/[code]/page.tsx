@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { createClient as createAdminClient } from "@supabase/supabase-js";
+import { sbAdmin as getAdmin } from "@/lib/supabase/admin";
 import { Logo } from "@/components/logo";
 import { XCircle, Users, Sparkles, Trophy, CheckCircle, GraduationCap } from "lucide-react";
 import { JoinButton } from "@/components/join/join-button";
@@ -22,13 +22,6 @@ interface GroupRow {
   max_group_capacity:   number | null;
   group_mode:           string | null;
   winner_message:       string | null;
-}
-
-function getAdmin() {
-  return createAdminClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
 }
 
 async function findGroup(passkey: string): Promise<GroupRow | null> {
