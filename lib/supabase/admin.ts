@@ -1,5 +1,11 @@
 import { createClient } from "@supabase/supabase-js";
 
+// DO NOT copy-paste this file's createClient(...) call into a route/service
+// instead of importing sbAdmin() from here — that has caused repeated
+// production incidents (silently-stale Data Cache with no per-user fix).
+// Need an anon-key equivalent? Use sbAnon() from ./anon.ts, not a new local
+// client. See ./anon.ts for the RLS-respecting counterpart.
+//
 // Service-role Supabase client for server-side reads (bypasses RLS). Passes
 // an explicit `cache: "no-store"` fetch so Next.js's persistent Data Cache
 // never serves a stale snapshot of a Supabase REST response — that cache

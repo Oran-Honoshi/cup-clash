@@ -2,6 +2,13 @@ import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import type { Database } from "@/lib/supabase/types";
 
+// Cookie-scoped, RLS-respecting client for the current signed-in user. Safe
+// from Next.js Data Cache staleness: calling cookies() before any fetch
+// flips Next's per-request fetch default from force-cache to no-store.
+// Need to bypass RLS instead? Use sbAdmin() from ./admin.ts — never
+// hand-roll a new createClient() from "@supabase/supabase-js" in a
+// route/server component/service; that fetch has no such default and will
+// silently cache stale REST responses across deploys.
 export function createClient() {
   const cookieStore = cookies();
 
