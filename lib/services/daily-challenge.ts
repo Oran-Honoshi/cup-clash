@@ -188,11 +188,13 @@ export async function recordGuess(
     .eq("challenge_id", challenge.id)
     .maybeSingle();
 
-  if (existing?.solved) {
+  if (existing?.completed_at) {
+    // Already solved, or already out of tries — either way the attempt is
+    // closed, so a stray extra guess request is a no-op, not a new guess.
     return {
       guessCount: existing.guess_count,
-      solved: true,
-      outOfTries: false,
+      solved: existing.solved,
+      outOfTries: !existing.solved,
       shareText: existing.share_text,
     };
   }

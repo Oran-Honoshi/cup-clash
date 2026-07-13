@@ -361,6 +361,39 @@ export interface Translations {
   share_scoring:      string;
   share_join_free:    string;
   share_tagline:      string;
+
+  // Daily Challenge — "Guess the Footballer"
+  nav_daily_challenge:        string;
+  dc_page_title:              string;
+  dc_tagline:                 string;
+  dc_guess_placeholder:       string;
+  dc_try_of:                  string;
+  dc_clue_nationality:        string;
+  dc_clue_club:               string;
+  dc_clue_position:           string;
+  dc_clue_age:                string;
+  dc_clue_silhouette:         string;
+  dc_result_correct:          string;
+  dc_result_incorrect:        string;
+  dc_result_out_of_tries:     string;
+  dc_reveal_heading:          string;
+  dc_share_button:            string;
+  dc_share_copied:            string;
+  dc_photo_attribution:       string;
+  dc_group_streak_heading:    string;
+  dc_group_streak_active:     string;
+  dc_group_streak_inactive:   string;
+  dc_leaderboard_heading:     string;
+  dc_scope_global:            string;
+  dc_scope_group:             string;
+  dc_range_daily:             string;
+  dc_range_alltime:           string;
+  dc_leaderboard_empty:       string;
+  dc_title_oracle:            string;
+  dc_title_inverter:          string;
+  dc_signup_prompt:           string;
+  dc_signup_cta:              string;
+  daily_challenge_group_nudge: string;
 }
 
 // ── English (base) ─────────────────────────────────────────────────────────────
@@ -680,6 +713,39 @@ const en: Translations = {
   share_scoring:      "Scoring",
   share_join_free:    "Join free",
   share_tagline:      "Predict every match. Beat your friends. 🎯",
+
+  // Daily Challenge — "Guess the Footballer"
+  nav_daily_challenge: "Daily Challenge",
+  dc_page_title: "Guess the Footballer",
+  dc_tagline: "One footballer. Six guesses. New puzzle every day.",
+  dc_guess_placeholder: "Search for a player…",
+  dc_try_of: "Guess {current} of {total}",
+  dc_clue_nationality: "Nationality",
+  dc_clue_club: "Club",
+  dc_clue_position: "Position",
+  dc_clue_age: "Age",
+  dc_clue_silhouette: "Silhouette",
+  dc_result_correct: "You got it! 🎉",
+  dc_result_incorrect: "Not quite — try again",
+  dc_result_out_of_tries: "Out of guesses",
+  dc_reveal_heading: "Today's footballer was",
+  dc_share_button: "Share result",
+  dc_share_copied: "Copied to clipboard",
+  dc_photo_attribution: "Photo: {artist} · {license}",
+  dc_group_streak_heading: "Group Streak",
+  dc_group_streak_active: "{count}-day streak 🔥",
+  dc_group_streak_inactive: "No active streak yet",
+  dc_leaderboard_heading: "Leaderboard",
+  dc_scope_global: "Global",
+  dc_scope_group: "Group",
+  dc_range_daily: "Today",
+  dc_range_alltime: "All-time",
+  dc_leaderboard_empty: "No results yet",
+  dc_title_oracle: "The Oracle",
+  dc_title_inverter: "The Inverter",
+  dc_signup_prompt: "Sign up to save your streak and compete with your group",
+  dc_signup_cta: "Save my result",
+  daily_challenge_group_nudge: "{name} solved today's puzzle in {count} guesses. Can you beat them?",
 
 };
 
@@ -1001,6 +1067,39 @@ const fr: Translations = {
   share_join_free:    "Join free",
   share_tagline:      "Predict every match. Beat your friends. 🎯",
 
+  // Daily Challenge — "Guess the Footballer"
+  nav_daily_challenge: "Défi du jour",
+  dc_page_title: "Devine le footballeur",
+  dc_tagline: "Un footballeur. Six essais. Une nouvelle énigme chaque jour.",
+  dc_guess_placeholder: "Rechercher un joueur…",
+  dc_try_of: "Essai {current} sur {total}",
+  dc_clue_nationality: "Nationalité",
+  dc_clue_club: "Club",
+  dc_clue_position: "Poste",
+  dc_clue_age: "Âge",
+  dc_clue_silhouette: "Silhouette",
+  dc_result_correct: "Bravo ! 🎉",
+  dc_result_incorrect: "Pas tout à fait — réessayez",
+  dc_result_out_of_tries: "Plus d'essais",
+  dc_reveal_heading: "Le footballeur du jour était",
+  dc_share_button: "Partager le résultat",
+  dc_share_copied: "Copié dans le presse-papiers",
+  dc_photo_attribution: "Photo : {artist} · {license}",
+  dc_group_streak_heading: "Série du groupe",
+  dc_group_streak_active: "Série de {count} jours 🔥",
+  dc_group_streak_inactive: "Pas encore de série active",
+  dc_leaderboard_heading: "Classement",
+  dc_scope_global: "Global",
+  dc_scope_group: "Groupe",
+  dc_range_daily: "Aujourd'hui",
+  dc_range_alltime: "Historique",
+  dc_leaderboard_empty: "Aucun résultat pour le moment",
+  dc_title_oracle: "L'Oracle",
+  dc_title_inverter: "L'Inverseur",
+  dc_signup_prompt: "Inscrivez-vous pour sauvegarder votre série et défier votre groupe",
+  dc_signup_cta: "Sauvegarder mon résultat",
+  daily_challenge_group_nudge: "{name} a résolu l'énigme du jour en {count} essais. Peux-tu faire mieux ?",
+
 };
 
 // ── German ─────────────────────────────────────────────────────────────────────
@@ -1320,6 +1419,39 @@ const de: Translations = {
   share_scoring:      "Scoring",
   share_join_free:    "Join free",
   share_tagline:      "Predict every match. Beat your friends. 🎯",
+
+  // Daily Challenge — "Guess the Footballer"
+  nav_daily_challenge: "Tägliche Challenge",
+  dc_page_title: "Errate den Fußballer",
+  dc_tagline: "Ein Fußballer. Sechs Versuche. Jeden Tag ein neues Rätsel.",
+  dc_guess_placeholder: "Spieler suchen…",
+  dc_try_of: "Versuch {current} von {total}",
+  dc_clue_nationality: "Nationalität",
+  dc_clue_club: "Verein",
+  dc_clue_position: "Position",
+  dc_clue_age: "Alter",
+  dc_clue_silhouette: "Silhouette",
+  dc_result_correct: "Richtig! 🎉",
+  dc_result_incorrect: "Leider falsch — versuch's nochmal",
+  dc_result_out_of_tries: "Keine Versuche mehr",
+  dc_reveal_heading: "Der heutige Fußballer war",
+  dc_share_button: "Ergebnis teilen",
+  dc_share_copied: "In die Zwischenablage kopiert",
+  dc_photo_attribution: "Foto: {artist} · {license}",
+  dc_group_streak_heading: "Gruppen-Serie",
+  dc_group_streak_active: "{count}-Tage-Serie 🔥",
+  dc_group_streak_inactive: "Noch keine aktive Serie",
+  dc_leaderboard_heading: "Bestenliste",
+  dc_scope_global: "Global",
+  dc_scope_group: "Gruppe",
+  dc_range_daily: "Heute",
+  dc_range_alltime: "Gesamt",
+  dc_leaderboard_empty: "Noch keine Ergebnisse",
+  dc_title_oracle: "Das Orakel",
+  dc_title_inverter: "Der Umkehrer",
+  dc_signup_prompt: "Registriere dich, um deine Serie zu speichern und mit deiner Gruppe zu wetteifern",
+  dc_signup_cta: "Ergebnis speichern",
+  daily_challenge_group_nudge: "{name} hat das heutige Rätsel in {count} Versuchen gelöst. Kannst du das schlagen?",
 
 };
 
@@ -1641,6 +1773,39 @@ const nl: Translations = {
   share_join_free:    "Join free",
   share_tagline:      "Predict every match. Beat your friends. 🎯",
 
+  // Daily Challenge — "Guess the Footballer"
+  nav_daily_challenge: "Dagelijkse Challenge",
+  dc_page_title: "Raad de voetballer",
+  dc_tagline: "Eén voetballer. Zes pogingen. Elke dag een nieuwe puzzel.",
+  dc_guess_placeholder: "Zoek een speler…",
+  dc_try_of: "Poging {current} van {total}",
+  dc_clue_nationality: "Nationaliteit",
+  dc_clue_club: "Club",
+  dc_clue_position: "Positie",
+  dc_clue_age: "Leeftijd",
+  dc_clue_silhouette: "Silhouet",
+  dc_result_correct: "Helemaal goed! 🎉",
+  dc_result_incorrect: "Niet helemaal — probeer opnieuw",
+  dc_result_out_of_tries: "Geen pogingen meer",
+  dc_reveal_heading: "De voetballer van vandaag was",
+  dc_share_button: "Resultaat delen",
+  dc_share_copied: "Gekopieerd naar klembord",
+  dc_photo_attribution: "Foto: {artist} · {license}",
+  dc_group_streak_heading: "Groepsreeks",
+  dc_group_streak_active: "{count}-daagse reeks 🔥",
+  dc_group_streak_inactive: "Nog geen actieve reeks",
+  dc_leaderboard_heading: "Ranglijst",
+  dc_scope_global: "Wereldwijd",
+  dc_scope_group: "Groep",
+  dc_range_daily: "Vandaag",
+  dc_range_alltime: "Aller tijden",
+  dc_leaderboard_empty: "Nog geen resultaten",
+  dc_title_oracle: "Het Orakel",
+  dc_title_inverter: "De Omkeerder",
+  dc_signup_prompt: "Meld je aan om je reeks op te slaan en het op te nemen tegen je groep",
+  dc_signup_cta: "Mijn resultaat opslaan",
+  daily_challenge_group_nudge: "{name} loste de puzzel van vandaag op in {count} pogingen. Kun jij dat verslaan?",
+
 };
 
 // ── Spanish ────────────────────────────────────────────────────────────────────
@@ -1960,6 +2125,39 @@ const es: Translations = {
   share_scoring:      "Scoring",
   share_join_free:    "Join free",
   share_tagline:      "Predict every match. Beat your friends. 🎯",
+
+  // Daily Challenge — "Guess the Footballer"
+  nav_daily_challenge: "Reto diario",
+  dc_page_title: "Adivina al futbolista",
+  dc_tagline: "Un futbolista. Seis intentos. Un nuevo reto cada día.",
+  dc_guess_placeholder: "Buscar un jugador…",
+  dc_try_of: "Intento {current} de {total}",
+  dc_clue_nationality: "Nacionalidad",
+  dc_clue_club: "Club",
+  dc_clue_position: "Posición",
+  dc_clue_age: "Edad",
+  dc_clue_silhouette: "Silueta",
+  dc_result_correct: "¡Correcto! 🎉",
+  dc_result_incorrect: "No es correcto — inténtalo de nuevo",
+  dc_result_out_of_tries: "Sin intentos restantes",
+  dc_reveal_heading: "El futbolista de hoy era",
+  dc_share_button: "Compartir resultado",
+  dc_share_copied: "Copiado al portapapeles",
+  dc_photo_attribution: "Foto: {artist} · {license}",
+  dc_group_streak_heading: "Racha del grupo",
+  dc_group_streak_active: "Racha de {count} días 🔥",
+  dc_group_streak_inactive: "Aún no hay una racha activa",
+  dc_leaderboard_heading: "Clasificación",
+  dc_scope_global: "Global",
+  dc_scope_group: "Grupo",
+  dc_range_daily: "Hoy",
+  dc_range_alltime: "Histórico",
+  dc_leaderboard_empty: "Aún no hay resultados",
+  dc_title_oracle: "El Oráculo",
+  dc_title_inverter: "El Invertido",
+  dc_signup_prompt: "Regístrate para guardar tu racha y competir con tu grupo",
+  dc_signup_cta: "Guardar mi resultado",
+  daily_challenge_group_nudge: "{name} resolvió el reto de hoy en {count} intentos. ¿Puedes superarlo?",
 
 };
 
@@ -2281,6 +2479,39 @@ const pt: Translations = {
   share_join_free:    "Join free",
   share_tagline:      "Predict every match. Beat your friends. 🎯",
 
+  // Daily Challenge — "Guess the Footballer"
+  nav_daily_challenge: "Desafio Diário",
+  dc_page_title: "Adivinhe o jogador",
+  dc_tagline: "Um jogador. Seis tentativas. Um novo desafio todos os dias.",
+  dc_guess_placeholder: "Procurar um jogador…",
+  dc_try_of: "Tentativa {current} de {total}",
+  dc_clue_nationality: "Nacionalidade",
+  dc_clue_club: "Clube",
+  dc_clue_position: "Posição",
+  dc_clue_age: "Idade",
+  dc_clue_silhouette: "Silhueta",
+  dc_result_correct: "Acertou! 🎉",
+  dc_result_incorrect: "Quase — tente novamente",
+  dc_result_out_of_tries: "Sem mais tentativas",
+  dc_reveal_heading: "O jogador de hoje era",
+  dc_share_button: "Compartilhar resultado",
+  dc_share_copied: "Copiado para a área de transferência",
+  dc_photo_attribution: "Foto: {artist} · {license}",
+  dc_group_streak_heading: "Sequência do grupo",
+  dc_group_streak_active: "Sequência de {count} dias 🔥",
+  dc_group_streak_inactive: "Ainda sem sequência ativa",
+  dc_leaderboard_heading: "Classificação",
+  dc_scope_global: "Global",
+  dc_scope_group: "Grupo",
+  dc_range_daily: "Hoje",
+  dc_range_alltime: "Histórico",
+  dc_leaderboard_empty: "Ainda sem resultados",
+  dc_title_oracle: "O Oráculo",
+  dc_title_inverter: "O Invertido",
+  dc_signup_prompt: "Cadastre-se para salvar sua sequência e competir com seu grupo",
+  dc_signup_cta: "Salvar meu resultado",
+  daily_challenge_group_nudge: "{name} resolveu o desafio de hoje em {count} tentativas. Consegue superar?",
+
 };
 
 // ── Hebrew ─────────────────────────────────────────────────────────────────────
@@ -2601,6 +2832,39 @@ const he: Translations = {
   share_join_free:    "הצטרף חינם",
   share_tagline:      "נבא כל משחק. תנצח את החברים. 🎯",
 
+  // Daily Challenge — "Guess the Footballer"
+  nav_daily_challenge: "אתגר יומי",
+  dc_page_title: "נחשו את הכדורגלן",
+  dc_tagline: "כדורגלן אחד. שישה ניחושים. חידה חדשה בכל יום.",
+  dc_guess_placeholder: "חיפוש שחקן…",
+  dc_try_of: "ניחוש {current} מתוך {total}",
+  dc_clue_nationality: "לאום",
+  dc_clue_club: "מועדון",
+  dc_clue_position: "עמדה",
+  dc_clue_age: "גיל",
+  dc_clue_silhouette: "צללית",
+  dc_result_correct: "ניחשת נכון! 🎉",
+  dc_result_incorrect: "לא בדיוק — נסו שוב",
+  dc_result_out_of_tries: "נגמרו הניחושים",
+  dc_reveal_heading: "הכדורגלן של היום היה",
+  dc_share_button: "שיתוף תוצאה",
+  dc_share_copied: "הועתק ללוח",
+  dc_photo_attribution: "צילום: {artist} · {license}",
+  dc_group_streak_heading: "רצף הקבוצה",
+  dc_group_streak_active: "רצף של {count} ימים 🔥",
+  dc_group_streak_inactive: "עדיין אין רצף פעיל",
+  dc_leaderboard_heading: "טבלת המובילים",
+  dc_scope_global: "גלובלי",
+  dc_scope_group: "קבוצה",
+  dc_range_daily: "היום",
+  dc_range_alltime: "כל הזמנים",
+  dc_leaderboard_empty: "עדיין אין תוצאות",
+  dc_title_oracle: "המגיד העתידות",
+  dc_title_inverter: "ההפכפך",
+  dc_signup_prompt: "הירשמו כדי לשמור את הרצף שלכם ולהתחרות מול הקבוצה",
+  dc_signup_cta: "שמירת התוצאה שלי",
+  daily_challenge_group_nudge: "{name} פתר את החידה של היום ב-{count} ניחושים. תוכלו לנצח אותו?",
+
 };
 
 // ── Arabic ─────────────────────────────────────────────────────────────────────
@@ -2920,6 +3184,39 @@ const ar: Translations = {
   share_scoring:      "Scoring",
   share_join_free:    "Join free",
   share_tagline:      "Predict every match. Beat your friends. 🎯",
+
+  // Daily Challenge — "Guess the Footballer"
+  nav_daily_challenge: "التحدي اليومي",
+  dc_page_title: "خمّن اللاعب",
+  dc_tagline: "لاعب واحد. ست محاولات. لغز جديد كل يوم.",
+  dc_guess_placeholder: "ابحث عن لاعب…",
+  dc_try_of: "المحاولة {current} من {total}",
+  dc_clue_nationality: "الجنسية",
+  dc_clue_club: "النادي",
+  dc_clue_position: "المركز",
+  dc_clue_age: "العمر",
+  dc_clue_silhouette: "الظل",
+  dc_result_correct: "أحسنت! 🎉",
+  dc_result_incorrect: "ليس تمامًا — حاول مرة أخرى",
+  dc_result_out_of_tries: "انتهت المحاولات",
+  dc_reveal_heading: "لاعب اليوم كان",
+  dc_share_button: "مشاركة النتيجة",
+  dc_share_copied: "تم النسخ إلى الحافظة",
+  dc_photo_attribution: "الصورة: {artist} · {license}",
+  dc_group_streak_heading: "سلسلة المجموعة",
+  dc_group_streak_active: "سلسلة {count} أيام 🔥",
+  dc_group_streak_inactive: "لا توجد سلسلة نشطة بعد",
+  dc_leaderboard_heading: "لوحة المتصدرين",
+  dc_scope_global: "عالمي",
+  dc_scope_group: "المجموعة",
+  dc_range_daily: "اليوم",
+  dc_range_alltime: "كل الأوقات",
+  dc_leaderboard_empty: "لا توجد نتائج بعد",
+  dc_title_oracle: "العرّاف",
+  dc_title_inverter: "المقلوب",
+  dc_signup_prompt: "سجّل لحفظ سلسلتك والتنافس مع مجموعتك",
+  dc_signup_cta: "حفظ نتيجتي",
+  daily_challenge_group_nudge: "{name} حل لغز اليوم في {count} محاولات. هل يمكنك التفوق عليه؟",
 
 };
 
