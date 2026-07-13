@@ -1,15 +1,8 @@
 export const dynamic = "force-dynamic";
 
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import { sbAdmin } from "@/lib/supabase/admin";
 import { WORLD_CUP_STAGE_LIST } from "@/lib/schedule";
-
-function sbAdmin() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
-}
 
 // PostgREST caps any single response at 1000 rows by default. A group's
 // group_predictions rows (members × matches, plus bonus/tournament picks)

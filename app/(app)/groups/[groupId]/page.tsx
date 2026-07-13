@@ -1,16 +1,9 @@
 export const dynamic = "force-dynamic";
 
 import { redirect }    from "next/navigation";
-import { createClient as createAdminClient } from "@supabase/supabase-js";
+import { sbAdmin } from "@/lib/supabase/admin";
 import { getCurrentUserProfile } from "@/lib/services/user-group";
 import { GroupDetailClient } from "@/components/groups/group-detail-client";
-
-function sbAdmin() {
-  return createAdminClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
-}
 
 async function getGroupDetail(groupId: string) {
   const { data } = await sbAdmin()
