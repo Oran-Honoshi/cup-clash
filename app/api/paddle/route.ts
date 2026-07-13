@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import { sbAdmin } from "@/lib/supabase/admin";
 
 // $2 per member enrollment fee
 const ENROLLMENT_FEE_CENTS = 200;
@@ -30,10 +30,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Check enrollment deadline
-    const sb = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    );
+    const sb = sbAdmin();
 
     const { data: group } = await sb
       .from("groups")

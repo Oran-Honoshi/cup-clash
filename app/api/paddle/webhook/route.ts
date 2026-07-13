@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import { sbAdmin } from "@/lib/supabase/admin";
 
 async function verifyPaddleSignature(body: string, sig: string | null, secret: string) {
   if (!sig) return false;
@@ -25,10 +25,7 @@ export async function POST(request: NextRequest) {
   const valid = await verifyPaddleSignature(body, sig, process.env.PADDLE_WEBHOOK_SECRET);
   if (!valid) return NextResponse.json({ error: "Invalid signature" }, { status: 401 });
 
-  const sb = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
+  const sb = sbAdmin();
 
   try {
     const event = JSON.parse(body) as {
