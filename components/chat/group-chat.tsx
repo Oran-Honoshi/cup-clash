@@ -12,10 +12,19 @@ interface ChatMessage {
   id: string;
   user_id: string | null;
   content: string;
-  type: "text" | "gif" | "system";
+  type: "text" | "gif" | "system" | "moment";
   gif_url?: string;
   created_at: string;
   profiles?: { name: string; country: string; avatar_url: string | null };
+}
+
+// The limited emoji picker for reacting to a "moment" message (migration
+// 052) — deliberately a fixed small set, not a full emoji keyboard.
+const REACTION_EMOJI = ["🔥", "⚽", "😂", "👏"] as const;
+
+interface ReactionState {
+  // emoji -> set of user_ids who reacted with it
+  byEmoji: Record<string, Set<string>>;
 }
 
 // A "system" message (migration 049 — e.g. the Daily Challenge "Dave
@@ -29,6 +38,57 @@ function SystemMessageRow({ msg }: { msg: ChatMessage }) {
         style={{ background: "rgba(0,212,255,0.08)", color: "rgba(255,255,255,0.6)" }}
       >
         {msg.content}
+      </div>
+    </div>
+  );
+}
+
+// A "moment" message (migration 052 — e.g. an exact-score prediction) is a
+// shareable highlight: same no-author centered layout as a system message,
+// but with its own accent styling and a reaction bar underneath.
+function MomentMessageRow({
+  msg, reactions, currentUserId, onToggle,
+}: {
+  msg: ChatMessage;
+  reactions: ReactionState;
+  currentUserId: string;
+  onToggle: (emoji: string) => void;
+}) {
+  const { t } = useLocale();
+  return (
+    <div className="flex flex-col items-center gap-1.5 px-2">
+      <div
+        className="text-[12px] font-bold px-3.5 py-2 rounded-2xl text-center max-w-[85%]"
+        style={{
+          background: "linear-gradient(135deg, rgba(0,212,255,0.16), rgba(0,255,136,0.10))",
+          border: "1px solid rgba(0,255,136,0.25)",
+          color: "rgba(255,255,255,0.9)",
+        }}
+      >
+        {msg.content}
+      </div>
+      <div className="flex gap-1" role="group" aria-label={t("chat_react_aria")}>
+        {REACTION_EMOJI.map(emoji => {
+          const users = reactions.byEmoji[emoji];
+          const count = users?.size ?? 0;
+          const mine  = users?.has(currentUserId) ?? false;
+          return (
+            <button
+              key={emoji}
+              type="button"
+              onClick={() => onToggle(emoji)}
+              className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-bold transition-colors"
+              style={{
+                background: mine ? "rgba(0,212,255,0.18)" : "rgba(255,255,255,0.06)",
+                border: mine ? "1px solid rgba(0,212,255,0.4)" : "1px solid rgba(255,255,255,0.08)",
+                color: mine ? "#00D4FF" : "rgba(255,255,255,0.55)",
+              }}
+            >
+              <span>{emoji}</span>
+              {count > 0 && <span>{count}</span>}
+            </button>
+          );
+        })}
       </div>
     </div>
   );
@@ -59,8 +119,30 @@ export function GroupChat({ groupId, currentUserId, currentUserName, isPaid, inl
   const [isOpen,     setIsOpen]     = useState(false);
   const [unread,     setUnread]     = useState(0);
   const [sendError,  setSendError]  = useState<string | null>(null);
+  // message_id -> emoji -> set of user_ids who reacted with it
+  const [reactions, setReactions] = useState<Record<string, Record<string, Set<string>>>>({});
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef  = useRef<HTMLInputElement>(null);
+
+  const addReaction = useCallback((messageId: string, emoji: string, userId: string) => {
+    setReactions(prev => {
+      const forMsg = { ...(prev[messageId] ?? {}) };
+      const users  = new Set(forMsg[emoji] ?? []);
+      users.add(userId);
+      forMsg[emoji] = users;
+      return { ...prev, [messageId]: forMsg };
+    });
+  }, []);
+
+  const removeReaction = useCallback((messageId: string, emoji: string, userId: string) => {
+    setReactions(prev => {
+      const forMsg = prev[messageId];
+      if (!forMsg?.[emoji]) return prev;
+      const users = new Set(forMsg[emoji]);
+      users.delete(userId);
+      return { ...prev, [messageId]: { ...forMsg, [emoji]: users } };
+    });
+  }, []);
 
   const scrollToBottom = useCallback(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -75,10 +157,24 @@ export function GroupChat({ groupId, currentUserId, currentUserName, isPaid, inl
       .eq("group_id", groupId)
       .order("created_at", { ascending: true })
       .limit(100)
-      .then(({ data, error }) => {
+      .then(async ({ data, error }) => {
         if (error) console.error("Chat load error:", error.message);
         if (data) setMessages(data as ChatMessage[]);
         setTimeout(scrollToBottom, 100);
+
+        const momentIds = (data ?? []).filter(m => m.type === "moment").map(m => m.id);
+        if (momentIds.length > 0) {
+          const { data: reactionRows } = await sb
+            .from("message_reactions")
+            .select("message_id, emoji, user_id")
+            .in("message_id", momentIds);
+          const byMessage: Record<string, Record<string, Set<string>>> = {};
+          for (const r of (reactionRows ?? []) as Array<{ message_id: string; emoji: string; user_id: string }>) {
+            const forMsg = byMessage[r.message_id] ?? (byMessage[r.message_id] = {});
+            (forMsg[r.emoji] ?? (forMsg[r.emoji] = new Set())).add(r.user_id);
+          }
+          setReactions(byMessage);
+        }
       });
 
     const channel = sb
@@ -100,10 +196,51 @@ export function GroupChat({ groupId, currentUserId, currentUserName, isPaid, inl
           setTimeout(scrollToBottom, 50);
         }
       })
+      .on("postgres_changes", {
+        event:  "INSERT",
+        schema: "public",
+        table:  "message_reactions",
+        filter: `group_id=eq.${groupId}`,
+      }, (payload) => {
+        const row = payload.new as { message_id: string; emoji: string; user_id: string };
+        addReaction(row.message_id, row.emoji, row.user_id);
+      })
+      .on("postgres_changes", {
+        event:  "DELETE",
+        schema: "public",
+        table:  "message_reactions",
+        filter: `group_id=eq.${groupId}`,
+      }, (payload) => {
+        const row = payload.old as { message_id: string; emoji: string; user_id: string };
+        removeReaction(row.message_id, row.emoji, row.user_id);
+      })
       .subscribe();
 
     return () => { sb.removeChannel(channel); };
-  }, [groupId, scrollToBottom]);
+  }, [groupId, scrollToBottom, addReaction, removeReaction]);
+
+  const toggleReaction = useCallback(async (messageId: string, emoji: string) => {
+    const sb = createClient();
+    const { data: { user } } = await sb.auth.getUser();
+    if (!user) return;
+
+    const alreadyReacted = reactions[messageId]?.[emoji]?.has(user.id) ?? false;
+    if (alreadyReacted) {
+      removeReaction(messageId, emoji, user.id); // optimistic
+      const { error } = await sb.from("message_reactions")
+        .delete()
+        .eq("message_id", messageId)
+        .eq("user_id", user.id)
+        .eq("emoji", emoji);
+      if (error) addReaction(messageId, emoji, user.id); // revert
+    } else {
+      addReaction(messageId, emoji, user.id); // optimistic
+      const { error } = await sb.from("message_reactions").insert({
+        message_id: messageId, group_id: groupId, user_id: user.id, emoji,
+      });
+      if (error) removeReaction(messageId, emoji, user.id); // revert
+    }
+  }, [groupId, reactions, addReaction, removeReaction]);
 
   useEffect(() => {
     if (isOpen) {
@@ -193,6 +330,16 @@ export function GroupChat({ groupId, currentUserId, currentUserName, isPaid, inl
           )}
           {messages.map((msg, i) => {
             if (msg.type === "system") return <SystemMessageRow key={msg.id} msg={msg} />;
+            if (msg.type === "moment") {
+              return (
+                <MomentMessageRow
+                  key={msg.id} msg={msg}
+                  reactions={{ byEmoji: reactions[msg.id] ?? {} }}
+                  currentUserId={currentUserId}
+                  onToggle={emoji => toggleReaction(msg.id, emoji)}
+                />
+              );
+            }
             const isOwn      = msg.user_id === currentUserId;
             const profile    = msg.profiles;
             const showAvatar = !isOwn && (i === 0 || messages[i-1].user_id !== msg.user_id);
@@ -367,6 +514,16 @@ export function GroupChat({ groupId, currentUserId, currentUserName, isPaid, inl
               )}
               {messages.map((msg, i) => {
                 if (msg.type === "system") return <SystemMessageRow key={msg.id} msg={msg} />;
+                if (msg.type === "moment") {
+                  return (
+                    <MomentMessageRow
+                      key={msg.id} msg={msg}
+                      reactions={{ byEmoji: reactions[msg.id] ?? {} }}
+                      currentUserId={currentUserId}
+                      onToggle={emoji => toggleReaction(msg.id, emoji)}
+                    />
+                  );
+                }
                 const isOwn     = msg.user_id === currentUserId;
                 const profile   = msg.profiles;
                 const showAvatar = !isOwn && (i === 0 || messages[i-1].user_id !== msg.user_id);

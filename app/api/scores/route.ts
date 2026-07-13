@@ -4,7 +4,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { sbAdmin } from "@/lib/supabase/admin";
-import { scoreMatchResult } from "@/lib/services/predictions";
+import { scoreMatchResult, type NewlyExactPrediction } from "@/lib/services/predictions";
+import { postSystemMessage } from "@/lib/services/group-chat";
 import type { ScoringRules } from "@/lib/types";
 import {
   queueTelegramLine,
@@ -15,7 +16,7 @@ import {
   type TelegramQueue,
 } from "@/lib/services/telegram";
 import { getMembers } from "@/lib/services/groups";
-import { interpolate } from "@/lib/i18n";
+import { interpolate, TRANSLATIONS } from "@/lib/i18n";
 
 // Every internal Supabase fetch AND every API-Football fetch below must
 // carry cache: "no-store" explicitly (see apiFetch()) — this route has no
@@ -1550,12 +1551,14 @@ export async function POST(request: NextRequest) {
       const { data: allGroups } = await sb.from("groups").select("id");
       console.log(`[scores/cron]   Groups to score: ${allGroups?.length ?? 0}`);
 
+      const allNewlyExact: NewlyExactPrediction[] = [];
+
       for (const { matchId, homeScore, awayScore, homeScoreET, awayScoreET, penaltyWinner } of newlyFinished) {
         const etLabel = homeScoreET != null ? ` (AET: ${homeScoreET}-${awayScoreET})` : "";
         const penLabel = penaltyWinner ? ` pens: ${penaltyWinner}` : "";
         console.log(`[scores/cron]   Scoring match ${matchId}: ${homeScore}-${awayScore}${etLabel}${penLabel} across ${allGroups?.length ?? 0} group(s)`);
 
-        await Promise.allSettled(
+        const results = await Promise.allSettled(
           (allGroups ?? []).map(group =>
             scoreMatchResult({
               matchId,
@@ -1569,8 +1572,37 @@ export async function POST(request: NextRequest) {
             })
           )
         );
+        for (const r of results) {
+          if (r.status === "fulfilled") allNewlyExact.push(...r.value);
+        }
 
         console.log(`[scores/cron]   Scoring complete for match ${matchId}`);
+      }
+
+      // ── STEP 4a: Post a shareable "exact score" moment for each newly-exact
+      // prediction — reuses the Daily Challenge system-message pattern (see
+      // lib/services/group-chat.ts); group members react to it via the
+      // message_reactions emoji picker (migration 052).
+      if (allNewlyExact.length > 0) {
+        console.log(`[scores/cron]   Posting ${allNewlyExact.length} exact-score chat moment(s)`);
+        const { data: profileRows } = await sb
+          .from("profiles")
+          .select("id, name")
+          .in("id", [...new Set(allNewlyExact.map(p => p.userId))]);
+        const nameById = new Map(
+          ((profileRows ?? []) as Array<{ id: string; name: string }>).map(p => [p.id, p.name])
+        );
+        const en = TRANSLATIONS.en;
+        await Promise.allSettled(
+          allNewlyExact.map(p => {
+            const name = nameById.get(p.userId);
+            if (!name) return Promise.resolve();
+            const message = interpolate(en.chat_exact_score_moment, {
+              name, home: p.home, away: p.away, homeScore: String(p.homeScore), awayScore: String(p.awayScore),
+            });
+            return postSystemMessage(sb, p.groupId, message, "moment");
+          })
+        );
       }
     }
 

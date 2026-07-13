@@ -1,8 +1,33 @@
 import { NextRequest, NextResponse } from "next/server";
 import { scoreMatchResult } from "@/lib/services/predictions";
+import { postSystemMessage } from "@/lib/services/group-chat";
+import { interpolate, TRANSLATIONS } from "@/lib/i18n";
 import type { ScoringRules } from "@/lib/types";
 import { sbAdmin } from "@/lib/supabase/admin";
 import { sbAnon } from "@/lib/supabase/anon";
+
+// Reuses the same "exact score" chat-moment pattern as the scores cron
+// (see app/api/scores/route.ts STEP 4a) — an admin correcting a group's
+// score can just as legitimately turn a prediction exact as a live result.
+async function postExactScoreMoments(sb: ReturnType<typeof sbAdmin>, newlyExact: Awaited<ReturnType<typeof scoreMatchResult>>) {
+  if (newlyExact.length === 0) return;
+  const { data: profileRows } = await sb
+    .from("profiles")
+    .select("id, name")
+    .in("id", [...new Set(newlyExact.map(p => p.userId))]);
+  const nameById = new Map(((profileRows ?? []) as Array<{ id: string; name: string }>).map(p => [p.id, p.name]));
+  const en = TRANSLATIONS.en;
+  await Promise.allSettled(
+    newlyExact.map(p => {
+      const name = nameById.get(p.userId);
+      if (!name) return Promise.resolve();
+      const message = interpolate(en.chat_exact_score_moment, {
+        name, home: p.home, away: p.away, homeScore: String(p.homeScore), awayScore: String(p.awayScore),
+      });
+      return postSystemMessage(sb, p.groupId, message, "moment");
+    })
+  );
+}
 
 const SCORING_RULES_SELECT = [
   "exact_score", "correct_outcome",
@@ -125,7 +150,7 @@ export async function POST(req: NextRequest) {
     } | null;
 
     if (m?.home_score != null && m?.away_score != null) {
-      await scoreMatchResult({
+      const newlyExact = await scoreMatchResult({
         matchId,
         groupId,
         homeScore:   m.home_score,
@@ -133,7 +158,9 @@ export async function POST(req: NextRequest) {
         homeScoreET: m.home_score_et ?? null,
         awayScoreET: m.away_score_et ?? null,
         rules:       buildScoringRules(rulesRow as ScoringRulesRow | null),
+        sbClient:    sb,
       });
+      await postExactScoreMoments(sb, newlyExact);
     }
 
     return NextResponse.json({ success: true, removed: true, pointsRecalculated: true });
@@ -162,13 +189,15 @@ export async function POST(req: NextRequest) {
     .maybeSingle();
 
   // Immediately rescore all predictions for this match in this group
-  await scoreMatchResult({
+  const newlyExact = await scoreMatchResult({
     matchId,
     groupId,
     homeScore,
     awayScore,
-    rules: buildScoringRules(rulesRow2 as ScoringRulesRow | null),
+    rules:    buildScoringRules(rulesRow2 as ScoringRulesRow | null),
+    sbClient: sb,
   });
+  await postExactScoreMoments(sb, newlyExact);
 
   return NextResponse.json({ success: true, pointsRecalculated: true });
 }

@@ -6,11 +6,20 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 // specifically for this, and only a service-role insert can bypass the
 // "auth.uid() = user_id" RLS policy that real user messages are still
 // bound by).
-export async function postSystemMessage(sbAdminClient: SupabaseClient, groupId: string, content: string): Promise<void> {
+//
+// type defaults to "system" (a plain centered nudge line); pass "moment"
+// for a shareable highlight (e.g. an exact-score prediction, migration 052)
+// that renders with its own styling and a reaction bar in the UI.
+export async function postSystemMessage(
+  sbAdminClient: SupabaseClient,
+  groupId: string,
+  content: string,
+  type: "system" | "moment" = "system",
+): Promise<void> {
   await sbAdminClient.from("chat_messages").insert({
     group_id: groupId,
     user_id: null,
-    type: "system",
+    type,
     content,
   });
 }

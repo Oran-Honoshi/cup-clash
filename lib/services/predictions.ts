@@ -95,6 +95,20 @@ export async function getMatchPredictions(
 // homeScore/awayScore are the 90-minute scores.
 // homeScoreET/awayScoreET are the scores after extra time (null if no ET).
 
+// Returned entries are predictions that just became exact-score matches by
+// this call (i.e. weren't already flagged is_exact before this scoring run) —
+// the "was it already true?" check keeps a match from re-triggering the same
+// group's chat moment on every subsequent cron tick once it's finished.
+export interface NewlyExactPrediction {
+  userId:    string;
+  groupId:   string;
+  matchId:   string;
+  home:      string;
+  away:      string;
+  homeScore: number;
+  awayScore: number;
+}
+
 export async function scoreMatchResult(params: {
   matchId:        string;
   groupId:        string;
@@ -104,18 +118,18 @@ export async function scoreMatchResult(params: {
   awayScoreET?:   number | null;
   rules:          ScoringRules;
   sbClient?:      SupabaseClient;
-}): Promise<void> {
+}): Promise<NewlyExactPrediction[]> {
   const c = params.sbClient ?? defaultSb();
   const predictions = await getMatchPredictions(params.matchId, params.groupId, c);
-  if (!predictions.length) return;
+  if (!predictions.length) return [];
 
-  // Fetch match stage in one query
+  // Fetch match stage + team names in one query
   const { data: matchRow } = await c
     .from("matches")
-    .select("stage")
+    .select("stage, home, away")
     .eq("id", params.matchId)
     .maybeSingle();
-  type MatchRow = { stage: string } | null;
+  type MatchRow = { stage: string; home: string; away: string } | null;
   const stage = ((matchRow as MatchRow)?.stage ?? "Group") as Match["stage"];
 
   const { correctOutcome, exactScore } = getStagePoints(stage, params.rules, params.rules.useProgressiveScoring);
@@ -177,6 +191,21 @@ export async function scoreMatchResult(params: {
   await c
     .from("group_predictions")
     .upsert(updates, { onConflict: "user_id,group_id,match_id" });
+
+  const matchHome = (matchRow as MatchRow)?.home ?? "";
+  const matchAway = (matchRow as MatchRow)?.away ?? "";
+
+  return predictions
+    .filter((pred, i) => !pred.is_exact && updates[i].is_exact)
+    .map(pred => ({
+      userId:    pred.user_id,
+      groupId:   params.groupId,
+      matchId:   params.matchId,
+      home:      matchHome,
+      away:      matchAway,
+      homeScore: effectiveHome,
+      awayScore: effectiveAway,
+    }));
 }
 
 // ── Live leaderboard recalculation ───────────────────────────────────────────

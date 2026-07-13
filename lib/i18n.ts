@@ -265,6 +265,8 @@ export interface Translations {
   chat_gif_go:       string;
   chat_not_signed:   string;
   chat_send_failed:  string;
+  chat_exact_score_moment: string;
+  chat_react_aria:         string;
 
   // Notifications
   notif_goal:         string;
@@ -647,6 +649,8 @@ const en: Translations = {
   chat_gif_go:  "Go",
   chat_not_signed:  "Not signed in — please refresh",
   chat_send_failed:  "Failed to send. Try again.",
+  chat_exact_score_moment: "{name} nailed the exact score! {home} {homeScore}-{awayScore} {away} 🎯",
+  chat_react_aria:         "React with an emoji",
   notif_goal:  "Goal scored",
   notif_result:  "Match result",
   notif_leaderboard:  "Leaderboard change",
@@ -1019,6 +1023,8 @@ const fr: Translations = {
   chat_gif_go:  "Go",
   chat_not_signed:  "Pas connecté — rafraîchis la page",
   chat_send_failed:  "Envoi échoué. Réessaie.",
+  chat_exact_score_moment: "{name} a trouvé le score exact ! {home} {homeScore}-{awayScore} {away} 🎯",
+  chat_react_aria:         "Réagir avec un emoji",
   notif_goal:  "But marqué",
   notif_result:  "Résultat du match",
   notif_leaderboard:  "Changement de classement",
@@ -1391,6 +1397,8 @@ const de: Translations = {
   chat_gif_go:  "Los",
   chat_not_signed:  "Nicht angemeldet — bitte neu laden",
   chat_send_failed:  "Senden fehlgeschlagen. Nochmal versuchen.",
+  chat_exact_score_moment: "{name} hat das exakte Ergebnis getroffen! {home} {homeScore}-{awayScore} {away} 🎯",
+  chat_react_aria:         "Mit einem Emoji reagieren",
   notif_goal:  "Tor erzielt",
   notif_result:  "Spielergebnis",
   notif_leaderboard:  "Ranglistenänderung",
@@ -1763,6 +1771,8 @@ const nl: Translations = {
   chat_gif_go:  "Zoek",
   chat_not_signed:  "Niet ingelogd — vernieuw de pagina",
   chat_send_failed:  "Verzenden mislukt. Probeer opnieuw.",
+  chat_exact_score_moment: "{name} had de exacte uitslag goed! {home} {homeScore}-{awayScore} {away} 🎯",
+  chat_react_aria:         "Reageer met een emoji",
   notif_goal:  "Doelpunt gescoord",
   notif_result:  "Wedstrijdresultaat",
   notif_leaderboard:  "Ranglijstwijziging",
@@ -2135,6 +2145,8 @@ const es: Translations = {
   chat_gif_go:  "Buscar",
   chat_not_signed:  "No has iniciado sesión — recarga la página",
   chat_send_failed:  "Error al enviar. Inténtalo de nuevo.",
+  chat_exact_score_moment: "¡{name} acertó el marcador exacto! {home} {homeScore}-{awayScore} {away} 🎯",
+  chat_react_aria:         "Reaccionar con un emoji",
   notif_goal:  "Gol marcado",
   notif_result:  "Resultado del partido",
   notif_leaderboard:  "Cambio en la clasificación",
@@ -2507,6 +2519,8 @@ const pt: Translations = {
   chat_gif_go:  "Pesquisar",
   chat_not_signed:  "Sessão não iniciada — atualiza a página",
   chat_send_failed:  "Falha no envio. Tenta novamente.",
+  chat_exact_score_moment: "{name} acertou o placar exato! {home} {homeScore}-{awayScore} {away} 🎯",
+  chat_react_aria:         "Reagir com um emoji",
   notif_goal:  "Golo marcado",
   notif_result:  "Resultado da partida",
   notif_leaderboard:  "Mudança no ranking",
@@ -2879,6 +2893,8 @@ const he: Translations = {
   chat_gif_go:  "חפש",
   chat_not_signed:  "לא מחובר — רענן את הדף",
   chat_send_failed:  "השליחה נכשלה. נסה שוב.",
+  chat_exact_score_moment: "{name} קלע בול לתוצאה המדויקת! {home} {homeScore}-{awayScore} {away} 🎯",
+  chat_react_aria:         "הגיבו עם אימוג'י",
   notif_goal:  "שער נכנס",
   notif_result:  "תוצאת משחק",
   notif_leaderboard:  "שינוי בדירוג",
@@ -3251,6 +3267,8 @@ const ar: Translations = {
   chat_gif_go:  "دور",
   chat_not_signed:  "ما سجلت دخولك — حدّث الصفحة",
   chat_send_failed:  "ما انرسلت. جرب ثاني.",
+  chat_exact_score_moment: "{name} خمّن النتيجة بالظبط! {home} {homeScore}-{awayScore} {away} 🎯",
+  chat_react_aria:         "تفاعل بإيموجي",
   notif_goal:  "هدف يسجل",
   notif_result:  "نتيجة الماتش",
   notif_leaderboard:  "تغيير في الترتيب",
