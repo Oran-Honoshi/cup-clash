@@ -4,6 +4,8 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { X, Clock, MapPin, RefreshCw, Activity, Target } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { FlagBadge } from "@/components/ui/FlagBadge";
+import { MvpVotePanel } from "@/components/match/mvp-vote-panel";
+import { useLocale } from "@/components/i18n/locale-provider";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 // Mirrors what app/api/scores/route.ts actually writes to the `matches` table
@@ -159,7 +161,8 @@ export function LiveMatchHub({
   const [data,    setData]    = useState<MatchRow | null>(null);
   const [pred,    setPred]    = useState<UserPrediction | null>(null);
   const [loading, setLoading] = useState(true);
-  const [tab,     setTab]     = useState<"overview" | "live" | "stats" | "lineups">("overview");
+  const [tab,     setTab]     = useState<"overview" | "live" | "stats" | "lineups" | "mvp">("overview");
+  const { t } = useLocale();
   const prevScore = useRef<{ h: number; a: number } | null>(null);
 
   // Lock background scroll + close on Escape while the overlay is mounted.
@@ -314,13 +317,13 @@ export function LiveMatchHub({
 
         {/* ── Tab bar ──────────────────────────────────────────────────── */}
         <div className="flex" style={{ borderBottom: "1px solid var(--br)" }}>
-          {(["overview", "live", "stats", "lineups"] as const).map(t => (
-            <button key={t} onClick={() => setTab(t)}
+          {(["overview", "live", "stats", "lineups", "mvp"] as const).map(tabKey => (
+            <button key={tabKey} onClick={() => setTab(tabKey)}
               className="ta-subtab-label flex-1 py-3 text-center"
-              style={tab === t
+              style={tab === tabKey
                 ? { color: "var(--ac)", borderBottom: "2px solid var(--ac)" }
                 : { color: "var(--mt)" }}>
-              {t === "overview" ? "Overview" : t === "live" ? "Live" : t === "stats" ? "Stats" : "Lineups"}
+              {tabKey === "overview" ? "Overview" : tabKey === "live" ? "Live" : tabKey === "stats" ? "Stats" : tabKey === "lineups" ? "Lineups" : t("mvp_vote_tab")}
             </button>
           ))}
         </div>
@@ -448,6 +451,11 @@ export function LiveMatchHub({
             <div className="py-8 text-center text-sm" style={{ color: "var(--mt)" }}>
               Lineups not available
             </div>
+          )}
+
+          {/* Matchday MVP — community vote, opens once the match is finished */}
+          {!loading && tab === "mvp" && (
+            <MvpVotePanel matchId={matchId} home={home} away={away} />
           )}
         </div>
       </div>

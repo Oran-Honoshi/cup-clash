@@ -404,6 +404,19 @@ export interface Translations {
   dc_clue_crest:              string;
   dc_club_reveal_heading:     string;
   dc_club_reveal_fact_league: string;
+
+  // Community Voting — Matchday MVP
+  mvp_vote_tab:            string;
+  mvp_vote_heading:        string;
+  mvp_vote_tagline:        string;
+  mvp_vote_not_open:       string;
+  mvp_vote_closed:         string;
+  mvp_vote_search:         string;
+  mvp_vote_you_voted:      string;
+  mvp_vote_total_votes:    string;
+  mvp_vote_error_already:  string;
+  mvp_vote_error_closed:   string;
+  mvp_vote_signin_prompt:  string;
 }
 
 // ── English (base) ─────────────────────────────────────────────────────────────
@@ -764,6 +777,17 @@ const en: Translations = {
   dc_clue_crest: "Crest",
   dc_club_reveal_heading: "Today's club was",
   dc_club_reveal_fact_league: "Plays in {league}",
+  mvp_vote_tab: "MVP",
+  mvp_vote_heading: "Man of the Match",
+  mvp_vote_tagline: "Pick who deserves it — one vote, live results.",
+  mvp_vote_not_open: "Voting opens once the match finishes",
+  mvp_vote_closed: "Voting closed",
+  mvp_vote_search: "Search for a player…",
+  mvp_vote_you_voted: "You voted for {name}",
+  mvp_vote_total_votes: "{count} votes",
+  mvp_vote_error_already: "You've already voted",
+  mvp_vote_error_closed: "Voting has closed",
+  mvp_vote_signin_prompt: "Sign in to vote",
 
 };
 
@@ -1125,6 +1149,17 @@ const fr: Translations = {
   dc_clue_crest: "Blason",
   dc_club_reveal_heading: "Le club du jour était",
   dc_club_reveal_fact_league: "Joue en {league}",
+  mvp_vote_tab: "MVP",
+  mvp_vote_heading: "Homme du match",
+  mvp_vote_tagline: "Choisissez qui le mérite — un vote, résultats en direct.",
+  mvp_vote_not_open: "Le vote ouvre à la fin du match",
+  mvp_vote_closed: "Vote clos",
+  mvp_vote_search: "Rechercher un joueur…",
+  mvp_vote_you_voted: "Vous avez voté pour {name}",
+  mvp_vote_total_votes: "{count} votes",
+  mvp_vote_error_already: "Vous avez déjà voté",
+  mvp_vote_error_closed: "Le vote est clos",
+  mvp_vote_signin_prompt: "Connectez-vous pour voter",
 
 };
 
@@ -1486,6 +1521,17 @@ const de: Translations = {
   dc_clue_crest: "Wappen",
   dc_club_reveal_heading: "Der heutige Verein war",
   dc_club_reveal_fact_league: "Spielt in {league}",
+  mvp_vote_tab: "MVP",
+  mvp_vote_heading: "Spieler des Spiels",
+  mvp_vote_tagline: "Wähle, wer es verdient hat — eine Stimme, Live-Ergebnisse.",
+  mvp_vote_not_open: "Die Abstimmung öffnet nach Spielende",
+  mvp_vote_closed: "Abstimmung beendet",
+  mvp_vote_search: "Spieler suchen…",
+  mvp_vote_you_voted: "Du hast für {name} gestimmt",
+  mvp_vote_total_votes: "{count} Stimmen",
+  mvp_vote_error_already: "Du hast bereits abgestimmt",
+  mvp_vote_error_closed: "Die Abstimmung ist beendet",
+  mvp_vote_signin_prompt: "Melde dich an, um abzustimmen",
 
 };
 
@@ -1847,6 +1893,17 @@ const nl: Translations = {
   dc_clue_crest: "Clublogo",
   dc_club_reveal_heading: "De club van vandaag was",
   dc_club_reveal_fact_league: "Speelt in {league}",
+  mvp_vote_tab: "MVP",
+  mvp_vote_heading: "Man of the Match",
+  mvp_vote_tagline: "Kies wie het verdient — één stem, live resultaten.",
+  mvp_vote_not_open: "Stemmen opent zodra de wedstrijd is afgelopen",
+  mvp_vote_closed: "Stemmen gesloten",
+  mvp_vote_search: "Zoek een speler…",
+  mvp_vote_you_voted: "Je hebt gestemd op {name}",
+  mvp_vote_total_votes: "{count} stemmen",
+  mvp_vote_error_already: "Je hebt al gestemd",
+  mvp_vote_error_closed: "Stemmen is gesloten",
+  mvp_vote_signin_prompt: "Log in om te stemmen",
 
 };
 
@@ -2208,6 +2265,17 @@ const es: Translations = {
   dc_clue_crest: "Escudo",
   dc_club_reveal_heading: "El club de hoy era",
   dc_club_reveal_fact_league: "Juega en {league}",
+  mvp_vote_tab: "MVP",
+  mvp_vote_heading: "Jugador del partido",
+  mvp_vote_tagline: "Elige quién lo merece — un voto, resultados en vivo.",
+  mvp_vote_not_open: "La votación se abre cuando termine el partido",
+  mvp_vote_closed: "Votación cerrada",
+  mvp_vote_search: "Buscar un jugador…",
+  mvp_vote_you_voted: "Votaste por {name}",
+  mvp_vote_total_votes: "{count} votos",
+  mvp_vote_error_already: "Ya has votado",
+  mvp_vote_error_closed: "La votación ha cerrado",
+  mvp_vote_signin_prompt: "Inicia sesión para votar",
 
 };
 
@@ -2569,6 +2637,17 @@ const pt: Translations = {
   dc_clue_crest: "Escudo",
   dc_club_reveal_heading: "O clube de hoje era",
   dc_club_reveal_fact_league: "Joga na {league}",
+  mvp_vote_tab: "MVP",
+  mvp_vote_heading: "Craque da partida",
+  mvp_vote_tagline: "Escolha quem merece — um voto, resultados ao vivo.",
+  mvp_vote_not_open: "A votação abre quando a partida terminar",
+  mvp_vote_closed: "Votação encerrada",
+  mvp_vote_search: "Buscar um jogador…",
+  mvp_vote_you_voted: "Você votou em {name}",
+  mvp_vote_total_votes: "{count} votos",
+  mvp_vote_error_already: "Você já votou",
+  mvp_vote_error_closed: "A votação foi encerrada",
+  mvp_vote_signin_prompt: "Entre para votar",
 
 };
 
@@ -2930,6 +3009,17 @@ const he: Translations = {
   dc_clue_crest: "סמל",
   dc_club_reveal_heading: "המועדון של היום היה",
   dc_club_reveal_fact_league: "משחק ב-{league}",
+  mvp_vote_tab: "מצטיין",
+  mvp_vote_heading: "שחקן המשחק",
+  mvp_vote_tagline: "בחרו במי שראוי — הצבעה אחת, תוצאות בזמן אמת.",
+  mvp_vote_not_open: "ההצבעה נפתחת בסיום המשחק",
+  mvp_vote_closed: "ההצבעה נסגרה",
+  mvp_vote_search: "חיפוש שחקן…",
+  mvp_vote_you_voted: "הצבעת עבור {name}",
+  mvp_vote_total_votes: "{count} קולות",
+  mvp_vote_error_already: "כבר הצבעת",
+  mvp_vote_error_closed: "ההצבעה נסגרה",
+  mvp_vote_signin_prompt: "התחברו כדי להצביע",
 
 };
 
@@ -3291,6 +3381,17 @@ const ar: Translations = {
   dc_clue_crest: "الشعار",
   dc_club_reveal_heading: "كان نادي اليوم",
   dc_club_reveal_fact_league: "يلعب في {league}",
+  mvp_vote_tab: "الأفضل",
+  mvp_vote_heading: "لاعب المباراة",
+  mvp_vote_tagline: "اختر من يستحقها — صوت واحد، نتائج مباشرة.",
+  mvp_vote_not_open: "يفتح التصويت عند انتهاء المباراة",
+  mvp_vote_closed: "التصويت مغلق",
+  mvp_vote_search: "ابحث عن لاعب…",
+  mvp_vote_you_voted: "صوّتَ لـ {name}",
+  mvp_vote_total_votes: "{count} صوت",
+  mvp_vote_error_already: "لقد صوّتَ بالفعل",
+  mvp_vote_error_closed: "التصويت مغلق",
+  mvp_vote_signin_prompt: "سجّل الدخول للتصويت",
 
 };
 
