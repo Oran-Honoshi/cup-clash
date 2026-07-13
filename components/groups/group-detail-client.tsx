@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Trophy, Users, DollarSign, Target, Lock, Shield, ArrowRight, MessageCircle, Info, Trash2, Gift, CheckCircle, Clock, GraduationCap, ClipboardList } from "lucide-react";
 import Link from "next/link";
 import { GroupChat } from "@/components/chat/group-chat";
+import { GroupStreakCard } from "@/components/daily-challenge/group-streak-card";
 import { MemberAvatar } from "@/components/ui/member-avatar";
 import { MatchResultsTable } from "@/components/groups/match-results-table";
 import { useLocale } from "@/components/i18n/locale-provider";
@@ -145,6 +146,8 @@ export function GroupDetailClient({ group, rules, members, currentUserId, isAdmi
               </div>
             ))}
           </div>
+
+          <GroupStreakCard groupId={group.id} />
 
           <div className="space-y-3">
             {group.is_corporate_paid && (

@@ -9,6 +9,7 @@ import { FlagBadge } from "@/components/ui/FlagBadge";
 import { UserAvatar } from "@/components/ui/UserAvatar";
 import { BallLoader } from "@/components/ui/BallLoader";
 import { FOCUS_RING } from "@/lib/a11y";
+import { useGroupTitles, GroupTitleBadge } from "@/components/daily-challenge/group-title-badge";
 import type { MemberPrediction, BestThirdPick, MemberPredictionsResponse, TournamentPick } from "@/app/api/member-predictions/route";
 
 interface PlayerDrawerProps {
@@ -133,6 +134,7 @@ export function PlayerDrawer({ userId, groupId, groupName, name, avatarUrl, coun
   const [apiTotal,        setApiTotal]         = useState<number | null>(null);
   const [closeHover,      setCloseHover]       = useState(false);
   const [mounted,         setMounted]          = useState(false);
+  const titlesByUser = useGroupTitles(groupId);
 
   // Portal to <body> — a page-transition ancestor sets `willChange: opacity`,
   // which unconditionally creates a stacking context (per spec, regardless
@@ -270,7 +272,10 @@ export function PlayerDrawer({ userId, groupId, groupName, name, avatarUrl, coun
                     </div>
                   </div>
                   <div>
-                    <div className="ta-team-name" style={{ color: "var(--tx)" }}>{name}</div>
+                    <div className="flex items-center gap-2">
+                      <div className="ta-team-name" style={{ color: "var(--tx)" }}>{name}</div>
+                      <GroupTitleBadge title={titlesByUser[userId] ?? null} />
+                    </div>
                     <div className="flex items-center gap-2">
                       <span className="text-xs font-bold" style={{ color: "var(--ac)" }}>Rank #{rank}</span>
                       <span className="text-xs" style={{ color: "var(--ft)" }}>·</span>

@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { Share2, Lock, CheckCircle2, XCircle } from "lucide-react";
 import { useLocale } from "@/components/i18n/locale-provider";
+import { interpolate } from "@/lib/i18n";
 import { PlayerPicker } from "@/components/predictions/player-picker";
 import { BallLoader } from "@/components/ui/BallLoader";
 import { buildDailyPuzzleAuthWallUrl } from "@/lib/auth-wall";
@@ -202,7 +203,10 @@ export function DailyChallengeClient({ userId }: { userId: string | null }) {
       {/* Try counter */}
       <div className="flex items-center gap-2">
         <span className="text-xs font-bold" style={{ color: "var(--t2)" }}>
-          {t("dc_try_of").replace("{current}", String(Math.min(guessCount + (completed ? 0 : 1), today.tryLimit))).replace("{total}", String(today.tryLimit))}
+          {interpolate(t("dc_try_of"), {
+            current: Math.min(guessCount + (completed ? 0 : 1), today.tryLimit),
+            total: today.tryLimit,
+          })}
         </span>
         <div className="flex gap-1.5">
           {dots.map((d, i) => (
@@ -302,9 +306,10 @@ export function DailyChallengeClient({ userId }: { userId: string | null }) {
 
           {reveal?.photoAttribution?.artist && (
             <p className="text-[11px]" style={{ color: "var(--t2)" }}>
-              {t("dc_photo_attribution")
-                .replace("{artist}", reveal.photoAttribution.artist)
-                .replace("{license}", reveal.photoAttribution.licenseShortName ?? "")}
+              {interpolate(t("dc_photo_attribution"), {
+                artist: reveal.photoAttribution.artist,
+                license: reveal.photoAttribution.licenseShortName ?? "",
+              })}
             </p>
           )}
 

@@ -3,6 +3,8 @@
 import { useState, type KeyboardEvent } from "react";
 import { Crown, Trophy, TrendingUp, TrendingDown, Minus, ChevronRight, Ghost, Target, Star, Volleyball, Medal } from "lucide-react";
 import { PlayerDrawer } from "@/components/dashboard/player-drawer";
+import { useGroupTitles, GroupTitleBadge, TITLE_EMOJI } from "@/components/daily-challenge/group-title-badge";
+import type { GroupTitle } from "@/lib/services/group-titles";
 import { UserAvatar } from "@/components/ui/UserAvatar";
 import { FlagBadge } from "@/components/ui/FlagBadge";
 import { AdBanner } from "@/components/ads/ad-banner";
@@ -223,11 +225,11 @@ function CompactBoard({
 // ── Full (standalone Leaderboard page) ─────────────────────────────────────
 
 function FullBoard({
-  sorted, top3, tableDisplay, display, currentUserId, members, isAdFree, isCorporate, showGhost, showBestThird, scrollable, onSelect,
+  sorted, top3, tableDisplay, display, currentUserId, members, isAdFree, isCorporate, showGhost, showBestThird, scrollable, onSelect, titlesByUser,
 }: {
   sorted: Member[]; top3: Member[]; tableDisplay: Member[]; display: Member[]; currentUserId?: string;
   members: Member[]; isAdFree?: boolean; isCorporate?: boolean; showGhost: boolean; showBestThird: boolean;
-  scrollable: boolean; onSelect: (m: Member) => void;
+  scrollable: boolean; onSelect: (m: Member) => void; titlesByUser: Record<string, GroupTitle>;
 }) {
   const realMembers  = sorted.filter(m => !m.isGhost);
   const totalExact   = realMembers.reduce((s, m) => s + (m.exactScores        ?? 0), 0);
@@ -355,6 +357,7 @@ function FullBoard({
                   }}
                 >
                   {member.name}
+                  {titlesByUser[member.id] && <> {TITLE_EMOJI[titlesByUser[member.id]]}</>}
                 </div>
 
                 {/* Bar — shows only points + rank label */}
@@ -527,6 +530,7 @@ function FullBoard({
                     >
                       {member.name}
                     </span>
+                    <GroupTitleBadge title={titlesByUser[member.id] ?? null} />
                     {isCurrentUser && (
                       <span
                         className="text-[9px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded-full shrink-0"
@@ -628,6 +632,7 @@ export function LeaderboardList({
   showGhost = true, showBestThird = false, scrollable = false,
 }: LeaderboardListProps) {
   const [selected, setSelected] = useState<Member | null>(null);
+  const titlesByUser = useGroupTitles(groupId);
 
   const sorted = [...members].sort(compareMembersForRanking);
 
@@ -654,7 +659,7 @@ export function LeaderboardList({
           sorted={sorted} top3={top3} tableDisplay={tableDisplay} display={display}
           currentUserId={currentUserId} members={members} isAdFree={isAdFree} isCorporate={isCorporate}
           showGhost={showGhost} showBestThird={showBestThird} scrollable={scrollable}
-          onSelect={setSelected}
+          onSelect={setSelected} titlesByUser={titlesByUser}
         />
       ) : (
         <CompactBoard
