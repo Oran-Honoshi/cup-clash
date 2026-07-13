@@ -224,6 +224,48 @@ export async function recordGuess(
   return { guessCount: guesses.length, solved, outOfTries, shareText };
 }
 
+// One-shot save of a completed anonymous attempt, invoked once after signup
+// (see lib/auth-wall.ts buildDailyPuzzleAuthWallUrl + ConsumeDailyChallengeParam).
+// Never trusts the client's "correct" flags — recomputes each guess against
+// the real answer server-side. Idempotent: skips if the user already has a
+// row for this challenge (e.g. they'd already started playing signed in).
+export async function saveAnonymousAttempt(
+  sb: SupabaseClient,
+  userId: string,
+  challenge: DailyChallengeRow,
+  clientGuesses: { player_id: string }[]
+): Promise<{ saved: boolean }> {
+  const { data: existing } = await sb
+    .from("daily_challenge_attempts")
+    .select("id")
+    .eq("user_id", userId)
+    .eq("challenge_id", challenge.id)
+    .maybeSingle();
+  if (existing) return { saved: false };
+
+  const recomputed: GuessRecord[] = clientGuesses
+    .slice(0, TRY_LIMIT)
+    .map(g => ({ player_id: g.player_id, correct: g.player_id === challenge.answer_player_id }));
+  if (recomputed.length === 0) return { saved: false };
+
+  const firstCorrectIndex = recomputed.findIndex(g => g.correct);
+  const guesses = firstCorrectIndex >= 0 ? recomputed.slice(0, firstCorrectIndex + 1) : recomputed;
+  const solved = firstCorrectIndex >= 0;
+  const outOfTries = !solved && guesses.length >= TRY_LIMIT;
+  const completed = solved || outOfTries;
+
+  await sb.from("daily_challenge_attempts").insert({
+    user_id: userId,
+    challenge_id: challenge.id,
+    guesses,
+    guess_count: guesses.length,
+    solved,
+    completed_at: completed ? new Date().toISOString() : null,
+    share_text: completed ? buildShareText(challenge, guesses, solved) : null,
+  });
+  return { saved: true };
+}
+
 // ── Group Streak — THE single shared computation ────────────────────────────
 // A calendar day counts toward the streak only if at least one group member
 // attempted that day's puzzle AND every member who attempted it solved it.

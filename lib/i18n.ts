@@ -393,6 +393,7 @@ export interface Translations {
   dc_title_inverter:          string;
   dc_signup_prompt:           string;
   dc_signup_cta:              string;
+  dc_signup_saved:            string;
   daily_challenge_group_nudge: string;
 }
 
@@ -745,6 +746,7 @@ const en: Translations = {
   dc_title_inverter: "The Inverter",
   dc_signup_prompt: "Sign up to save your streak and compete with your group",
   dc_signup_cta: "Save my result",
+  dc_signup_saved: "Your result has been saved!",
   daily_challenge_group_nudge: "{name} solved today's puzzle in {count} guesses. Can you beat them?",
 
 };
@@ -1098,6 +1100,7 @@ const fr: Translations = {
   dc_title_inverter: "L'Inverseur",
   dc_signup_prompt: "Inscrivez-vous pour sauvegarder votre série et défier votre groupe",
   dc_signup_cta: "Sauvegarder mon résultat",
+  dc_signup_saved: "Votre résultat a été enregistré !",
   daily_challenge_group_nudge: "{name} a résolu l'énigme du jour en {count} essais. Peux-tu faire mieux ?",
 
 };
@@ -1451,6 +1454,7 @@ const de: Translations = {
   dc_title_inverter: "Der Umkehrer",
   dc_signup_prompt: "Registriere dich, um deine Serie zu speichern und mit deiner Gruppe zu wetteifern",
   dc_signup_cta: "Ergebnis speichern",
+  dc_signup_saved: "Dein Ergebnis wurde gespeichert!",
   daily_challenge_group_nudge: "{name} hat das heutige Rätsel in {count} Versuchen gelöst. Kannst du das schlagen?",
 
 };
@@ -1804,6 +1808,7 @@ const nl: Translations = {
   dc_title_inverter: "De Omkeerder",
   dc_signup_prompt: "Meld je aan om je reeks op te slaan en het op te nemen tegen je groep",
   dc_signup_cta: "Mijn resultaat opslaan",
+  dc_signup_saved: "Je resultaat is opgeslagen!",
   daily_challenge_group_nudge: "{name} loste de puzzel van vandaag op in {count} pogingen. Kun jij dat verslaan?",
 
 };
@@ -2157,6 +2162,7 @@ const es: Translations = {
   dc_title_inverter: "El Invertido",
   dc_signup_prompt: "Regístrate para guardar tu racha y competir con tu grupo",
   dc_signup_cta: "Guardar mi resultado",
+  dc_signup_saved: "¡Tu resultado ha sido guardado!",
   daily_challenge_group_nudge: "{name} resolvió el reto de hoy en {count} intentos. ¿Puedes superarlo?",
 
 };
@@ -2510,6 +2516,7 @@ const pt: Translations = {
   dc_title_inverter: "O Invertido",
   dc_signup_prompt: "Cadastre-se para salvar sua sequência e competir com seu grupo",
   dc_signup_cta: "Salvar meu resultado",
+  dc_signup_saved: "Seu resultado foi salvo!",
   daily_challenge_group_nudge: "{name} resolveu o desafio de hoje em {count} tentativas. Consegue superar?",
 
 };
@@ -2863,6 +2870,7 @@ const he: Translations = {
   dc_title_inverter: "ההפכפך",
   dc_signup_prompt: "הירשמו כדי לשמור את הרצף שלכם ולהתחרות מול הקבוצה",
   dc_signup_cta: "שמירת התוצאה שלי",
+  dc_signup_saved: "!התוצאה שלך נשמרה",
   daily_challenge_group_nudge: "{name} פתר את החידה של היום ב-{count} ניחושים. תוכלו לנצח אותו?",
 
 };
@@ -3216,6 +3224,7 @@ const ar: Translations = {
   dc_title_inverter: "المقلوب",
   dc_signup_prompt: "سجّل لحفظ سلسلتك والتنافس مع مجموعتك",
   dc_signup_cta: "حفظ نتيجتي",
+  dc_signup_saved: "!تم حفظ نتيجتك",
   daily_challenge_group_nudge: "{name} حل لغز اليوم في {count} محاولات. هل يمكنك التفوق عليه؟",
 
 };

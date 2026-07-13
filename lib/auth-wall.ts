@@ -35,3 +35,18 @@ export function parseFollowParam(searchParams: URLSearchParams): FollowAction | 
   }
   return null;
 }
+
+// Same "resume after auth" idea, for the Daily Challenge's anonymous-solve
+// flow: unlike Follow, the pending action here (persisting a client-side
+// guess history) doesn't fit the FollowAction{type,id} shape, so it gets its
+// own parallel `puzzle` param rather than being force-fit into `follow`.
+export function buildDailyPuzzleAuthWallUrl(currentPathWithQuery: string, challengeDate: string): string {
+  const url = new URL(currentPathWithQuery, "https://placeholder.local");
+  url.searchParams.set("puzzle", challengeDate);
+  const next = `${url.pathname}${url.search}`;
+  return `/signup?next=${encodeURIComponent(next)}`;
+}
+
+export function parsePuzzleParam(searchParams: URLSearchParams): string | null {
+  return searchParams.get("puzzle");
+}
