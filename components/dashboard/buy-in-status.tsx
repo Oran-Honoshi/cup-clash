@@ -26,7 +26,7 @@ export function BuyInStatus({ group, members }: BuyInStatusProps) {
       </div>
       <div className="text-center py-4 mb-4 rounded-xl" style={{ background: "rgba(0,255,136,0.06)", border: "1px solid rgba(0,255,136,0.15)" }}>
         <div className="font-display text-5xl font-black" style={{ color: "#00FF88" }}>{group.currencySymbol}{paidPot}</div>
-        <div className="text-[10px] uppercase tracking-widest mt-1" style={{ color: "rgba(255,255,255,0.35)" }}>Total Pot</div>
+        <div className="text-[10px] uppercase tracking-widest mt-1" style={{ color: "rgba(255,255,255,0.35)" }}>Group Pool</div>
         <div className="text-xs mt-0.5" style={{ color: "rgba(255,255,255,0.4)" }}>{paidCount}/{members.length} paid · {group.currencySymbol}{group.buyInAmount}/player</div>
       </div>
       <div className="h-1.5 rounded-full overflow-hidden mb-3" style={{ background: "rgba(255,255,255,0.08)" }}>

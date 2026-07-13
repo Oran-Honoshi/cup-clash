@@ -15,7 +15,7 @@ export default function ArticleMetlife() {
           MetLife Stadium: Why the Final Venue Gives the Home Crowd an Edge
         </h1>
         <p className="text-lg mb-8" style={{ color: "#64748b" }}>
-          East Rutherford, New Jersey. 82,500 fans. The largest World Cup Final ever. Here's what the host advantage actually means for the odds.
+          East Rutherford, New Jersey. 82,500 fans. The largest World Cup Final ever. Here's what the host advantage actually means for the chances.
         </p>
 
         <div className="space-y-6 text-base leading-relaxed" style={{ color: "#475569" }}>
@@ -40,7 +40,7 @@ export default function ArticleMetlife() {
             Mexico is a co-host and plays their opening match at the Estadio Azteca before potentially playing knockout matches in the US. Canada, another co-host, has Alphonso Davies — one of the most dangerous attacking players in world football. Three legitimate host nations with home crowd advantages across 16 cities.
           </p>
           <p>
-            For your Cup Clash tournament winner pick: consider that no host nation has ever failed to reach the knockout stage. USA at home odds are longer than they should be given the structural advantage. Mexico reaching the Quarter-finals for the first time since 1986 is genuinely plausible.
+            For your Cup Clash tournament winner pick: consider that no host nation has ever failed to reach the knockout stage. USA's chances at home look lower than the structural advantage would suggest. Mexico reaching the Quarter-finals for the first time since 1986 is genuinely plausible.
           </p>
 
           <h2 className="font-display text-2xl uppercase font-black mt-8 mb-3" style={{ color: "#0F172A" }}>

@@ -24,7 +24,7 @@ const RANK_COLORS = ["#d97706", "#64748b", "#b45309", "#94a3b8", "#94a3b8"];
 const SETUP_STEPS = [
   {
     step: 1, label: "Create admin account",
-    detail: "Sign up as Amit (amit@test.cupclash.com). Create a group called 'Tech Titans World Cup'. Set buy-in to $50, payout 60/30/10.",
+    detail: "Sign up as Amit (amit@test.cupclash.com). Create a group called 'Tech Titans World Cup'. Set entry to $50, prize split 60/30/10.",
     action: "Sign Up → Create Group",
   },
   {

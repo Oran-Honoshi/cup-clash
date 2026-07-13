@@ -39,7 +39,7 @@ export function ShareGroup({ groupName, adminName: _adminName, passkey, compact 
     `📋 ${t("share_scoring")}: ${scoring}`,
     ``,
     `${t("share_join_free")} → ${joinUrl}`,
-    ...(paymentLink ? [``, `💳 Send your buy-in here: ${paymentLink}`] : []),
+    ...(paymentLink ? [``, `💳 Send your entry here: ${paymentLink}`] : []),
     ``,
     t("share_tagline"),
   ].join("\n");

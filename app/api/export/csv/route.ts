@@ -114,7 +114,7 @@ export async function GET(request: NextRequest) {
   }
 
   // Build CSV rows
-  const header = ["Rank", "Name", "Country", "Points", "Prize", "Payment", "Stake Paid", "Joined"];
+  const header = ["Rank", "Name", "Country", "Points", "Prize", "Payment", "Entry Paid", "Joined"];
   const rows = ranked.map((m, i) => [i + 1, m.name, m.country, m.points, prizeMap.get(m) ?? 0, m.paidLabel, m.stake, m.joined]);
 
   const csv = [header, ...rows]

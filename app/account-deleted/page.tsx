@@ -21,7 +21,7 @@ export default function AccountDeletedPage() {
         <p className="text-base leading-relaxed mb-8" style={{ color: "#475569" }}>
           Your personal information has been removed and your account can no longer be signed into.
           Historical predictions in groups you were part of remain visible to other members under a generic
-          &ldquo;Deleted User&rdquo; label, so their leaderboard and buy-in history stays intact.
+          &ldquo;Deleted User&rdquo; label, so their leaderboard and entry history stays intact.
         </p>
 
         <Link href="/" className="inline-flex items-center justify-center px-6 py-3 rounded-xl text-sm font-bold uppercase tracking-widest"

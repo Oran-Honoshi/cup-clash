@@ -161,7 +161,7 @@ export function GroupDetailClient({ group, rules, members, currentUserId, isAdmi
               <a href={group.payment_link} target="_blank" rel="noopener noreferrer"
                 className="w-full flex items-center justify-center gap-2 py-3 rounded-xl font-bold text-sm uppercase tracking-wider transition-all hover:-translate-y-0.5"
                 style={{ background: "rgba(0,212,255,0.08)", border: "1px solid rgba(0,212,255,0.25)", color: "#00D4FF" }}>
-                💳 Send Buy-in
+                💳 Send Entry
               </a>
             )}
           </div>

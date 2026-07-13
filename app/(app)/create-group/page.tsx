@@ -850,8 +850,8 @@ function CreateGroupInner() {
                         border: prizeTrack === "cash" ? "1.5px solid rgba(0,212,255,0.4)" : "1px solid rgba(255,255,255,0.1)",
                         background: prizeTrack === "cash" ? "rgba(0,212,255,0.05)" : "rgba(255,255,255,0.04)",
                       }}>
-                      <div className="text-sm font-bold mb-1" style={{ color: "white" }}>💰 Cash Split</div>
-                      <div className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>Track a buy-in pot with % payouts</div>
+                      <div className="text-sm font-bold mb-1" style={{ color: "white" }}>💰 Prize Split</div>
+                      <div className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>Track entries with a % prize split</div>
                     </button>
                     <button type="button" onClick={() => setPrizeTrack("company")}
                       className="p-4 text-left transition-all"
@@ -1044,7 +1044,7 @@ function CreateGroupInner() {
                 className="placeholder:text-[rgba(255,255,255,0.3)]"
                 style={{ ...inputStyle, padding: "12px 16px" }} />
               <p style={{ fontSize: 11, color: "rgba(255,255,255,0.3)", fontFamily: "var(--font-ui)", marginTop: 4 }}>
-                Share a link where members can send their buy-in (PayBox, Paypal, Venmo, etc.)
+                Share a link where members can send their entry (PayBox, Paypal, Venmo, etc.)
               </p>
             </div>
           </div>

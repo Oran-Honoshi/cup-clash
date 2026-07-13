@@ -90,12 +90,12 @@ function GroupCard({ group, index }: { group: UserGroupSummary; index: number })
             </div>
           </div>
 
-          {/* Pot + earnings */}
+          {/* Pool + earnings */}
           {group.buyInAmount > 0 && (
             <div className="flex items-center justify-between pt-3 border-t border-white/[0.06]">
               <div className="flex items-center gap-1.5 text-xs text-pitch-400">
                 <Users size={12} />
-                <span>Pot: <span className="font-bold text-pitch-200">${netPot.toFixed(0)}</span></span>
+                <span>Pool: <span className="font-bold text-pitch-200">${netPot.toFixed(0)}</span></span>
               </div>
               {group.currentEarnings > 0 ? (
                 <div className="flex items-center gap-1.5 text-xs font-bold text-success">
@@ -145,11 +145,11 @@ export function MultiGroupDashboard({
                   ${totalEarnings.toLocaleString()}
                 </div>
                 <div className="text-xs text-pitch-400 mt-0.5">
-                  Your current estimated winnings across {groups.length} group{groups.length !== 1 ? "s" : ""}
+                  Your current estimated earnings across {groups.length} group{groups.length !== 1 ? "s" : ""}
                 </div>
               </div>
               <div className="text-pitch-500 text-sm">
-                out of <span className="font-bold text-pitch-300">${totalPot.toLocaleString()}</span> total pot
+                out of <span className="font-bold text-pitch-300">${totalPot.toLocaleString()}</span> total pool
               </div>
             </div>
             {totalEarnings === 0 && (

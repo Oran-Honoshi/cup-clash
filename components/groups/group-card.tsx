@@ -87,7 +87,7 @@ export function GroupCard({
       {/* Entry-type badges */}
       <div className="px-4 py-3 flex items-center gap-2 flex-wrap border-t" style={{ borderColor: "var(--dv)" }}>
         {hasBuyIn ? (
-          <Pill label={`Prize Pot $${buyInAmount}`} color="var(--sc)" />
+          <Pill label={`Prize Pool $${buyInAmount}`} color="var(--sc)" />
         ) : (
           <Pill label="Free" color="var(--mt)" />
         )}

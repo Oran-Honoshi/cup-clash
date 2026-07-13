@@ -138,7 +138,7 @@ export function GroupRulesEditor({
             <div className="mt-3 rounded-xl p-3 space-y-1 text-xs"
               style={{ background: "rgba(0,212,255,0.04)", border: "1px solid rgba(0,212,255,0.12)" }}>
               <div className="flex justify-between" style={{ color: "rgba(255,255,255,0.5)" }}>
-                <span>Total pot ({memberCount} × ${buyInAmount})</span>
+                <span>Group pool ({memberCount} × ${buyInAmount})</span>
                 <span className="font-bold" style={{ color: "white" }}>${totalPot}</span>
               </div>
               <div className="flex justify-between" style={{ color: "rgba(255,255,255,0.5)" }}>
@@ -181,7 +181,7 @@ export function GroupRulesEditor({
         <textarea
           value={rulesText}
           onChange={e => { setRulesText(e.target.value); setSaved(false); }}
-          placeholder="e.g. No changing predictions after discussing with others. Buy-ins collected by June 10."
+          placeholder="e.g. No changing predictions after discussing with others. Entries collected by June 10."
           rows={5}
           className="w-full px-4 py-3 rounded-xl text-sm border placeholder:text-slate-300 focus:outline-none resize-none"
           style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.12)", color: "#ffffff" }}

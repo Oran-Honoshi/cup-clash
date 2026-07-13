@@ -150,7 +150,7 @@ export function DeleteAccountSection() {
             {state === "blocked" && (
               <>
                 <p className="text-sm" style={{ color: "rgba(255,255,255,0.6)", lineHeight: 1.5 }}>
-                  You&apos;re the sole admin of {blockingGroups.length === 1 ? "a group" : "these groups"} that still {blockingGroups.length === 1 ? "has" : "have"} other members. Transfer admin to someone else before deleting your account &mdash; otherwise the group and everyone&apos;s buy-in tracking would be left without an owner.
+                  You&apos;re the sole admin of {blockingGroups.length === 1 ? "a group" : "these groups"} that still {blockingGroups.length === 1 ? "has" : "have"} other members. Transfer admin to someone else before deleting your account &mdash; otherwise the group and everyone&apos;s entry tracking would be left without an owner.
                 </p>
                 <div className="space-y-2">
                   {blockingGroups.map(g => (
@@ -175,7 +175,7 @@ export function DeleteAccountSection() {
               <>
                 <ul className="text-sm space-y-1.5" style={{ color: "rgba(255,255,255,0.6)", lineHeight: 1.4 }}>
                   <li>&bull; Your profile, photo, and personal details are permanently erased.</li>
-                  <li>&bull; Your past predictions stay in group history under &ldquo;Deleted User&rdquo; so other members&apos; leaderboards and buy-in records aren&apos;t affected.</li>
+                  <li>&bull; Your past predictions stay in group history under &ldquo;Deleted User&rdquo; so other members&apos; leaderboards and entry records aren&apos;t affected.</li>
                   <li>&bull; Your account is permanently banned &mdash; you won&apos;t be able to sign back in with this email.</li>
                 </ul>
                 <div>

@@ -82,7 +82,7 @@ export function SplitPotPanel({ groupId, members, payouts, payoutSplits, buyInAm
     <div className="rounded-2xl p-5 space-y-4" style={glass}>
       <div className="flex items-center gap-2.5">
         <Scale size={18} strokeWidth={1.5} style={{ color: "#fbbf24" }} />
-        <span className="font-display text-xl uppercase tracking-tight text-white">Split the Pot</span>
+        <span className="font-display text-xl uppercase tracking-tight text-white">Prize Split</span>
       </div>
       <p className="text-xs" style={{ color: "rgba(255,255,255,0.4)" }}>
         The final standings have a genuine tie after all tiebreakers (exact scores, closest Final goal-minute guess,

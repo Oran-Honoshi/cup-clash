@@ -399,7 +399,7 @@ export function AdminPanel({ group, initialMembers, isOwner, currentUserId }: Ad
         {/* Total */}
         <div className="mt-4 pt-4 border-t flex items-center justify-between"
           style={{ borderColor: "rgba(255,255,255,0.07)" }}>
-          <div className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.35)" }}>Total pot collected</div>
+          <div className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.35)" }}>Group pool collected</div>
           <div className="flex items-baseline gap-1">
             <span className="font-display font-extrabold" style={{ fontSize: 40, lineHeight: 1, color: "#00FF88" }}>{group.currencySymbol}{paidAmount}</span>
             <span className="text-sm" style={{ color: "rgba(255,255,255,0.3)" }}>/ {group.currencySymbol}{totalPot}</span>
@@ -578,10 +578,10 @@ export function AdminPanel({ group, initialMembers, isOwner, currentUserId }: Ad
         <div className="space-y-1">
           {([
             { field: "show_entry_fee"      as const, label: "Entry Fee tile",        desc: "The entry cost stat card" },
-            { field: "show_prize_pot"      as const, label: "Prize Pot tile",         desc: "The total prize pool stat card" },
+            { field: "show_prize_pot"      as const, label: "Prize Pool tile",        desc: "The total prize pool stat card" },
             { field: "show_prize_split"    as const, label: "Prize Split section",    desc: "1st / 2nd / 3rd % breakdown" },
-            { field: "show_buy_in_tracker" as const, label: "Buy-in Tracker",         desc: "Member payment status list" },
-            { field: "show_payment_link"   as const, label: "Payment Link button",    desc: "The 💳 Send Buy-in button" },
+            { field: "show_buy_in_tracker" as const, label: "Entry Ledger",           desc: "Member payment status list" },
+            { field: "show_payment_link"   as const, label: "Payment Link button",    desc: "The 💳 Send Entry button" },
           ]).map(({ field, label, desc }) => {
             const enabled = displaySettings[field];
             return (

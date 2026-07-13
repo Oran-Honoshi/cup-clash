@@ -19,7 +19,7 @@ const NEWS = [
   {
     tag:      "Venue",
     headline: "MetLife Stadium: why the Final venue gives the home crowd an edge.",
-    body:     "East Rutherford, New Jersey. 82,500 fans. The largest World Cup Final ever. Here's what the host advantage actually means for the odds.",
+    body:     "East Rutherford, New Jersey. 82,500 fans. The largest World Cup Final ever. Here's what the host advantage actually means for the chances.",
     readTime: "4 min read",
     href:     "/articles/metlife-stadium-advantage",
     photo:    PHOTOS.trophyPost,

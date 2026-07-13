@@ -154,7 +154,7 @@ export function WelcomeEmailSender({ group, members, adminName }: WelcomeEmailSe
         </span>
       </div>
       <p className="text-xs mb-5" style={{ color: "rgba(255,255,255,0.4)" }}>
-        Send personalized invites to your group members with rules, buy-in info, and a join link.
+        Send personalized invites to your group members with rules, entry info, and a join link.
       </p>
 
       {/* Member email rows — always expanded */}
