@@ -15,6 +15,54 @@ import {
   TRY_LIMIT,
 } from "@/lib/services/daily-challenge";
 
+async function buildReveal(admin: ReturnType<typeof sbAdmin>, challenge: { game_type: string; answer_player_id: string | null; answer_team_id: string | null }, cookieLocale: Locale | undefined) {
+  if (challenge.game_type === "guess_club") {
+    const { data: team } = await admin
+      .from("teams")
+      .select("name, badge_url")
+      .eq("id", challenge.answer_team_id)
+      .maybeSingle();
+    let facts: string[] = [];
+    const { data: standing } = await admin
+      .from("standings")
+      .select("competition_id")
+      .eq("team_id", challenge.answer_team_id)
+      .maybeSingle();
+    if (standing?.competition_id) {
+      const { data: competition } = await admin
+        .from("competitions")
+        .select("name")
+        .eq("id", standing.competition_id)
+        .maybeSingle();
+      if (competition?.name) {
+        const t = TRANSLATIONS[cookieLocale && cookieLocale in TRANSLATIONS ? cookieLocale : "en"];
+        facts = [interpolate(t.dc_club_reveal_fact_league, { league: competition.name })];
+      }
+    }
+    return {
+      fullName: team?.name ?? null,
+      photoUrl: team?.badge_url ?? null,
+      photoAttribution: null,
+      facts,
+    };
+  }
+
+  const { data: player } = await admin
+    .from("players")
+    .select("full_name, photo, country")
+    .eq("id", challenge.answer_player_id)
+    .maybeSingle();
+  const enrichment = player
+    ? await getPlayerEnrichment(admin, challenge.answer_player_id as string, player.full_name, player.country)
+    : null;
+  return {
+    fullName: player?.full_name ?? null,
+    photoUrl: enrichment?.photoUrl ?? player?.photo ?? null,
+    photoAttribution: enrichment?.photoAttribution ?? null,
+    facts: enrichment?.facts ?? [],
+  };
+}
+
 // Works for anonymous and signed-in guessers alike — the answer is never
 // sent to the client, only a correct/incorrect verdict and the next clue
 // state, so an anonymous player can play the full game with no account.
@@ -70,24 +118,10 @@ export async function POST(req: Request) {
   const wrongGuessCount = guessCount - (solved ? 1 : 0);
   const clueState = await getClueState(admin, challenge, wrongGuessCount);
 
+  const cookieLocale = cookies().get("cupclash_locale")?.value as Locale | undefined;
+
   const completed = solved || outOfTries;
-  let reveal = null;
-  if (completed) {
-    const { data: player } = await admin
-      .from("players")
-      .select("full_name, photo, country")
-      .eq("id", challenge.answer_player_id)
-      .maybeSingle();
-    const enrichment = player
-      ? await getPlayerEnrichment(admin, challenge.answer_player_id, player.full_name, player.country)
-      : null;
-    reveal = {
-      fullName: player?.full_name ?? null,
-      photoUrl: enrichment?.photoUrl ?? player?.photo ?? null,
-      photoAttribution: enrichment?.photoAttribution ?? null,
-      facts: enrichment?.facts ?? [],
-    };
-  }
+  const reveal = completed ? await buildReveal(admin, challenge, cookieLocale) : null;
 
   // Group-social layer: an "also do this" side effect for signed-in solvers
   // who happen to be in a group(s) — never a condition for play or sharing.
@@ -96,7 +130,6 @@ export async function POST(req: Request) {
     const { data: memberships } = await admin.from("group_members").select("group_id").eq("user_id", user.id);
     const groupIds = (memberships ?? []).map(m => m.group_id as string);
     if (groupIds.length > 0 && profile?.name) {
-      const cookieLocale = cookies().get("cupclash_locale")?.value as Locale | undefined;
       const t = TRANSLATIONS[cookieLocale && cookieLocale in TRANSLATIONS ? cookieLocale : "en"];
       const message = interpolate(t.daily_challenge_group_nudge, { name: profile.name, count: guessCount });
       await Promise.all(groupIds.map(groupId => postSystemMessage(admin, groupId, message)));

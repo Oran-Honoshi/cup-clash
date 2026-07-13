@@ -395,6 +395,15 @@ export interface Translations {
   dc_signup_cta:              string;
   dc_signup_saved:            string;
   daily_challenge_group_nudge: string;
+
+  // Daily Challenge — "Guess the Club" (alternates by day with Guess the Footballer)
+  dc_club_page_title:         string;
+  dc_club_tagline:            string;
+  dc_club_guess_placeholder:  string;
+  dc_clue_league:             string;
+  dc_clue_crest:              string;
+  dc_club_reveal_heading:     string;
+  dc_club_reveal_fact_league: string;
 }
 
 // ── English (base) ─────────────────────────────────────────────────────────────
@@ -748,6 +757,13 @@ const en: Translations = {
   dc_signup_cta: "Save my result",
   dc_signup_saved: "Your result has been saved!",
   daily_challenge_group_nudge: "{name} solved today's puzzle in {count} guesses. Can you beat them?",
+  dc_club_page_title: "Guess the Club",
+  dc_club_tagline: "One club. Six guesses. New puzzle every day.",
+  dc_club_guess_placeholder: "Search for a club…",
+  dc_clue_league: "League",
+  dc_clue_crest: "Crest",
+  dc_club_reveal_heading: "Today's club was",
+  dc_club_reveal_fact_league: "Plays in {league}",
 
 };
 
@@ -1102,6 +1118,13 @@ const fr: Translations = {
   dc_signup_cta: "Sauvegarder mon résultat",
   dc_signup_saved: "Votre résultat a été enregistré !",
   daily_challenge_group_nudge: "{name} a résolu l'énigme du jour en {count} essais. Peux-tu faire mieux ?",
+  dc_club_page_title: "Devine le club",
+  dc_club_tagline: "Un club. Six essais. Une nouvelle énigme chaque jour.",
+  dc_club_guess_placeholder: "Rechercher un club…",
+  dc_clue_league: "Championnat",
+  dc_clue_crest: "Blason",
+  dc_club_reveal_heading: "Le club du jour était",
+  dc_club_reveal_fact_league: "Joue en {league}",
 
 };
 
@@ -1456,6 +1479,13 @@ const de: Translations = {
   dc_signup_cta: "Ergebnis speichern",
   dc_signup_saved: "Dein Ergebnis wurde gespeichert!",
   daily_challenge_group_nudge: "{name} hat das heutige Rätsel in {count} Versuchen gelöst. Kannst du das schlagen?",
+  dc_club_page_title: "Errate den Verein",
+  dc_club_tagline: "Ein Verein. Sechs Versuche. Jeden Tag ein neues Rätsel.",
+  dc_club_guess_placeholder: "Verein suchen…",
+  dc_clue_league: "Liga",
+  dc_clue_crest: "Wappen",
+  dc_club_reveal_heading: "Der heutige Verein war",
+  dc_club_reveal_fact_league: "Spielt in {league}",
 
 };
 
@@ -1810,6 +1840,13 @@ const nl: Translations = {
   dc_signup_cta: "Mijn resultaat opslaan",
   dc_signup_saved: "Je resultaat is opgeslagen!",
   daily_challenge_group_nudge: "{name} loste de puzzel van vandaag op in {count} pogingen. Kun jij dat verslaan?",
+  dc_club_page_title: "Raad de club",
+  dc_club_tagline: "Eén club. Zes pogingen. Elke dag een nieuwe puzzel.",
+  dc_club_guess_placeholder: "Zoek een club…",
+  dc_clue_league: "Competitie",
+  dc_clue_crest: "Clublogo",
+  dc_club_reveal_heading: "De club van vandaag was",
+  dc_club_reveal_fact_league: "Speelt in {league}",
 
 };
 
@@ -2164,6 +2201,13 @@ const es: Translations = {
   dc_signup_cta: "Guardar mi resultado",
   dc_signup_saved: "¡Tu resultado ha sido guardado!",
   daily_challenge_group_nudge: "{name} resolvió el reto de hoy en {count} intentos. ¿Puedes superarlo?",
+  dc_club_page_title: "Adivina el club",
+  dc_club_tagline: "Un club. Seis intentos. Nuevo acertijo cada día.",
+  dc_club_guess_placeholder: "Buscar un club…",
+  dc_clue_league: "Liga",
+  dc_clue_crest: "Escudo",
+  dc_club_reveal_heading: "El club de hoy era",
+  dc_club_reveal_fact_league: "Juega en {league}",
 
 };
 
@@ -2518,6 +2562,13 @@ const pt: Translations = {
   dc_signup_cta: "Salvar meu resultado",
   dc_signup_saved: "Seu resultado foi salvo!",
   daily_challenge_group_nudge: "{name} resolveu o desafio de hoje em {count} tentativas. Consegue superar?",
+  dc_club_page_title: "Adivinhe o clube",
+  dc_club_tagline: "Um clube. Seis tentativas. Novo desafio todos os dias.",
+  dc_club_guess_placeholder: "Buscar um clube…",
+  dc_clue_league: "Liga",
+  dc_clue_crest: "Escudo",
+  dc_club_reveal_heading: "O clube de hoje era",
+  dc_club_reveal_fact_league: "Joga na {league}",
 
 };
 
@@ -2872,6 +2923,13 @@ const he: Translations = {
   dc_signup_cta: "שמירת התוצאה שלי",
   dc_signup_saved: "!התוצאה שלך נשמרה",
   daily_challenge_group_nudge: "{name} פתר את החידה של היום ב-{count} ניחושים. תוכלו לנצח אותו?",
+  dc_club_page_title: "נחש את המועדון",
+  dc_club_tagline: "מועדון אחד. שישה ניחושים. חידה חדשה כל יום.",
+  dc_club_guess_placeholder: "חיפוש מועדון…",
+  dc_clue_league: "ליגה",
+  dc_clue_crest: "סמל",
+  dc_club_reveal_heading: "המועדון של היום היה",
+  dc_club_reveal_fact_league: "משחק ב-{league}",
 
 };
 
@@ -3226,6 +3284,13 @@ const ar: Translations = {
   dc_signup_cta: "حفظ نتيجتي",
   dc_signup_saved: "!تم حفظ نتيجتك",
   daily_challenge_group_nudge: "{name} حل لغز اليوم في {count} محاولات. هل يمكنك التفوق عليه؟",
+  dc_club_page_title: "خمّن النادي",
+  dc_club_tagline: "نادٍ واحد. ست محاولات. لغز جديد كل يوم.",
+  dc_club_guess_placeholder: "ابحث عن نادٍ…",
+  dc_clue_league: "الدوري",
+  dc_clue_crest: "الشعار",
+  dc_club_reveal_heading: "كان نادي اليوم",
+  dc_club_reveal_fact_league: "يلعب في {league}",
 
 };
 

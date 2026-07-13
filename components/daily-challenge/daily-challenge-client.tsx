@@ -6,10 +6,11 @@ import { Share2, Lock, CheckCircle2, XCircle } from "lucide-react";
 import { useLocale } from "@/components/i18n/locale-provider";
 import { interpolate } from "@/lib/i18n";
 import { PlayerPicker } from "@/components/predictions/player-picker";
+import { DailyChallengeTeamPicker } from "@/components/daily-challenge/daily-challenge-team-picker";
 import { BallLoader } from "@/components/ui/BallLoader";
 import { buildDailyPuzzleAuthWallUrl } from "@/lib/auth-wall";
 import { loadLocalAttempt, saveLocalAttempt } from "@/lib/daily-challenge-storage";
-import type { ClueField } from "@/lib/services/daily-challenge";
+import type { ClueField, GameType } from "@/lib/services/daily-challenge";
 
 const surface = { background: "var(--sf)", border: "1px solid var(--br)", borderRadius: 22 } as const;
 
@@ -20,6 +21,7 @@ type ClueState = {
     club?: string | null;
     position?: string | null;
     age?: number | null;
+    league?: string | null;
     silhouetteUrl?: string | null;
   };
 };
@@ -34,6 +36,7 @@ type Reveal = {
 type TodayResponse = {
   challengeId: string;
   challengeDate: string;
+  gameType: GameType;
   tryLimit: number;
   clueOrder: ClueField[];
   clueState: ClueState;
@@ -50,13 +53,22 @@ type GuessResponse = {
   reveal: Reveal | null;
 };
 
-const CLUE_LABEL_KEY: Record<ClueField, "dc_clue_nationality" | "dc_clue_club" | "dc_clue_position" | "dc_clue_age" | "dc_clue_silhouette"> = {
+const FOOTBALLER_CLUE_LABEL_KEY: Record<string, "dc_clue_nationality" | "dc_clue_club" | "dc_clue_position" | "dc_clue_age" | "dc_clue_silhouette"> = {
   nationality: "dc_clue_nationality",
   club: "dc_clue_club",
   position: "dc_clue_position",
   age: "dc_clue_age",
   silhouette: "dc_clue_silhouette",
 };
+
+const CLUB_CLUE_LABEL_KEY: Record<string, "dc_clue_league" | "dc_clue_crest"> = {
+  league: "dc_clue_league",
+  silhouette: "dc_clue_crest",
+};
+
+function clueLabelKey(gameType: GameType, clue: ClueField) {
+  return gameType === "guess_club" ? CLUB_CLUE_LABEL_KEY[clue] : FOOTBALLER_CLUE_LABEL_KEY[clue];
+}
 
 export function DailyChallengeClient({ userId }: { userId: string | null }) {
   const { t } = useLocale();
@@ -173,6 +185,15 @@ export function DailyChallengeClient({ userId }: { userId: string | null }) {
   const clueOrder = today?.clueOrder ?? [];
   const clueState = today?.clueState;
 
+  // The "silhouette" clue's value is stored under the `silhouetteUrl` key
+  // (ClueState["values"] has no `silhouette` property) — index through this
+  // rather than `values[clue]` directly, which always resolved to undefined.
+  function clueValue(clue: ClueField): ClueState["values"][keyof ClueState["values"]] {
+    if (!clueState) return undefined;
+    const key = clue === "silhouette" ? "silhouetteUrl" : (clue as keyof ClueState["values"]);
+    return clueState.values[key];
+  }
+
   const dots = useMemo(() => {
     if (!today) return [];
     return Array.from({ length: today.tryLimit }, (_, i) => {
@@ -185,19 +206,25 @@ export function DailyChallengeClient({ userId }: { userId: string | null }) {
   if (loading || !today) {
     return (
       <div className="py-16 flex justify-center">
-        <BallLoader size="lg" label={t("dc_page_title")} />
+        <BallLoader size="lg" label={t("nav_daily_challenge")} />
       </div>
     );
   }
 
+  const isClub = today.gameType === "guess_club";
+  const pageTitle = isClub ? t("dc_club_page_title") : t("dc_page_title");
+  const tagline = isClub ? t("dc_club_tagline") : t("dc_tagline");
+  const guessPlaceholder = isClub ? t("dc_club_guess_placeholder") : t("dc_guess_placeholder");
+  const revealHeading = isClub ? t("dc_club_reveal_heading") : t("dc_reveal_heading");
+
   return (
     <div className="space-y-5">
       <div>
-        <div className="label-caps mb-1">⚽ {t("dc_page_title")}</div>
+        <div className="label-caps mb-1">{isClub ? "🛡️" : "⚽"} {pageTitle}</div>
         <h1 className="font-display text-3xl sm:text-4xl uppercase tracking-tight" style={{ color: "var(--tx)" }}>
-          {t("dc_page_title")}
+          {pageTitle}
         </h1>
-        <p className="text-sm mt-1" style={{ color: "var(--t2)" }}>{t("dc_tagline")}</p>
+        <p className="text-sm mt-1" style={{ color: "var(--t2)" }}>{tagline}</p>
       </div>
 
       {/* Try counter */}
@@ -225,11 +252,11 @@ export function DailyChallengeClient({ userId }: { userId: string | null }) {
       <div className="p-5 cc-elevated grid grid-cols-2 sm:grid-cols-5 gap-3" style={surface}>
         {clueOrder.map(clue => {
           const unlocked = clueState?.cluesUnlocked.includes(clue) ?? false;
-          const value = clueState?.values[clue as keyof ClueState["values"]];
+          const value = clueValue(clue);
           return (
             <div key={clue} className="flex flex-col items-center gap-1.5 text-center">
               <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "var(--t2)" }}>
-                {t(CLUE_LABEL_KEY[clue])}
+                {t(clueLabelKey(today.gameType, clue))}
               </span>
               {!unlocked ? (
                 <div className="flex items-center justify-center h-10 w-10 rounded-xl" style={{ background: "var(--ip)" }}>
@@ -240,7 +267,7 @@ export function DailyChallengeClient({ userId }: { userId: string | null }) {
                   <img
                     src={value as string}
                     alt=""
-                    className="h-14 w-14 rounded-xl object-cover"
+                    className={isClub ? "h-14 w-14 rounded-xl object-contain p-1.5" : "h-14 w-14 rounded-xl object-cover"}
                     style={{ filter: "brightness(0)", background: "var(--ip)" }}
                   />
                 ) : (
@@ -267,13 +294,22 @@ export function DailyChallengeClient({ userId }: { userId: string | null }) {
       {/* Guess input or completed state */}
       {!completed ? (
         <div className="p-5 cc-elevated" style={surface}>
-          <PlayerPicker
-            value={selectedName}
-            onSelect={setSelectedName}
-            onSelectPlayer={player => handleGuess(player.id)}
-            includeGK
-            label={t("dc_guess_placeholder")}
-          />
+          {isClub ? (
+            <DailyChallengeTeamPicker
+              value={selectedName}
+              onSelect={setSelectedName}
+              onSelectTeam={team => handleGuess(team.id)}
+              label={guessPlaceholder}
+            />
+          ) : (
+            <PlayerPicker
+              value={selectedName}
+              onSelect={setSelectedName}
+              onSelectPlayer={player => handleGuess(player.id)}
+              includeGK
+              label={guessPlaceholder}
+            />
+          )}
         </div>
       ) : (
         <div className="p-5 cc-elevated space-y-4" style={surface}>
@@ -287,10 +323,15 @@ export function DailyChallengeClient({ userId }: { userId: string | null }) {
           {reveal && (
             <div className="flex items-center gap-4">
               {reveal.photoUrl && (
-                <img src={reveal.photoUrl} alt={reveal.fullName ?? ""} className="h-20 w-20 rounded-2xl object-cover" style={{ background: "var(--ip)" }} />
+                <img
+                  src={reveal.photoUrl}
+                  alt={reveal.fullName ?? ""}
+                  className={isClub ? "h-20 w-20 rounded-2xl object-contain p-2" : "h-20 w-20 rounded-2xl object-cover"}
+                  style={{ background: "var(--ip)" }}
+                />
               )}
               <div className="space-y-1">
-                <div className="text-xs font-bold uppercase tracking-widest" style={{ color: "var(--t2)" }}>{t("dc_reveal_heading")}</div>
+                <div className="text-xs font-bold uppercase tracking-widest" style={{ color: "var(--t2)" }}>{revealHeading}</div>
                 <div className="text-lg font-black" style={{ color: "var(--tx)" }}>{reveal.fullName}</div>
               </div>
             </div>

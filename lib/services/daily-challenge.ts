@@ -9,18 +9,25 @@ import { getPlayerEnrichment } from "@/lib/services/wikidata";
 
 export const TRY_LIMIT = 6;
 
-export type ClueField = "nationality" | "club" | "position" | "age" | "silhouette";
-export const DEFAULT_CLUE_ORDER: ClueField[] = ["nationality", "club", "position", "age", "silhouette"];
+export type GameType = "guess_footballer" | "guess_club";
 
-// How many days back a player is excluded from re-selection. The spec asked
+export type FootballerClueField = "nationality" | "club" | "position" | "age" | "silhouette";
+export type ClubClueField = "league" | "silhouette";
+export type ClueField = FootballerClueField | ClubClueField;
+
+export const DEFAULT_CLUE_ORDER: FootballerClueField[] = ["nationality", "club", "position", "age", "silhouette"];
+export const DEFAULT_CLUB_CLUE_ORDER: ClubClueField[] = ["league", "silhouette"];
+
+// How many days back an answer is excluded from re-selection. The spec asked
 // for "last 30-60 days" — 45 is the midpoint, easy to tune later.
 const AVOID_REPEAT_DAYS = 45;
 
 export type DailyChallengeRow = {
   id: string;
   challenge_date: string;
-  game_type: string;
-  answer_player_id: string;
+  game_type: GameType;
+  answer_player_id: string | null;
+  answer_team_id: string | null;
   clue_order: ClueField[];
   created_at: string;
 };
@@ -29,15 +36,32 @@ function todayISO(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
+// Deterministic day-parity alternation between the two game types — avoids
+// needing an admin-curated calendar and keeps the existing
+// daily_challenges_date_key (unique on challenge_date alone) valid, since
+// only one game type is ever chosen for a given date.
+export function pickGameTypeForDate(dateISO: string): GameType {
+  const d = new Date(`${dateISO}T00:00:00Z`);
+  const startOfYear = Date.UTC(d.getUTCFullYear(), 0, 1);
+  const dayOfYear = Math.floor((d.getTime() - startOfYear) / 86_400_000);
+  return dayOfYear % 2 === 0 ? "guess_footballer" : "guess_club";
+}
+
+// The single entity id a challenge is "about", regardless of game_type —
+// every correctness check and guess-history comparison should go through
+// this rather than reading answer_player_id/answer_team_id directly.
+export function getAnswerId(challenge: DailyChallengeRow): string {
+  const id = challenge.game_type === "guess_club" ? challenge.answer_team_id : challenge.answer_player_id;
+  if (!id) throw new Error(`daily_challenges row ${challenge.id} has no answer id for game_type ${challenge.game_type}`);
+  return id;
+}
+
 // ── Puzzle selection ─────────────────────────────────────────────────────────
 // On-demand-if-not-exists: the first request of the day creates the row.
 // Fits this repo's cron model better than a scheduled seed job since there's
 // no existing "midnight" cron and this way a quiet day never wastes a run.
 
-export async function getOrCreateTodayChallenge(
-  sb: SupabaseClient,
-  gameType = "guess_footballer"
-): Promise<DailyChallengeRow> {
+export async function getOrCreateTodayChallenge(sb: SupabaseClient): Promise<DailyChallengeRow> {
   const today = todayISO();
 
   const { data: existing } = await sb
@@ -47,11 +71,31 @@ export async function getOrCreateTodayChallenge(
     .maybeSingle();
   if (existing) return existing as DailyChallengeRow;
 
+  const gameType = pickGameTypeForDate(today);
+  const created =
+    gameType === "guess_club"
+      ? await createClubChallenge(sb, today)
+      : await createFootballerChallenge(sb, today);
+  if (created) return created;
+
+  // Unique violation on challenge_date means a concurrent request won the
+  // race and already created today's row — fetch and return that instead.
+  const { data: raceWinner } = await sb
+    .from("daily_challenges")
+    .select("*")
+    .eq("challenge_date", today)
+    .single();
+  if (raceWinner) return raceWinner as DailyChallengeRow;
+  throw new Error(`Failed to create or fetch daily challenge for ${today}`);
+}
+
+async function createFootballerChallenge(sb: SupabaseClient, today: string): Promise<DailyChallengeRow | null> {
   const cutoff = new Date();
   cutoff.setUTCDate(cutoff.getUTCDate() - AVOID_REPEAT_DAYS);
   const { data: recent } = await sb
     .from("daily_challenges")
     .select("answer_player_id")
+    .eq("game_type", "guess_footballer")
     .gte("challenge_date", cutoff.toISOString().slice(0, 10));
   const excludeIds = new Set((recent ?? []).map(r => r.answer_player_id as string));
 
@@ -65,29 +109,62 @@ export async function getOrCreateTodayChallenge(
     .from("daily_challenges")
     .insert({
       challenge_date: today,
-      game_type: gameType,
+      game_type: "guess_footballer",
       answer_player_id: chosen.id,
       clue_order: DEFAULT_CLUE_ORDER,
     })
     .select("*")
     .single();
-
-  if (error) {
-    // Unique violation on challenge_date means a concurrent request won the
-    // race and already created today's row — fetch and return that instead.
-    const { data: raceWinner } = await sb
-      .from("daily_challenges")
-      .select("*")
-      .eq("challenge_date", today)
-      .single();
-    if (raceWinner) return raceWinner as DailyChallengeRow;
-    throw error;
-  }
+  if (error) return null;
 
   // Warm the enrichment cache now so gameplay requests never block on an
   // external Wikidata/Commons call. Best-effort — a failed fetch just means
   // the age/silhouette clues degrade gracefully to "unavailable" later.
   void getPlayerEnrichment(sb, chosen.id, chosen.full_name, chosen.country).catch(() => {});
+
+  return created as DailyChallengeRow;
+}
+
+// Answer pool is scoped to clubs with a synced `standings` row (rather than
+// every row in `teams`) so the "league" clue always resolves to a real value
+// — see the Step 0 investigation: only ~60 of 78 club teams have a synced
+// standings link today, and national teams have no badge/crest at all.
+async function createClubChallenge(sb: SupabaseClient, today: string): Promise<DailyChallengeRow | null> {
+  const cutoff = new Date();
+  cutoff.setUTCDate(cutoff.getUTCDate() - AVOID_REPEAT_DAYS);
+  const { data: recent } = await sb
+    .from("daily_challenges")
+    .select("answer_team_id")
+    .eq("game_type", "guess_club")
+    .gte("challenge_date", cutoff.toISOString().slice(0, 10));
+  const excludeIds = new Set((recent ?? []).map(r => r.answer_team_id as string));
+
+  const { data: standingsRows } = await sb.from("standings").select("team_id");
+  const standingTeamIds = Array.from(new Set((standingsRows ?? []).map(r => r.team_id as string)));
+  if (standingTeamIds.length === 0) return null;
+
+  const { data: teams } = await sb
+    .from("teams")
+    .select("id, name, badge_url")
+    .in("id", standingTeamIds)
+    .not("badge_url", "is", null);
+  const candidates = (teams ?? []) as { id: string; name: string; badge_url: string }[];
+  const eligible = candidates.filter(t => !excludeIds.has(t.id));
+  const pool = eligible.length > 0 ? eligible : candidates;
+  if (pool.length === 0) return null;
+  const chosen = pool[Math.floor(Math.random() * pool.length)];
+
+  const { data: created, error } = await sb
+    .from("daily_challenges")
+    .insert({
+      challenge_date: today,
+      game_type: "guess_club",
+      answer_team_id: chosen.id,
+      clue_order: DEFAULT_CLUB_CLUE_ORDER,
+    })
+    .select("*")
+    .single();
+  if (error) return null;
 
   return created as DailyChallengeRow;
 }
@@ -101,6 +178,7 @@ export type ClueState = {
     club?: string | null;
     position?: string | null;
     age?: number | null;
+    league?: string | null;
     silhouetteUrl?: string | null;
   };
 };
@@ -121,6 +199,24 @@ export async function getClueState(
   challenge: DailyChallengeRow,
   wrongGuessCount: number
 ): Promise<ClueState> {
+  const order = challenge.clue_order?.length
+    ? challenge.clue_order
+    : challenge.game_type === "guess_club"
+      ? DEFAULT_CLUB_CLUE_ORDER
+      : DEFAULT_CLUE_ORDER;
+  const cluesUnlocked = order.slice(0, Math.min(wrongGuessCount, order.length));
+
+  if (challenge.game_type === "guess_club") {
+    return getClubClueState(sb, challenge, cluesUnlocked);
+  }
+  return getFootballerClueState(sb, challenge, cluesUnlocked);
+}
+
+async function getFootballerClueState(
+  sb: SupabaseClient,
+  challenge: DailyChallengeRow,
+  cluesUnlocked: ClueField[]
+): Promise<ClueState> {
   const [{ data: player }, { data: enrichment }] = await Promise.all([
     sb
       .from("players")
@@ -134,8 +230,6 @@ export async function getClueState(
       .maybeSingle(),
   ]);
 
-  const order = challenge.clue_order?.length ? challenge.clue_order : DEFAULT_CLUE_ORDER;
-  const cluesUnlocked = order.slice(0, Math.min(wrongGuessCount, order.length));
   const age = enrichment?.date_of_birth ? computeAge(enrichment.date_of_birth) : null;
 
   const values: ClueState["values"] = {};
@@ -149,22 +243,63 @@ export async function getClueState(
   return { cluesUnlocked, values };
 }
 
+async function getClubClueState(
+  sb: SupabaseClient,
+  challenge: DailyChallengeRow,
+  cluesUnlocked: ClueField[]
+): Promise<ClueState> {
+  const { data: team } = await sb
+    .from("teams")
+    .select("name, badge_url")
+    .eq("id", challenge.answer_team_id)
+    .maybeSingle();
+
+  let leagueName: string | null = null;
+  if (cluesUnlocked.includes("league")) {
+    const { data: standing } = await sb
+      .from("standings")
+      .select("competition_id")
+      .eq("team_id", challenge.answer_team_id)
+      .maybeSingle();
+    if (standing?.competition_id) {
+      const { data: competition } = await sb
+        .from("competitions")
+        .select("name")
+        .eq("id", standing.competition_id)
+        .maybeSingle();
+      leagueName = competition?.name ?? null;
+    }
+  }
+
+  const values: ClueState["values"] = {};
+  for (const clue of cluesUnlocked) {
+    if (clue === "league") values.league = leagueName;
+    if (clue === "silhouette") values.silhouetteUrl = team?.badge_url ?? null;
+  }
+  return { cluesUnlocked, values };
+}
+
 // ── Guess validation + attempt persistence ──────────────────────────────────
 // Validation always runs server-side (never ship the answer to the client)
 // and works the same for anonymous and authenticated guessers. Persistence
 // (this section past the equality check) only happens for authenticated
 // users — anonymous play stays entirely in client-side state until signup.
 
-export function isCorrectGuess(challenge: DailyChallengeRow, guessedPlayerId: string): boolean {
-  return challenge.answer_player_id === guessedPlayerId;
+export function isCorrectGuess(challenge: DailyChallengeRow, guessedEntityId: string): boolean {
+  return getAnswerId(challenge) === guessedEntityId;
 }
 
+// Field name kept as `player_id` for both game types — this is the guessed
+// entity id (a player or a team, per challenge.game_type), and repurposing
+// it avoids a schema-shape difference between historical footballer rows
+// and new club rows in the same jsonb column.
 export type GuessRecord = { player_id: string; correct: boolean };
 
 export function buildShareText(challenge: DailyChallengeRow, guesses: GuessRecord[], solved: boolean): string {
   const squares = guesses.map(g => (g.correct ? "🟩" : "⬛")).join("");
   const result = solved ? `${guesses.length}/${TRY_LIMIT}` : `X/${TRY_LIMIT}`;
-  return `⚽ Guess the Footballer — ${challenge.challenge_date}\n${squares} ${result}`;
+  const label = challenge.game_type === "guess_club" ? "🛡️ Guess the Club" : "⚽ Guess the Footballer";
+  return `${label} — ${challenge.challenge_date}\n${squares} ${result}`;
 }
 
 export type RecordGuessResult = {
@@ -243,9 +378,10 @@ export async function saveAnonymousAttempt(
     .maybeSingle();
   if (existing) return { saved: false };
 
+  const answerId = getAnswerId(challenge);
   const recomputed: GuessRecord[] = clientGuesses
     .slice(0, TRY_LIMIT)
-    .map(g => ({ player_id: g.player_id, correct: g.player_id === challenge.answer_player_id }));
+    .map(g => ({ player_id: g.player_id, correct: g.player_id === answerId }));
   if (recomputed.length === 0) return { saved: false };
 
   const firstCorrectIndex = recomputed.findIndex(g => g.correct);
