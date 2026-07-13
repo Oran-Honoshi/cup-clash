@@ -1,21 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { scoreMatchResult } from "@/lib/services/predictions";
 import type { ScoringRules } from "@/lib/types";
-
-function sbAdmin() {
-  return createAdminClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
-}
-
-function sbAnon() {
-  return createAdminClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
-}
+import { sbAdmin } from "@/lib/supabase/admin";
+import { sbAnon } from "@/lib/supabase/anon";
 
 const SCORING_RULES_SELECT = [
   "exact_score", "correct_outcome",

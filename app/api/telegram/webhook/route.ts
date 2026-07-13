@@ -1,13 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
 import { TRANSLATIONS, localeFromLanguageCode } from "@/lib/i18n";
-
-function sbAdmin() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
-}
+import { sbAdmin } from "@/lib/supabase/admin";
 
 async function sendMessage(chatId: number | string, text: string) {
   const token = process.env.TELEGRAM_BOT_TOKEN!;

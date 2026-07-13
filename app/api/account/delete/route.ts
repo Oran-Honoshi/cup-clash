@@ -1,18 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import { sbAdmin } from "@/lib/supabase/admin";
 
 // GoTrue's admin API has no literal "forever" ban — a duration far past any
 // realistic account lifetime is the standard way to make it permanent.
 const PERMANENT_BAN_DURATION = "876000h";
-
-function sbAdmin() {
-  return createAdminClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
-}
 
 function sbFromCookies() {
   const cookieStore = cookies();

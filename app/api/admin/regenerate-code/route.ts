@@ -1,20 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { randomBytes } from "crypto";
-
-function sbAdmin() {
-  return createAdminClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
-}
-
-function sbAnon() {
-  return createAdminClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
-}
+import { sbAdmin } from "@/lib/supabase/admin";
+import { sbAnon } from "@/lib/supabase/anon";
 
 export async function POST(req: NextRequest) {
   const authHeader = req.headers.get("authorization") ?? "";
