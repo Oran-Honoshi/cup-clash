@@ -1,14 +1,7 @@
-import { createClient } from "@supabase/supabase-js";
 import type { Match } from "@/lib/types";
 import { WC2026_MATCHES } from "@/lib/schedule";
 import type { ScheduleMatch } from "@/lib/schedule";
-
-function sb() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
-}
+import { sbAnon as sb } from "@/lib/supabase/anon";
 
 // ── Upcoming matches ─────────────────────────────────────────────────────────
 // Primary: Supabase matches table (seeded from seed.sql)

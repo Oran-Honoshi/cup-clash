@@ -1,21 +1,12 @@
-import { createClient } from "@supabase/supabase-js";
-
-function sbAdmin() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
-}
+import { sbAdmin } from "@/lib/supabase/admin";
+import { sbAnon } from "@/lib/supabase/anon";
 
 async function getServerClient() {
   try {
     const { createClient: createServerClient } = await import("@/lib/supabase/server");
     return createServerClient();
   } catch {
-    return createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-    );
+    return sbAnon();
   }
 }
 

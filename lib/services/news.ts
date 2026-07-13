@@ -1,13 +1,6 @@
 import { XMLParser } from "fast-xml-parser";
-import { createClient } from "@supabase/supabase-js";
 import { getFollowedCompetitionIds, getFollowedTeamIds } from "@/lib/services/follows";
-
-function sbAdmin() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
-}
+import { sbAdmin } from "@/lib/supabase/admin";
 
 interface NewsSource {
   id: string;

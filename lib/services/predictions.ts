@@ -1,13 +1,7 @@
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import type { ScoringRules, Match } from "@/lib/types";
 import { getStagePoints } from "@/lib/scoring";
-
-function defaultSb() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
-}
+import { sbAnon as defaultSb } from "@/lib/supabase/anon";
 
 // ── Save group stage prediction ───────────────────────────────────────────────
 

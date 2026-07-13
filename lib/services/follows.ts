@@ -1,11 +1,4 @@
-import { createClient } from "@supabase/supabase-js";
-
-function sbAdmin() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
-}
+import { sbAdmin } from "@/lib/supabase/admin";
 
 export async function getFollowedCompetitionIds(userId: string | null): Promise<Set<string>> {
   if (!userId) return new Set();

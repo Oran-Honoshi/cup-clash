@@ -1,12 +1,5 @@
-import { createClient } from "@supabase/supabase-js";
 import { getAllUserGroups } from "@/lib/services/user-group";
-
-function sb() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
-}
+import { sbAnon as sb } from "@/lib/supabase/anon";
 
 export interface UserGroupSummary {
   groupId:           string;

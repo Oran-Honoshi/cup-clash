@@ -1,18 +1,12 @@
-import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import type { SupabaseClient } from "@supabase/supabase-js";
 import { TRANSLATIONS, localeFromLanguageCode, type Translations } from "@/lib/i18n";
+import { sbAdmin } from "@/lib/supabase/admin";
 
 // Bot-sent messages route through the same i18n system as the rest of the
 // app — see profiles.telegram_language_code (migration 048), captured from
 // Telegram's own message.from.language_code at link time.
 export function telegramTranslations(languageCode: string | null | undefined): Translations {
   return TRANSLATIONS[localeFromLanguageCode(languageCode)];
-}
-
-function sbAdmin() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
 }
 
 // ── Preferences ──────────────────────────────────────────────────────────────
