@@ -282,6 +282,14 @@ export interface Translations {
   rival_widget_tied:      string;
   rival_widget_you:       string;
 
+  // Points-Race Chart
+  points_race_heading:    string;
+  points_race_tagline:    string;
+  points_race_view_table: string;
+  points_race_view_chart: string;
+  points_race_sparse:     string;
+  points_race_date:       string;
+
   // Notifications
   notif_goal:         string;
   notif_result:       string;
@@ -678,6 +686,13 @@ const en: Translations = {
   rival_widget_ahead:     "{name} leads by {points} pts",
   rival_widget_tied:      "All square",
   rival_widget_you:       "You",
+
+  points_race_heading:    "Points Race",
+  points_race_tagline:    "Cumulative points over time",
+  points_race_view_table: "View as table",
+  points_race_view_chart: "View as chart",
+  points_race_sparse:     "History starts building from today — check back tomorrow to see the race take shape!",
+  points_race_date:       "Date",
   notif_goal:  "Goal scored",
   notif_result:  "Match result",
   notif_leaderboard:  "Leaderboard change",
@@ -1065,6 +1080,13 @@ const fr: Translations = {
   rival_widget_ahead:     "{name} mène de {points} pts",
   rival_widget_tied:      "Match nul",
   rival_widget_you:       "Vous",
+
+  points_race_heading:    "Course aux points",
+  points_race_tagline:    "Points cumulés au fil du temps",
+  points_race_view_table: "Voir en tableau",
+  points_race_view_chart: "Voir le graphique",
+  points_race_sparse:     "L'historique démarre aujourd'hui — revenez demain pour voir la course prendre forme !",
+  points_race_date:       "Date",
   notif_goal:  "But marqué",
   notif_result:  "Résultat du match",
   notif_leaderboard:  "Changement de classement",
@@ -1452,6 +1474,13 @@ const de: Translations = {
   rival_widget_ahead:     "{name} führt mit {points} Pkt.",
   rival_widget_tied:      "Unentschieden",
   rival_widget_you:       "Du",
+
+  points_race_heading:    "Punkte-Rennen",
+  points_race_tagline:    "Kumulierte Punkte im Zeitverlauf",
+  points_race_view_table: "Als Tabelle anzeigen",
+  points_race_view_chart: "Als Diagramm anzeigen",
+  points_race_sparse:     "Der Verlauf beginnt heute — schau morgen wieder vorbei, um das Rennen zu sehen!",
+  points_race_date:       "Datum",
   notif_goal:  "Tor erzielt",
   notif_result:  "Spielergebnis",
   notif_leaderboard:  "Ranglistenänderung",
@@ -1839,6 +1868,13 @@ const nl: Translations = {
   rival_widget_ahead:     "{name} leidt met {points} pt",
   rival_widget_tied:      "Gelijkspel",
   rival_widget_you:       "Jij",
+
+  points_race_heading:    "Puntenrace",
+  points_race_tagline:    "Cumulatieve punten door de tijd heen",
+  points_race_view_table: "Bekijk als tabel",
+  points_race_view_chart: "Bekijk als grafiek",
+  points_race_sparse:     "De geschiedenis begint vandaag — kom morgen terug om de race te zien vormen!",
+  points_race_date:       "Datum",
   notif_goal:  "Doelpunt gescoord",
   notif_result:  "Wedstrijdresultaat",
   notif_leaderboard:  "Ranglijstwijziging",
@@ -2226,6 +2262,13 @@ const es: Translations = {
   rival_widget_ahead:     "{name} va ganando por {points} pts",
   rival_widget_tied:      "Empate",
   rival_widget_you:       "Tú",
+
+  points_race_heading:    "Carrera de puntos",
+  points_race_tagline:    "Puntos acumulados a lo largo del tiempo",
+  points_race_view_table: "Ver como tabla",
+  points_race_view_chart: "Ver gráfico",
+  points_race_sparse:     "El historial empieza hoy — ¡vuelve mañana para ver la carrera tomar forma!",
+  points_race_date:       "Fecha",
   notif_goal:  "Gol marcado",
   notif_result:  "Resultado del partido",
   notif_leaderboard:  "Cambio en la clasificación",
@@ -2613,6 +2656,13 @@ const pt: Translations = {
   rival_widget_ahead:     "{name} lidera por {points} pts",
   rival_widget_tied:      "Empatados",
   rival_widget_you:       "Você",
+
+  points_race_heading:    "Corrida de pontos",
+  points_race_tagline:    "Pontos acumulados ao longo do tempo",
+  points_race_view_table: "Ver como tabela",
+  points_race_view_chart: "Ver gráfico",
+  points_race_sparse:     "O histórico começa hoje — volte amanhã para ver a corrida tomar forma!",
+  points_race_date:       "Data",
   notif_goal:  "Golo marcado",
   notif_result:  "Resultado da partida",
   notif_leaderboard:  "Mudança no ranking",
@@ -3000,6 +3050,13 @@ const he: Translations = {
   rival_widget_ahead:     "{name} מוביל/ה ב-{points} נק'",
   rival_widget_tied:      "תיקו",
   rival_widget_you:       "אתה",
+
+  points_race_heading:    "מרוץ הנקודות",
+  points_race_tagline:    "נקודות מצטברות לאורך זמן",
+  points_race_view_table: "הצג כטבלה",
+  points_race_view_chart: "הצג כגרף",
+  points_race_sparse:     "ההיסטוריה מתחילה היום — חזרו מחר כדי לראות את המרוץ מתעצב!",
+  points_race_date:       "תאריך",
   notif_goal:  "שער נכנס",
   notif_result:  "תוצאת משחק",
   notif_leaderboard:  "שינוי בדירוג",
@@ -3387,6 +3444,13 @@ const ar: Translations = {
   rival_widget_ahead:     "{name} متقدم بـ {points} نقطة",
   rival_widget_tied:      "تعادل",
   rival_widget_you:       "انت",
+
+  points_race_heading:    "سباق النقاط",
+  points_race_tagline:    "النقاط التراكمية بمرور الوقت",
+  points_race_view_table: "عرض كجدول",
+  points_race_view_chart: "عرض كرسم بياني",
+  points_race_sparse:     "السجل بيبدأ من النهارده — ارجع بكرة تشوف السباق بيتشكّل!",
+  points_race_date:       "التاريخ",
   notif_goal:  "هدف يسجل",
   notif_result:  "نتيجة الماتش",
   notif_leaderboard:  "تغيير في الترتيب",

@@ -6,6 +6,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { sbAdmin } from "@/lib/supabase/admin";
 import { scoreMatchResult, type NewlyExactPrediction } from "@/lib/services/predictions";
 import { postSystemMessage } from "@/lib/services/group-chat";
+import { snapshotGroupPoints } from "@/lib/services/points-history";
 import type { ScoringRules } from "@/lib/types";
 import {
   queueTelegramLine,
@@ -1693,6 +1694,26 @@ export async function POST(request: NextRequest) {
 
     const tgResult = await flushTelegramQueue(telegramQueue, sb);
     console.log(`[scores/cron] STEP 6: Telegram — queued for ${telegramQueue.size} user(s), sent ${tgResult.sent}, failed ${tgResult.failed}, blocked ${tgResult.blocked}`);
+
+    // ── STEP 7: Daily points snapshot (Points-Race Chart) ────────────────────
+    // Gated to once/day — a snapshot is a point-in-time total, not something
+    // that needs the 5-min cadence the rest of this cron runs at. Skips the
+    // per-group getMembers() pass entirely once today's rows already exist.
+    const { data: alreadySnapshotted } = await sb
+      .from("points_snapshots")
+      .select("id")
+      .eq("snapshot_date", today)
+      .limit(1);
+
+    if ((alreadySnapshotted ?? []).length > 0) {
+      console.log("[scores/cron] STEP 7: Points snapshot already recorded for today — skipping");
+    } else {
+      const { data: snapshotGroups } = await sb.from("groups").select("id");
+      console.log(`[scores/cron] STEP 7: Recording today's points snapshot for ${snapshotGroups?.length ?? 0} group(s)...`);
+      await Promise.allSettled(
+        (snapshotGroups ?? []).map(g => snapshotGroupPoints(sb, g.id, today))
+      );
+    }
 
     // ── Summary ──────────────────────────────────────────────────────────────
 

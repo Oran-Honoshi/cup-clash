@@ -7,6 +7,7 @@ import Link from "next/link";
 import { GroupChat } from "@/components/chat/group-chat";
 import { GroupStreakCard } from "@/components/daily-challenge/group-streak-card";
 import { RivalScoreboardCard } from "@/components/groups/rival-scoreboard-card";
+import { PointsRaceChart } from "@/components/groups/points-race-chart";
 import { MemberAvatar } from "@/components/ui/member-avatar";
 import { MatchResultsTable } from "@/components/groups/match-results-table";
 import { useLocale } from "@/components/i18n/locale-provider";
@@ -149,6 +150,7 @@ export function GroupDetailClient({ group, rules, members, currentUserId, isAdmi
           </div>
 
           <GroupStreakCard groupId={group.id} />
+          <PointsRaceChart groupId={group.id} />
           <RivalScoreboardCard groupId={group.id} />
 
           <div className="space-y-3">
