@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import { sbAdmin } from "@/lib/supabase/admin";
 import { sortMembersForRanking, findPayoutTieGroups, PAYOUT_POSITIONS, type PayoutPosition } from "@/lib/leaderboard-sort";
 
 export async function GET(request: NextRequest) {
@@ -10,10 +10,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "groupId required" }, { status: 400 });
   }
 
-  const sb = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
+  const sb = sbAdmin();
 
   // Fetch members with their points and payment status
   const { data: members, error } = await sb

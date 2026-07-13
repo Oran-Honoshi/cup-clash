@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import { sbAdmin } from "@/lib/supabase/admin";
 import {
   isTelegramPrefEnabled,
   queueTelegramLine,
@@ -8,13 +8,6 @@ import {
   type TelegramQueue,
 } from "@/lib/services/telegram";
 import { interpolate, type Translations } from "@/lib/i18n";
-
-function sbAdmin() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
-}
 
 function formatKickoff(iso: string): string {
   // Locale-agnostic (no Intl formatting per-language needed for a timestamp) —

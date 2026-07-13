@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import { sbAdmin } from "@/lib/supabase/admin";
 
 interface PushPayload {
   userIds: string[];
@@ -25,10 +25,7 @@ export async function POST(request: NextRequest) {
 
   const { userIds, title, body, url, tag } = await request.json() as PushPayload;
 
-  const sb = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
+  const sb = sbAdmin();
 
   const { data: subs } = await sb
     .from("push_subscriptions")
