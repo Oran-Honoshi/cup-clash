@@ -10,12 +10,28 @@ import { UserAvatar } from "@/components/ui/UserAvatar";
 
 interface ChatMessage {
   id: string;
-  user_id: string;
+  user_id: string | null;
   content: string;
-  type: "text" | "gif";
+  type: "text" | "gif" | "system";
   gif_url?: string;
   created_at: string;
   profiles?: { name: string; country: string; avatar_url: string | null };
+}
+
+// A "system" message (migration 049 — e.g. the Daily Challenge "Dave
+// solved today's puzzle" nudge) has no author, so it renders as a plain
+// centered line instead of the usual left/right chat-bubble row.
+function SystemMessageRow({ msg }: { msg: ChatMessage }) {
+  return (
+    <div className="flex justify-center px-2">
+      <div
+        className="text-[11px] font-bold px-3 py-1.5 rounded-full text-center"
+        style={{ background: "rgba(0,212,255,0.08)", color: "rgba(255,255,255,0.6)" }}
+      >
+        {msg.content}
+      </div>
+    </div>
+  );
 }
 
 interface GifResult {
@@ -176,6 +192,7 @@ export function GroupChat({ groupId, currentUserId, currentUserName, isPaid, inl
             </div>
           )}
           {messages.map((msg, i) => {
+            if (msg.type === "system") return <SystemMessageRow key={msg.id} msg={msg} />;
             const isOwn      = msg.user_id === currentUserId;
             const profile    = msg.profiles;
             const showAvatar = !isOwn && (i === 0 || messages[i-1].user_id !== msg.user_id);
@@ -349,6 +366,7 @@ export function GroupChat({ groupId, currentUserId, currentUserName, isPaid, inl
                 </div>
               )}
               {messages.map((msg, i) => {
+                if (msg.type === "system") return <SystemMessageRow key={msg.id} msg={msg} />;
                 const isOwn     = msg.user_id === currentUserId;
                 const profile   = msg.profiles;
                 const showAvatar = !isOwn && (i === 0 || messages[i-1].user_id !== msg.user_id);
