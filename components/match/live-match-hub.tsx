@@ -65,6 +65,7 @@ interface LiveMatchHubProps {
   city?:        string;
   groupId?:     string;
   onClose:      () => void;
+  initialTab?:  "overview" | "live" | "stats" | "lineups" | "mvp";
 }
 
 const MATCH_SELECT = "home_score, away_score, home_score_et, away_score_et, penalty_winner, status, minute, match_events, live_stats";
@@ -156,12 +157,12 @@ const STAT_ROWS: Array<{ key: keyof TeamLiveStats; label: string; isPercent?: bo
 
 export function LiveMatchHub({
   matchId, home, away, homeFlagCode, awayFlagCode, kickoffAt,
-  stage, group, stadium, city, groupId, onClose,
+  stage, group, stadium, city, groupId, onClose, initialTab,
 }: LiveMatchHubProps) {
   const [data,    setData]    = useState<MatchRow | null>(null);
   const [pred,    setPred]    = useState<UserPrediction | null>(null);
   const [loading, setLoading] = useState(true);
-  const [tab,     setTab]     = useState<"overview" | "live" | "stats" | "lineups" | "mvp">("overview");
+  const [tab,     setTab]     = useState<"overview" | "live" | "stats" | "lineups" | "mvp">(initialTab ?? "overview");
   const { t } = useLocale();
   const prevScore = useRef<{ h: number; a: number } | null>(null);
 

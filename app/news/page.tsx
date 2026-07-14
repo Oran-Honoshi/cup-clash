@@ -6,7 +6,11 @@ import { Newspaper, ExternalLink } from "lucide-react";
 import { EmptyState } from "@/components/ui/empty-state";
 import { createClient } from "@/lib/supabase/server";
 import { getFollowedCompetitionIds, getFollowedTeamIds } from "@/lib/services/follows";
+import { getCompetitions } from "@/lib/services/competitions";
+import { getMatchVoteState } from "@/lib/services/community-vote";
 import { relativeTime } from "@/lib/relative-time";
+import { StoryRingRail } from "@/components/news/story-ring-rail";
+import { NewsMvpTeaserCard, type MvpTeaserData } from "@/components/news/news-mvp-teaser-card";
 
 interface ArticleRow {
   id: string;
@@ -18,46 +22,126 @@ interface ArticleRow {
   source_id: string;
 }
 
+type FeedMode = "foryou" | "following" | "all";
+
+async function getMvpTeaser(sb: ReturnType<typeof sbAdmin>, userId: string | null): Promise<MvpTeaserData | null> {
+  const { data: match } = await sb
+    .from("matches")
+    .select("id, home, away, home_flag, away_flag, kickoff_at, stage, group_letter, stadium, city")
+    .eq("status", "finished")
+    .order("kickoff_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (!match) return null;
+
+  const vote = await getMatchVoteState(sb, match.id, userId);
+  if (!vote) return null; // shouldn't happen for a finished match, but be defensive
+
+  const topResult = vote.results && vote.results.length
+    ? [...vote.results].sort((a, b) => b.votes - a.votes)[0]
+    : null;
+  const topOption = topResult ? vote.options.find((o) => o.optionId === topResult.optionId) ?? null : null;
+
+  return {
+    matchId: match.id,
+    home: match.home,
+    away: match.away,
+    homeFlagCode: match.home_flag ?? undefined,
+    awayFlagCode: match.away_flag ?? undefined,
+    kickoffAt: match.kickoff_at,
+    stage: match.stage ?? undefined,
+    group: match.group_letter ?? undefined,
+    stadium: match.stadium ?? undefined,
+    city: match.city ?? undefined,
+    topPick: topOption ? { name: topOption.fullName, photo: topOption.photo, pct: topResult!.pct } : null,
+    totalVotes: (vote.results ?? []).reduce((sum, r) => sum + r.votes, 0),
+    closed: vote.closed,
+  };
+}
+
 export default async function NewsPage({
   searchParams,
 }: {
-  searchParams: { team?: string; competition?: string; followed?: string };
+  searchParams: { team?: string; competition?: string; followed?: string; feed?: string };
 }) {
   const sbSession = createClient();
   const { data: { user } } = await sbSession.auth.getUser();
   const userId = user?.id ?? null;
 
-  const wantsFollowedOnly = searchParams.followed === "1" && !!userId;
-  const [followedTeamIds, followedCompetitionIds] = wantsFollowedOnly
+  // Back-compat: old `?followed=1` links (Home dashboard, bookmarks) keep
+  // resolving to the "Following" tab. Anonymous visitors always get "all" —
+  // there's nothing to personalize without an account.
+  const requestedFeed: FeedMode =
+    searchParams.feed === "following" || searchParams.followed === "1" ? "following" :
+    searchParams.feed === "all" ? "all" :
+    "foryou";
+  const feed: FeedMode = userId ? requestedFeed : "all";
+
+  const [followedTeamIds, followedCompetitionIds] = userId
     ? await Promise.all([getFollowedTeamIds(userId), getFollowedCompetitionIds(userId)])
     : [new Set<string>(), new Set<string>()];
   const hasAnyFollow = followedTeamIds.size > 0 || followedCompetitionIds.size > 0;
 
   const sb = sbAdmin();
-  let query = sb
-    .from("news_articles")
-    .select("id, title, summary, link_url, image_url, published_at, source_id")
-    .order("published_at", { ascending: false, nullsFirst: false })
-    .limit(60);
 
-  // Transient, URL-driven filtering only — never saved without an account.
-  if (searchParams.team) query = query.contains("team_ids", [searchParams.team]);
-  if (searchParams.competition) query = query.contains("competition_ids", [searchParams.competition]);
+  function baseQuery() {
+    // Transient, URL-driven filtering only — never saved without an account.
+    let q = sb
+      .from("news_articles")
+      .select("id, title, summary, link_url, image_url, published_at, source_id")
+      .order("published_at", { ascending: false, nullsFirst: false });
+    if (searchParams.team) q = q.contains("team_ids", [searchParams.team]);
+    if (searchParams.competition) q = q.contains("competition_ids", [searchParams.competition]);
+    return q;
+  }
 
-  // "Following" toggle — an article matches if it's tagged with ANY followed
-  // team OR ANY followed competition (array-overlap OR across both columns).
-  if (wantsFollowedOnly) {
+  // An article matches "followed" if it's tagged with ANY followed team OR
+  // ANY followed competition (array-overlap OR across both columns).
+  function followedOrClause(): string | null {
     const orParts: string[] = [];
     if (followedTeamIds.size) orParts.push(`team_ids.ov.{${Array.from(followedTeamIds).join(",")}}`);
     if (followedCompetitionIds.size) orParts.push(`competition_ids.ov.{${Array.from(followedCompetitionIds).join(",")}}`);
-    query = orParts.length ? query.or(orParts.join(",")) : query.eq("id", "00000000-0000-0000-0000-000000000000");
+    return orParts.length ? orParts.join(",") : null;
   }
 
-  const [{ data }, { data: sourceRows }] = await Promise.all([
-    query,
+  let articles: ArticleRow[];
+
+  if (feed === "following") {
+    const orClause = followedOrClause();
+    const { data } = orClause
+      ? await baseQuery().or(orClause).limit(60)
+      : { data: [] as ArticleRow[] };
+    articles = (data ?? []) as ArticleRow[];
+  } else if (feed === "foryou" && hasAnyFollow) {
+    // "For You" = followed-tagged stories first, backfilled with the general
+    // recent feed until we hit the page size, deduped by id. There's no
+    // engagement/view-tracking in this app yet, so "trending" is a recency
+    // proxy rather than a true popularity signal — see Phase 3 report.
+    const orClause = followedOrClause()!;
+    const [{ data: followedData }, { data: recentData }] = await Promise.all([
+      baseQuery().or(orClause).limit(30),
+      baseQuery().limit(60),
+    ]);
+    const seen = new Set<string>();
+    articles = [];
+    for (const a of (followedData ?? []) as ArticleRow[]) {
+      if (!seen.has(a.id)) { seen.add(a.id); articles.push(a); }
+    }
+    for (const a of (recentData ?? []) as ArticleRow[]) {
+      if (articles.length >= 60) break;
+      if (!seen.has(a.id)) { seen.add(a.id); articles.push(a); }
+    }
+  } else {
+    // "all", or "foryou" with nothing followed yet — general recent feed.
+    const { data } = await baseQuery().limit(60);
+    articles = (data ?? []) as ArticleRow[];
+  }
+
+  const [{ data: sourceRows }, competitions, mvpTeaser] = await Promise.all([
     sb.from("news_sources").select("id, name"),
+    getCompetitions(),
+    getMvpTeaser(sb, userId),
   ]);
-  const articles = (data ?? []) as ArticleRow[];
   const sourceNames = new Map(((sourceRows ?? []) as Array<{ id: string; name: string }>).map((s) => [s.id, s.name]));
 
   return (
@@ -73,10 +157,12 @@ export default async function NewsPage({
           <p style={{ fontSize: 14, color: "var(--mt)", fontFamily: "var(--font-ui)", marginTop: 4 }}>
             {(searchParams.team || searchParams.competition)
               ? "Filtered feed — clear the filter to see everything."
-              : wantsFollowedOnly
+              : feed === "following"
               ? hasAnyFollow
                 ? "Stories tagged with your followed teams and competitions."
                 : "You aren't following anything yet — showing nothing. Pick some teams first."
+              : feed === "foryou"
+              ? "A mix of your followed teams and the latest headlines."
               : "Aggregated from trusted sources. Tap a headline to read the full story."}
           </p>
         </div>
@@ -94,8 +180,12 @@ export default async function NewsPage({
               flexShrink: 0,
             }}
           >
-            {[{ key: "all", label: "All News", href: "/news" }, { key: "followed", label: "Following", href: "/news?followed=1" }].map((t) => {
-              const isActive = t.key === "followed" ? wantsFollowedOnly : !wantsFollowedOnly;
+            {[
+              { key: "foryou" as const, label: "For You", href: "/news?feed=foryou" },
+              { key: "following" as const, label: "Following", href: "/news?feed=following" },
+              { key: "all" as const, label: "All", href: "/news?feed=all" },
+            ].map((t) => {
+              const isActive = t.key === feed;
               return (
                 <Link
                   key={t.key}
@@ -123,8 +213,14 @@ export default async function NewsPage({
         )}
       </div>
 
+      <StoryRingRail competitions={competitions} activeCompetitionId={searchParams.competition} />
+
+      {mvpTeaser && !searchParams.team && !searchParams.competition && (
+        <NewsMvpTeaserCard teaser={mvpTeaser} />
+      )}
+
       {articles.length === 0 ? (
-        wantsFollowedOnly && !hasAnyFollow ? (
+        feed === "following" && !hasAnyFollow ? (
           <EmptyState
             icon={<Newspaper size={28} style={{ color: "var(--ac)" }} />}
             title="Nothing followed yet"
