@@ -43,7 +43,7 @@ function getCountdown(utcTime: string, t: (key: keyof Translations) => string): 
 // ── Types ─────────────────────────────────────────────────────────────────────
 interface ScorePrediction { home: string; away: string; }
 interface GroupPredictions { [matchId: string]: ScorePrediction; }
-interface TeamStanding {
+export interface TeamStanding {
   name: string; flagCode: string;
   played: number; won: number; drawn: number; lost: number;
   gf: number; ga: number; gd: number; pts: number;
@@ -282,7 +282,12 @@ function MatchCard({ match, prediction, onChange, globalLocked, stagePoints, mat
 }
 
 // ── Group Table ───────────────────────────────────────────────────────────────
-function GroupTable({ standings }: { standings: TeamStanding[] }) {
+// `highlightTopN` controls the qualify-styling (green highlight + "Q" badge
+// on the top N rows, amber border on row N+1) — meaningful for a 4-team
+// World Cup group (top 2 advance) but not for a full league table, where
+// callers should pass 0 to disable it entirely. Exported for reuse outside
+// this file (see app/(app)/stats/page.tsx's Statistician standings table).
+export function GroupTable({ standings, highlightTopN = 2 }: { standings: TeamStanding[]; highlightTopN?: number }) {
   if (!standings.length) return null;
   return (
     <div className="rounded-xl overflow-hidden" style={{ border: "1px solid var(--br)" }}>
@@ -294,8 +299,8 @@ function GroupTable({ standings }: { standings: TeamStanding[] }) {
         ))}
       </div>
       {standings.map((team, i) => {
-        const qualifies  = i < 2;
-        const thirdPlace = i === 2;
+        const qualifies  = highlightTopN > 0 && i < highlightTopN;
+        const thirdPlace = highlightTopN > 0 && i === highlightTopN;
         return (
           <div key={team.name}
             className="grid grid-cols-[1fr_auto_auto_auto] sm:grid-cols-[1fr_auto_auto_auto_auto_auto_auto] gap-2 items-center px-3 py-2"
