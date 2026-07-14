@@ -153,7 +153,7 @@ export function AppHeader({ title }: { title?: string }) {
       <div className="flex items-center gap-2">
         <MobileLanguagePicker />
         <Link
-          href="/notifications"
+          href="/settings?tab=notifications"
           className="relative flex items-center justify-center transition-all"
           style={{
             width: 32,

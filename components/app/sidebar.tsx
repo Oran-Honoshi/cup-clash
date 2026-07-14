@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, Users, Trophy, Target, BarChart2,
-  GitBranch, Brain, Bell, Shield, LogOut, Settings, MessageCircle, Trash2, CalendarDays, LayoutGrid, Newspaper, Gamepad2,
+  GitBranch, Brain, Shield, LogOut, Settings, MessageCircle, Trash2, CalendarDays, LayoutGrid, Newspaper, Gamepad2,
 } from "lucide-react";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
@@ -14,7 +14,6 @@ import { cn } from "@/lib/utils";
 import { useTheme } from "@/components/theme-provider";
 import type { CountryCode } from "@/lib/types";
 import { useLocale } from "@/components/i18n/locale-provider";
-import { LanguageSelector } from "@/components/i18n/language-selector";
 import { ReviewTrigger } from "@/components/ui/review-modal";
 import { SOCCER_PRESETS } from "@/components/ui/member-avatar";
 
@@ -43,7 +42,6 @@ const NAV_ITEMS = [
   { href: "/bracket",      key: "nav_bracket"       as const, icon: GitBranch       },
   { href: "/trivia",       key: "nav_trivia"        as const, icon: Brain           },
   { href: "/daily-challenge", key: "nav_daily_challenge" as const, icon: Gamepad2   },
-  { href: "/notifications",key: "nav_notifications" as const, icon: Bell            },
   { href: "/admin",        key: "common_admin"      as const, icon: Shield          },
 ];
 
@@ -362,11 +360,7 @@ export function AppSidebar() {
         )}
       </nav>
 
-      {/* User footer */}
-      <div className="px-3 py-2 border-t" style={{ borderColor: "var(--br)" }}>
-        <LanguageSelector />
-      </div>
-
+      {/* User footer — language picker now lives in Settings (Preferences tab) */}
       <div className="px-3 py-4 border-t space-y-1" style={{ borderColor: "var(--br)" }}>
 
         {authLoaded && !profile ? (
@@ -407,7 +401,7 @@ export function AppSidebar() {
               <ReviewTrigger context="general" label="Rate Cup Clash ⭐" />
             </div>
 
-            <Link href="/profile"
+            <Link href="/settings"
               className="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all"
               style={{ color: "var(--t2)" }}
               onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "var(--ip)"; }}
