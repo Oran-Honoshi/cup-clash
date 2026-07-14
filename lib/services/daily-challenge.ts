@@ -32,7 +32,7 @@ export type DailyChallengeRow = {
   created_at: string;
 };
 
-function todayISO(): string {
+export function todayISO(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
