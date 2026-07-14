@@ -119,8 +119,11 @@ const WINNER_MESSAGE_PRESETS = [
   "Custom...",
 ];
 
+type RulesMode = "house_rules" | "customizable";
+
 function CreateGroupInner() {
   const { t } = useLocale();
+  const [rulesMode,    setRulesMode]   = useState<RulesMode | null>(null);
   const [step,         setStep]        = useState<0|1|2|3>(0);
   const [paymentModel, setPaymentModel] = useState<PaymentModel>("pay_per_member");
   const [loading,      setLoading]     = useState(false);
@@ -141,9 +144,11 @@ function CreateGroupInner() {
 
   useEffect(() => {
     if (modelParam === "corporate_sponsored") {
+      setRulesMode("customizable");
       setPaymentModel("corporate_sponsored");
       setStep(1);
     } else if (modelParam === "pay_per_member") {
+      setRulesMode("customizable");
       setPaymentModel("pay_per_member");
       setStep(1);
     }
@@ -223,6 +228,87 @@ function CreateGroupInner() {
     const { data: { user } } = await sb.auth.getUser();
     if (!user) { setError("You must be signed in"); setLoading(false); return; }
 
+    if (rulesMode === "house_rules") {
+      const { data: groupData, error: groupErr } = await sb
+        .from("groups")
+        .insert({
+          name:                 groupName.trim(),
+          admin_id:             user.id,
+          buy_in_amount:        0,
+          payout_first:         0,
+          payout_second:        0,
+          payout_third:         0,
+          max_members:          100,
+          is_public:            isPublic,
+          group_type:           groupType,
+          single_match_id:      groupType === "single_match" ? selectedMatch : null,
+          enrollment_fee_cents: 0,
+          rules_mode:           "house_rules",
+          is_corporate_paid:    false,
+          corporate_prize:      null,
+          currency:             "USD",
+          currency_symbol:      "$",
+          payment_link:         null,
+          enable_group_stage_prize: false,
+          group_stage_prize_amount: null,
+          group_stage_prize_label:  null,
+          winner_message:           null,
+          show_prize_split:         false,
+          show_entry_fee:           false,
+          show_prize_pot:           false,
+          show_buy_in_tracker:      false,
+          show_payment_link:        false,
+        } as Record<string, unknown>)
+        .select("id, passkey")
+        .single();
+
+      if (groupErr || !groupData) {
+        setError(groupErr?.message ?? "Failed to create group");
+        setLoading(false); return;
+      }
+
+      const { id: gId, passkey: gPasskey } = groupData as { id: string; passkey: string };
+
+      await sb.from("group_members").upsert({
+        group_id:       gId,
+        user_id:        user.id,
+        payment_status: "free",
+        can_predict:    true,
+        joined_at:      new Date().toISOString(),
+      } as Record<string, unknown>, { onConflict: "user_id,group_id" });
+
+      // House Rules defaults: HeyBlink Official's proven live scoring config.
+      await sb.from("scoring_rules").upsert({
+        group_id:              gId,
+        correct_outcome:       10,
+        exact_score:           25,
+        ko_advancement:        20,
+        tournament_winner:     200,
+        top_scorer:            100,
+        top_assister:          100,
+        second_place:          4,
+        third_place:           2,
+        best_third:            25,
+        enable_outcome:        true,
+        enable_exact:          true,
+        enable_ko_advancement: true,
+        enable_winner:         true,
+        enable_scorer:         true,
+        enable_assister:       true,
+        enable_second:         true,
+        enable_third:          true,
+        enable_best_third:     true,
+        knockout_policy:       "regular_90",
+        use_progressive_scoring: false,
+      } as Record<string, unknown>, { onConflict: "group_id" });
+
+      setCreatedName(groupName.trim());
+      setPasskey(gPasskey);
+      setGroupId(gId);
+      setLoading(false);
+      return;
+    }
+
     let finalCorporatePrize = isCorporate ? corporatePrize.trim() : null;
     if (isCorporate && prizeTrack === "company") {
       const parts = [];
@@ -248,6 +334,7 @@ function CreateGroupInner() {
         enrollment_fee_cents: isCorporate || isFriendly ? 0 : 200,
         payment_model:        isFriendly ? "pay_per_member" : paymentModel,
         group_mode:           isFriendly ? "friendly" : isCorporate ? "corporate" : "standard",
+        rules_mode:           "customizable",
         is_corporate_paid:    false,
         corporate_prize:            !isFriendly ? (finalCorporatePrize || null) : null,
         currency:                   currency,
@@ -356,7 +443,7 @@ function CreateGroupInner() {
             <p style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", marginTop: 6, fontFamily: "var(--font-ui)" }}>
               {isCorporate
                 ? "Your corporate group is ready. Go to the group to unlock team invites."
-                : isFriendly
+                : isFriendly || rulesMode === "house_rules"
                 ? "Share the passkey — anyone can join for free!"
                 : "Share the passkey: members pay $2 to join."}
             </p>
@@ -448,8 +535,78 @@ function CreateGroupInner() {
         </p>
       </div>
 
-      {/* ── STEP 0: Payment model ──────────────────────────────────────────── */}
-      {step === 0 && (
+      {/* ── LANDING: House Rules vs Customizable ────────────────────────────── */}
+      {rulesMode === null && (
+        <div className="space-y-3">
+          <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "rgba(255,255,255,0.35)", fontFamily: "var(--font-ui)" }}>
+            How do you want to run this group?
+          </div>
+
+          {/* House Rules */}
+          <button
+            onClick={() => { setRulesMode("house_rules"); setStep(1); }}
+            className="w-full text-left transition-all hover:-translate-y-0.5"
+            style={{ ...glassCard, padding: 0, overflow: "hidden", cursor: "pointer", display: "block" }}>
+            <NeonBar gradient="linear-gradient(90deg,#00FF88,#00D4FF)" />
+            <div style={{ padding: 20 }}>
+              <div style={{ display: "flex", alignItems: "flex-start", gap: 14 }}>
+                <div style={{
+                  width: 48, height: 48, borderRadius: 14, flexShrink: 0,
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  background: "rgba(0,255,136,0.1)", border: "1px solid rgba(0,255,136,0.2)",
+                }}>
+                  <Zap size={22} style={{ color: "#00FF88" }} />
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6, flexWrap: "wrap" }}>
+                    <span style={{ fontFamily: "var(--font-display)", fontWeight: 800, fontSize: 18, color: "white", textTransform: "uppercase" }}>
+                      House Rules
+                    </span>
+                    <Chip label="No setup" color="#00FF88" />
+                  </div>
+                  <p style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", fontFamily: "var(--font-ui)", lineHeight: 1.45, margin: 0 }}>
+                    Standard scoring, ready to go, no setup.
+                  </p>
+                </div>
+                <ArrowRight size={18} style={{ color: "#00FF88", flexShrink: 0, alignSelf: "center" }} />
+              </div>
+            </div>
+          </button>
+
+          {/* Customizable */}
+          <button
+            onClick={() => { setRulesMode("customizable"); setStep(0); }}
+            className="w-full text-left transition-all hover:-translate-y-0.5"
+            style={{ ...glassCard, padding: 0, overflow: "hidden", cursor: "pointer", display: "block" }}>
+            <NeonBar gradient="linear-gradient(90deg,#00D4FF,#a78bfa)" />
+            <div style={{ padding: 20 }}>
+              <div style={{ display: "flex", alignItems: "flex-start", gap: 14 }}>
+                <div style={{
+                  width: 48, height: 48, borderRadius: 14, flexShrink: 0,
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  background: "rgba(0,212,255,0.1)", border: "1px solid rgba(0,212,255,0.2)",
+                }}>
+                  <Settings size={22} style={{ color: "#00D4FF" }} />
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6, flexWrap: "wrap" }}>
+                    <span style={{ fontFamily: "var(--font-display)", fontWeight: 800, fontSize: 18, color: "white", textTransform: "uppercase" }}>
+                      Customizable
+                    </span>
+                  </div>
+                  <p style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", fontFamily: "var(--font-ui)", lineHeight: 1.45, margin: 0 }}>
+                    Configure your own scoring rules and manage a prize pool with your group.
+                  </p>
+                </div>
+                <ArrowRight size={18} style={{ color: "#00D4FF", flexShrink: 0, alignSelf: "center" }} />
+              </div>
+            </div>
+          </button>
+        </div>
+      )}
+
+      {/* ── STEP 0: Payment model (Customizable only) ───────────────────────── */}
+      {rulesMode === "customizable" && step === 0 && (
         <div className="space-y-3">
           <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "rgba(255,255,255,0.35)", fontFamily: "var(--font-ui)" }}>
             Who pays for this group?
@@ -595,13 +752,17 @@ function CreateGroupInner() {
       )}
 
       {/* Step indicator */}
-      {step > 0 && (
+      {rulesMode !== null && (
         <div className="space-y-3">
-          <button onClick={() => setStep(0)}
+          <button onClick={() => {
+            if (rulesMode === "customizable" && step > 0) { setStep(0); }
+            else { setRulesMode(null); setStep(0); }
+          }}
             style={{ fontSize: 11, fontWeight: 700, color: "#00D4FF", background: "none", border: "none", cursor: "pointer", fontFamily: "var(--font-ui)", padding: 0 }}>
-            ← {t("cg_change_mode")}
+            ← {rulesMode === "customizable" && step > 0 ? t("cg_change_mode") : "Start over"}
           </button>
 
+          {rulesMode === "customizable" && step > 0 && (
           <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "center" }}>
             {steps.map((s, i) => (
               <div key={s.n} style={{ display: "flex", alignItems: "flex-start" }}>
@@ -644,6 +805,7 @@ function CreateGroupInner() {
               </div>
             ))}
           </div>
+          )}
 
           {isCorporate && (
             <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl"
@@ -789,24 +951,29 @@ function CreateGroupInner() {
             </div>
           )}
 
-          <button type="button" onClick={() => {
+          <button type="button" disabled={rulesMode === "house_rules" && loading} onClick={() => {
             if (!groupName.trim()) { setError("Group name is required"); return; }
-            setError(null); setStep(isFriendly ? 3 : 2);
-          }} className="w-full flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5"
+            setError(null);
+            if (rulesMode === "house_rules") { handleCreate(); return; }
+            setStep(isFriendly ? 3 : 2);
+          }} className="w-full flex items-center justify-center gap-2 transition-all disabled:opacity-50 hover:-translate-y-0.5"
             style={{
               padding: "13px", borderRadius: 12, border: "none",
               background: "linear-gradient(135deg, #00FF88, #00D4FF)", color: "#0B141B",
               fontWeight: 700, fontFamily: "var(--font-ui)", fontSize: 14,
-              textTransform: "uppercase", letterSpacing: "0.06em", cursor: "pointer",
+              textTransform: "uppercase", letterSpacing: "0.06em",
+              cursor: rulesMode === "house_rules" && loading ? "not-allowed" : "pointer",
               boxShadow: "0 0 20px rgba(0,255,136,0.25)",
             }}>
-            {isFriendly ? t("cg_next_scoring") : t("cg_next_prizes")} <ArrowRight size={16} />
+            {rulesMode === "house_rules"
+              ? (loading ? <><BallLoader size="inline" label={null} /> Creating your league...</> : <>Create Group <ArrowRight size={16} /></>)
+              : <>{isFriendly ? t("cg_next_scoring") : t("cg_next_prizes")} <ArrowRight size={16} /></>}
           </button>
         </div>
       )}
 
-      {/* ── STEP 2 ─────────────────────────────────────────────────────────── */}
-      {step === 2 && (
+      {/* ── STEP 2 (Customizable only) ───────────────────────────────────────── */}
+      {rulesMode === "customizable" && step === 2 && (
         <div className="space-y-4">
           <div style={{ ...glassCard, padding: 20 }} className="space-y-4">
             {/* Currency */}
@@ -1066,8 +1233,8 @@ function CreateGroupInner() {
         </div>
       )}
 
-      {/* ── STEP 3 ─────────────────────────────────────────────────────────── */}
-      {step === 3 && (
+      {/* ── STEP 3 (Customizable only) ───────────────────────────────────────── */}
+      {rulesMode === "customizable" && step === 3 && (
         <div className="space-y-4">
           <div style={{ ...glassCard, padding: 20 }}>
             <div className="flex items-center gap-2 mb-4">
