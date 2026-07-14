@@ -3,7 +3,10 @@ export const dynamic = "force-dynamic";
 import { redirect }    from "next/navigation";
 import { sbAdmin } from "@/lib/supabase/admin";
 import { getCurrentUserProfile } from "@/lib/services/user-group";
+import { getGroup as getAdminGroupData, getMembers as getLeaderboardMembers } from "@/lib/services/groups";
+import { getAllMatches } from "@/lib/services/matches";
 import { GroupDetailClient } from "@/components/groups/group-detail-client";
+import type { Group as AdminGroup, Member as LeaderboardMember } from "@/lib/types";
 
 async function getGroupDetail(groupId: string) {
   const { data } = await sbAdmin()
@@ -52,14 +55,39 @@ async function getMembers(groupId: string) {
   }>;
 }
 
+export type SubSector = "predictions" | "leaderboard" | "chat" | "rules" | "admin" | "info";
+const VALID_TABS: SubSector[] = ["predictions", "leaderboard", "chat", "rules", "admin", "info"];
+
+function resolveInitialTab(requested: string | undefined, isAdmin: boolean): SubSector {
+  if (requested === "results") return "predictions"; // legacy — Recently Settled now lives in Predictions
+  if (requested === "overview") return "info";
+  if (requested && (VALID_TABS as string[]).includes(requested) && (requested !== "admin" || isAdmin)) {
+    return requested as SubSector;
+  }
+  return "predictions";
+}
+
 export default async function GroupDetailPage({ params, searchParams }: { params: { groupId: string }; searchParams: { tab?: string } }) {
   const userProfile = await getCurrentUserProfile();
   if (!userProfile) redirect("/signup");
 
-  const [group, rules, members] = await Promise.all([
+  const [group, rules, members, leaderboardMembers, allMatches, membershipsRes, adStatusRes] = await Promise.all([
     getGroupDetail(params.groupId),
     getScoringRules(params.groupId),
     getMembers(params.groupId),
+    getLeaderboardMembers(params.groupId),
+    getAllMatches(),
+    sbAdmin()
+      .from("group_members")
+      .select("group_id, groups(id, name, passkey)")
+      .eq("user_id", userProfile.id)
+      .order("joined_at", { ascending: false }),
+    sbAdmin()
+      .from("group_members")
+      .select("is_ad_free, groups(is_corporate_paid)")
+      .eq("user_id", userProfile.id)
+      .eq("group_id", params.groupId)
+      .maybeSingle(),
   ]);
 
   if (!group) redirect("/groups");
@@ -69,15 +97,47 @@ export default async function GroupDetailPage({ params, searchParams }: { params
     myMembership?.role === "admin" || myMembership?.role === "owner";
   const isMember = Boolean(myMembership);
 
+  const allGroups = (membershipsRes.data ?? [])
+    .map((m: unknown) => (m as { groups: { id: string; name: string; passkey: string } | null }).groups)
+    .filter(Boolean) as Array<{ id: string; name: string; passkey: string }>;
+
+  type AdStatus = { is_ad_free: boolean; groups: { is_corporate_paid: boolean } | null } | null;
+  const adStatus = adStatusRes.data as AdStatus;
+  const isAdFree    = adStatus?.is_ad_free ?? false;
+  const isCorporate = adStatus?.groups?.is_corporate_paid ?? false;
+
+  let adminData: { group: AdminGroup; members: LeaderboardMember[]; isOwner: boolean; finalLocked: boolean } | null = null;
+  if (isAdmin) {
+    const [adminGroup, finalMatch] = await Promise.all([
+      getAdminGroupData(params.groupId),
+      sbAdmin().from("matches").select("status").eq("id", "final").maybeSingle(),
+    ]);
+    adminData = {
+      group: adminGroup,
+      members: leaderboardMembers,
+      isOwner: group.admin_id === userProfile.id,
+      finalLocked: (finalMatch.data as { status: string } | null)?.status === "finished",
+    };
+  }
+
+  const initialTab = resolveInitialTab(searchParams.tab, isAdmin);
+
   return (
     <GroupDetailClient
       group={group}
       rules={rules}
       members={members}
+      leaderboardMembers={leaderboardMembers}
+      allMatches={allMatches}
+      allGroups={allGroups}
       currentUserId={userProfile.id}
+      currentUserName={userProfile.name}
       isAdmin={isAdmin}
       isMember={isMember}
-      initialTab={searchParams.tab === "chat" ? "chat" : searchParams.tab === "results" ? "results" : "overview"}
+      isAdFree={isAdFree}
+      isCorporate={isCorporate}
+      adminData={adminData}
+      initialTab={initialTab}
     />
   );
 }

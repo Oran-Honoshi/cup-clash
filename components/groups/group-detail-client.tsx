@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Trophy, Users, DollarSign, Target, Lock, Shield, ArrowRight, MessageCircle, Info, Trash2, Gift, CheckCircle, Clock, GraduationCap, ClipboardList } from "lucide-react";
+import { Trophy, Users, DollarSign, Target, Lock, Shield, ArrowRight, MessageCircle, Info, Trash2, Gift, CheckCircle, Clock, GraduationCap, ClipboardList, ChevronDown, ChevronUp } from "lucide-react";
 import Link from "next/link";
 import { GroupChat } from "@/components/chat/group-chat";
 import { GroupStreakCard } from "@/components/daily-challenge/group-streak-card";
@@ -10,53 +10,59 @@ import { RivalScoreboardCard } from "@/components/groups/rival-scoreboard-card";
 import { PointsRaceChart } from "@/components/groups/points-race-chart";
 import { MemberAvatar } from "@/components/ui/member-avatar";
 import { MatchResultsTable } from "@/components/groups/match-results-table";
+import { LeaderboardList } from "@/components/dashboard/leaderboard-list";
+import { PredictionsClient } from "@/components/predictions/predictions-client";
+import { RulesSummary } from "@/components/groups/rules-summary";
+import { AdminGroupSector } from "@/components/admin/admin-group-sector";
+import { GroupSwitcherControl } from "@/components/groups/group-switcher-control";
 import { useLocale } from "@/components/i18n/locale-provider";
 import { interpolate } from "@/lib/i18n";
+import { compareMembersForRanking } from "@/lib/leaderboard-sort";
+import type { Group as AdminGroup, Member as LeaderboardMember } from "@/lib/types";
+import type { ScheduleMatch } from "@/lib/schedule";
+
+export type SubSector = "predictions" | "leaderboard" | "chat" | "rules" | "admin" | "info";
 
 interface GroupDetailClientProps {
   group: { id: string; name: string; passkey: string; admin_id: string; buy_in_amount: number; payout_first: number; payout_second: number; payout_third: number; max_members: number; is_corporate_paid?: boolean; corporate_prize?: string | null; currency_symbol?: string | null; payment_link?: string | null; enable_group_stage_prize?: boolean | null; group_stage_prize_amount?: number | null; group_stage_prize_label?: string | null; show_prize_split?: boolean | null; show_entry_fee?: boolean | null; show_prize_pot?: boolean | null; show_buy_in_tracker?: boolean | null; show_payment_link?: boolean | null; group_mode?: string | null; winner_message?: string | null };
   rules: Record<string, number | boolean> | null;
   members: Array<{ user_id: string; payment_status: string; can_predict: boolean; paid: boolean; is_ad_free: boolean; profiles: { name: string; country: string | null; avatar_url: string | null } | null }>;
+  leaderboardMembers: LeaderboardMember[];
+  allMatches: ScheduleMatch[];
+  allGroups: Array<{ id: string; name: string; passkey: string }>;
   currentUserId: string;
+  currentUserName: string;
   isAdmin: boolean;
   isMember: boolean;
-  initialTab?: "overview" | "chat" | "results";
+  isAdFree: boolean;
+  isCorporate: boolean;
+  adminData: { group: AdminGroup; members: LeaderboardMember[]; isOwner: boolean; finalLocked: boolean } | null;
+  initialTab?: SubSector;
 }
-
-const ENABLE_KEYS: Record<string, string> = {
-  correct_outcome: "enable_outcome", exact_score: "enable_exact", ko_advancement: "enable_ko_advancement",
-  tournament_winner: "enable_winner", top_scorer: "enable_scorer", top_assister: "enable_assister",
-  golden_ball: "enable_golden_ball", best_defence: "enable_best_defence", best_young_player: "enable_best_young_player", best_third: "enable_best_third",
-};
 
 const glass = { background: "rgba(255,255,255,0.07)", backdropFilter: "blur(24px)", WebkitBackdropFilter: "blur(24px)", border: "1px solid rgba(255,255,255,0.12)", boxShadow: "0 8px 32px rgba(0,0,0,0.25), inset 0 1px 1px rgba(255,255,255,0.06)" } as const;
 
-export function GroupDetailClient({ group, rules, members, currentUserId, isAdmin, isMember, initialTab = "overview" }: GroupDetailClientProps) {
+export function GroupDetailClient({
+  group, rules, members, leaderboardMembers, allMatches, allGroups,
+  currentUserId, currentUserName, isAdmin, isMember, isAdFree, isCorporate, adminData,
+  initialTab = "predictions",
+}: GroupDetailClientProps) {
   const { t } = useLocale();
   const router = useRouter();
-  const [tab, setTab] = useState<"overview" | "chat" | "results">(initialTab);
+  const [tab, setTab] = useState<SubSector>(initialTab);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [settledOpen, setSettledOpen] = useState(false);
   const paidCount = members.filter(m => m.paid || m.payment_status === "paid").length;
 
   const TABS = [
-    { id: "overview", label: t("grp_overview"), icon: Info          },
-    { id: "chat",     label: t("nav_chat"),      icon: MessageCircle },
-    { id: "results",  label: "Results",          icon: ClipboardList },
+    { id: "predictions" as const, label: t("nav_predictions"), icon: Target       },
+    { id: "leaderboard" as const, label: t("nav_leaderboard"), icon: Trophy       },
+    { id: "chat"        as const, label: t("nav_chat"),        icon: MessageCircle },
+    { id: "rules"       as const, label: t("grp_rules"),       icon: ClipboardList },
+    ...(isAdmin ? [{ id: "admin" as const, label: t("common_admin"), icon: Shield }] : []),
+    { id: "info"        as const, label: t("grp_info"),        icon: Info         },
   ];
-
-  const SCORING_LABELS: Record<string, string> = {
-    correct_outcome:   t("sc_outcome"),
-    exact_score:       t("sc_exact"),
-    ko_advancement:    t("sc_ko"),
-    tournament_winner: t("sc_winner"),
-    top_scorer:        t("sc_scorer"),
-    top_assister:      t("sc_assister"),
-    golden_ball:       t("sc_golden"),
-    best_defence:      t("sc_defence"),
-    best_young_player: t("sc_young"),
-    best_third:        t("sc_third"),
-  };
 
   const handleDelete = async () => {
     setDeleting(true);
@@ -69,14 +75,17 @@ export function GroupDetailClient({ group, rules, members, currentUserId, isAdmi
       setShowDeleteConfirm(false);
     }
   };
+
   const totalPot  = (group.buy_in_amount ?? 0) * paidCount;
-  const scoringRows = Object.entries(SCORING_LABELS).filter(([key]) => { const ek = ENABLE_KEYS[key]; return !ek || rules?.[ek] !== false; });
   const showPrizeSplit    = group.show_prize_split    ?? true;
   const showEntryFee      = group.show_entry_fee      ?? true;
   const showPrizePot      = group.show_prize_pot      ?? true;
   const showBuyInTracker  = group.show_buy_in_tracker ?? true;
   const showPaymentLink   = group.show_payment_link   ?? true;
   const isFriendly        = group.group_mode === "friendly";
+
+  const sortedLeaderboard = [...leaderboardMembers].sort(compareMembersForRanking);
+  const myRank = sortedLeaderboard.findIndex(m => m.id === currentUserId) + 1;
 
   return (
     <div className="max-w-2xl mx-auto space-y-5 overflow-x-clip pb-32">
@@ -87,23 +96,20 @@ export function GroupDetailClient({ group, rules, members, currentUserId, isAdmi
           <div className="flex items-center gap-2 mt-1 flex-wrap">
             {isAdmin  && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: "rgba(251,191,36,0.12)", color: "#fbbf24", border: "1px solid rgba(251,191,36,0.2)" }}>{t("common_admin")}</span>}
             {isMember && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: "rgba(0,255,136,0.12)", color: "#00FF88",  border: "1px solid rgba(0,255,136,0.2)"  }}>{t("common_member")}</span>}
+            <span className="text-[10px] font-bold" style={{ color: "rgba(255,255,255,0.35)" }}>
+              {members.length} {t("grp_members")}{myRank > 0 ? ` · #${myRank}` : ""}
+            </span>
           </div>
         </div>
-        {isAdmin && (
-          <Link href={`/admin/${group.id}`}>
-            <button className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-sm uppercase tracking-wider" style={{ background: "linear-gradient(135deg, #00D4FF, #00FF88)", color: "#0B141B" }}>
-              <Shield size={15} /> {t("grp_manage")}
-            </button>
-          </Link>
-        )}
+        <GroupSwitcherControl currentGroupId={group.id} allGroups={allGroups} activeTab={tab} />
       </div>
 
-      <div className="flex gap-2">
+      <div className="flex gap-2 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
         {TABS.map(tab_ => {
           const active = tab === tab_.id;
           return (
-            <button key={tab_.id} onClick={() => setTab(tab_.id as "overview" | "chat" | "results")}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-sm transition-all"
+            <button key={tab_.id} onClick={() => setTab(tab_.id)}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-sm transition-all shrink-0"
               style={active ? { background: "rgba(0,212,255,0.12)", border: "1px solid rgba(0,212,255,0.35)", color: "#00D4FF" } : { background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.5)" }}>
               <tab_.icon size={15} style={{ color: active ? "#00D4FF" : "rgba(255,255,255,0.3)" }} />
               {tab_.label}
@@ -113,7 +119,77 @@ export function GroupDetailClient({ group, rules, members, currentUserId, isAdmi
         })}
       </div>
 
-      {tab === "overview" && (
+      {tab === "predictions" && (
+        <div className="space-y-4">
+          <div className="-mx-4 sm:-mx-6">
+            <PredictionsClient
+              groupId={group.id}
+              groupName={group.name}
+              allGroups={allGroups}
+              userId={currentUserId}
+              isPaid={true}
+              isAdFree={isAdFree}
+              isCorporate={isCorporate}
+              allMatches={allMatches}
+            />
+          </div>
+
+          <div className="rounded-2xl overflow-hidden" style={glass}>
+            <button
+              onClick={() => setSettledOpen(v => !v)}
+              className="w-full flex items-center justify-between px-5 py-4"
+            >
+              <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.35)" }}>Recently Settled</span>
+              {settledOpen ? <ChevronUp size={14} style={{ color: "rgba(255,255,255,0.4)" }} /> : <ChevronDown size={14} style={{ color: "rgba(255,255,255,0.4)" }} />}
+            </button>
+            {settledOpen && (
+              <div className="px-1 pb-1">
+                <MatchResultsTable groupId={group.id} members={members} />
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {tab === "leaderboard" && (
+        <div className="space-y-4">
+          <LeaderboardList
+            members={leaderboardMembers}
+            currentUserId={currentUserId}
+            groupId={group.id}
+            groupName={group.name}
+            variant="full"
+            isAdFree={isAdFree}
+            isCorporate={isCorporate}
+          />
+          <PointsRaceChart groupId={group.id} />
+          <RivalScoreboardCard groupId={group.id} />
+        </div>
+      )}
+
+      {tab === "chat" && (
+        <div className="rounded-2xl overflow-hidden" style={glass}>
+          <GroupChat groupId={group.id} currentUserId={currentUserId} currentUserName={currentUserName} isPaid={isMember} inline />
+        </div>
+      )}
+
+      {tab === "rules" && (
+        <RulesSummary rules={rules} />
+      )}
+
+      {tab === "admin" && isAdmin && adminData && (
+        <AdminGroupSector
+          group={adminData.group}
+          members={adminData.members}
+          isOwner={adminData.isOwner}
+          currentUserId={currentUserId}
+          adminName={currentUserName}
+          finalLocked={adminData.finalLocked}
+          groupId={group.id}
+        />
+      )}
+
+      {tab === "info" && (
         <div className="space-y-4">
           {isFriendly && (
             <>
@@ -150,8 +226,6 @@ export function GroupDetailClient({ group, rules, members, currentUserId, isAdmi
           </div>
 
           <GroupStreakCard groupId={group.id} />
-          <PointsRaceChart groupId={group.id} />
-          <RivalScoreboardCard groupId={group.id} />
 
           <div className="space-y-3">
             {group.is_corporate_paid && (
@@ -232,22 +306,6 @@ export function GroupDetailClient({ group, rules, members, currentUserId, isAdmi
             </div>
           )}
 
-          <div className="rounded-2xl p-5" style={glass}>
-            <div className="flex items-center gap-2 mb-4">
-              <Target size={16} style={{ color: "#00D4FF" }} />
-              <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.35)" }}>{t("grp_scoring")}</span>
-              <span className="ml-auto flex items-center gap-1 text-[10px]" style={{ color: "rgba(255,255,255,0.25)" }}><Lock size={10} /> {t("grp_locks")}</span>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              {scoringRows.map(([key, label]) => (
-                <div key={key} className="flex items-center justify-between rounded-xl px-3 py-2.5" style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.07)" }}>
-                  <span className="text-xs" style={{ color: "rgba(255,255,255,0.55)" }}>{label}</span>
-                  <span className="text-sm font-black" style={{ color: "#00D4FF" }}>+{rules?.[key] as number ?? "—"}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-
           <div className="rounded-2xl overflow-hidden" style={glass}>
             <div className="px-5 py-4 border-b flex items-center justify-between" style={{ borderColor: "rgba(255,255,255,0.07)" }}>
               <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.35)" }}>Members ({members.length})</span>
@@ -293,11 +351,9 @@ export function GroupDetailClient({ group, rules, members, currentUserId, isAdmi
               </button>
             </Link>
             {isAdmin && (
-              <Link href={`/admin/${group.id}`}>
-                <button className="px-5 py-3 rounded-xl font-bold text-sm uppercase tracking-wider" style={{ background: "rgba(0,212,255,0.1)", border: "1px solid rgba(0,212,255,0.2)", color: "#00D4FF" }}>
-                  {t("common_admin_panel")}
-                </button>
-              </Link>
+              <button onClick={() => setTab("admin")} className="px-5 py-3 rounded-xl font-bold text-sm uppercase tracking-wider" style={{ background: "rgba(0,212,255,0.1)", border: "1px solid rgba(0,212,255,0.2)", color: "#00D4FF" }}>
+                {t("common_admin_panel")}
+              </button>
             )}
           </div>
 
@@ -310,16 +366,6 @@ export function GroupDetailClient({ group, rules, members, currentUserId, isAdmi
             </button>
           )}
         </div>
-      )}
-
-      {tab === "chat" && (
-        <div className="rounded-2xl overflow-hidden" style={glass}>
-          <GroupChat groupId={group.id} currentUserId={currentUserId} currentUserName="" isPaid={isMember} inline />
-        </div>
-      )}
-
-      {tab === "results" && (
-        <MatchResultsTable groupId={group.id} members={members} />
       )}
 
       {showDeleteConfirm && (

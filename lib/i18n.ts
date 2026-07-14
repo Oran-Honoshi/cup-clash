@@ -66,6 +66,8 @@ export interface Translations {
   grp_passkey:     string;
   grp_manage:      string;
   grp_overview:    string;
+  grp_rules:       string;
+  grp_info:        string;
   grp_youreInvited:string;
 
   // Profile
@@ -491,6 +493,8 @@ const en: Translations = {
   grp_passkey:      "Passkey",
   grp_manage:       "Manage",
   grp_overview:     "Overview",
+  grp_rules:        "Rules",
+  grp_info:         "Info",
   grp_youreInvited: "You're invited to",
 
   prof_title:       "Profile",
@@ -885,6 +889,8 @@ const fr: Translations = {
   grp_passkey:      "Code d'accès",
   grp_manage:       "Gérer",
   grp_overview:     "Aperçu",
+  grp_rules:        "Règles",
+  grp_info:         "Infos",
   grp_youreInvited: "Tu es invité à rejoindre",
 
   prof_title:       "Profil",
@@ -1279,6 +1285,8 @@ const de: Translations = {
   grp_passkey:      "Zugangscode",
   grp_manage:       "Verwalten",
   grp_overview:     "Übersicht",
+  grp_rules:        "Regeln",
+  grp_info:         "Info",
   grp_youreInvited: "Du bist eingeladen zu",
 
   prof_title:       "Profil",
@@ -1673,6 +1681,8 @@ const nl: Translations = {
   grp_passkey:      "Toegangscode",
   grp_manage:       "Beheren",
   grp_overview:     "Overzicht",
+  grp_rules:        "Regels",
+  grp_info:         "Info",
   grp_youreInvited: "Je bent uitgenodigd voor",
 
   prof_title:       "Profiel",
@@ -2067,6 +2077,8 @@ const es: Translations = {
   grp_passkey:      "Contraseña",
   grp_manage:       "Gestionar",
   grp_overview:     "Resumen",
+  grp_rules:        "Reglas",
+  grp_info:         "Info",
   grp_youreInvited: "Te invitaron a",
 
   prof_title:       "Perfil",
@@ -2461,6 +2473,8 @@ const pt: Translations = {
   grp_passkey:      "Senha de acesso",
   grp_manage:       "Gerenciar",
   grp_overview:     "Visão geral",
+  grp_rules:        "Regras",
+  grp_info:         "Info",
   grp_youreInvited: "Foste convidado para",
 
   prof_title:       "Perfil",
@@ -2855,6 +2869,8 @@ const he: Translations = {
   grp_passkey:      "קוד גישה",
   grp_manage:       "ניהול",
   grp_overview:     "סקירה",
+  grp_rules:        "כללים",
+  grp_info:         "מידע",
   grp_youreInvited: "הוזמנת לקבוצה",
 
   prof_title:       "פרופיל",
@@ -3249,6 +3265,8 @@ const ar: Translations = {
   grp_passkey:      "رمز الوصول",
   grp_manage:       "إدارة",
   grp_overview:     "نظرة عامة",
+  grp_rules:        "القواعد",
+  grp_info:         "معلومات",
   grp_youreInvited: "أنت معزوم لـ",
 
   prof_title:       "الملف الشخصي",
