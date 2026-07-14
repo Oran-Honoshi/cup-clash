@@ -25,10 +25,14 @@ interface AdminGroupSectorProps {
 // Group Detail "Admin" sub-sector render byte-identical output, including
 // this internal anchor-pill sub-nav.
 export function AdminGroupSector({ group, members, isOwner, currentUserId, adminName, finalLocked, groupId }: AdminGroupSectorProps) {
+  const isHouseRules = group.rulesMode === "house_rules";
+
   const SECTIONS = [
     { id: "members",       label: "Members"     },
-    { id: "money",         label: "Money"       },
-    { id: "scoring",       label: "Scoring"     },
+    ...(isHouseRules ? [] : [
+      { id: "money",         label: "Money"       },
+      { id: "scoring",       label: "Scoring"     },
+    ]),
     { id: "overrides",     label: "Overrides"   },
     { id: "communication", label: "Message"     },
     { id: "export",        label: "Export"      },
@@ -76,38 +80,42 @@ export function AdminGroupSector({ group, members, isOwner, currentUserId, admin
         <AdminPanel group={group} initialMembers={members} isOwner={isOwner} currentUserId={currentUserId} />
       </div>
 
-      {/* Money: pot split, buy-in/prize split, group stage prize */}
-      <div id="money" className="space-y-6" style={{ scrollMarginTop: 64 }}>
-        {/* Split the Pot — only relevant once the Final has been played and there's a genuine tie */}
-        <SplitPotPanel
-          groupId={groupId}
-          members={members}
-          payouts={group.payouts}
-          payoutSplits={group.payoutSplits}
-          buyInAmount={group.buyInAmount}
-          currencySymbol={group.currencySymbol}
-          finalLocked={finalLocked}
-        />
+      {/* Money: pot split, buy-in/prize split, group stage prize — Customizable groups only */}
+      {!isHouseRules && (
+        <div id="money" className="space-y-6" style={{ scrollMarginTop: 64 }}>
+          {/* Split the Pot — only relevant once the Final has been played and there's a genuine tie */}
+          <SplitPotPanel
+            groupId={groupId}
+            members={members}
+            payouts={group.payouts}
+            payoutSplits={group.payoutSplits}
+            buyInAmount={group.buyInAmount}
+            currencySymbol={group.currencySymbol}
+            finalLocked={finalLocked}
+          />
 
-        {/* Group settings: buy-in, prize split */}
-        <GroupRulesEditor
-          groupId={group.id}
-          buyInAmount={group.buyInAmount}
-          memberCount={members.length}
-        />
+          {/* Group settings: buy-in, prize split */}
+          <GroupRulesEditor
+            groupId={group.id}
+            buyInAmount={group.buyInAmount}
+            memberCount={members.length}
+          />
 
-        {/* Group stage prize */}
-        <GroupStagePrizeEditor
-          groupId={group.id}
-          isCashGroup={!group.corporatePrize}
-          currencySymbol={group.currencySymbol}
-        />
-      </div>
+          {/* Group stage prize */}
+          <GroupStagePrizeEditor
+            groupId={group.id}
+            isCashGroup={!group.corporatePrize}
+            currencySymbol={group.currencySymbol}
+          />
+        </div>
+      )}
 
-      {/* Scoring rules */}
-      <div id="scoring" style={{ scrollMarginTop: 64 }}>
-        <ScoringRulesEditor groupId={group.id} />
-      </div>
+      {/* Scoring rules — Customizable groups only; House Rules uses fixed defaults */}
+      {!isHouseRules && (
+        <div id="scoring" style={{ scrollMarginTop: 64 }}>
+          <ScoringRulesEditor groupId={group.id} />
+        </div>
+      )}
 
       {/* Overrides: match results, tournament picks */}
       <div id="overrides" className="space-y-6" style={{ scrollMarginTop: 64 }}>

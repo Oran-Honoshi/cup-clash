@@ -36,6 +36,7 @@ export interface Group {
   showBuyInTracker:        boolean;
   showPaymentLink:         boolean;
   groupMode:               string;
+  rulesMode:               "house_rules" | "customizable";
   winnerMessage:           string | null;
   payouts: {
     first:  string;  // "60%"

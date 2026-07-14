@@ -62,6 +62,7 @@ export function AdminPanel({ group, initialMembers, isOwner, currentUserId }: Ad
   const [roleUpdating,    setRoleUpdating]    = useState<string | null>(null);
 
   const isFriendly = group.groupMode === "friendly";
+  const isHouseRules = group.rulesMode === "house_rules";
   const [winnerMessageEdit, setWinnerMessageEdit] = useState(group.winnerMessage ?? "You are the Champion!");
   const [savingWinnerMsg,   setSavingWinnerMsg]   = useState(false);
   const [winnerMsgSaved,    setWinnerMsgSaved]    = useState(false);
@@ -257,7 +258,7 @@ export function AdminPanel({ group, initialMembers, isOwner, currentUserId }: Ad
     <div className="grid gap-5 lg:grid-cols-2">
 
       {/* ── Member Payments / Winner Message ── */}
-      {isFriendly ? (
+      {(isFriendly || isHouseRules) ? (
         <div className="rounded-2xl p-5" style={{ ...glass, border: "1px solid rgba(0,212,255,0.2)" }}>
           <div className="flex items-center gap-2.5 mb-4">
             <GraduationCap size={18} strokeWidth={1.5} style={{ color: "#00D4FF" }} />
@@ -410,7 +411,8 @@ export function AdminPanel({ group, initialMembers, isOwner, currentUserId }: Ad
 
       <div className="space-y-5">
 
-        {/* ── Payout Split ── */}
+        {/* ── Payout Split — Customizable groups only ── */}
+        {!isHouseRules && (
         <div className="rounded-2xl p-5" style={glass}>
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2.5">
@@ -469,6 +471,7 @@ export function AdminPanel({ group, initialMembers, isOwner, currentUserId }: Ad
             {payoutSaved ? t("adm_saved") : t("adm_save_payouts")}
           </Button>
         </div>
+        )}
 
         {/* ── Prizes ── */}
         {group.corporatePrize && (
@@ -514,7 +517,8 @@ export function AdminPanel({ group, initialMembers, isOwner, currentUserId }: Ad
           </p>
         </div>
 
-        {/* ── Payment Collection ── */}
+        {/* ── Payment Collection — Customizable groups only ── */}
+        {!isHouseRules && (
         <div className="rounded-2xl p-5" style={glass}>
           <div className="flex items-center gap-2.5 mb-4">
             <span style={{ fontSize: 18 }}>💳</span>
@@ -563,10 +567,12 @@ export function AdminPanel({ group, initialMembers, isOwner, currentUserId }: Ad
             </div>
           )}
         </div>
+        )}
       </div>
     </div>
 
-      {/* Display Settings */}
+      {/* Display Settings — Customizable groups only */}
+      {!isHouseRules && (
       <div className="rounded-2xl p-5" style={glass}>
         <div className="flex items-center gap-2.5 mb-4">
           <Eye size={18} strokeWidth={1.5} style={{ color: "#00D4FF" }} />
@@ -607,6 +613,7 @@ export function AdminPanel({ group, initialMembers, isOwner, currentUserId }: Ad
           })}
         </div>
       </div>
+      )}
 
       {/* Bonus Questions */}
       <BonusQuestionsAdmin groupId={group.id} />

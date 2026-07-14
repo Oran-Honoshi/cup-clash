@@ -23,6 +23,7 @@ function mapGroup(d: {
   show_buy_in_tracker?: boolean | null;
   show_payment_link?: boolean | null;
   group_mode?: string | null;
+  rules_mode?: string | null;
   winner_message?: string | null;
   payout_splits?: { first: string[] | null; second: string[] | null; third: string[] | null } | null;
 }): Group {
@@ -49,6 +50,7 @@ function mapGroup(d: {
     showBuyInTracker:        d.show_buy_in_tracker ?? true,
     showPaymentLink:         d.show_payment_link ?? true,
     groupMode:               d.group_mode ?? "standard",
+    rulesMode:               (d.rules_mode as "house_rules" | "customizable") ?? "customizable",
     winnerMessage:           d.winner_message ?? null,
     payouts: {
       first:  `${d.payout_first  ?? 60}%`,
@@ -71,7 +73,7 @@ const GROUP_SELECT = `
   currency, currency_symbol, payment_link,
   enable_group_stage_prize, group_stage_prize_amount, group_stage_prize_label,
   show_prize_split, show_entry_fee, show_prize_pot, show_buy_in_tracker, show_payment_link,
-  group_mode, winner_message, payout_splits
+  group_mode, rules_mode, winner_message, payout_splits
 `;
 
 // ── Get group by ID ──────────────────────────────────────────────────────────

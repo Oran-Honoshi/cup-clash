@@ -76,9 +76,10 @@ function generateWelcomeHtml(data: {
       <table width="100%" cellpadding="0" cellspacing="0">
         ${buyInAmount > 0 ? `<tr><td style="color:#64748b;padding:5px 0;font-size:14px;">Entry</td><td style="color:#0F172A;font-weight:700;text-align:right;font-size:14px;">$${buyInAmount} per player</td></tr>` : ""}
         ${adminFee > 0 ? `<tr><td style="color:#64748b;padding:5px 0;font-size:14px;">Admin fee</td><td style="color:#d97706;font-weight:700;text-align:right;font-size:14px;">${adminFee}% of pool</td></tr>` : ""}
+        ${buyInAmount > 0 ? `
         <tr><td style="color:#64748b;padding:5px 0;font-size:14px;">🥇 1st place</td><td style="color:#0F172A;font-weight:700;text-align:right;font-size:14px;">${payouts.first}% of pool</td></tr>
         <tr><td style="color:#64748b;padding:5px 0;font-size:14px;">🥈 2nd place</td><td style="color:#0F172A;font-weight:700;text-align:right;font-size:14px;">${payouts.second}% of pool</td></tr>
-        <tr><td style="color:#64748b;padding:5px 0;font-size:14px;">🥉 3rd place</td><td style="color:#0F172A;font-weight:700;text-align:right;font-size:14px;">${payouts.third}% of pool</td></tr>
+        <tr><td style="color:#64748b;padding:5px 0;font-size:14px;">🥉 3rd place</td><td style="color:#0F172A;font-weight:700;text-align:right;font-size:14px;">${payouts.third}% of pool</td></tr>` : ""}
         <tr><td style="color:#64748b;padding:5px 0;font-size:14px;">Scoring</td><td style="color:#0F172A;font-weight:700;text-align:right;font-size:14px;">${scoringSystem}</td></tr>
       </table>
       ${rulesText ? `<div style="margin-top:16px;padding-top:16px;border-top:1px solid #e2e8f0;color:#64748b;font-size:14px;line-height:1.6;">${rulesText.replace(/\n/g, "<br>")}</div>` : ""}

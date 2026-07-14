@@ -110,9 +110,14 @@ export async function GET(request: NextRequest) {
     group.members.forEach(m => prizeMap.set(m, perMember));
   }
 
-  // Build CSV rows
-  const header = ["Rank", "Name", "Country", "Points", "Prize", "Payment", "Entry Paid", "Joined"];
-  const rows = ranked.map((m, i) => [i + 1, m.name, m.country, m.points, prizeMap.get(m) ?? 0, m.paidLabel, m.stake, m.joined]);
+  // Build CSV rows — Prize/Payment/Entry Paid columns are money-adjacent and
+  // only meaningful when the group actually has a buy-in.
+  const header = buyInAmount > 0
+    ? ["Rank", "Name", "Country", "Points", "Prize", "Payment", "Entry Paid", "Joined"]
+    : ["Rank", "Name", "Country", "Points", "Joined"];
+  const rows = ranked.map((m, i) => buyInAmount > 0
+    ? [i + 1, m.name, m.country, m.points, prizeMap.get(m) ?? 0, m.paidLabel, m.stake, m.joined]
+    : [i + 1, m.name, m.country, m.points, m.joined]);
 
   const csv = [header, ...rows]
     .map(row => row.map(c => `"${c}"`).join(","))
