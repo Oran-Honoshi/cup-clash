@@ -176,7 +176,7 @@ export default async function DashboardPage({
 
       {isAdmin && (
         <Link
-          href={`/admin/${activeGroupId}`}
+          href={`/groups/${activeGroupId}?tab=admin`}
           className="-mx-4 sm:-mx-6 flex items-center justify-between gap-2 px-4 sm:px-6 py-2 shrink-0"
           style={{ background: "rgba(251,191,36,0.08)", borderBottom: "1px solid rgba(251,191,36,0.2)" }}
         >
