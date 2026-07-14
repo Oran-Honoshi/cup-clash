@@ -1,0 +1,124 @@
+export const dynamic = "force-dynamic";
+
+import Link from "next/link";
+import { User, Shield, Target, Brain, BarChart2 } from "lucide-react";
+import { getCurrentUserProfile } from "@/lib/services/user-group";
+import { pickGameTypeForDate, todayISO } from "@/lib/services/daily-challenge";
+import { DailyLeaderboardPanel } from "@/components/daily-challenge/daily-leaderboard-panel";
+import { DuelCard } from "@/components/game/duel-card";
+import { ZONES } from "@/lib/zones";
+
+const surface = { background: "var(--sf)", border: "1px solid var(--br)", borderRadius: 22 } as const;
+
+// Game Room hub — real content for the Game tab (Phase 1 shipped this as a
+// placeholder pointing straight at /daily-challenge). All games here stay
+// fully anonymous-playable except the Duel card, which needs an identified
+// opponent on both sides.
+export default async function GameRoomPage() {
+  const profile = await getCurrentUserProfile();
+  const zone = ZONES.find(z => z.key === "game")!;
+  const todayGameType = pickGameTypeForDate(todayISO());
+
+  const grid = [
+    {
+      key: "footballer",
+      title: "Guess the Footballer",
+      subtitle: "Progressive clues, one player.",
+      icon: User,
+      href: "/daily-challenge",
+      live: todayGameType === "guess_footballer",
+    },
+    {
+      key: "club",
+      title: "Guess the Club",
+      subtitle: "League + crest silhouette.",
+      icon: Shield,
+      href: "/daily-challenge",
+      live: todayGameType === "guess_club",
+    },
+    {
+      key: "score",
+      title: "Guess the Score",
+      subtitle: "One historic match, four tries.",
+      icon: Target,
+      href: "/game/guess-the-score",
+      live: true,
+    },
+    {
+      key: "trivia",
+      title: "Daily Trivia",
+      subtitle: "Group trivia, points on the line.",
+      icon: Brain,
+      href: "/trivia",
+      live: true,
+    },
+  ];
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <div style={{ fontFamily: "var(--font-ui)", fontSize: 10, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: zone.accent, marginBottom: 4 }}>
+          Arcade
+        </div>
+        <h1 style={{ fontFamily: "var(--font-display)", fontSize: 36, fontWeight: 800, textTransform: "uppercase", color: "var(--tx)", margin: 0 }}>
+          Game Room
+        </h1>
+        <p style={{ fontSize: 14, color: "var(--mt)", fontFamily: "var(--font-ui)", marginTop: 4 }}>
+          Free-to-play mini-games. Sign in only to save results to a leaderboard.
+        </p>
+      </div>
+
+      <div className="grid grid-cols-2 gap-3">
+        {grid.map(cell => {
+          const Icon = cell.icon;
+          return (
+            <Link
+              key={cell.key}
+              href={cell.href}
+              className="flex flex-col gap-2 p-4 transition-transform hover:-translate-y-0.5"
+              style={{ ...surface, textDecoration: "none", opacity: cell.live ? 1 : 0.55 }}
+            >
+              <div className="flex items-center justify-between">
+                <div
+                  className="w-9 h-9 rounded-xl flex items-center justify-center"
+                  style={{ background: `color-mix(in srgb, ${zone.accent} 15%, transparent)` }}
+                >
+                  <Icon size={16} style={{ color: zone.accent }} />
+                </div>
+                {(cell.key === "footballer" || cell.key === "club") && (
+                  <span
+                    className="text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-full"
+                    style={{
+                      background: cell.live ? `color-mix(in srgb, ${zone.accent} 20%, transparent)` : "var(--ip)",
+                      color: cell.live ? zone.accent : "var(--mt)",
+                    }}
+                  >
+                    {cell.live ? "Today" : "Tomorrow"}
+                  </span>
+                )}
+              </div>
+              <div style={{ fontFamily: "var(--font-display)", fontSize: 15, fontWeight: 800, color: "var(--tx)" }}>
+                {cell.title}
+              </div>
+              <p style={{ fontFamily: "var(--font-ui)", fontSize: 11, color: "var(--t2)", margin: 0 }}>
+                {cell.subtitle}
+              </p>
+            </Link>
+          );
+        })}
+      </div>
+
+      <DuelCard userId={profile?.id ?? null} />
+
+      <div>
+        <div className="flex items-center gap-2 mb-2">
+          <BarChart2 size={14} style={{ color: zone.accent }} />
+          <span style={{ fontFamily: "var(--font-ui)", fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.08em", color: "var(--t2)" }}>
+            Global Rank
+          </span>
+        </div>
+        <DailyLeaderboardPanel groupId={null} />
+      </div>
+    </div>
+  );
+}

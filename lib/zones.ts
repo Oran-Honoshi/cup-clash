@@ -19,7 +19,7 @@ export const ZONES: Zone[] = [
   { key: "home",   label: "Home",   href: "/home",             icon: Home,      accent: "#E8B84B" },
   { key: "news",   label: "News",   href: "/news",              icon: Newspaper, accent: "#4C8DFF" },
   { key: "social", label: "Social", href: "/groups",            icon: Users,     accent: "#FF6B6B" },
-  { key: "game",   label: "Game",   href: "/daily-challenge",   icon: Gamepad2,  accent: "#B685FF" },
+  { key: "game",   label: "Game",   href: "/game",              icon: Gamepad2,  accent: "#B685FF" },
   { key: "stats",  label: "Stats",  href: "/stats",             icon: BarChart2, accent: "#35D0A5" },
 ];
 
