@@ -5,6 +5,7 @@ import { useRouter, usePathname } from "next/navigation";
 import { Share2, Lock, CheckCircle2, XCircle } from "lucide-react";
 import { useLocale } from "@/components/i18n/locale-provider";
 import { interpolate } from "@/lib/i18n";
+import { cn } from "@/lib/utils";
 import { PlayerPicker } from "@/components/predictions/player-picker";
 import { DailyChallengeTeamPicker } from "@/components/daily-challenge/daily-challenge-team-picker";
 import { BallLoader } from "@/components/ui/BallLoader";
@@ -13,6 +14,38 @@ import { loadLocalAttempt, saveLocalAttempt } from "@/lib/daily-challenge-storag
 import type { ClueField, GameType } from "@/lib/services/daily-challenge";
 
 const surface = { background: "var(--sf)", border: "1px solid var(--br)", borderRadius: 22 } as const;
+
+// Club crests are flat, fully-opaque artwork — unlike a player cutout photo,
+// a crest's alpha channel only traces its outer boundary (almost every crest
+// is some kind of shield/circle), so a plain `filter: brightness(0)` collapses
+// every club into the same generic blob. This renders the crest as two masked
+// layers instead: a solid accent-color fill clipped to the crest's alpha
+// silhouette (the shield/circle outline), screen-blended with a second layer
+// masked by the crest's luminance, which "punches through" its bright regions
+// (emblems, text, stripes) to reveal the real internal shape.
+function CrestSilhouette({ url, className }: { url: string; className?: string }) {
+  const maskStyle = (mode: "alpha" | "luminance"): React.CSSProperties => ({
+    WebkitMaskImage: `url(${url})`,
+    maskImage: `url(${url})`,
+    maskMode: mode,
+    WebkitMaskSize: "contain",
+    maskSize: "contain",
+    WebkitMaskRepeat: "no-repeat",
+    maskRepeat: "no-repeat",
+    WebkitMaskPosition: "center",
+    maskPosition: "center",
+  });
+
+  return (
+    <div className={cn("relative overflow-hidden p-1.5", className)} style={{ background: "var(--ip)" }}>
+      <div className="absolute inset-0" style={{ backgroundColor: "var(--ac)", ...maskStyle("alpha") }} />
+      <div
+        className="absolute inset-0"
+        style={{ backgroundColor: "var(--ip)", mixBlendMode: "screen", ...maskStyle("luminance") }}
+      />
+    </div>
+  );
+}
 
 type ClueState = {
   cluesUnlocked: ClueField[];
@@ -264,12 +297,16 @@ export function DailyChallengeClient({ userId }: { userId: string | null }) {
                 </div>
               ) : clue === "silhouette" ? (
                 value ? (
-                  <img
-                    src={value as string}
-                    alt=""
-                    className={isClub ? "h-14 w-14 rounded-xl object-contain p-1.5" : "h-14 w-14 rounded-xl object-cover"}
-                    style={{ filter: "brightness(0)", background: "var(--ip)" }}
-                  />
+                  isClub ? (
+                    <CrestSilhouette url={value as string} className="h-14 w-14 rounded-xl" />
+                  ) : (
+                    <img
+                      src={value as string}
+                      alt=""
+                      className="h-14 w-14 rounded-xl object-cover"
+                      style={{ filter: "brightness(0)", background: "var(--ip)" }}
+                    />
+                  )
                 ) : (
                   <span className="text-xs" style={{ color: "var(--t2)" }}>—</span>
                 )
