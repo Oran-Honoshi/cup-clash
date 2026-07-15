@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useId } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { Share2, Lock, CheckCircle2, XCircle } from "lucide-react";
 import { useLocale } from "@/components/i18n/locale-provider";
@@ -43,6 +43,55 @@ function CrestSilhouette({ url, className }: { url: string; className?: string }
         className="absolute inset-0"
         style={{ backgroundColor: "var(--ip)", mixBlendMode: "screen", ...maskStyle("luminance") }}
       />
+    </div>
+  );
+}
+
+// Player photos (Wikimedia Commons headshots, API-Sports cutouts) are fully
+// opaque rectangles with no alpha channel at all, so the CrestSilhouette mask
+// trick above has nothing to key off — it would just fill the whole box,
+// same as the plain `filter: brightness(0)` this replaces. Instead this
+// binarizes the photo by luminance (SVG threshold filter: grayscale, then a
+// hard discrete cutoff) and recolors the dark side as a solid accent shape —
+// which does trace the subject's actual outline for plain-background photos
+// (API-Sports headshots), and at least varies meaningfully by player for
+// busier Commons photos, instead of collapsing every player into one blob.
+function PlayerSilhouette({ url, className }: { url: string; className?: string }) {
+  // Strip colons — useId()'s default ":r0:" form breaks `url(#id)` filter
+  // references in Safari, which doesn't parse colons inside a url() fragment.
+  const filterId = `player-silhouette-${useId().replace(/:/g, "")}`;
+
+  return (
+    <div className={cn("relative overflow-hidden", className)} style={{ background: "var(--ip)" }}>
+      <svg width="0" height="0" style={{ position: "absolute" }} aria-hidden="true">
+        <filter id={filterId} colorInterpolationFilters="sRGB">
+          <feColorMatrix
+            type="matrix"
+            values="0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0.33 0.33 0.33 0 0
+                    0    0    0    1 0"
+            result="gray"
+          />
+          <feComponentTransfer in="gray" result="thresholded">
+            <feFuncR type="discrete" tableValues="0 0 0 1 1" />
+            <feFuncG type="discrete" tableValues="0 0 0 1 1" />
+            <feFuncB type="discrete" tableValues="0 0 0 1 1" />
+          </feComponentTransfer>
+          <feColorMatrix
+            in="thresholded"
+            type="matrix"
+            result="subjectAlpha"
+            values="0 0 0 0 0
+                    0 0 0 0 0
+                    0 0 0 0 0
+                    -1 -1 -1 0 1"
+          />
+          <feFlood style={{ floodColor: "var(--ac)" }} result="flood" />
+          <feComposite in="flood" in2="subjectAlpha" operator="in" />
+        </filter>
+      </svg>
+      <img src={url} alt="" className="h-full w-full object-cover" style={{ filter: `url(#${filterId})` }} />
     </div>
   );
 }
@@ -300,12 +349,7 @@ export function DailyChallengeClient({ userId }: { userId: string | null }) {
                   isClub ? (
                     <CrestSilhouette url={value as string} className="h-14 w-14 rounded-xl" />
                   ) : (
-                    <img
-                      src={value as string}
-                      alt=""
-                      className="h-14 w-14 rounded-xl object-cover"
-                      style={{ filter: "brightness(0)", background: "var(--ip)" }}
-                    />
+                    <PlayerSilhouette url={value as string} className="h-14 w-14 rounded-xl" />
                   )
                 ) : (
                   <span className="text-xs" style={{ color: "var(--t2)" }}>—</span>
