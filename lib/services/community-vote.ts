@@ -103,10 +103,22 @@ export async function getMatchVoteState(
 
   const closed = new Date(vote.closes_at) <= new Date();
 
-  const { data: optionRows } = await sb
-    .from("community_vote_options")
-    .select("id, players(id, full_name, photo, country)")
-    .eq("vote_id", vote.id);
+  // Options and the caller's own cast are independent reads (both only need
+  // vote.id) — run them concurrently instead of one after the other.
+  const [{ data: optionRows }, ownCast] = await Promise.all([
+    sb
+      .from("community_vote_options")
+      .select("id, players(id, full_name, photo, country)")
+      .eq("vote_id", vote.id),
+    userId
+      ? sb
+          .from("community_vote_casts")
+          .select("option_id")
+          .eq("vote_id", vote.id)
+          .eq("user_id", userId)
+          .maybeSingle()
+      : Promise.resolve({ data: null }),
+  ]);
   type OptionRow = { id: string; players: { id: string; full_name: string; photo: string | null; country: string } | { id: string; full_name: string; photo: string | null; country: string }[] };
   const options: VoteOption[] = ((optionRows ?? []) as unknown as OptionRow[])
     .map(r => {
@@ -117,16 +129,7 @@ export async function getMatchVoteState(
     .filter((o): o is VoteOption => !!o)
     .sort((a, b) => a.fullName.localeCompare(b.fullName));
 
-  let userOptionId: string | null = null;
-  if (userId) {
-    const { data: ownCast } = await sb
-      .from("community_vote_casts")
-      .select("option_id")
-      .eq("vote_id", vote.id)
-      .eq("user_id", userId)
-      .maybeSingle();
-    userOptionId = ownCast?.option_id ?? null;
-  }
+  const userOptionId: string | null = ownCast?.data?.option_id ?? null;
 
   let results: VoteState["results"] = null;
   if (closed || userOptionId) {
