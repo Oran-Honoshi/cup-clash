@@ -1,12 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { Bell, LogOut, Globe, X, Check } from "lucide-react";
+import { Bell, LogOut, Globe, X, Check, UserCircle } from "lucide-react";
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { createClient } from "@/lib/supabase/client";
 import { LOCALES, LOCALE_KEYS, type Locale } from "@/lib/i18n";
 import { useLocale } from "@/components/i18n/locale-provider";
+import { UserAvatar } from "@/components/ui/UserAvatar";
 
 function useUnreadCount() {
   const [count, setCount] = useState(0);
@@ -15,6 +16,35 @@ function useUnreadCount() {
     setCount(Math.max(0, 2 - readIds.length));
   }, []);
   return count;
+}
+
+interface HeaderProfile {
+  name:       string;
+  avatar_url: string | null;
+}
+
+// Signed-in state drives which entry point (avatar → Settings, or generic
+// icon → sign in) shows in the top-right corner, consistently across zones.
+function useHeaderProfile() {
+  const [profile, setProfile] = useState<HeaderProfile | null>(null);
+  const [authLoaded, setAuthLoaded] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      const sb = createClient();
+      const { data: { user } } = await sb.auth.getUser();
+      if (!user) { setAuthLoaded(true); return; }
+      const { data } = await sb
+        .from("profiles")
+        .select("name, avatar_url")
+        .eq("id", user.id)
+        .single();
+      if (data) setProfile(data as HeaderProfile);
+      setAuthLoaded(true);
+    })();
+  }, []);
+
+  return { profile, authLoaded };
 }
 
 function MobileLanguagePicker() {
@@ -126,6 +156,7 @@ function MobileLanguagePicker() {
 
 export function AppHeader({ title }: { title?: string }) {
   const unread = useUnreadCount();
+  const { profile, authLoaded } = useHeaderProfile();
 
   const handleSignOut = async () => {
     const sb = createClient();
@@ -181,20 +212,47 @@ export function AppHeader({ title }: { title?: string }) {
             </span>
           )}
         </Link>
-        <button
-          onClick={handleSignOut}
-          className="flex items-center justify-center transition-all"
-          style={{
-            width: 32,
-            height: 32,
-            borderRadius: 16,
-            background: "var(--ip)",
-            border: "1px solid var(--br)",
-          }}
-          aria-label="Sign out"
-        >
-          <LogOut size={14} style={{ color: "#f87171" }} />
-        </button>
+        {authLoaded && profile ? (
+          <Link
+            href="/settings"
+            aria-label="Settings"
+            className="flex items-center justify-center transition-all"
+            style={{ width: 32, height: 32, borderRadius: 16 }}
+          >
+            <UserAvatar name={profile.name} avatarUrl={profile.avatar_url} size="sm" />
+          </Link>
+        ) : authLoaded ? (
+          <Link
+            href="/signup?next=/settings"
+            aria-label="Sign in"
+            className="flex items-center justify-center transition-all"
+            style={{
+              width: 32,
+              height: 32,
+              borderRadius: 16,
+              background: "var(--ip)",
+              border: "1px solid var(--br)",
+            }}
+          >
+            <UserCircle size={16} style={{ color: "var(--t2)" }} />
+          </Link>
+        ) : null}
+        {authLoaded && profile && (
+          <button
+            onClick={handleSignOut}
+            className="flex items-center justify-center transition-all"
+            style={{
+              width: 32,
+              height: 32,
+              borderRadius: 16,
+              background: "var(--ip)",
+              border: "1px solid var(--br)",
+            }}
+            aria-label="Sign out"
+          >
+            <LogOut size={14} style={{ color: "#f87171" }} />
+          </button>
+        )}
       </div>
     </header>
   );
