@@ -670,7 +670,11 @@ export function GroupStagePredictions({ groupId, locked = false, userId, isAdFre
 
       {/* Group pills — scrollable row */}
       <div className="flex gap-1.5 overflow-x-auto pb-1 w-full max-w-full min-w-0"
-        style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}>
+        style={{
+          scrollbarWidth: "none", msOverflowStyle: "none",
+          WebkitMaskImage: "linear-gradient(to right, black calc(100% - 28px), transparent 100%)",
+          maskImage: "linear-gradient(to right, black calc(100% - 28px), transparent 100%)",
+        }}>
         {GROUPS.map(g => {
           const complete = isGroupComplete(g, predictions, allMatches);
           const isActive = g === activeGroup;

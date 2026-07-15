@@ -61,6 +61,8 @@ export function AdminGroupSector({ group, members, isOwner, currentUserId, admin
           WebkitBackdropFilter: "blur(16px) saturate(160%)",
           borderBottom: "1px solid rgba(255,255,255,0.08)",
           scrollbarWidth: "none",
+          WebkitMaskImage: "linear-gradient(to right, black calc(100% - 28px), transparent 100%)",
+          maskImage: "linear-gradient(to right, black calc(100% - 28px), transparent 100%)",
         }}
       >
         {SECTIONS.map(s => (

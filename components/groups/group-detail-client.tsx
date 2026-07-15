@@ -88,7 +88,7 @@ export function GroupDetailClient({
   const myRank = sortedLeaderboard.findIndex(m => m.id === currentUserId) + 1;
 
   return (
-    <div className="max-w-2xl mx-auto space-y-5 overflow-x-clip pb-32">
+    <div className="w-full min-w-0 max-w-2xl mx-auto space-y-5 overflow-x-clip pb-32">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
           <Link href="/groups" className="text-xs font-bold uppercase tracking-widest mb-2 flex items-center gap-1 transition-opacity hover:opacity-70" style={{ color: "#00D4FF" }}>{t("grp_back")}</Link>
@@ -104,7 +104,11 @@ export function GroupDetailClient({
         <GroupSwitcherControl currentGroupId={group.id} allGroups={allGroups} activeTab={tab} />
       </div>
 
-      <div className="flex gap-2 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
+      <div className="flex gap-2 overflow-x-auto" style={{
+        scrollbarWidth: "none",
+        WebkitMaskImage: "linear-gradient(to right, black calc(100% - 28px), transparent 100%)",
+        maskImage: "linear-gradient(to right, black calc(100% - 28px), transparent 100%)",
+      }}>
         {TABS.map(tab_ => {
           const active = tab === tab_.id;
           return (
@@ -121,18 +125,16 @@ export function GroupDetailClient({
 
       {tab === "predictions" && (
         <div className="space-y-4">
-          <div className="-mx-4 sm:-mx-6">
-            <PredictionsClient
-              groupId={group.id}
-              groupName={group.name}
-              allGroups={allGroups}
-              userId={currentUserId}
-              isPaid={true}
-              isAdFree={isAdFree}
-              isCorporate={isCorporate}
-              allMatches={allMatches}
-            />
-          </div>
+          <PredictionsClient
+            groupId={group.id}
+            groupName={group.name}
+            allGroups={allGroups}
+            userId={currentUserId}
+            isPaid={true}
+            isAdFree={isAdFree}
+            isCorporate={isCorporate}
+            allMatches={allMatches}
+          />
 
           <div className="rounded-2xl overflow-hidden" style={glass}>
             <button

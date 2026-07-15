@@ -151,7 +151,11 @@ export function PredictionsClient({
         {/* Tab pill row */}
         <div
           className="cc-carousel flex gap-1.5 pt-2 pb-1.5 overflow-x-auto"
-          style={{ scrollbarWidth: "none" }}
+          style={{
+            scrollbarWidth: "none",
+            WebkitMaskImage: "linear-gradient(to right, black calc(100% - 28px), transparent 100%)",
+            maskImage: "linear-gradient(to right, black calc(100% - 28px), transparent 100%)",
+          }}
         >
           {TABS.map((tab, i) => {
             const active = activeTab === tab.key;
