@@ -1,13 +1,14 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { GroupStagePredictions } from "@/components/predictions/group-stage-predictions";
 import { KnockoutPredictions } from "@/components/predictions/knockout-predictions";
 import { TournamentPicks } from "@/components/dashboard/tournament-picks";
 import { BonusQuestions } from "@/components/predictions/bonus-questions";
 import { GuestStore } from "@/components/ui/guest-signup-modal";
 import { useGroupContext } from "@/lib/contexts/group-context";
-import type { ScheduleMatch } from "@/lib/schedule";
+import { NextMatchCard } from "@/components/dashboard/next-match-card";
+import { getNextScheduleMatch, toMatchType, type ScheduleMatch } from "@/lib/schedule";
 
 interface PredictionsClientProps {
   groupId:            string;
@@ -19,6 +20,11 @@ interface PredictionsClientProps {
   isAdFree?:          boolean;
   isCorporate?:       boolean;
   allMatches?:        ScheduleMatch[];
+  // Shows the Home-dashboard-style hero next-match card above the tabs.
+  // Opt-in: only meaningful for a real, authenticated group context (Group
+  // Detail's Predictions sub-sector) — not the standalone solo/guest
+  // predictions flows, which use a placeholder groupId or no auth session.
+  showNextMatchHero?: boolean;
 }
 
 type SectionKey = "group" | "knockout" | "tournament" | "bonus";
@@ -32,6 +38,7 @@ const TABS: { key: SectionKey; label: string }[] = [
 
 export function PredictionsClient({
   groupId, groupName, allGroups, userId, isPaid, migrateGuestPicks = false, isAdFree, isCorporate, allMatches = [],
+  showNextMatchHero = false,
 }: PredictionsClientProps) {
   void isPaid; void allGroups;
 
@@ -42,6 +49,12 @@ export function PredictionsClient({
 
   const groupStageMatchIds = allMatches.filter(m => m.stage === "Group").map(m => m.id);
   const predictedCount = groupStageMatchIds.filter(id => ctxPredictions[id] != null).length;
+
+  const nextMatch = useMemo(() => {
+    if (!showNextMatchHero) return null;
+    const next = getNextScheduleMatch(allMatches);
+    return next ? toMatchType(next) : null;
+  }, [showNextMatchHero, allMatches]);
 
   const carouselRef  = useRef<HTMLDivElement>(null);
   const sectionRefs  = useRef<(HTMLDivElement | null)[]>([null, null, null, null]);
@@ -138,6 +151,12 @@ export function PredictionsClient({
           </div>
         )}
       </div>
+
+      {nextMatch && (
+        <div className="pb-4">
+          <NextMatchCard match={nextMatch} groupId={groupId} />
+        </div>
+      )}
 
       {/* Sticky tab pills + progress counter */}
       <div

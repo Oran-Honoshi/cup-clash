@@ -27,6 +27,7 @@ export interface Translations {
   nav_notifications: string;
   nav_profile:       string;
   nav_chat:          string;
+  nav_group_predictions: string;
   nav_signout:       string;
   nav_home:          string;
   nav_table:         string;
@@ -457,6 +458,7 @@ const en: Translations = {
   nav_notifications: "Notifications",
   nav_profile:       "Profile",
   nav_chat:          "Group Chat",
+  nav_group_predictions: "Group Predictions",
   nav_signout:       "Sign out",
   nav_home:          "Home",
   nav_table:         "Table",
@@ -853,6 +855,7 @@ const fr: Translations = {
   nav_notifications: "Notifications",
   nav_profile:       "Profil",
   nav_chat:          "Chat du groupe",
+  nav_group_predictions: "Pronostics du groupe",
   nav_signout:       "Déconnexion",
   nav_home:          "Accueil",
   nav_table:         "Tableau",
@@ -1249,6 +1252,7 @@ const de: Translations = {
   nav_notifications: "Benachrichtigungen",
   nav_profile:       "Profil",
   nav_chat:          "Gruppen-Chat",
+  nav_group_predictions: "Gruppentipps",
   nav_signout:       "Abmelden",
   nav_home:          "Start",
   nav_table:         "Tabelle",
@@ -1645,6 +1649,7 @@ const nl: Translations = {
   nav_notifications: "Meldingen",
   nav_profile:       "Profiel",
   nav_chat:          "Groepschat",
+  nav_group_predictions: "Groepsvoorspellingen",
   nav_signout:       "Uitloggen",
   nav_home:          "Home",
   nav_table:         "Tabel",
@@ -2041,6 +2046,7 @@ const es: Translations = {
   nav_notifications: "Notificaciones",
   nav_profile:       "Perfil",
   nav_chat:          "Chat del grupo",
+  nav_group_predictions: "Pronósticos del grupo",
   nav_signout:       "Cerrar sesión",
   nav_home:          "Inicio",
   nav_table:         "Tabla",
@@ -2437,6 +2443,7 @@ const pt: Translations = {
   nav_notifications: "Notificações",
   nav_profile:       "Perfil",
   nav_chat:          "Chat do grupo",
+  nav_group_predictions: "Palpites do grupo",
   nav_signout:       "Sair",
   nav_home:          "Início",
   nav_table:         "Tabela",
@@ -2833,6 +2840,7 @@ const he: Translations = {
   nav_notifications: "התראות",
   nav_profile:       "פרופיל",
   nav_chat:          "צ'אט קבוצה",
+  nav_group_predictions: "ניחושי קבוצה",
   nav_signout:       "התנתקות",
   nav_home:          "בית",
   nav_table:         "טבלה",
@@ -3229,6 +3237,7 @@ const ar: Translations = {
   nav_notifications: "الإشعارات",
   nav_profile:       "الملف الشخصي",
   nav_chat:          "دردشة المجموعة",
+  nav_group_predictions: "توقعات المجموعة",
   nav_signout:       "تسجيل الخروج",
   nav_home:          "الرئيسية",
   nav_table:         "الجدول",

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Trophy, Users, DollarSign, Target, Lock, Shield, ArrowRight, MessageCircle, Info, Trash2, Gift, CheckCircle, Clock, GraduationCap, ClipboardList, ChevronDown, ChevronUp } from "lucide-react";
+import { Trophy, Users, DollarSign, Target, Lock, Shield, ArrowRight, MessageCircle, Info, Trash2, Gift, CheckCircle, Clock, GraduationCap, ClipboardList, ChevronDown, ChevronUp, Table2 } from "lucide-react";
 import Link from "next/link";
 import { GroupChat } from "@/components/chat/group-chat";
 import { GroupStreakCard } from "@/components/daily-challenge/group-streak-card";
@@ -21,7 +21,7 @@ import { compareMembersForRanking } from "@/lib/leaderboard-sort";
 import type { Group as AdminGroup, Member as LeaderboardMember } from "@/lib/types";
 import type { ScheduleMatch } from "@/lib/schedule";
 
-export type SubSector = "predictions" | "leaderboard" | "chat" | "rules" | "admin" | "info";
+export type SubSector = "predictions" | "leaderboard" | "group-predictions" | "chat" | "rules" | "admin" | "info";
 
 interface GroupDetailClientProps {
   group: { id: string; name: string; passkey: string; admin_id: string; buy_in_amount: number; payout_first: number; payout_second: number; payout_third: number; max_members: number; is_corporate_paid?: boolean; corporate_prize?: string | null; currency_symbol?: string | null; payment_link?: string | null; enable_group_stage_prize?: boolean | null; group_stage_prize_amount?: number | null; group_stage_prize_label?: string | null; show_prize_split?: boolean | null; show_entry_fee?: boolean | null; show_prize_pot?: boolean | null; show_buy_in_tracker?: boolean | null; show_payment_link?: boolean | null; group_mode?: string | null; winner_message?: string | null };
@@ -56,12 +56,13 @@ export function GroupDetailClient({
   const paidCount = members.filter(m => m.paid || m.payment_status === "paid").length;
 
   const TABS = [
-    { id: "predictions" as const, label: t("nav_predictions"), icon: Target       },
-    { id: "leaderboard" as const, label: t("nav_leaderboard"), icon: Trophy       },
-    { id: "chat"        as const, label: t("nav_chat"),        icon: MessageCircle },
-    { id: "rules"       as const, label: t("grp_rules"),       icon: ClipboardList },
+    { id: "predictions"       as const, label: t("nav_predictions"),       icon: Target       },
+    { id: "leaderboard"       as const, label: t("nav_leaderboard"),       icon: Trophy       },
+    { id: "group-predictions" as const, label: t("nav_group_predictions"), icon: Table2       },
+    { id: "chat"              as const, label: t("nav_chat"),              icon: MessageCircle },
+    { id: "rules"             as const, label: t("grp_rules"),             icon: ClipboardList },
     ...(isAdmin ? [{ id: "admin" as const, label: t("common_admin"), icon: Shield }] : []),
-    { id: "info"        as const, label: t("grp_info"),        icon: Info         },
+    { id: "info"              as const, label: t("grp_info"),              icon: Info         },
   ];
 
   const handleDelete = async () => {
@@ -134,6 +135,7 @@ export function GroupDetailClient({
             isAdFree={isAdFree}
             isCorporate={isCorporate}
             allMatches={allMatches}
+            showNextMatchHero
           />
 
           <div className="rounded-2xl overflow-hidden" style={glass}>
@@ -166,6 +168,18 @@ export function GroupDetailClient({
           />
           <PointsRaceChart groupId={group.id} />
           <RivalScoreboardCard groupId={group.id} />
+        </div>
+      )}
+
+      {tab === "group-predictions" && (
+        <div className="space-y-4">
+          <div>
+            <h2 className="font-display text-xl uppercase font-black text-white">Group Predictions</h2>
+            <p className="text-xs mt-1" style={{ color: "rgba(255,255,255,0.4)" }}>
+              Every member&apos;s pick and points, match by match.
+            </p>
+          </div>
+          <MatchResultsTable groupId={group.id} members={members} />
         </div>
       )}
 
