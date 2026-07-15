@@ -41,10 +41,8 @@ interface Props {
 }
 
 const glass = {
-  background: "rgba(18,14,38,0.32)",
-  backdropFilter: "blur(40px) saturate(180%)",
-  WebkitBackdropFilter: "blur(40px) saturate(180%)",
-  border: "1px solid rgba(255,255,255,0.14)",
+  background: "var(--sf)",
+  border: "1px solid var(--br)",
   borderRadius: 18,
   overflow: "hidden",
 } as const;
@@ -76,7 +74,7 @@ export function MatchResultsTable({ groupId, members }: Props) {
   if (loading) {
     return (
       <div className="rounded-2xl p-8 text-center" style={glass}>
-        <div className="text-sm animate-pulse" style={{ color: "rgba(255,255,255,0.4)" }}>Loading results…</div>
+        <div className="text-sm animate-pulse" style={{ color: "var(--mt)" }}>Loading results…</div>
       </div>
     );
   }
@@ -85,8 +83,8 @@ export function MatchResultsTable({ groupId, members }: Props) {
     return (
       <div className="rounded-2xl p-8 text-center space-y-2" style={glass}>
         <div className="text-3xl">⏳</div>
-        <div className="text-sm font-bold" style={{ color: "rgba(255,255,255,0.5)" }}>No matches yet</div>
-        <div className="text-xs" style={{ color: "rgba(255,255,255,0.25)" }}>Matches appear here once the schedule is confirmed</div>
+        <div className="text-sm font-bold" style={{ color: "var(--t2)" }}>No matches yet</div>
+        <div className="text-xs" style={{ color: "var(--ft)" }}>Matches appear here once the schedule is confirmed</div>
       </div>
     );
   }
@@ -98,12 +96,12 @@ export function MatchResultsTable({ groupId, members }: Props) {
       <div className="overflow-x-auto">
         <table className="w-full border-collapse" style={{ minWidth }}>
           <thead>
-            <tr style={{ borderBottom: "1px solid rgba(255,255,255,0.08)" }}>
+            <tr style={{ borderBottom: "1px solid var(--br)" }}>
               <th
                 className="text-left px-4 py-3 sticky left-0 z-10"
-                style={{ background: "rgba(14,10,28,0.98)", minWidth: 160 }}
+                style={{ background: "var(--sf)", minWidth: 160 }}
               >
-                <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.3)" }}>
+                <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "var(--ft)" }}>
                   Match
                 </span>
               </th>
@@ -115,7 +113,7 @@ export function MatchResultsTable({ groupId, members }: Props) {
                 >
                   <span
                     className="text-[11px] font-bold block truncate mx-auto"
-                    style={{ color: "rgba(255,255,255,0.7)", maxWidth: 88 }}
+                    style={{ color: "var(--t2)", maxWidth: 88 }}
                     title={m.profiles?.name ?? "?"}
                   >
                     {m.profiles?.name ?? "?"}
@@ -126,9 +124,9 @@ export function MatchResultsTable({ groupId, members }: Props) {
           </thead>
           <tbody>
             {matches.map((match, i) => {
-              const rowBg = i % 2 === 0 ? "rgba(12,9,24,0.96)" : "rgba(16,12,30,0.96)";
+              const rowBg = i % 2 === 0 ? "var(--sf)" : "var(--ip)";
               return (
-                <tr key={match.id} style={{ borderBottom: "1px solid rgba(255,255,255,0.04)" }}>
+                <tr key={match.id} style={{ borderBottom: "1px solid var(--dv)" }}>
                   <td
                     className="px-4 py-3 sticky left-0 z-10"
                     style={{ background: rowBg, minWidth: 160 }}
@@ -149,7 +147,7 @@ export function MatchResultsTable({ groupId, members }: Props) {
             <tr style={{ borderTop: "2px solid rgba(0,212,255,0.2)", background: "rgba(0,212,255,0.04)" }}>
               <td
                 className="px-4 py-3 sticky left-0 z-10"
-                style={{ background: "rgba(8,6,18,0.99)" }}
+                style={{ background: "var(--sf)" }}
               >
                 <span className="text-xs font-black uppercase tracking-widest" style={{ color: "#00D4FF" }}>
                   Total
@@ -188,7 +186,7 @@ function MatchCell({ match }: { match: FinishedMatch }) {
       )}
       {isUpcoming && (
         <div className="flex items-center gap-1 mb-1">
-          <span className="text-[9px] font-bold uppercase tracking-wider" style={{ color: "rgba(255,255,255,0.3)" }}>Upcoming</span>
+          <span className="text-[9px] font-bold uppercase tracking-wider" style={{ color: "var(--ft)" }}>Upcoming</span>
         </div>
       )}
       <div className="flex items-center gap-1.5">
@@ -205,11 +203,11 @@ function MatchCell({ match }: { match: FinishedMatch }) {
         )}
         <span
           className="text-xs font-bold truncate flex-1"
-          style={{ color: "rgba(255,255,255,0.85)", maxWidth: 88 }}
+          style={{ color: "var(--tx)", maxWidth: 88 }}
         >
           {match.home}
         </span>
-        <span className="text-xs font-black tabular-nums" style={{ color: isLive ? "#f87171" : "white" }}>
+        <span className="text-xs font-black tabular-nums" style={{ color: isLive ? "#f87171" : "var(--tx)" }}>
           {hideScore ? "–" : (match.home_score_et ?? match.home_score)}
         </span>
       </div>
@@ -227,23 +225,23 @@ function MatchCell({ match }: { match: FinishedMatch }) {
         )}
         <span
           className="text-xs font-bold truncate flex-1"
-          style={{ color: "rgba(255,255,255,0.85)", maxWidth: 88 }}
+          style={{ color: "var(--tx)", maxWidth: 88 }}
         >
           {match.away}
         </span>
-        <span className="text-xs font-black tabular-nums" style={{ color: isLive ? "#f87171" : "white" }}>
+        <span className="text-xs font-black tabular-nums" style={{ color: isLive ? "#f87171" : "var(--tx)" }}>
           {hideScore ? "–" : (match.away_score_et ?? match.away_score)}
         </span>
       </div>
       {wentToET && !hideScore && (
-        <div className="text-[9px] font-bold" style={{ color: "rgba(255,255,255,0.35)" }}>
+        <div className="text-[9px] font-bold" style={{ color: "var(--mt)" }}>
           {match.home_score}–{match.away_score} (90&apos;) · AET
         </div>
       )}
-      <div className="text-[10px]" style={{ color: "rgba(255,255,255,0.25)" }}>
+      <div className="text-[10px]" style={{ color: "var(--ft)" }}>
         {dateStr}
         {match.group_letter && (
-          <span className="ml-1.5 font-bold" style={{ color: "rgba(255,255,255,0.2)" }}>
+          <span className="ml-1.5 font-bold" style={{ color: "var(--ft)" }}>
             Grp {match.group_letter}
           </span>
         )}
@@ -255,7 +253,7 @@ function MatchCell({ match }: { match: FinishedMatch }) {
 function PredCell({ pred, matchStatus }: { pred: MemberPrediction | undefined; matchStatus: string }) {
   if (!pred) {
     return (
-      <span className="text-lg" style={{ color: "rgba(255,255,255,0.15)" }}>—</span>
+      <span className="text-lg" style={{ color: "var(--ft)" }}>—</span>
     );
   }
 
@@ -264,7 +262,7 @@ function PredCell({ pred, matchStatus }: { pred: MemberPrediction | undefined; m
   // once a match goes live), just show that a pick has been locked in.
   if (matchStatus === "upcoming") {
     return (
-      <span className="inline-block w-1.5 h-1.5 rounded-full" style={{ background: "rgba(255,255,255,0.25)" }} title="Prediction locked in" />
+      <span className="inline-block w-1.5 h-1.5 rounded-full" style={{ background: "var(--mt)" }} title="Prediction locked in" />
     );
   }
 
@@ -274,7 +272,7 @@ function PredCell({ pred, matchStatus }: { pred: MemberPrediction | undefined; m
   if (matchStatus === "live") {
     return (
       <div className="flex flex-col items-center gap-0.5">
-        <span className="font-mono text-xs font-bold" style={{ color: "rgba(255,255,255,0.65)" }}>
+        <span className="font-mono text-xs font-bold" style={{ color: "var(--t2)" }}>
           {predStr}
         </span>
       </div>
@@ -288,12 +286,12 @@ function PredCell({ pred, matchStatus }: { pred: MemberPrediction | undefined; m
       <div className="flex flex-col items-center gap-0.5">
         <div
           className="flex items-center gap-1 px-2 py-0.5 rounded-full"
-          style={{ background: "rgba(251,191,36,0.18)", border: "1px solid rgba(251,191,36,0.4)" }}
+          style={{ background: "color-mix(in srgb, var(--sc) 18%, transparent)", border: "1px solid color-mix(in srgb, var(--sc) 40%, transparent)" }}
         >
-          <Trophy size={10} style={{ color: "#fbbf24", flexShrink: 0 }} />
-          <span className="text-xs font-bold tabular-nums" style={{ color: "#fbbf24" }}>{predStr}</span>
+          <Trophy size={10} style={{ color: "var(--sc)", flexShrink: 0 }} />
+          <span className="text-xs font-bold tabular-nums" style={{ color: "var(--sc)" }}>{predStr}</span>
         </div>
-        <span className="text-[10px] font-black" style={{ color: "#fbbf24" }}>+{pts}</span>
+        <span className="text-[10px] font-black" style={{ color: "var(--sc)" }}>+{pts}</span>
       </div>
     );
   }
@@ -303,12 +301,12 @@ function PredCell({ pred, matchStatus }: { pred: MemberPrediction | undefined; m
       <div className="flex flex-col items-center gap-0.5">
         <div
           className="flex items-center gap-1 px-2 py-0.5 rounded-full"
-          style={{ background: "rgba(0,255,136,0.1)", border: "1px solid rgba(0,255,136,0.28)" }}
+          style={{ background: "color-mix(in srgb, var(--ac) 10%, transparent)", border: "1px solid color-mix(in srgb, var(--ac) 28%, transparent)" }}
         >
-          <Check size={10} style={{ color: "#00FF88", flexShrink: 0 }} />
-          <span className="text-xs font-bold tabular-nums" style={{ color: "#00FF88" }}>{predStr}</span>
+          <Check size={10} style={{ color: "var(--ac)", flexShrink: 0 }} />
+          <span className="text-xs font-bold tabular-nums" style={{ color: "var(--ac)" }}>{predStr}</span>
         </div>
-        <span className="text-[10px] font-black" style={{ color: "#00FF88" }}>+{pts}</span>
+        <span className="text-[10px] font-black" style={{ color: "var(--ac)" }}>+{pts}</span>
       </div>
     );
   }
@@ -320,9 +318,9 @@ function PredCell({ pred, matchStatus }: { pred: MemberPrediction | undefined; m
         style={{ background: "rgba(248,113,113,0.07)", border: "1px solid rgba(248,113,113,0.18)" }}
       >
         <X size={10} style={{ color: "#f87171", flexShrink: 0 }} />
-        <span className="text-xs font-bold tabular-nums" style={{ color: "rgba(255,255,255,0.35)" }}>{predStr}</span>
+        <span className="text-xs font-bold tabular-nums" style={{ color: "var(--mt)" }}>{predStr}</span>
       </div>
-      <span className="text-[10px]" style={{ color: "rgba(255,255,255,0.2)" }}>+0</span>
+      <span className="text-[10px]" style={{ color: "var(--ft)" }}>+0</span>
     </div>
   );
 }

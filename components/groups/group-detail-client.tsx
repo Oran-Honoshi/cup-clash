@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Trophy, Users, DollarSign, Target, Lock, Shield, ArrowRight, MessageCircle, Info, Trash2, Gift, CheckCircle, Clock, GraduationCap, ClipboardList, ChevronDown, ChevronUp, Table2 } from "lucide-react";
+import { Trophy, Users, DollarSign, Target, Lock, Shield, ArrowRight, MessageCircle, Info, Trash2, Gift, CheckCircle, Clock, GraduationCap, ClipboardList, Table2 } from "lucide-react";
 import Link from "next/link";
 import { GroupChat } from "@/components/chat/group-chat";
 import { GroupStreakCard } from "@/components/daily-challenge/group-streak-card";
@@ -52,7 +52,6 @@ export function GroupDetailClient({
   const [tab, setTab] = useState<SubSector>(initialTab);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
-  const [settledOpen, setSettledOpen] = useState(false);
   const paidCount = members.filter(m => m.paid || m.payment_status === "paid").length;
 
   const TABS = [
@@ -137,21 +136,6 @@ export function GroupDetailClient({
             allMatches={allMatches}
             showNextMatchHero
           />
-
-          <div className="rounded-2xl overflow-hidden" style={glass}>
-            <button
-              onClick={() => setSettledOpen(v => !v)}
-              className="w-full flex items-center justify-between px-5 py-4"
-            >
-              <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.35)" }}>Recently Settled</span>
-              {settledOpen ? <ChevronUp size={14} style={{ color: "rgba(255,255,255,0.4)" }} /> : <ChevronDown size={14} style={{ color: "rgba(255,255,255,0.4)" }} />}
-            </button>
-            {settledOpen && (
-              <div className="px-1 pb-1">
-                <MatchResultsTable groupId={group.id} members={members} />
-              </div>
-            )}
-          </div>
         </div>
       )}
 
