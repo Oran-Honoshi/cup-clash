@@ -16,6 +16,8 @@
 // resolved by name, not by the FK.
 
 import { sbAdmin } from "@/lib/supabase/admin";
+import { sbAnon as sbPublic } from "@/lib/supabase/anon";
+import { calcLivePoints } from "@/lib/services/predictions";
 
 const ORACLE_MODEL = "claude-opus-4-8";
 
@@ -270,4 +272,284 @@ export async function runOracleCron(): Promise<OracleCronResult> {
   }
 
   return result;
+}
+
+// ── Public reads (Home teaser + Game Room) ───────────────────────────────
+
+export interface OraclePredictionRow {
+  id: string;
+  match_id: string;
+  predicted_home_score: number;
+  predicted_away_score: number;
+  predicted_winner: "home" | "away" | "draw";
+  confidence_pct: number;
+  reasoning_blurb: string;
+  model: string;
+  generated_at: string;
+}
+
+export interface OracleMatchInfo {
+  id: string;
+  home: string;
+  away: string;
+  homeFlagCode: string | null;
+  awayFlagCode: string | null;
+  kickoffAt: string;
+  stage: string;
+  status: string;
+  homeScore: number | null;
+  awayScore: number | null;
+  homeScoreET: number | null;
+  awayScoreET: number | null;
+}
+
+export interface OracleMatchPrediction {
+  match: OracleMatchInfo;
+  prediction: OraclePredictionRow;
+}
+
+const ORACLE_MATCH_COLS =
+  "id, home, away, home_flag, away_flag, kickoff_at, stage, status, home_score, away_score, home_score_et, away_score_et";
+
+interface OracleMatchRow {
+  id: string; home: string; away: string;
+  home_flag: string | null; away_flag: string | null;
+  kickoff_at: string; stage: string; status: string;
+  home_score: number | null; away_score: number | null;
+  home_score_et: number | null; away_score_et: number | null;
+}
+
+function toMatchInfo(m: OracleMatchRow): OracleMatchInfo {
+  return {
+    id: m.id, home: m.home, away: m.away,
+    homeFlagCode: m.home_flag, awayFlagCode: m.away_flag,
+    kickoffAt: m.kickoff_at, stage: m.stage, status: m.status,
+    homeScore: m.home_score, awayScore: m.away_score,
+    homeScoreET: m.home_score_et, awayScoreET: m.away_score_et,
+  };
+}
+
+// Next upcoming match the Oracle has actually predicted — deliberately NOT
+// simply getNextMatch() from matches.ts, since that resolves to the soonest
+// kickoff overall and can land on a still-unresolved bracket placeholder
+// (e.g. the 3rd-place match while its teams are still "L(SF1)"/"L(SF2)")
+// that the Oracle's own eligibility gate deliberately excludes. Small table
+// (knockout matches only), so two simple queries + an in-memory join beats
+// a cross-table order-by.
+export async function getNextOracleMatch(): Promise<OracleMatchPrediction | null> {
+  const sb = sbPublic();
+  const { data: predictions } = await sb
+    .from("oracle_predictions")
+    .select("id, match_id, predicted_home_score, predicted_away_score, predicted_winner, confidence_pct, reasoning_blurb, model, generated_at");
+  if (!predictions?.length) return null;
+
+  const { data: matches } = await sb
+    .from("matches")
+    .select(ORACLE_MATCH_COLS)
+    .in("id", predictions.map((p: { match_id: string }) => p.match_id))
+    .eq("status", "upcoming")
+    .order("kickoff_at", { ascending: true })
+    .limit(1);
+  if (!matches?.length) return null;
+
+  const match = matches[0] as OracleMatchRow;
+  const prediction = (predictions as OraclePredictionRow[]).find(p => p.match_id === match.id);
+  if (!prediction) return null;
+
+  return { match: toMatchInfo(match), prediction };
+}
+
+// Every match the Oracle has predicted (any status), soonest kickoff first —
+// backs the Game Room section, which reveals predictions for upcoming
+// matches and "who was closer" once a match finishes.
+export async function getAllOracleMatches(): Promise<OracleMatchPrediction[]> {
+  const sb = sbPublic();
+  const { data: predictions } = await sb
+    .from("oracle_predictions")
+    .select("id, match_id, predicted_home_score, predicted_away_score, predicted_winner, confidence_pct, reasoning_blurb, model, generated_at");
+  if (!predictions?.length) return [];
+
+  const { data: matches } = await sb
+    .from("matches")
+    .select(ORACLE_MATCH_COLS)
+    .in("id", predictions.map((p: { match_id: string }) => p.match_id))
+    .order("kickoff_at", { ascending: true });
+  if (!matches?.length) return [];
+
+  const predictionByMatchId = new Map((predictions as OraclePredictionRow[]).map(p => [p.match_id, p]));
+  return (matches as OracleMatchRow[])
+    .map(m => {
+      const prediction = predictionByMatchId.get(m.id);
+      return prediction ? { match: toMatchInfo(m), prediction } : null;
+    })
+    .filter((row): row is OracleMatchPrediction => row !== null);
+}
+
+// ── Crowd agreement (global stats per match) ─────────────────────────────
+
+export interface OracleAgreementStats {
+  agree: number;
+  disagree: number;
+  total: number;
+}
+
+function outcomeOf(home: number, away: number): "home" | "away" | "draw" {
+  return home > away ? "home" : home < away ? "away" : "draw";
+}
+
+// Counts, per match, how many submitted group_predictions rows share the
+// Oracle's predicted winner direction (not exact score) vs. don't. Global —
+// every group's predictions count, not just the viewer's own group, per the
+// Step 3 spec ("simple query against the existing group_predictions table").
+export async function getOracleAgreementStats(
+  matchIds: string[],
+  predictionByMatchId: Map<string, OraclePredictionRow>
+): Promise<Map<string, OracleAgreementStats>> {
+  const stats = new Map<string, OracleAgreementStats>();
+  if (!matchIds.length) return stats;
+
+  const { data } = await sbAdmin()
+    .from("group_predictions")
+    .select("match_id, home_score, away_score")
+    .in("match_id", matchIds);
+
+  for (const row of (data ?? []) as Array<{ match_id: string; home_score: number; away_score: number }>) {
+    const prediction = predictionByMatchId.get(row.match_id);
+    if (!prediction) continue;
+    const entry = stats.get(row.match_id) ?? { agree: 0, disagree: 0, total: 0 };
+    entry.total++;
+    if (outcomeOf(row.home_score, row.away_score) === prediction.predicted_winner) entry.agree++;
+    else entry.disagree++;
+    stats.set(row.match_id, entry);
+  }
+  return stats;
+}
+
+// ── "Who was closer" — user vs Oracle, once a match is finished ─────────
+// Reuses calcLivePoints's exact/outcome/none tiering (same categorical
+// closeness definition scoring already uses) rather than inventing a new
+// numeric distance metric this codebase doesn't otherwise use.
+
+const CLOSENESS_TIER: Record<"exact" | "outcome" | "none", number> = { exact: 2, outcome: 1, none: 0 };
+
+export type CloserResult = "user" | "oracle" | "tie";
+
+export function compareCloseness(
+  userPrediction: { homeScore: number; awayScore: number },
+  oraclePrediction: { homeScore: number; awayScore: number },
+  actualHome: number,
+  actualAway: number
+): CloserResult {
+  const userTier = CLOSENESS_TIER[calcLivePoints(userPrediction, actualHome, actualAway).type];
+  const oracleTier = CLOSENESS_TIER[calcLivePoints(oraclePrediction, actualHome, actualAway).type];
+  if (userTier > oracleTier) return "user";
+  if (oracleTier > userTier) return "oracle";
+  return "tie";
+}
+
+// A finished match's effective actual score — ET score if the match went to
+// extra time, else the 90-minute score. Mirrors getAllMatches()'s convention
+// in matches.ts (a penalty shootout never changes the scoreline used for
+// grading, only bracket advancement).
+export function effectiveScore(match: OracleMatchInfo): { home: number; away: number } | null {
+  const home = match.homeScoreET ?? match.homeScore;
+  const away = match.awayScoreET ?? match.awayScore;
+  if (home == null || away == null) return null;
+  return { home, away };
+}
+
+// Current user's own group_predictions rows for a set of matches, scoped to
+// one group (their primary group — same "first group" convention the Home
+// page already uses for rank/streak). Uses sbAdmin() because RLS on
+// group_predictions requires an authenticated session's auth.uid(), which
+// server-side reads via sbAnon()/sbAdmin() don't carry — callers must have
+// already verified `userId` via an authenticated session before calling.
+export async function getUserOraclePicks(
+  userId: string,
+  groupId: string,
+  matchIds: string[]
+): Promise<Map<string, { homeScore: number; awayScore: number }>> {
+  const picks = new Map<string, { homeScore: number; awayScore: number }>();
+  if (!matchIds.length) return picks;
+
+  const { data } = await sbAdmin()
+    .from("group_predictions")
+    .select("match_id, home_score, away_score")
+    .eq("user_id", userId)
+    .eq("group_id", groupId)
+    .in("match_id", matchIds);
+
+  for (const row of (data ?? []) as Array<{ match_id: string; home_score: number; away_score: number }>) {
+    picks.set(row.match_id, { homeScore: row.home_score, awayScore: row.away_score });
+  }
+  return picks;
+}
+
+// ── Game Room section data ────────────────────────────────────────────────
+
+export interface OracleGameCard {
+  match: OracleMatchInfo;
+  prediction: OraclePredictionRow;
+  stats: OracleAgreementStats;
+  userPick: { homeScore: number; awayScore: number } | null;
+  // null: match hasn't finished yet, nothing to compare. "no_pick": finished
+  // but the user never predicted it. Otherwise who was closer.
+  closer: CloserResult | "no_pick" | null;
+}
+
+export interface OracleGameRoomData {
+  cards: OracleGameCard[];
+  // null when the user is anonymous or has no finished, self-predicted
+  // matches yet to tally — distinct from a real 0-0 record.
+  record: { you: number; oracle: number } | null;
+}
+
+export async function getOracleGameRoomData(
+  userId: string | null,
+  groupId: string | null
+): Promise<OracleGameRoomData> {
+  const matches = await getAllOracleMatches();
+  if (!matches.length) return { cards: [], record: null };
+
+  const matchIds = matches.map(m => m.match.id);
+  const predictionByMatchId = new Map(matches.map(m => [m.match.id, m.prediction]));
+
+  const [statsByMatchId, userPicks] = await Promise.all([
+    getOracleAgreementStats(matchIds, predictionByMatchId),
+    userId && groupId
+      ? getUserOraclePicks(userId, groupId, matchIds)
+      : Promise.resolve(new Map<string, { homeScore: number; awayScore: number }>()),
+  ]);
+
+  let recordYou = 0;
+  let recordOracle = 0;
+  let hasComparableMatch = false;
+
+  const cards: OracleGameCard[] = matches.map(({ match, prediction }) => {
+    const stats = statsByMatchId.get(match.id) ?? { agree: 0, disagree: 0, total: 0 };
+    const userPick = userPicks.get(match.id) ?? null;
+
+    let closer: OracleGameCard["closer"] = null;
+    if (match.status === "finished") {
+      const actual = effectiveScore(match);
+      if (actual) {
+        if (userPick) {
+          closer = compareCloseness(
+            userPick,
+            { homeScore: prediction.predicted_home_score, awayScore: prediction.predicted_away_score },
+            actual.home, actual.away
+          );
+          hasComparableMatch = true;
+          if (closer === "user") recordYou++;
+          if (closer === "oracle") recordOracle++;
+        } else {
+          closer = "no_pick";
+        }
+      }
+    }
+
+    return { match, prediction, stats, userPick, closer };
+  });
+
+  return { cards, record: userId && hasComparableMatch ? { you: recordYou, oracle: recordOracle } : null };
 }

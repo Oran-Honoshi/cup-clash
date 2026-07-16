@@ -444,6 +444,27 @@ export interface Translations {
   mvp_vote_error_already:  string;
   mvp_vote_error_closed:   string;
   mvp_vote_signin_prompt:  string;
+
+  // Oracle Predictions — "Beat the Oracle" (Home teaser + Game Room)
+  oracle_label:               string;
+  oracle_teaser_eyebrow:      string;
+  oracle_teaser_your_pick:    string;
+  oracle_teaser_oracle_pick:  string;
+  oracle_confidence:          string;
+  oracle_says_prefix:         string;
+  oracle_teaser_cta:          string;
+  oracle_game_heading:        string;
+  oracle_game_subtitle:       string;
+  oracle_game_agree_stats:    string;
+  oracle_game_no_predictions: string;
+  oracle_game_closer_you:     string;
+  oracle_game_closer_oracle:  string;
+  oracle_game_closer_tie:     string;
+  oracle_game_closer_no_pick: string;
+  oracle_game_record:         string;
+  oracle_game_empty:          string;
+  oracle_game_final_score:    string;
+  oracle_game_final_label:    string;
 }
 
 // ── English (base) ─────────────────────────────────────────────────────────────
@@ -841,6 +862,25 @@ const en: Translations = {
   mvp_vote_error_closed: "Voting has closed",
   mvp_vote_signin_prompt: "Sign in to vote",
 
+  oracle_label: "The Oracle",
+  oracle_teaser_eyebrow: "Beat the Oracle",
+  oracle_teaser_your_pick: "Your pick",
+  oracle_teaser_oracle_pick: "Oracle's pick",
+  oracle_confidence: "{pct}% confident",
+  oracle_says_prefix: "The Oracle says:",
+  oracle_teaser_cta: "Make your prediction first",
+  oracle_game_heading: "Beat the Oracle",
+  oracle_game_subtitle: "See the Oracle's picks and how the crowd voted.",
+  oracle_game_agree_stats: "{agree} agreed · {disagree} disagreed",
+  oracle_game_no_predictions: "No one's predicted this match yet",
+  oracle_game_closer_you: "You were closer",
+  oracle_game_closer_oracle: "Oracle was closer",
+  oracle_game_closer_tie: "Dead heat",
+  oracle_game_closer_no_pick: "You didn't predict this one",
+  oracle_game_record: "You: {you} · Oracle: {oracle}",
+  oracle_game_empty: "The Oracle hasn't made any predictions yet.",
+  oracle_game_final_score: "Final score: {home}-{away}",
+  oracle_game_final_label: "Final",
 };
 
 // ── French ─────────────────────────────────────────────────────────────────────
@@ -1238,6 +1278,25 @@ const fr: Translations = {
   mvp_vote_error_closed: "Le vote est clos",
   mvp_vote_signin_prompt: "Connectez-vous pour voter",
 
+  oracle_label: "L'Oracle",
+  oracle_teaser_eyebrow: "Battez l'Oracle",
+  oracle_teaser_your_pick: "Votre pronostic",
+  oracle_teaser_oracle_pick: "Pronostic de l'Oracle",
+  oracle_confidence: "{pct}% de confiance",
+  oracle_says_prefix: "L'Oracle dit :",
+  oracle_teaser_cta: "Faites d'abord votre pronostic",
+  oracle_game_heading: "Battez l'Oracle",
+  oracle_game_subtitle: "Découvrez les pronostics de l'Oracle et l'avis des autres joueurs.",
+  oracle_game_agree_stats: "{agree} d'accord · {disagree} pas d'accord",
+  oracle_game_no_predictions: "Personne n'a encore pronostiqué ce match",
+  oracle_game_closer_you: "Vous étiez plus proche",
+  oracle_game_closer_oracle: "L'Oracle était plus proche",
+  oracle_game_closer_tie: "Match nul",
+  oracle_game_closer_no_pick: "Vous n'avez pas pronostiqué ce match",
+  oracle_game_record: "Vous : {you} · Oracle : {oracle}",
+  oracle_game_empty: "L'Oracle n'a encore fait aucun pronostic.",
+  oracle_game_final_score: "Score final : {home}-{away}",
+  oracle_game_final_label: "Final",
 };
 
 // ── German ─────────────────────────────────────────────────────────────────────
@@ -1635,6 +1694,25 @@ const de: Translations = {
   mvp_vote_error_closed: "Die Abstimmung ist beendet",
   mvp_vote_signin_prompt: "Melde dich an, um abzustimmen",
 
+  oracle_label: "Das Orakel",
+  oracle_teaser_eyebrow: "Schlag das Orakel",
+  oracle_teaser_your_pick: "Dein Tipp",
+  oracle_teaser_oracle_pick: "Tipp des Orakels",
+  oracle_confidence: "{pct}% sicher",
+  oracle_says_prefix: "Das Orakel sagt:",
+  oracle_teaser_cta: "Gib zuerst deinen Tipp ab",
+  oracle_game_heading: "Schlag das Orakel",
+  oracle_game_subtitle: "Sieh dir die Tipps des Orakels an – und was die Community denkt.",
+  oracle_game_agree_stats: "{agree} stimmen zu · {disagree} nicht",
+  oracle_game_no_predictions: "Noch niemand hat für dieses Spiel getippt",
+  oracle_game_closer_you: "Du warst näher dran",
+  oracle_game_closer_oracle: "Das Orakel war näher dran",
+  oracle_game_closer_tie: "Gleichstand",
+  oracle_game_closer_no_pick: "Du hast hierfür nicht getippt",
+  oracle_game_record: "Du: {you} · Orakel: {oracle}",
+  oracle_game_empty: "Das Orakel hat noch keine Tipps abgegeben.",
+  oracle_game_final_score: "Endstand: {home}-{away}",
+  oracle_game_final_label: "Endstand",
 };
 
 // ── Dutch ──────────────────────────────────────────────────────────────────────
@@ -2032,6 +2110,25 @@ const nl: Translations = {
   mvp_vote_error_closed: "Stemmen is gesloten",
   mvp_vote_signin_prompt: "Log in om te stemmen",
 
+  oracle_label: "Het Orakel",
+  oracle_teaser_eyebrow: "Versla het Orakel",
+  oracle_teaser_your_pick: "Jouw voorspelling",
+  oracle_teaser_oracle_pick: "Voorspelling van het Orakel",
+  oracle_confidence: "{pct}% zeker",
+  oracle_says_prefix: "Het Orakel zegt:",
+  oracle_teaser_cta: "Doe eerst je eigen voorspelling",
+  oracle_game_heading: "Versla het Orakel",
+  oracle_game_subtitle: "Bekijk de voorspellingen van het Orakel en wat anderen denken.",
+  oracle_game_agree_stats: "{agree} mee eens · {disagree} mee oneens",
+  oracle_game_no_predictions: "Nog niemand heeft voor deze wedstrijd voorspeld",
+  oracle_game_closer_you: "Jij zat dichterbij",
+  oracle_game_closer_oracle: "Het Orakel zat dichterbij",
+  oracle_game_closer_tie: "Gelijkspel",
+  oracle_game_closer_no_pick: "Je hebt hier geen voorspelling voor gedaan",
+  oracle_game_record: "Jij: {you} · Orakel: {oracle}",
+  oracle_game_empty: "Het Orakel heeft nog geen voorspellingen gedaan.",
+  oracle_game_final_score: "Eindstand: {home}-{away}",
+  oracle_game_final_label: "Eindstand",
 };
 
 // ── Spanish ────────────────────────────────────────────────────────────────────
@@ -2429,6 +2526,25 @@ const es: Translations = {
   mvp_vote_error_closed: "La votación ha cerrado",
   mvp_vote_signin_prompt: "Inicia sesión para votar",
 
+  oracle_label: "El Oráculo",
+  oracle_teaser_eyebrow: "Vence al Oráculo",
+  oracle_teaser_your_pick: "Tu pronóstico",
+  oracle_teaser_oracle_pick: "Pronóstico del Oráculo",
+  oracle_confidence: "{pct}% de confianza",
+  oracle_says_prefix: "El Oráculo dice:",
+  oracle_teaser_cta: "Haz tu pronóstico primero",
+  oracle_game_heading: "Vence al Oráculo",
+  oracle_game_subtitle: "Mira los pronósticos del Oráculo y lo que opina la afición.",
+  oracle_game_agree_stats: "{agree} de acuerdo · {disagree} en desacuerdo",
+  oracle_game_no_predictions: "Nadie ha pronosticado este partido todavía",
+  oracle_game_closer_you: "Estuviste más cerca",
+  oracle_game_closer_oracle: "El Oráculo estuvo más cerca",
+  oracle_game_closer_tie: "Empate",
+  oracle_game_closer_no_pick: "No pronosticaste este partido",
+  oracle_game_record: "Tú: {you} · Oráculo: {oracle}",
+  oracle_game_empty: "El Oráculo aún no ha hecho ningún pronóstico.",
+  oracle_game_final_score: "Resultado final: {home}-{away}",
+  oracle_game_final_label: "Final",
 };
 
 // ── Portuguese ─────────────────────────────────────────────────────────────────
@@ -2826,6 +2942,25 @@ const pt: Translations = {
   mvp_vote_error_closed: "A votação foi encerrada",
   mvp_vote_signin_prompt: "Entre para votar",
 
+  oracle_label: "O Oráculo",
+  oracle_teaser_eyebrow: "Vença o Oráculo",
+  oracle_teaser_your_pick: "Seu palpite",
+  oracle_teaser_oracle_pick: "Palpite do Oráculo",
+  oracle_confidence: "{pct}% de confiança",
+  oracle_says_prefix: "O Oráculo diz:",
+  oracle_teaser_cta: "Faça seu palpite primeiro",
+  oracle_game_heading: "Vença o Oráculo",
+  oracle_game_subtitle: "Veja os palpites do Oráculo e o que a torcida acha.",
+  oracle_game_agree_stats: "{agree} concordaram · {disagree} discordaram",
+  oracle_game_no_predictions: "Ninguém palpitou nesta partida ainda",
+  oracle_game_closer_you: "Você chegou mais perto",
+  oracle_game_closer_oracle: "O Oráculo chegou mais perto",
+  oracle_game_closer_tie: "Empate",
+  oracle_game_closer_no_pick: "Você não palpitou nesta partida",
+  oracle_game_record: "Você: {you} · Oráculo: {oracle}",
+  oracle_game_empty: "O Oráculo ainda não fez nenhum palpite.",
+  oracle_game_final_score: "Placar final: {home}-{away}",
+  oracle_game_final_label: "Final",
 };
 
 // ── Hebrew ─────────────────────────────────────────────────────────────────────
@@ -3223,6 +3358,25 @@ const he: Translations = {
   mvp_vote_error_closed: "ההצבעה נסגרה",
   mvp_vote_signin_prompt: "התחברו כדי להצביע",
 
+  oracle_label: "המגיד העתידות",
+  oracle_teaser_eyebrow: "נצחו את המגיד העתידות",
+  oracle_teaser_your_pick: "הניחוש שלך",
+  oracle_teaser_oracle_pick: "הניחוש של המגיד",
+  oracle_confidence: "{pct}% ביטחון",
+  oracle_says_prefix: "המגיד אומר:",
+  oracle_teaser_cta: "נחשו קודם בעצמכם",
+  oracle_game_heading: "נצחו את המגיד העתידות",
+  oracle_game_subtitle: "צפו בניחושי המגיד ובדעת הקהל",
+  oracle_game_agree_stats: "{agree} הסכימו · {disagree} לא הסכימו",
+  oracle_game_no_predictions: "עדיין אין ניחושים למשחק הזה",
+  oracle_game_closer_you: "הצלחתם יותר",
+  oracle_game_closer_oracle: "המגיד הצליח יותר",
+  oracle_game_closer_tie: "תיקו",
+  oracle_game_closer_no_pick: "לא ניחשתם למשחק הזה",
+  oracle_game_record: "אתם: {you} · מגיד: {oracle}",
+  oracle_game_empty: "המגיד עדיין לא ניחש כלום.",
+  oracle_game_final_score: "תוצאה סופית: {home}-{away}",
+  oracle_game_final_label: "סופי",
 };
 
 // ── Arabic ─────────────────────────────────────────────────────────────────────
@@ -3620,6 +3774,25 @@ const ar: Translations = {
   mvp_vote_error_closed: "التصويت مغلق",
   mvp_vote_signin_prompt: "سجّل الدخول للتصويت",
 
+  oracle_label: "العرّاف",
+  oracle_teaser_eyebrow: "تغلّب على العرّاف",
+  oracle_teaser_your_pick: "توقعك",
+  oracle_teaser_oracle_pick: "توقع العرّاف",
+  oracle_confidence: "ثقة {pct}%",
+  oracle_says_prefix: "يقول العرّاف:",
+  oracle_teaser_cta: "توقع أولاً بنفسك",
+  oracle_game_heading: "تغلّب على العرّاف",
+  oracle_game_subtitle: "شاهد توقعات العرّاف وآراء الجمهور.",
+  oracle_game_agree_stats: "{agree} متفقون · {disagree} غير متفقين",
+  oracle_game_no_predictions: "لم يتوقع أحد لهذه المباراة بعد",
+  oracle_game_closer_you: "كنت أقرب",
+  oracle_game_closer_oracle: "كان العرّاف أقرب",
+  oracle_game_closer_tie: "تعادل",
+  oracle_game_closer_no_pick: "لم تتوقع هذه المباراة",
+  oracle_game_record: "أنت: {you} · العرّاف: {oracle}",
+  oracle_game_empty: "لم يقدّم العرّاف أي توقعات بعد.",
+  oracle_game_final_score: "النتيجة النهائية: {home}-{away}",
+  oracle_game_final_label: "النتيجة",
 };
 
 // ── Translation map ────────────────────────────────────────────────────────────
