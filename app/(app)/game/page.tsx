@@ -2,10 +2,12 @@ export const dynamic = "force-dynamic";
 
 import Link from "next/link";
 import { User, Shield, Target, Brain, BarChart2 } from "lucide-react";
-import { getCurrentUserProfile } from "@/lib/services/user-group";
+import { getCurrentUserProfile, getAllUserGroups } from "@/lib/services/user-group";
 import { pickGameTypeForDate, todayISO } from "@/lib/services/daily-challenge";
 import { DailyLeaderboardPanel } from "@/components/daily-challenge/daily-leaderboard-panel";
 import { DuelCard } from "@/components/game/duel-card";
+import { OracleGameRoomSection } from "@/components/game/oracle-game-room-section";
+import { getOracleGameRoomData } from "@/lib/services/oracle";
 import { ZONES } from "@/lib/zones";
 
 const surface = { background: "var(--sf)", border: "1px solid var(--br)", borderRadius: 22 } as const;
@@ -18,6 +20,9 @@ export default async function GameRoomPage() {
   const profile = await getCurrentUserProfile();
   const zone = ZONES.find(z => z.key === "game")!;
   const todayGameType = pickGameTypeForDate(todayISO());
+
+  const primaryGroupId = profile ? (await getAllUserGroups(profile.id))[0]?.group_id ?? null : null;
+  const oracleData = await getOracleGameRoomData(profile?.id ?? null, primaryGroupId);
 
   const grid = [
     {
@@ -109,6 +114,8 @@ export default async function GameRoomPage() {
       </div>
 
       <DuelCard userId={profile?.id ?? null} />
+
+      <OracleGameRoomSection cards={oracleData.cards} record={oracleData.record} />
 
       <div>
         <div className="flex items-center gap-2 mb-2">
