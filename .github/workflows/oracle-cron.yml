@@ -1,0 +1,24 @@
+name: Oracle predictions cron
+
+# Knockout fixtures are sparse and don't change often, so this polls every
+# 45 min instead of the 5-min live-scores cadence. Reuses the same repo
+# secrets as scores-cron.yml (SCORES_APP_URL, CRON_SECRET). Deliberately a
+# separate workflow from scores-cron.yml — generation calls the Anthropic
+# API and is a distinct concern from the live-scores pipeline.
+on:
+  schedule:
+    - cron: "*/45 * * * *"
+  workflow_dispatch: {}
+
+jobs:
+  generate-oracle-predictions:
+    runs-on: ubuntu-latest
+    steps:
+      - name: POST /api/oracle
+        run: |
+          curl -sf -X POST "${SCORES_APP_URL}/api/oracle" \
+            -H "Authorization: Bearer ${CRON_SECRET}" \
+            -o - -w "\nHTTP %{http_code}\n"
+        env:
+          SCORES_APP_URL: ${{ secrets.SCORES_APP_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
