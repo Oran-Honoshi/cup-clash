@@ -4,6 +4,7 @@ import { AppHeader } from "@/components/app/app-header";
 import { PageTransition } from "@/components/app/page-transition";
 import { AppInstallBanner } from "@/components/app/install-banner";
 import { JoinPromptModal } from "@/components/join/join-prompt-modal";
+import { ReengagementSheet } from "@/components/reengagement/reengagement-sheet";
 import { GroupProvider } from "@/lib/contexts/group-context";
 import { NavModeProvider } from "@/lib/contexts/nav-mode-context";
 
@@ -36,6 +37,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       </main>
       <ZoneNav />
       <JoinPromptModal />
+      <ReengagementSheet />
     </div>
     </GroupProvider>
     </NavModeProvider>

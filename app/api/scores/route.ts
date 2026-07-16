@@ -1314,6 +1314,7 @@ export async function POST(request: NextRequest) {
           status:         newStatus,
           api_fixture_id: f.fixture.id,
           minute:         f.fixture.status.elapsed ?? null,
+          ...(!wasFinished && newStatus === "finished" ? { finished_at: new Date().toISOString() } : {}),
           ...(matchEvents !== undefined ? {
             match_events: matchEvents,
             ...(dbMatch.id === "final" ? { final_first_goal_minute: firstGoalMinute(matchEvents) } : {}),
@@ -1497,6 +1498,7 @@ export async function POST(request: NextRequest) {
               .from("matches")
               .update({
                 status:         "finished",
+                finished_at:    new Date().toISOString(),
                 home_score:     split.home90,
                 away_score:     split.away90,
                 home_score_et:  split.homeET,

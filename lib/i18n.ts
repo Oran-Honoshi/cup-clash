@@ -465,6 +465,14 @@ export interface Translations {
   oracle_game_empty:          string;
   oracle_game_final_score:    string;
   oracle_game_final_label:    string;
+
+  // Re-engagement Bottom Sheet — "welcome back" nudge on app open
+  reeng_title_single:      string;
+  reeng_title_multi:       string;
+  reeng_cta_take_me_there: string;
+  reeng_anon_guess_cta:    string;
+  reeng_anon_news_cta:     string;
+  reeng_close:             string;
 }
 
 // ── English (base) ─────────────────────────────────────────────────────────────
@@ -881,6 +889,13 @@ const en: Translations = {
   oracle_game_empty: "The Oracle hasn't made any predictions yet.",
   oracle_game_final_score: "Final score: {home}-{away}",
   oracle_game_final_label: "Final",
+
+  reeng_title_single: "{match} just finished — you're #{rank} in {group}",
+  reeng_title_multi: "{match} just finished — see where you stand",
+  reeng_cta_take_me_there: "Take me there",
+  reeng_anon_guess_cta: "Guess today's player",
+  reeng_anon_news_cta: "See what's new in your followed leagues",
+  reeng_close: "Close",
 };
 
 // ── French ─────────────────────────────────────────────────────────────────────
@@ -1297,6 +1312,13 @@ const fr: Translations = {
   oracle_game_empty: "L'Oracle n'a encore fait aucun pronostic.",
   oracle_game_final_score: "Score final : {home}-{away}",
   oracle_game_final_label: "Final",
+
+  reeng_title_single: "{match} vient de se terminer — tu es #{rank} dans {group}",
+  reeng_title_multi: "{match} vient de se terminer — découvre ton classement",
+  reeng_cta_take_me_there: "Voir ça",
+  reeng_anon_guess_cta: "Devine le joueur du jour",
+  reeng_anon_news_cta: "Découvre les actus de tes ligues suivies",
+  reeng_close: "Fermer",
 };
 
 // ── German ─────────────────────────────────────────────────────────────────────
@@ -1713,6 +1735,13 @@ const de: Translations = {
   oracle_game_empty: "Das Orakel hat noch keine Tipps abgegeben.",
   oracle_game_final_score: "Endstand: {home}-{away}",
   oracle_game_final_label: "Endstand",
+
+  reeng_title_single: "{match} ist gerade zu Ende gegangen — du bist #{rank} in {group}",
+  reeng_title_multi: "{match} ist gerade zu Ende gegangen — sieh dir deinen Stand an",
+  reeng_cta_take_me_there: "Dorthin gehen",
+  reeng_anon_guess_cta: "Errate den Spieler des Tages",
+  reeng_anon_news_cta: "Neues aus deinen verfolgten Ligen",
+  reeng_close: "Schließen",
 };
 
 // ── Dutch ──────────────────────────────────────────────────────────────────────
@@ -2129,6 +2158,13 @@ const nl: Translations = {
   oracle_game_empty: "Het Orakel heeft nog geen voorspellingen gedaan.",
   oracle_game_final_score: "Eindstand: {home}-{away}",
   oracle_game_final_label: "Eindstand",
+
+  reeng_title_single: "{match} is net afgelopen — je staat #{rank} in {group}",
+  reeng_title_multi: "{match} is net afgelopen — bekijk je positie",
+  reeng_cta_take_me_there: "Breng me daarheen",
+  reeng_anon_guess_cta: "Raad de speler van vandaag",
+  reeng_anon_news_cta: "Bekijk het nieuws van je gevolgde competities",
+  reeng_close: "Sluiten",
 };
 
 // ── Spanish ────────────────────────────────────────────────────────────────────
@@ -2545,6 +2581,13 @@ const es: Translations = {
   oracle_game_empty: "El Oráculo aún no ha hecho ningún pronóstico.",
   oracle_game_final_score: "Resultado final: {home}-{away}",
   oracle_game_final_label: "Final",
+
+  reeng_title_single: "{match} acaba de terminar — eres #{rank} en {group}",
+  reeng_title_multi: "{match} acaba de terminar — mira tu posición",
+  reeng_cta_take_me_there: "Llévame ahí",
+  reeng_anon_guess_cta: "Adivina el jugador de hoy",
+  reeng_anon_news_cta: "Descubre lo nuevo de tus ligas seguidas",
+  reeng_close: "Cerrar",
 };
 
 // ── Portuguese ─────────────────────────────────────────────────────────────────
@@ -2961,6 +3004,13 @@ const pt: Translations = {
   oracle_game_empty: "O Oráculo ainda não fez nenhum palpite.",
   oracle_game_final_score: "Placar final: {home}-{away}",
   oracle_game_final_label: "Final",
+
+  reeng_title_single: "{match} acabou de terminar — você é #{rank} em {group}",
+  reeng_title_multi: "{match} acabou de terminar — veja sua posição",
+  reeng_cta_take_me_there: "Me leve até lá",
+  reeng_anon_guess_cta: "Adivinhe o jogador de hoje",
+  reeng_anon_news_cta: "Veja as novidades das suas ligas seguidas",
+  reeng_close: "Fechar",
 };
 
 // ── Hebrew ─────────────────────────────────────────────────────────────────────
@@ -3377,6 +3427,13 @@ const he: Translations = {
   oracle_game_empty: "המגיד עדיין לא ניחש כלום.",
   oracle_game_final_score: "תוצאה סופית: {home}-{away}",
   oracle_game_final_label: "סופי",
+
+  reeng_title_single: "{match} הסתיים ממש עכשיו — אתה במקום #{rank} ב-{group}",
+  reeng_title_multi: "{match} הסתיים ממש עכשיו — בדוק את הדירוג שלך",
+  reeng_cta_take_me_there: "קחו אותי לשם",
+  reeng_anon_guess_cta: "נחשו את השחקן של היום",
+  reeng_anon_news_cta: "מה חדש בליגות שאתם עוקבים אחריהן",
+  reeng_close: "סגור",
 };
 
 // ── Arabic ─────────────────────────────────────────────────────────────────────
@@ -3793,6 +3850,13 @@ const ar: Translations = {
   oracle_game_empty: "لم يقدّم العرّاف أي توقعات بعد.",
   oracle_game_final_score: "النتيجة النهائية: {home}-{away}",
   oracle_game_final_label: "النتيجة",
+
+  reeng_title_single: "{match} انتهت للتو — أنت في المركز #{rank} في {group}",
+  reeng_title_multi: "{match} انتهت للتو — تحقق من ترتيبك",
+  reeng_cta_take_me_there: "خذني إلى هناك",
+  reeng_anon_guess_cta: "خمّن لاعب اليوم",
+  reeng_anon_news_cta: "شاهد ما الجديد في الدوريات التي تتابعها",
+  reeng_close: "إغلاق",
 };
 
 // ── Translation map ────────────────────────────────────────────────────────────
