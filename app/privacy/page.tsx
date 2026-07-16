@@ -41,13 +41,11 @@ export default function PrivacyPage() {
           <section>
             <h2 className="font-display text-xl uppercase font-black mb-3" style={{ color: "#0F172A" }}>3. Cookies and Third-Party Advertising</h2>
             <p>We use cookies to keep you logged in, remember your preferences, and analyze traffic.</p>
-            <h3 className="font-bold mt-4 mb-2" style={{ color: "#0F172A" }}>Google AdSense and Advertising Cookies</h3>
-            <p>Cup Clash displays third-party advertisements provided by Google AdSense to users on the free tier.</p>
+            <h3 className="font-bold mt-4 mb-2" style={{ color: "#0F172A" }}>Advertising Cookies</h3>
+            <p>Cup Clash displays third-party advertisements provided by Adsterra to users on the free tier.</p>
             <ul className="mt-3 space-y-2 list-disc list-inside">
-              <li>Google and its partners use cookies to serve ads based on your prior visits to Cup Clash or other websites.</li>
-              <li>You may opt out of personalized advertising by visiting Google&apos;s Ads Settings at <a href="https://www.google.com/settings/ads" style={{ color: "#0891B2" }}>https://www.google.com/settings/ads</a></li>
-              <li>You may also opt out of third-party advertising cookies via <a href="https://aboutads.info" style={{ color: "#0891B2" }}>https://aboutads.info</a></li>
-              <li>For more information on how Google uses data when you use our app, visit: <a href="https://policies.google.com/technologies/partner-sites" style={{ color: "#0891B2" }}>https://policies.google.com/technologies/partner-sites</a></li>
+              <li>Our advertising partners and their sub-partners may use cookies to serve ads based on your prior visits to Cup Clash or other websites.</li>
+              <li>You may opt out of third-party advertising cookies via <a href="https://aboutads.info" style={{ color: "#0891B2" }}>https://aboutads.info</a></li>
             </ul>
           </section>
 
