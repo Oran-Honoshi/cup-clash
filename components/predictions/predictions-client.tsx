@@ -8,6 +8,7 @@ import { BonusQuestions } from "@/components/predictions/bonus-questions";
 import { GuestStore } from "@/components/ui/guest-signup-modal";
 import { useGroupContext } from "@/lib/contexts/group-context";
 import { NextMatchCard } from "@/components/dashboard/next-match-card";
+import { LiveMatchHub } from "@/components/match/live-match-hub";
 import { getNextScheduleMatch, toMatchType, type ScheduleMatch } from "@/lib/schedule";
 
 interface PredictionsClientProps {
@@ -46,6 +47,7 @@ export function PredictionsClient({
 
   const [activeTab, setActiveTab] = useState<SectionKey>("group");
   const [migrated,  setMigrated]  = useState(false);
+  const [openMatchId, setOpenMatchId] = useState<string | null>(null);
 
   const groupStageMatchIds = allMatches.filter(m => m.stage === "Group").map(m => m.id);
   const predictedCount = groupStageMatchIds.filter(id => ctxPredictions[id] != null).length;
@@ -154,8 +156,26 @@ export function PredictionsClient({
 
       {nextMatch && (
         <div className="pb-4">
-          <NextMatchCard match={nextMatch} groupId={groupId} />
+          <NextMatchCard match={nextMatch} groupId={groupId} onOpenMatchCenter={setOpenMatchId} />
         </div>
+      )}
+
+      {/* ── Match Center overlay ─────────────────────────────────── */}
+      {openMatchId && nextMatch && openMatchId === nextMatch.id && (
+        <LiveMatchHub
+          matchId={nextMatch.id}
+          home={nextMatch.home}
+          away={nextMatch.away}
+          homeFlagCode={nextMatch.homeFlagCode}
+          awayFlagCode={nextMatch.awayFlagCode}
+          kickoffAt={nextMatch.time}
+          stage={nextMatch.stage}
+          group={nextMatch.group}
+          stadium={nextMatch.stadium}
+          city={nextMatch.city}
+          groupId={groupId}
+          onClose={() => setOpenMatchId(null)}
+        />
       )}
 
       {/* Sticky tab pills + progress counter */}

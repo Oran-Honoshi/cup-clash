@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
+import { createPortal } from "react-dom";
 import { X, Clock, MapPin, RefreshCw, Activity, Target } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { FlagBadge } from "@/components/ui/FlagBadge";
@@ -163,8 +164,12 @@ export function LiveMatchHub({
   const [pred,    setPred]    = useState<UserPrediction | null>(null);
   const [loading, setLoading] = useState(true);
   const [tab,     setTab]     = useState<"overview" | "live" | "stats" | "lineups" | "mvp">(initialTab ?? "overview");
+  const [mounted, setMounted] = useState(false);
   const { t } = useLocale();
   const prevScore = useRef<{ h: number; a: number } | null>(null);
+
+  // Portal target only exists client-side.
+  useEffect(() => { setMounted(true); }, []);
 
   // Lock background scroll + close on Escape while the overlay is mounted.
   useEffect(() => {
@@ -248,11 +253,17 @@ export function LiveMatchHub({
     : live     ? calcLivePoints(pred, homeScore, awayScore)
     : null;
 
-  return (
+  if (!mounted) return null;
+
+  return createPortal(
     <div className="fixed inset-0 z-[100] flex flex-col" style={{ background: "var(--bg)" }}>
       {/* ── Close bar ──────────────────────────────────────────────────── */}
       <div className="flex items-center justify-between px-4 py-3 shrink-0"
-        style={{ background: "var(--nv)", borderBottom: "1px solid var(--br)" }}>
+        style={{
+          background: "var(--nv)",
+          borderBottom: "1px solid var(--br)",
+          paddingTop: "calc(12px + env(safe-area-inset-top, 0px))",
+        }}>
         <span className="ta-section-label">Match Center</span>
         <button onClick={onClose} aria-label="Close match center"
           className="flex items-center justify-center rounded-full"
@@ -460,6 +471,7 @@ export function LiveMatchHub({
           )}
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
