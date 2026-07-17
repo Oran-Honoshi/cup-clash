@@ -466,6 +466,32 @@ export interface Translations {
   oracle_game_final_score:    string;
   oracle_game_final_label:    string;
 
+  // Oracle Duel — standalone head-to-head vs the Oracle (Game Room invite
+  // card + "You vs Oracle" screen). Independent of group_predictions.
+  oracle_duel_label:               string;
+  oracle_duel_card_eyebrow:        string;
+  oracle_duel_prediction_line:     string;
+  oracle_duel_cta_question:        string;
+  oracle_duel_cta:                 string;
+  oracle_duel_view_your_pick:      string;
+  oracle_duel_no_open_challenge:   string;
+  oracle_duel_sign_in_required:    string;
+  oracle_duel_back_to_game:        string;
+  oracle_duel_page_title:          string;
+  oracle_duel_page_subtitle:       string;
+  oracle_duel_your_score_label:    string;
+  oracle_duel_submit_cta:          string;
+  oracle_duel_submitting:          string;
+  oracle_duel_already_predicted:   string;
+  oracle_duel_locked:              string;
+  oracle_duel_history_heading:     string;
+  oracle_duel_history_empty:       string;
+  oracle_duel_result_won:          string;
+  oracle_duel_result_lost:         string;
+  oracle_duel_result_tied:         string;
+  oracle_duel_points_you:          string;
+  oracle_duel_points_oracle:       string;
+
   // Re-engagement Bottom Sheet — "welcome back" nudge on app open
   reeng_title_single:      string;
   reeng_title_multi:       string;
@@ -899,6 +925,30 @@ const en: Translations = {
   oracle_game_final_score: "Final score: {home}-{away}",
   oracle_game_final_label: "Final",
 
+  oracle_duel_label: "Oracle Duel",
+  oracle_duel_card_eyebrow: "Duel the Oracle",
+  oracle_duel_prediction_line: "The Oracle predicts {home} {homeScore}-{awayScore} {away}.",
+  oracle_duel_cta_question: "Think you know better?",
+  oracle_duel_cta: "Challenge the Oracle",
+  oracle_duel_view_your_pick: "View your challenge",
+  oracle_duel_no_open_challenge: "No open Oracle challenge right now — check back soon.",
+  oracle_duel_sign_in_required: "Sign in to duel the Oracle.",
+  oracle_duel_back_to_game: "Game Room",
+  oracle_duel_page_title: "You vs Oracle",
+  oracle_duel_page_subtitle: "A separate head-to-head against the Oracle — your group predictions don't count here.",
+  oracle_duel_your_score_label: "Your prediction",
+  oracle_duel_submit_cta: "Lock in your prediction",
+  oracle_duel_submitting: "Submitting…",
+  oracle_duel_already_predicted: "You've already challenged the Oracle on this match.",
+  oracle_duel_locked: "Predictions are locked for this match.",
+  oracle_duel_history_heading: "Recent duels",
+  oracle_duel_history_empty: "No duels yet — challenge the Oracle to your first match.",
+  oracle_duel_result_won: "You won",
+  oracle_duel_result_lost: "You lost",
+  oracle_duel_result_tied: "Tied",
+  oracle_duel_points_you: "You: {pts} pts",
+  oracle_duel_points_oracle: "Oracle: {pts} pts",
+
   reeng_title_single: "{match} just finished — you're #{rank} in {group}",
   reeng_title_multi: "{match} just finished — see where you stand",
   reeng_cta_take_me_there: "Take me there",
@@ -1329,6 +1379,30 @@ const fr: Translations = {
   oracle_game_empty: "L'Oracle n'a encore fait aucun pronostic.",
   oracle_game_final_score: "Score final : {home}-{away}",
   oracle_game_final_label: "Final",
+
+  oracle_duel_label: "Duel avec l'Oracle",
+  oracle_duel_card_eyebrow: "Défiez l'Oracle",
+  oracle_duel_prediction_line: "L'Oracle prédit {home} {homeScore}-{awayScore} {away}.",
+  oracle_duel_cta_question: "Vous pensez faire mieux ?",
+  oracle_duel_cta: "Défier l'Oracle",
+  oracle_duel_view_your_pick: "Voir votre défi",
+  oracle_duel_no_open_challenge: "Aucun défi disponible pour le moment — revenez bientôt.",
+  oracle_duel_sign_in_required: "Connectez-vous pour défier l'Oracle.",
+  oracle_duel_back_to_game: "Salle de jeux",
+  oracle_duel_page_title: "Vous contre l'Oracle",
+  oracle_duel_page_subtitle: "Un duel indépendant contre l'Oracle — vos pronostics de groupe ne comptent pas ici.",
+  oracle_duel_your_score_label: "Votre pronostic",
+  oracle_duel_submit_cta: "Valider mon pronostic",
+  oracle_duel_submitting: "Envoi en cours…",
+  oracle_duel_already_predicted: "Vous avez déjà défié l'Oracle sur ce match.",
+  oracle_duel_locked: "Les pronostics sont verrouillés pour ce match.",
+  oracle_duel_history_heading: "Derniers duels",
+  oracle_duel_history_empty: "Aucun duel pour l'instant — défiez l'Oracle sur votre premier match.",
+  oracle_duel_result_won: "Vous avez gagné",
+  oracle_duel_result_lost: "Vous avez perdu",
+  oracle_duel_result_tied: "Match nul",
+  oracle_duel_points_you: "Vous : {pts} pts",
+  oracle_duel_points_oracle: "Oracle : {pts} pts",
 
   reeng_title_single: "{match} vient de se terminer — tu es #{rank} dans {group}",
   reeng_title_multi: "{match} vient de se terminer — découvre ton classement",
@@ -1761,6 +1835,30 @@ const de: Translations = {
   oracle_game_final_score: "Endstand: {home}-{away}",
   oracle_game_final_label: "Endstand",
 
+  oracle_duel_label: "Orakel-Duell",
+  oracle_duel_card_eyebrow: "Fordere das Orakel heraus",
+  oracle_duel_prediction_line: "Das Orakel tippt {home} {homeScore}-{awayScore} {away}.",
+  oracle_duel_cta_question: "Denkst du, du weißt es besser?",
+  oracle_duel_cta: "Das Orakel herausfordern",
+  oracle_duel_view_your_pick: "Dein Duell ansehen",
+  oracle_duel_no_open_challenge: "Gerade keine offene Herausforderung — schau bald wieder vorbei.",
+  oracle_duel_sign_in_required: "Melde dich an, um das Orakel herauszufordern.",
+  oracle_duel_back_to_game: "Spielzimmer",
+  oracle_duel_page_title: "Du gegen das Orakel",
+  oracle_duel_page_subtitle: "Ein eigenständiges Duell gegen das Orakel — deine Gruppentipps zählen hier nicht.",
+  oracle_duel_your_score_label: "Dein Tipp",
+  oracle_duel_submit_cta: "Tipp abgeben",
+  oracle_duel_submitting: "Wird gesendet…",
+  oracle_duel_already_predicted: "Du hast das Orakel bei diesem Spiel schon herausgefordert.",
+  oracle_duel_locked: "Tipps sind für dieses Spiel gesperrt.",
+  oracle_duel_history_heading: "Letzte Duelle",
+  oracle_duel_history_empty: "Noch keine Duelle — fordere das Orakel bei deinem ersten Spiel heraus.",
+  oracle_duel_result_won: "Du hast gewonnen",
+  oracle_duel_result_lost: "Du hast verloren",
+  oracle_duel_result_tied: "Unentschieden",
+  oracle_duel_points_you: "Du: {pts} Pkt.",
+  oracle_duel_points_oracle: "Orakel: {pts} Pkt.",
+
   reeng_title_single: "{match} ist gerade zu Ende gegangen — du bist #{rank} in {group}",
   reeng_title_multi: "{match} ist gerade zu Ende gegangen — sieh dir deinen Stand an",
   reeng_cta_take_me_there: "Dorthin gehen",
@@ -2191,6 +2289,30 @@ const nl: Translations = {
   oracle_game_empty: "Het Orakel heeft nog geen voorspellingen gedaan.",
   oracle_game_final_score: "Eindstand: {home}-{away}",
   oracle_game_final_label: "Eindstand",
+
+  oracle_duel_label: "Orakel-Duel",
+  oracle_duel_card_eyebrow: "Daag het Orakel uit",
+  oracle_duel_prediction_line: "Het Orakel voorspelt {home} {homeScore}-{awayScore} {away}.",
+  oracle_duel_cta_question: "Denk je dat jij het beter weet?",
+  oracle_duel_cta: "Daag het Orakel uit",
+  oracle_duel_view_your_pick: "Bekijk jouw duel",
+  oracle_duel_no_open_challenge: "Op dit moment geen open uitdaging — kom snel terug.",
+  oracle_duel_sign_in_required: "Log in om het Orakel uit te dagen.",
+  oracle_duel_back_to_game: "Game Room",
+  oracle_duel_page_title: "Jij tegen het Orakel",
+  oracle_duel_page_subtitle: "Een apart duel tegen het Orakel — je groepsvoorspellingen tellen hier niet mee.",
+  oracle_duel_your_score_label: "Jouw voorspelling",
+  oracle_duel_submit_cta: "Voorspelling bevestigen",
+  oracle_duel_submitting: "Bezig met versturen…",
+  oracle_duel_already_predicted: "Je hebt het Orakel al uitgedaagd voor deze wedstrijd.",
+  oracle_duel_locked: "Voorspellingen zijn vergrendeld voor deze wedstrijd.",
+  oracle_duel_history_heading: "Recente duels",
+  oracle_duel_history_empty: "Nog geen duels — daag het Orakel uit voor je eerste wedstrijd.",
+  oracle_duel_result_won: "Je hebt gewonnen",
+  oracle_duel_result_lost: "Je hebt verloren",
+  oracle_duel_result_tied: "Gelijkspel",
+  oracle_duel_points_you: "Jij: {pts} pt",
+  oracle_duel_points_oracle: "Orakel: {pts} pt",
 
   reeng_title_single: "{match} is net afgelopen — je staat #{rank} in {group}",
   reeng_title_multi: "{match} is net afgelopen — bekijk je positie",
@@ -2623,6 +2745,30 @@ const es: Translations = {
   oracle_game_final_score: "Resultado final: {home}-{away}",
   oracle_game_final_label: "Final",
 
+  oracle_duel_label: "Duelo con el Oráculo",
+  oracle_duel_card_eyebrow: "Desafía al Oráculo",
+  oracle_duel_prediction_line: "El Oráculo predice {home} {homeScore}-{awayScore} {away}.",
+  oracle_duel_cta_question: "¿Crees que puedes hacerlo mejor?",
+  oracle_duel_cta: "Desafiar al Oráculo",
+  oracle_duel_view_your_pick: "Ver tu desafío",
+  oracle_duel_no_open_challenge: "No hay ningún desafío disponible ahora — vuelve pronto.",
+  oracle_duel_sign_in_required: "Inicia sesión para desafiar al Oráculo.",
+  oracle_duel_back_to_game: "Sala de juegos",
+  oracle_duel_page_title: "Tú contra el Oráculo",
+  oracle_duel_page_subtitle: "Un duelo independiente contra el Oráculo — tus pronósticos de grupo no cuentan aquí.",
+  oracle_duel_your_score_label: "Tu pronóstico",
+  oracle_duel_submit_cta: "Confirmar pronóstico",
+  oracle_duel_submitting: "Enviando…",
+  oracle_duel_already_predicted: "Ya has desafiado al Oráculo en este partido.",
+  oracle_duel_locked: "Los pronósticos están bloqueados para este partido.",
+  oracle_duel_history_heading: "Duelos recientes",
+  oracle_duel_history_empty: "Aún no hay duelos — desafía al Oráculo en tu primer partido.",
+  oracle_duel_result_won: "Ganaste",
+  oracle_duel_result_lost: "Perdiste",
+  oracle_duel_result_tied: "Empate",
+  oracle_duel_points_you: "Tú: {pts} pts",
+  oracle_duel_points_oracle: "Oráculo: {pts} pts",
+
   reeng_title_single: "{match} acaba de terminar — eres #{rank} en {group}",
   reeng_title_multi: "{match} acaba de terminar — mira tu posición",
   reeng_cta_take_me_there: "Llévame ahí",
@@ -3053,6 +3199,30 @@ const pt: Translations = {
   oracle_game_empty: "O Oráculo ainda não fez nenhum palpite.",
   oracle_game_final_score: "Placar final: {home}-{away}",
   oracle_game_final_label: "Final",
+
+  oracle_duel_label: "Duelo com o Oráculo",
+  oracle_duel_card_eyebrow: "Desafie o Oráculo",
+  oracle_duel_prediction_line: "O Oráculo prevê {home} {homeScore}-{awayScore} {away}.",
+  oracle_duel_cta_question: "Acha que sabe mais?",
+  oracle_duel_cta: "Desafiar o Oráculo",
+  oracle_duel_view_your_pick: "Ver seu duelo",
+  oracle_duel_no_open_challenge: "Nenhum desafio disponível agora — volte em breve.",
+  oracle_duel_sign_in_required: "Entre para desafiar o Oráculo.",
+  oracle_duel_back_to_game: "Sala de Jogos",
+  oracle_duel_page_title: "Você contra o Oráculo",
+  oracle_duel_page_subtitle: "Um duelo independente contra o Oráculo — seus palpites de grupo não contam aqui.",
+  oracle_duel_your_score_label: "Seu palpite",
+  oracle_duel_submit_cta: "Confirmar palpite",
+  oracle_duel_submitting: "Enviando…",
+  oracle_duel_already_predicted: "Você já desafiou o Oráculo nesta partida.",
+  oracle_duel_locked: "Os palpites estão bloqueados para esta partida.",
+  oracle_duel_history_heading: "Duelos recentes",
+  oracle_duel_history_empty: "Ainda não há duelos — desafie o Oráculo na sua primeira partida.",
+  oracle_duel_result_won: "Você venceu",
+  oracle_duel_result_lost: "Você perdeu",
+  oracle_duel_result_tied: "Empate",
+  oracle_duel_points_you: "Você: {pts} pts",
+  oracle_duel_points_oracle: "Oráculo: {pts} pts",
 
   reeng_title_single: "{match} acabou de terminar — você é #{rank} em {group}",
   reeng_title_multi: "{match} acabou de terminar — veja sua posição",
@@ -3485,6 +3655,30 @@ const he: Translations = {
   oracle_game_final_score: "תוצאה סופית: {home}-{away}",
   oracle_game_final_label: "סופי",
 
+  oracle_duel_label: "דו-קרב מול המגיד",
+  oracle_duel_card_eyebrow: "אתגרו את המגיד העתידות",
+  oracle_duel_prediction_line: "המגיד מנחש {home} {homeScore}-{awayScore} {away}.",
+  oracle_duel_cta_question: "חושבים שאתם יודעים טוב יותר?",
+  oracle_duel_cta: "אתגרו את המגיד",
+  oracle_duel_view_your_pick: "צפו בדו-קרב שלכם",
+  oracle_duel_no_open_challenge: "אין כרגע אתגר פתוח — חִזרו בקרוב.",
+  oracle_duel_sign_in_required: "התחברו כדי לאתגר את המגיד.",
+  oracle_duel_back_to_game: "חדר המשחקים",
+  oracle_duel_page_title: "אתם נגד המגיד",
+  oracle_duel_page_subtitle: "דו-קרב עצמאי מול המגיד — הניחושים הקבוצתיים שלכם לא נספרים כאן.",
+  oracle_duel_your_score_label: "הניחוש שלכם",
+  oracle_duel_submit_cta: "נעלו את הניחוש",
+  oracle_duel_submitting: "שולח…",
+  oracle_duel_already_predicted: "כבר אתגרתם את המגיד במשחק הזה.",
+  oracle_duel_locked: "הניחושים נעולים למשחק הזה.",
+  oracle_duel_history_heading: "דו-קרבות אחרונים",
+  oracle_duel_history_empty: "עדיין אין דו-קרבות — אתגרו את המגיד במשחק הראשון שלכם.",
+  oracle_duel_result_won: "ניצחתם",
+  oracle_duel_result_lost: "הפסדתם",
+  oracle_duel_result_tied: "תיקו",
+  oracle_duel_points_you: "אתם: {pts} נק'",
+  oracle_duel_points_oracle: "המגיד: {pts} נק'",
+
   reeng_title_single: "{match} הסתיים ממש עכשיו — אתה במקום #{rank} ב-{group}",
   reeng_title_multi: "{match} הסתיים ממש עכשיו — בדוק את הדירוג שלך",
   reeng_cta_take_me_there: "קחו אותי לשם",
@@ -3915,6 +4109,30 @@ const ar: Translations = {
   oracle_game_empty: "لم يقدّم العرّاف أي توقعات بعد.",
   oracle_game_final_score: "النتيجة النهائية: {home}-{away}",
   oracle_game_final_label: "النتيجة",
+
+  oracle_duel_label: "مبارزة العرّاف",
+  oracle_duel_card_eyebrow: "تحدَّ العرّاف",
+  oracle_duel_prediction_line: "يتوقع العرّاف {home} {homeScore}-{awayScore} {away}.",
+  oracle_duel_cta_question: "تظن أنك تعرف أفضل؟",
+  oracle_duel_cta: "تحدَّ العرّاف",
+  oracle_duel_view_your_pick: "اعرض مبارزتك",
+  oracle_duel_no_open_challenge: "لا يوجد تحدٍّ متاح الآن — عد قريبًا.",
+  oracle_duel_sign_in_required: "سجّل الدخول لتحدي العرّاف.",
+  oracle_duel_back_to_game: "غرفة الألعاب",
+  oracle_duel_page_title: "أنت ضد العرّاف",
+  oracle_duel_page_subtitle: "مبارزة مستقلة ضد العرّاف — توقعات مجموعتك لا تُحتسب هنا.",
+  oracle_duel_your_score_label: "توقعك",
+  oracle_duel_submit_cta: "تأكيد التوقع",
+  oracle_duel_submitting: "جارٍ الإرسال…",
+  oracle_duel_already_predicted: "لقد تحديت العرّاف بالفعل في هذه المباراة.",
+  oracle_duel_locked: "التوقعات مقفلة لهذه المباراة.",
+  oracle_duel_history_heading: "المبارزات الأخيرة",
+  oracle_duel_history_empty: "لا توجد مبارزات بعد — تحدَّ العرّاف في أول مباراة لك.",
+  oracle_duel_result_won: "لقد فزت",
+  oracle_duel_result_lost: "لقد خسرت",
+  oracle_duel_result_tied: "تعادل",
+  oracle_duel_points_you: "أنت: {pts} نقطة",
+  oracle_duel_points_oracle: "العرّاف: {pts} نقطة",
 
   reeng_title_single: "{match} انتهت للتو — أنت في المركز #{rank} في {group}",
   reeng_title_multi: "{match} انتهت للتو — تحقق من ترتيبك",

@@ -7,7 +7,9 @@ import { pickGameTypeForDate, todayISO } from "@/lib/services/daily-challenge";
 import { DailyLeaderboardPanel } from "@/components/daily-challenge/daily-leaderboard-panel";
 import { DuelCard } from "@/components/game/duel-card";
 import { OracleGameRoomSection } from "@/components/game/oracle-game-room-section";
-import { getOracleGameRoomData } from "@/lib/services/oracle";
+import { OracleDuelInviteCard } from "@/components/game/oracle-duel-card";
+import { getOracleGameRoomData, getNextOracleMatch } from "@/lib/services/oracle";
+import { getMyDuelForMatch } from "@/lib/services/oracle-duels";
 import { ZONES } from "@/lib/zones";
 
 const surface = { background: "var(--sf)", border: "1px solid var(--br)", borderRadius: 22 } as const;
@@ -23,6 +25,11 @@ export default async function GameRoomPage() {
 
   const primaryGroupId = profile ? (await getAllUserGroups(profile.id))[0]?.group_id ?? null : null;
   const oracleData = await getOracleGameRoomData(profile?.id ?? null, primaryGroupId);
+
+  const nextOracleDuelMatch = await getNextOracleMatch();
+  const myOracleDuelPick = profile && nextOracleDuelMatch
+    ? await getMyDuelForMatch(profile.id, nextOracleDuelMatch.match.id)
+    : null;
 
   const grid = [
     {
@@ -114,6 +121,13 @@ export default async function GameRoomPage() {
       </div>
 
       <DuelCard userId={profile?.id ?? null} />
+
+      <OracleDuelInviteCard
+        match={nextOracleDuelMatch?.match ?? null}
+        prediction={nextOracleDuelMatch?.prediction ?? null}
+        existing={myOracleDuelPick ? { home: myOracleDuelPick.homeScore, away: myOracleDuelPick.awayScore } : null}
+        signedIn={!!profile}
+      />
 
       <OracleGameRoomSection cards={oracleData.cards} record={oracleData.record} />
 
