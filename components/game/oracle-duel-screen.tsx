@@ -178,6 +178,8 @@ export function OracleDuelScreen({ signedIn }: { signedIn: boolean }) {
           <span style={{ fontFamily: "var(--font-display)", fontSize: 18, fontWeight: 800, color: "var(--tx)" }}>
             {interpolate(t("oracle_game_record"), { you: totals.you, oracle: totals.oracle })}
           </span>
+        ) : history.length > 0 ? (
+          <span style={{ fontSize: 13, color: "var(--t2)" }}>{t("oracle_duel_totals_pending")}</span>
         ) : (
           <span style={{ fontSize: 13, color: "var(--t2)" }}>{t("oracle_duel_history_empty")}</span>
         )}

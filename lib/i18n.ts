@@ -485,6 +485,7 @@ export interface Translations {
   oracle_duel_already_predicted:   string;
   oracle_duel_locked:              string;
   oracle_duel_history_heading:     string;
+  oracle_duel_totals_pending:      string;
   oracle_duel_history_empty:       string;
   oracle_duel_result_won:          string;
   oracle_duel_result_lost:         string;
@@ -942,6 +943,7 @@ const en: Translations = {
   oracle_duel_already_predicted: "You've already challenged the Oracle on this match.",
   oracle_duel_locked: "Predictions are locked for this match.",
   oracle_duel_history_heading: "Recent duels",
+  oracle_duel_totals_pending: "No results yet — check back once your predicted match finishes.",
   oracle_duel_history_empty: "No duels yet — challenge the Oracle to your first match.",
   oracle_duel_result_won: "You won",
   oracle_duel_result_lost: "You lost",
@@ -1397,6 +1399,7 @@ const fr: Translations = {
   oracle_duel_already_predicted: "Vous avez déjà défié l'Oracle sur ce match.",
   oracle_duel_locked: "Les pronostics sont verrouillés pour ce match.",
   oracle_duel_history_heading: "Derniers duels",
+  oracle_duel_totals_pending: "Pas encore de résultat — revenez une fois votre match pronostiqué terminé.",
   oracle_duel_history_empty: "Aucun duel pour l'instant — défiez l'Oracle sur votre premier match.",
   oracle_duel_result_won: "Vous avez gagné",
   oracle_duel_result_lost: "Vous avez perdu",
@@ -1852,6 +1855,7 @@ const de: Translations = {
   oracle_duel_already_predicted: "Du hast das Orakel bei diesem Spiel schon herausgefordert.",
   oracle_duel_locked: "Tipps sind für dieses Spiel gesperrt.",
   oracle_duel_history_heading: "Letzte Duelle",
+  oracle_duel_totals_pending: "Noch kein Ergebnis — schau nach dem Spielende wieder vorbei.",
   oracle_duel_history_empty: "Noch keine Duelle — fordere das Orakel bei deinem ersten Spiel heraus.",
   oracle_duel_result_won: "Du hast gewonnen",
   oracle_duel_result_lost: "Du hast verloren",
@@ -2307,6 +2311,7 @@ const nl: Translations = {
   oracle_duel_already_predicted: "Je hebt het Orakel al uitgedaagd voor deze wedstrijd.",
   oracle_duel_locked: "Voorspellingen zijn vergrendeld voor deze wedstrijd.",
   oracle_duel_history_heading: "Recente duels",
+  oracle_duel_totals_pending: "Nog geen resultaat — kom terug zodra je voorspelde wedstrijd is afgelopen.",
   oracle_duel_history_empty: "Nog geen duels — daag het Orakel uit voor je eerste wedstrijd.",
   oracle_duel_result_won: "Je hebt gewonnen",
   oracle_duel_result_lost: "Je hebt verloren",
@@ -2762,6 +2767,7 @@ const es: Translations = {
   oracle_duel_already_predicted: "Ya has desafiado al Oráculo en este partido.",
   oracle_duel_locked: "Los pronósticos están bloqueados para este partido.",
   oracle_duel_history_heading: "Duelos recientes",
+  oracle_duel_totals_pending: "Aún sin resultado — vuelve cuando termine tu partido pronosticado.",
   oracle_duel_history_empty: "Aún no hay duelos — desafía al Oráculo en tu primer partido.",
   oracle_duel_result_won: "Ganaste",
   oracle_duel_result_lost: "Perdiste",
@@ -3217,6 +3223,7 @@ const pt: Translations = {
   oracle_duel_already_predicted: "Você já desafiou o Oráculo nesta partida.",
   oracle_duel_locked: "Os palpites estão bloqueados para esta partida.",
   oracle_duel_history_heading: "Duelos recentes",
+  oracle_duel_totals_pending: "Ainda sem resultado — volte assim que sua partida prevista terminar.",
   oracle_duel_history_empty: "Ainda não há duelos — desafie o Oráculo na sua primeira partida.",
   oracle_duel_result_won: "Você venceu",
   oracle_duel_result_lost: "Você perdeu",
@@ -3672,6 +3679,7 @@ const he: Translations = {
   oracle_duel_already_predicted: "כבר אתגרתם את המגיד במשחק הזה.",
   oracle_duel_locked: "הניחושים נעולים למשחק הזה.",
   oracle_duel_history_heading: "דו-קרבות אחרונים",
+  oracle_duel_totals_pending: "עדיין אין תוצאה — חִזרו לאחר סיום המשחק שניחשתם.",
   oracle_duel_history_empty: "עדיין אין דו-קרבות — אתגרו את המגיד במשחק הראשון שלכם.",
   oracle_duel_result_won: "ניצחתם",
   oracle_duel_result_lost: "הפסדתם",
@@ -4127,6 +4135,7 @@ const ar: Translations = {
   oracle_duel_already_predicted: "لقد تحديت العرّاف بالفعل في هذه المباراة.",
   oracle_duel_locked: "التوقعات مقفلة لهذه المباراة.",
   oracle_duel_history_heading: "المبارزات الأخيرة",
+  oracle_duel_totals_pending: "لا توجد نتيجة بعد — عد بعد انتهاء مباراتك المتوقعة.",
   oracle_duel_history_empty: "لا توجد مبارزات بعد — تحدَّ العرّاف في أول مباراة لك.",
   oracle_duel_result_won: "لقد فزت",
   oracle_duel_result_lost: "لقد خسرت",
