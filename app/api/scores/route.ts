@@ -682,6 +682,22 @@ const STAGE_PROGRESSION: Array<{ from: string; to: string; apiRound: string; idP
   { from: "SF",  to: "Final", apiRound: "Final",          idPrefix: "fn" },
 ];
 
+// Bronze/3rd-place match: the two SF losers, in a single fixed slot ("bronze")
+// with known feeders — same shape as R16_SLOTS, not STAGE_PROGRESSION, because
+// API-Football doesn't reliably publish "3rd Place Final" as its own round the
+// way it does QF/SF/Final, so the pairing is computed directly from the SF
+// feeders rather than looked up. Kickoff/venue for this slot are fixed by the
+// official WC2026 schedule regardless of which teams end up in it (unlike R16
+// slots, whose kickoff really is a guess until the round is drawn).
+const BRONZE_SLOT: {
+  id: string; feeders: [string, string];
+  stadium: string; city: string; hostCountry: string; fallbackKickoff: string;
+} = {
+  id: "bronze", feeders: ["sf-01", "sf-02"],
+  stadium: "Hard Rock Stadium", city: "Miami", hostCountry: "USA",
+  fallbackKickoff: "2026-07-18T20:00:00+00:00",
+};
+
 type BracketMatchRow = {
   home: string; away: string;
   home_score: number | null; away_score: number | null;
@@ -698,6 +714,18 @@ function knockoutWinner(m: BracketMatchRow): string | null {
   if (h == null || a == null) return null;
   if (h !== a) return h > a ? m.home : m.away;
   return m.penalty_winner ?? null;
+}
+
+// Mirrors knockoutWinner — needed for loser-advancement (e.g. the bronze
+// match), which is otherwise identical to winner-advancement apart from
+// which side of the result it reads off.
+function knockoutLoser(m: BracketMatchRow): string | null {
+  const h = m.home_score_et ?? m.home_score;
+  const a = m.away_score_et ?? m.away_score;
+  if (h == null || a == null) return null;
+  if (h !== a) return h > a ? m.away : m.home;
+  if (!m.penalty_winner) return null;
+  return m.penalty_winner === m.home ? m.away : m.home;
 }
 
 // Splits an API-Football fixture's score into 90-min vs after-extra-time,
@@ -799,6 +827,68 @@ async function advanceR16Slots(sb: SupabaseClient): Promise<void> {
     } else {
       console.log(`[scores/cron] Bracket: ${slot.id} → ${winnerA} vs ${winnerB}${apiFixture ? " (API-confirmed)" : " (API pending, using known slot mapping)"}`);
     }
+  }
+}
+
+// Placeholder team names still awaiting bracket resolution (e.g. "L(SF1)",
+// "W(SF2)", "TBD" — see migration 037's comment for the full seeded set).
+function isPlaceholderTeam(name: string): boolean {
+  return name === "TBD" || /^[WL]\(/.test(name);
+}
+
+async function advanceBronzeSlot(sb: SupabaseClient): Promise<void> {
+  const { data: bronzeRows } = await sb.from("matches")
+    .select("id, home, away, api_fixture_id")
+    .eq("id", BRONZE_SLOT.id);
+  const bronze = (bronzeRows ?? [])[0] as { id: string; home: string; away: string; api_fixture_id: number | null } | undefined;
+  if (!bronze) return;
+  if (!isPlaceholderTeam(bronze.home) && !isPlaceholderTeam(bronze.away)) return; // already resolved
+
+  const { data: feederRows } = await sb.from("matches")
+    .select("id, home, away, home_score, away_score, home_score_et, away_score_et, penalty_winner, status")
+    .in("id", BRONZE_SLOT.feeders);
+  const feederMap = new Map(((feederRows ?? []) as Array<BracketMatchRow & { id: string }>).map(r => [r.id, r]));
+  const [fa, fb] = BRONZE_SLOT.feeders.map(id => feederMap.get(id));
+  if (!fa || !fb || fa.status !== "finished" || fb.status !== "finished") return;
+
+  const loserA = knockoutLoser(fa);
+  const loserB = knockoutLoser(fb);
+  if (!loserA || !loserB) return;
+
+  const { data: allTeamRows } = await sb.from("matches").select("home, away, home_flag, away_flag");
+  const flagFor = (team: string) => {
+    for (const r of (allTeamRows ?? []) as Array<{ home: string; away: string; home_flag: string | null; away_flag: string | null }>) {
+      if (r.home === team) return r.home_flag;
+      if (r.away === team) return r.away_flag;
+    }
+    return null;
+  };
+
+  const apiFixture = await findApiFixture("3rd Place Final", loserA, loserB);
+
+  const update: Record<string, unknown> = {
+    home: loserA, away: loserB,
+    home_flag: flagFor(loserA), away_flag: flagFor(loserB),
+    status: "upcoming",
+    time_confirmed: true, // this slot's date/venue is fixed by the WC2026 schedule itself, not guessed
+  };
+  if (apiFixture) {
+    update.kickoff_at     = apiFixture.fixture.date;
+    update.stadium        = apiFixture.fixture.venue.name ?? BRONZE_SLOT.stadium;
+    update.city           = apiFixture.fixture.venue.city ?? BRONZE_SLOT.city;
+    update.api_fixture_id = apiFixture.fixture.id;
+  } else {
+    update.kickoff_at   = BRONZE_SLOT.fallbackKickoff;
+    update.stadium      = BRONZE_SLOT.stadium;
+    update.city         = BRONZE_SLOT.city;
+    update.host_country = BRONZE_SLOT.hostCountry;
+  }
+
+  const { error } = await sb.from("matches").update(update).eq("id", BRONZE_SLOT.id);
+  if (error) {
+    console.error(`[scores/cron] Bracket: failed to update ${BRONZE_SLOT.id}:`, error);
+  } else {
+    console.log(`[scores/cron] Bracket: ${BRONZE_SLOT.id} → ${loserA} vs ${loserB}${apiFixture ? " (API-confirmed)" : " (using known fixed 3rd-place slot)"}`);
   }
 }
 
@@ -1531,6 +1621,7 @@ export async function POST(request: NextRequest) {
       for (const s of STAGE_PROGRESSION) {
         await advanceStage(sb, s.from, s.to, s.apiRound, s.idPrefix);
       }
+      await advanceBronzeSlot(sb);
     } catch (e) {
       console.error("[scores/cron] STEP 3c: bracket advancement error:", e);
     }
