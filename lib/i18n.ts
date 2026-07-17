@@ -473,6 +473,15 @@ export interface Translations {
   reeng_anon_guess_cta:    string;
   reeng_anon_news_cta:     string;
   reeng_close:             string;
+
+  // Copy-prediction bottom sheet — opt-in "copy this pick to other groups"
+  cps_title:     string;
+  cps_your_pick: string;
+  cps_skip:      string;
+  cps_copy:      string;
+  cps_saving:    string;
+  cps_copied:    string;
+  cps_close:     string;
 }
 
 // ── English (base) ─────────────────────────────────────────────────────────────
@@ -896,6 +905,14 @@ const en: Translations = {
   reeng_anon_guess_cta: "Guess today's player",
   reeng_anon_news_cta: "See what's new in your followed leagues",
   reeng_close: "Close",
+
+  cps_title:     "Copy this pick to your other groups?",
+  cps_your_pick: "Your pick: {home}–{away}",
+  cps_skip:      "Skip",
+  cps_copy:      "Copy pick",
+  cps_saving:    "Saving…",
+  cps_copied:    "Copied!",
+  cps_close:     "Close",
 };
 
 // ── French ─────────────────────────────────────────────────────────────────────
@@ -1319,6 +1336,14 @@ const fr: Translations = {
   reeng_anon_guess_cta: "Devine le joueur du jour",
   reeng_anon_news_cta: "Découvre les actus de tes ligues suivies",
   reeng_close: "Fermer",
+
+  cps_title:     "Copier ce pronostic dans tes autres groupes ?",
+  cps_your_pick: "Ton pronostic : {home}–{away}",
+  cps_skip:      "Ignorer",
+  cps_copy:      "Copier le pronostic",
+  cps_saving:    "Enregistrement…",
+  cps_copied:    "Copié !",
+  cps_close:     "Fermer",
 };
 
 // ── German ─────────────────────────────────────────────────────────────────────
@@ -1742,6 +1767,14 @@ const de: Translations = {
   reeng_anon_guess_cta: "Errate den Spieler des Tages",
   reeng_anon_news_cta: "Neues aus deinen verfolgten Ligen",
   reeng_close: "Schließen",
+
+  cps_title:     "Diesen Tipp in deine anderen Gruppen kopieren?",
+  cps_your_pick: "Dein Tipp: {home}–{away}",
+  cps_skip:      "Überspringen",
+  cps_copy:      "Tipp kopieren",
+  cps_saving:    "Wird gespeichert…",
+  cps_copied:    "Kopiert!",
+  cps_close:     "Schließen",
 };
 
 // ── Dutch ──────────────────────────────────────────────────────────────────────
@@ -2165,6 +2198,14 @@ const nl: Translations = {
   reeng_anon_guess_cta: "Raad de speler van vandaag",
   reeng_anon_news_cta: "Bekijk het nieuws van je gevolgde competities",
   reeng_close: "Sluiten",
+
+  cps_title:     "Deze voorspelling naar je andere groepen kopiëren?",
+  cps_your_pick: "Jouw voorspelling: {home}–{away}",
+  cps_skip:      "Overslaan",
+  cps_copy:      "Voorspelling kopiëren",
+  cps_saving:    "Opslaan…",
+  cps_copied:    "Gekopieerd!",
+  cps_close:     "Sluiten",
 };
 
 // ── Spanish ────────────────────────────────────────────────────────────────────
@@ -2588,6 +2629,14 @@ const es: Translations = {
   reeng_anon_guess_cta: "Adivina el jugador de hoy",
   reeng_anon_news_cta: "Descubre lo nuevo de tus ligas seguidas",
   reeng_close: "Cerrar",
+
+  cps_title:     "¿Copiar este pronóstico a tus otros grupos?",
+  cps_your_pick: "Tu pronóstico: {home}–{away}",
+  cps_skip:      "Omitir",
+  cps_copy:      "Copiar pronóstico",
+  cps_saving:    "Guardando…",
+  cps_copied:    "¡Copiado!",
+  cps_close:     "Cerrar",
 };
 
 // ── Portuguese ─────────────────────────────────────────────────────────────────
@@ -3011,6 +3060,14 @@ const pt: Translations = {
   reeng_anon_guess_cta: "Adivinhe o jogador de hoje",
   reeng_anon_news_cta: "Veja as novidades das suas ligas seguidas",
   reeng_close: "Fechar",
+
+  cps_title:     "Copiar esse palpite para os seus outros grupos?",
+  cps_your_pick: "Seu palpite: {home}–{away}",
+  cps_skip:      "Pular",
+  cps_copy:      "Copiar palpite",
+  cps_saving:    "Salvando…",
+  cps_copied:    "Copiado!",
+  cps_close:     "Fechar",
 };
 
 // ── Hebrew ─────────────────────────────────────────────────────────────────────
@@ -3434,6 +3491,14 @@ const he: Translations = {
   reeng_anon_guess_cta: "נחשו את השחקן של היום",
   reeng_anon_news_cta: "מה חדש בליגות שאתם עוקבים אחריהן",
   reeng_close: "סגור",
+
+  cps_title:     "להעתיק את הניחוש הזה לקבוצות האחרות שלך?",
+  cps_your_pick: "הניחוש שלך: {home}–{away}",
+  cps_skip:      "דלג",
+  cps_copy:      "העתק ניחוש",
+  cps_saving:    "שומר…",
+  cps_copied:    "הועתק!",
+  cps_close:     "סגור",
 };
 
 // ── Arabic ─────────────────────────────────────────────────────────────────────
@@ -3857,6 +3922,14 @@ const ar: Translations = {
   reeng_anon_guess_cta: "خمّن لاعب اليوم",
   reeng_anon_news_cta: "شاهد ما الجديد في الدوريات التي تتابعها",
   reeng_close: "إغلاق",
+
+  cps_title:     "هل تريد نسخ هذا التوقع إلى مجموعاتك الأخرى؟",
+  cps_your_pick: "توقعك: {home}–{away}",
+  cps_skip:      "تخطي",
+  cps_copy:      "نسخ التوقع",
+  cps_saving:    "جارٍ الحفظ…",
+  cps_copied:    "تم النسخ!",
+  cps_close:     "إغلاق",
 };
 
 // ── Translation map ────────────────────────────────────────────────────────────

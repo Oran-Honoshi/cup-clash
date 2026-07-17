@@ -8,6 +8,7 @@ import {
   Users, Zap,
 } from "lucide-react";
 import { CopyPredictionSheet } from "@/components/predictions/copy-prediction-sheet";
+import { upsertGroupPrediction } from "@/lib/services/predictions-client";
 import { LiveMatchHub } from "@/components/match/live-match-hub";
 import { FlagBadge } from "@/components/ui/FlagBadge";
 import { BallLoader } from "@/components/ui/BallLoader";
@@ -63,7 +64,7 @@ export interface ScheduleClientProps {
   userId?: string;
   groupId: string;
   groupName: string;
-  allGroups: Array<{ id: string; name: string; passkey: string }>;
+  allGroups: Array<{ id: string; name: string; passkey: string; groupType: string; singleMatchId: string | null }>;
   allMatches?: ScheduleMatch[];
   matchResults: Record<string, MatchResult>;
   matchTeams?: Record<string, { home: string; away: string; homeFlagCode?: string; awayFlagCode?: string }>;
@@ -667,7 +668,10 @@ export function ScheduleClient({
   const [searchQuery, setSearchQuery]   = useState("");
 
   // ── Copy-to-groups sheet
-  const [copySheet, setCopySheet] = useState<{ matchId: string; home: number; away: number } | null>(null);
+  const [copySheet, setCopySheet] = useState<{
+    matchId: string; home: number; away: number;
+    groups:  Array<{ id: string; name: string }>;
+  } | null>(null);
 
   // ── Match Center overlay
   const [openMatchId, setOpenMatchId] = useState<string | null>(null);
@@ -702,17 +706,9 @@ export function ScheduleClient({
     const a = parseInt(away, 10);
     if (isNaN(h) || isNaN(a)) return;
 
-    const sb = createClient();
-    const { error } = await sb.from("group_predictions").upsert({
-      user_id:    userId,
-      group_id:   groupId,
-      match_id:   matchId,
-      home_score: h,
-      away_score: a,
-      updated_at: new Date().toISOString(),
-    }, { onConflict: "user_id,group_id,match_id" });
+    const success = await upsertGroupPrediction({ userId, groupId, matchId, homeScore: h, awayScore: a });
 
-    if (!error) {
+    if (success) {
       setSavedPreds(prev => ({
         ...prev,
         [matchId]: {
@@ -725,15 +721,44 @@ export function ScheduleClient({
       setPrediction(matchId, h, a);
       setSaveFlash(prev => ({ ...prev, [matchId]: "success" }));
       setTimeout(() => setSaveFlash(prev => ({ ...prev, [matchId]: null })), 1000);
-      // Offer to copy to other groups when user has multiple groups
-      if (allGroups.length > 1) {
-        setCopySheet({ matchId, home: h, away: a });
+
+      // Offer to copy to other groups where this same match is also
+      // predictable (a single_match group only predicts its own match)
+      // and copying would actually change something there.
+      const eligibleIds = allGroups
+        .filter(g => g.id !== groupId && (g.groupType !== "single_match" || g.singleMatchId === matchId))
+        .map(g => g.id);
+
+      if (eligibleIds.length > 0) {
+        const sb = createClient();
+        const { data: existing } = await sb
+          .from("group_predictions")
+          .select("group_id, home_score, away_score")
+          .eq("user_id", userId)
+          .eq("match_id", matchId)
+          .in("group_id", eligibleIds);
+
+        const existingByGroup = new Map(
+          (existing ?? []).map((p: { group_id: string; home_score: number; away_score: number }) => [p.group_id, p])
+        );
+
+        const copyTargets = allGroups
+          .filter(g => eligibleIds.includes(g.id))
+          .filter(g => {
+            const ex = existingByGroup.get(g.id);
+            return !ex || ex.home_score !== h || ex.away_score !== a;
+          })
+          .map(g => ({ id: g.id, name: g.name }));
+
+        if (copyTargets.length > 0) {
+          setCopySheet({ matchId, home: h, away: a, groups: copyTargets });
+        }
       }
     } else {
       setSaveFlash(prev => ({ ...prev, [matchId]: "error" }));
       setTimeout(() => setSaveFlash(prev => ({ ...prev, [matchId]: null })), 2000);
     }
-  }, [userId, groupId, setPrediction]);
+  }, [userId, groupId, setPrediction, allGroups]);
 
   const handleLocalPredChange = useCallback((matchId: string, home: string, away: string) => {
     setLocalPreds(prev => ({ ...prev, [matchId]: { home, away } }));
@@ -1022,17 +1047,14 @@ export function ScheduleClient({
       )}
 
       {/* ── Copy-to-groups bottom sheet ───────────────────────────── */}
-      {copySheet && userId && (
-        <CopyPredictionSheet
-          matchId={copySheet.matchId}
-          home={copySheet.home}
-          away={copySheet.away}
-          groups={allGroups}
-          currentGroupId={groupId}
-          userId={userId}
-          onDismiss={() => setCopySheet(null)}
-        />
-      )}
+      <CopyPredictionSheet
+        matchId={copySheet?.matchId ?? null}
+        home={copySheet?.home ?? 0}
+        away={copySheet?.away ?? 0}
+        groups={copySheet?.groups ?? []}
+        userId={userId ?? ""}
+        onDismiss={() => setCopySheet(null)}
+      />
 
       {/* ── Match Center overlay ─────────────────────────────────── */}
       {openMatchId && (() => {

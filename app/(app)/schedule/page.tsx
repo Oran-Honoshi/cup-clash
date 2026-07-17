@@ -118,7 +118,7 @@ export default async function SchedulePage({
   let userId: string | undefined;
   let activeGroupId = "";
   let groupName     = "My Predictions";
-  let allGroups:    Array<{ id: string; name: string; passkey: string }> = [];
+  let allGroups:    Array<{ id: string; name: string; passkey: string; groupType: string; singleMatchId: string | null }> = [];
   let initialPredictions: Record<
     string,
     { homeScore: number; awayScore: number; pointsEarned: number | null; isExact: boolean | null }
@@ -139,18 +139,25 @@ export default async function SchedulePage({
 
     const { data: memberships } = await sbAdmin()
       .from("group_members")
-      .select("group_id, groups(id, name, passkey)")
+      .select("group_id, groups(id, name, passkey, group_type, single_match_id)")
       .eq("user_id", user.id);
 
     allGroups = (memberships ?? [])
       .map((m: unknown) => {
         const row = m as {
           group_id: string;
-          groups: { id: string; name: string; passkey: string } | null;
+          groups: { id: string; name: string; passkey: string; group_type: string | null; single_match_id: string | null } | null;
         };
-        return row.groups;
+        if (!row.groups) return null;
+        return {
+          id:            row.groups.id,
+          name:          row.groups.name,
+          passkey:       row.groups.passkey,
+          groupType:     row.groups.group_type ?? "tournament",
+          singleMatchId: row.groups.single_match_id,
+        };
       })
-      .filter(Boolean) as Array<{ id: string; name: string; passkey: string }>;
+      .filter(Boolean) as Array<{ id: string; name: string; passkey: string; groupType: string; singleMatchId: string | null }>;
 
     activeGroupId =
       searchParams.group && allGroups.find(g => g.id === searchParams.group)
