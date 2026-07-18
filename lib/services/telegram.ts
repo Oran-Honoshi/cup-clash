@@ -16,7 +16,7 @@ export function telegramTranslations(languageCode: string | null | undefined): T
 // an empty '{}' column (every row, pre-this-feature) must not silently opt
 // everyone into every category.
 
-export type TelegramPrefKey = "goals" | "results" | "locking_reminder" | "weekly_digest" | "leaderboard";
+export type TelegramPrefKey = "goals" | "results" | "locking_reminder" | "weekly_digest" | "leaderboard" | "match_reminder";
 
 export const TELEGRAM_PREF_DEFAULTS: Record<TelegramPrefKey, boolean> = {
   goals:             false,
@@ -24,6 +24,7 @@ export const TELEGRAM_PREF_DEFAULTS: Record<TelegramPrefKey, boolean> = {
   locking_reminder:  true,
   weekly_digest:     false,
   leaderboard:       false,
+  match_reminder:    false,
 };
 
 type NotificationPreferences = {
