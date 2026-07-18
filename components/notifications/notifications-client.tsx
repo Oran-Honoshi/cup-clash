@@ -32,6 +32,7 @@ const TELEGRAM_SETTINGS: TelegramSetting[] = [
   { key: "goals",            icon: <span className="text-lg">⚽</span> },
   { key: "results",          icon: <Trophy size={18} style={{ color: "#fbbf24" }} /> },
   { key: "locking_reminder", icon: <span className="text-lg">⏰</span> },
+  { key: "match_reminder",   icon: <span className="text-lg">🔔</span> },
   { key: "weekly_digest",    icon: <span className="text-lg">🗓️</span> },
   { key: "leaderboard",      icon: <span className="text-lg">📊</span> },
 ];
@@ -59,6 +60,7 @@ export function NotificationsClient({ userId }: { userId: string }) {
     goals:            { label: t("notif_tg_goals"),         desc: t("notif_tg_goals_desc") },
     results:          { label: t("notif_tg_results"),       desc: t("notif_tg_results_desc") },
     locking_reminder: { label: t("notif_tg_locking_label"), desc: t("notif_tg_locking_desc") },
+    match_reminder:   { label: t("notif_tg_match_reminder"), desc: t("notif_tg_match_reminder_desc") },
     weekly_digest:    { label: t("notif_tg_digest"),        desc: t("notif_tg_digest_desc") },
     leaderboard:      { label: t("notif_tg_leaderboard"),   desc: t("notif_tg_leaderboard_desc") },
   };
