@@ -1,6 +1,7 @@
-// League fixtures/standings cron — fetches the 6 non-World-Cup competitions
-// (Premier League, La Liga, Serie A, Bundesliga, Ligue 1, UEFA Champions
-// League) from API-Football and caches them to Supabase.
+// League fixtures/standings cron — fetches the non-World-Cup competitions
+// in TRACKED_LEAGUES below (Premier League, La Liga, Serie A, Bundesliga,
+// Ligue 1, UEFA Champions League, Copa Libertadores, Copa Sudamericana,
+// MLS, Brazil Serie A) from API-Football and caches them to Supabase.
 //
 // Deliberately separate from app/api/scores/route.ts (the World Cup live
 // pipeline) — same conventions, but zero shared code path, so nothing here
@@ -19,7 +20,7 @@ const FIXTURES_REFRESH_INTERVAL_MS = 3 * 60 * 60 * 1000; // 3h
 const LIVE_WINDOW_BEFORE_MS = 3 * 60 * 60 * 1000;  // consider "in window" up to 3h after kickoff
 const LIVE_WINDOW_AFTER_MS  = 10 * 60 * 1000;       // ...and up to 10min before kickoff
 
-// competitions.name (must match migration 037 seed rows exactly) → API-Football league id
+// competitions.name (must match migration 037/065 seed rows exactly) → API-Football league id
 const TRACKED_LEAGUES: Array<{ name: string; apiLeagueId: number }> = [
   { name: "Premier League",          apiLeagueId: 39  },
   { name: "La Liga",                 apiLeagueId: 140 },
@@ -27,6 +28,10 @@ const TRACKED_LEAGUES: Array<{ name: string; apiLeagueId: number }> = [
   { name: "Bundesliga",              apiLeagueId: 78  },
   { name: "Ligue 1",                 apiLeagueId: 61  },
   { name: "UEFA Champions League",   apiLeagueId: 2   },
+  { name: "Copa Libertadores",       apiLeagueId: 13  },
+  { name: "Copa Sudamericana",       apiLeagueId: 11  },
+  { name: "MLS",                     apiLeagueId: 253 },
+  { name: "Brazil Serie A",          apiLeagueId: 71  },
 ];
 
 function apiHeaders(): Record<string, string> {
