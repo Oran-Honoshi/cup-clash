@@ -6,6 +6,7 @@ import { AppInstallBanner } from "@/components/app/install-banner";
 import { JoinPromptModal } from "@/components/join/join-prompt-modal";
 import { ReengagementSheet } from "@/components/reengagement/reengagement-sheet";
 import { HouseGroupInviteSheet } from "@/components/house-groups/house-group-invite-sheet";
+import { MatchReminderSheet } from "@/components/reminders/match-reminder-sheet";
 import { GroupProvider } from "@/lib/contexts/group-context";
 import { NavModeProvider } from "@/lib/contexts/nav-mode-context";
 
@@ -40,6 +41,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       <JoinPromptModal />
       <ReengagementSheet />
       <HouseGroupInviteSheet />
+      <MatchReminderSheet />
     </div>
     </GroupProvider>
     </NavModeProvider>

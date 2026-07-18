@@ -15,6 +15,7 @@ import { PredictionsClient } from "@/components/predictions/predictions-client";
 import { RulesSummary } from "@/components/groups/rules-summary";
 import { AdminGroupSector } from "@/components/admin/admin-group-sector";
 import { GroupSwitcherControl } from "@/components/groups/group-switcher-control";
+import { TournamentPicksNag } from "@/components/reminders/tournament-picks-nag";
 import { useLocale } from "@/components/i18n/locale-provider";
 import { interpolate } from "@/lib/i18n";
 import { compareMembersForRanking } from "@/lib/leaderboard-sort";
@@ -125,6 +126,7 @@ export function GroupDetailClient({
 
       {tab === "predictions" && (
         <div className="space-y-4">
+          <TournamentPicksNag groupId={group.id} />
           <PredictionsClient
             groupId={group.id}
             groupName={group.name}
