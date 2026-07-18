@@ -34,6 +34,7 @@ interface VoteResponse {
   closed?: boolean;
   options?: VoteOption[];
   userOptionId?: string | null;
+  totalVotes?: number;
   results?: VoteResult[] | null;
 }
 
@@ -84,26 +85,31 @@ export function MvpVotePanel({ matchId, home, away }: { matchId: string; home: s
     }
   }, [matchId, state, casting, t]);
 
-  const q = search.trim().toLowerCase();
-  const filteredOptions = useMemo(() => {
-    const opts = state?.options ?? [];
-    if (!q) return opts;
-    return opts.filter(o => o.fullName.toLowerCase().includes(q));
-  }, [state?.options, q]);
-
   const resultsByOption = useMemo(() => {
     const map = new Map<string, VoteResult>();
     for (const r of state?.results ?? []) map.set(r.optionId, r);
     return map;
   }, [state?.results]);
 
-  const totalVotes = useMemo(
-    () => (state?.results ?? []).reduce((sum, r) => sum + r.votes, 0),
-    [state?.results]
-  );
-
-  const showResults = !!state?.results;
+  const totalVotes = state?.totalVotes ?? 0;
   const votedOption = state?.options?.find(o => o.optionId === state.userOptionId) ?? null;
+
+  // Only switch to results-bar styling once voting has genuinely closed, or
+  // there's at least one real vote to show a meaningful percentage for —
+  // otherwise an open, zero-vote poll reads as a broken/abandoned one.
+  const hasResults = !!state?.closed || totalVotes > 0;
+  // Whether a click can still cast a vote — independent of hasResults, so
+  // one early vote revealing live percentages doesn't lock everyone else out.
+  const couldVote = !state?.closed && !votedOption;
+  const canVote = couldVote && !!userId;
+
+  const q = search.trim().toLowerCase();
+  const visibleOptions = useMemo(() => {
+    const opts = state?.options ?? [];
+    const filtered = q ? opts.filter(o => o.fullName.toLowerCase().includes(q)) : opts;
+    if (!hasResults) return filtered;
+    return [...filtered].sort((a, b) => (resultsByOption.get(b.optionId)?.pct ?? 0) - (resultsByOption.get(a.optionId)?.pct ?? 0));
+  }, [state?.options, q, hasResults, resultsByOption]);
 
   if (loading) {
     return (
@@ -144,7 +150,7 @@ export function MvpVotePanel({ matchId, home, away }: { matchId: string; home: s
         <div className="text-xs font-bold" style={{ color: "#f87171" }}>{error}</div>
       )}
 
-      {!showResults && (
+      {couldVote && (
         <div className="relative">
           <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: "var(--mt)" }} />
           <input
@@ -158,12 +164,12 @@ export function MvpVotePanel({ matchId, home, away }: { matchId: string; home: s
         </div>
       )}
 
-      {!userId && !showResults && (
+      {!userId && couldVote && (
         <div className="text-xs" style={{ color: "var(--mt)" }}>{t("mvp_vote_signin_prompt")}</div>
       )}
 
       <div className="rounded-2xl overflow-hidden max-h-96 overflow-y-auto" style={{ background: "var(--sf)", border: "1px solid var(--br)" }}>
-        {(showResults ? [...(state.options ?? [])].sort((a, b) => (resultsByOption.get(b.optionId)?.pct ?? 0) - (resultsByOption.get(a.optionId)?.pct ?? 0)) : filteredOptions).map(option => {
+        {visibleOptions.map(option => {
           const result = resultsByOption.get(option.optionId);
           const isMine = option.optionId === state.userOptionId;
           const isHomeTeam = option.country === home;
@@ -171,7 +177,7 @@ export function MvpVotePanel({ matchId, home, away }: { matchId: string; home: s
             <button
               key={option.optionId}
               type="button"
-              disabled={showResults || !userId || casting !== null}
+              disabled={!canVote || casting !== null}
               onClick={() => handleVote(option.optionId)}
               className="w-full flex items-center gap-2.5 px-3 py-2.5 border-b last:border-0 text-left transition-colors disabled:cursor-default"
               style={{ borderColor: "var(--br)", background: isMine ? "rgba(0,212,255,0.08)" : "transparent" }}
@@ -190,7 +196,7 @@ export function MvpVotePanel({ matchId, home, away }: { matchId: string; home: s
                   {isMine && <Check size={12} style={{ color: "#00D4FF" }} className="shrink-0" />}
                 </div>
                 <span className="text-[10px]" style={{ color: "var(--mt)" }}>{isHomeTeam ? home : away}</span>
-                {result && (
+                {hasResults && result && (
                   <div className="flex items-center gap-2 mt-1.5">
                     <div style={{ flex: 1, height: 6, borderRadius: 3, background: "var(--ip)", overflow: "hidden" }}>
                       <div style={{
@@ -208,12 +214,12 @@ export function MvpVotePanel({ matchId, home, away }: { matchId: string; home: s
             </button>
           );
         })}
-        {(showResults ? state.options ?? [] : filteredOptions).length === 0 && (
+        {visibleOptions.length === 0 && (
           <div className="text-xs text-center py-4" style={{ color: "var(--mt)" }}>—</div>
         )}
       </div>
 
-      {showResults && (
+      {hasResults && (
         <div className="text-[11px]" style={{ color: "var(--mt)" }}>
           {interpolate(t("mvp_vote_total_votes"), { count: totalVotes })}
         </div>

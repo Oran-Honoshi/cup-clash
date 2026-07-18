@@ -463,6 +463,10 @@ export interface Translations {
   mvp_vote_error_already:  string;
   mvp_vote_error_closed:   string;
   mvp_vote_signin_prompt:  string;
+  mvp_teaser_final_results: string;
+  mvp_teaser_live_label:    string;
+  mvp_teaser_leading:       string;
+  mvp_teaser_cta:           string;
 
   // Oracle Predictions — "Beat the Oracle" (Home teaser + Game Room)
   oracle_label:               string;
@@ -947,6 +951,10 @@ const en: Translations = {
   mvp_vote_error_already: "You've already voted",
   mvp_vote_error_closed: "Voting has closed",
   mvp_vote_signin_prompt: "Sign in to vote",
+  mvp_teaser_final_results: "MVP Vote — Final Results",
+  mvp_teaser_live_label: "Matchday MVP Vote",
+  mvp_teaser_leading: "Leading: {name} ({pct}%)",
+  mvp_teaser_cta: "Who was {home} vs {away}'s best player? Cast your vote →",
 
   oracle_label: "The Oracle",
   oracle_teaser_eyebrow: "Beat the Oracle",
@@ -1424,6 +1432,10 @@ const fr: Translations = {
   mvp_vote_error_already: "Vous avez déjà voté",
   mvp_vote_error_closed: "Le vote est clos",
   mvp_vote_signin_prompt: "Connectez-vous pour voter",
+  mvp_teaser_final_results: "Vote MVP — Résultats finaux",
+  mvp_teaser_live_label: "Vote MVP de la journée",
+  mvp_teaser_leading: "En tête : {name} ({pct}%)",
+  mvp_teaser_cta: "Qui a été le meilleur joueur de {home} vs {away} ? Votez →",
 
   oracle_label: "L'Oracle",
   oracle_teaser_eyebrow: "Battez l'Oracle",
@@ -1901,6 +1913,10 @@ const de: Translations = {
   mvp_vote_error_already: "Du hast bereits abgestimmt",
   mvp_vote_error_closed: "Die Abstimmung ist beendet",
   mvp_vote_signin_prompt: "Melde dich an, um abzustimmen",
+  mvp_teaser_final_results: "MVP-Abstimmung — Endergebnis",
+  mvp_teaser_live_label: "MVP-Abstimmung des Spieltags",
+  mvp_teaser_leading: "Führend: {name} ({pct}%)",
+  mvp_teaser_cta: "Wer war der beste Spieler von {home} gegen {away}? Jetzt abstimmen →",
 
   oracle_label: "Das Orakel",
   oracle_teaser_eyebrow: "Schlag das Orakel",
@@ -2378,6 +2394,10 @@ const nl: Translations = {
   mvp_vote_error_already: "Je hebt al gestemd",
   mvp_vote_error_closed: "Stemmen is gesloten",
   mvp_vote_signin_prompt: "Log in om te stemmen",
+  mvp_teaser_final_results: "MVP-stemming — Eindresultaten",
+  mvp_teaser_live_label: "MVP-stemming van de speeldag",
+  mvp_teaser_leading: "Op kop: {name} ({pct}%)",
+  mvp_teaser_cta: "Wie was de beste speler van {home} vs {away}? Breng je stem uit →",
 
   oracle_label: "Het Orakel",
   oracle_teaser_eyebrow: "Versla het Orakel",
@@ -2855,6 +2875,10 @@ const es: Translations = {
   mvp_vote_error_already: "Ya has votado",
   mvp_vote_error_closed: "La votación ha cerrado",
   mvp_vote_signin_prompt: "Inicia sesión para votar",
+  mvp_teaser_final_results: "Votación MVP — Resultados finales",
+  mvp_teaser_live_label: "Votación MVP de la jornada",
+  mvp_teaser_leading: "Liderando: {name} ({pct}%)",
+  mvp_teaser_cta: "¿Quién fue el mejor jugador de {home} vs {away}? Vota →",
 
   oracle_label: "El Oráculo",
   oracle_teaser_eyebrow: "Vence al Oráculo",
@@ -3332,6 +3356,10 @@ const pt: Translations = {
   mvp_vote_error_already: "Você já votou",
   mvp_vote_error_closed: "A votação foi encerrada",
   mvp_vote_signin_prompt: "Entre para votar",
+  mvp_teaser_final_results: "Votação MVP — Resultado final",
+  mvp_teaser_live_label: "Votação MVP da rodada",
+  mvp_teaser_leading: "Na liderança: {name} ({pct}%)",
+  mvp_teaser_cta: "Quem foi o melhor jogador de {home} vs {away}? Vote →",
 
   oracle_label: "O Oráculo",
   oracle_teaser_eyebrow: "Vença o Oráculo",
@@ -3809,6 +3837,10 @@ const he: Translations = {
   mvp_vote_error_already: "כבר הצבעת",
   mvp_vote_error_closed: "ההצבעה נסגרה",
   mvp_vote_signin_prompt: "התחברו כדי להצביע",
+  mvp_teaser_final_results: "הצבעת מצטיין — תוצאות סופיות",
+  mvp_teaser_live_label: "הצבעת מצטיין המחזור",
+  mvp_teaser_leading: "מוביל: {name} ({pct}%)",
+  mvp_teaser_cta: "מי היה השחקן הטוב ביותר של {home} נגד {away}? הצביעו →",
 
   oracle_label: "המגיד העתידות",
   oracle_teaser_eyebrow: "נצחו את המגיד העתידות",
@@ -4286,6 +4318,10 @@ const ar: Translations = {
   mvp_vote_error_already: "لقد صوّتَ بالفعل",
   mvp_vote_error_closed: "التصويت مغلق",
   mvp_vote_signin_prompt: "سجّل الدخول للتصويت",
+  mvp_teaser_final_results: "تصويت الأفضل — النتائج النهائية",
+  mvp_teaser_live_label: "تصويت الأفضل ليوم المباريات",
+  mvp_teaser_leading: "المتصدر: {name} ({pct}%)",
+  mvp_teaser_cta: "من كان أفضل لاعب في {home} ضد {away}؟ صوّت →",
 
   oracle_label: "العرّاف",
   oracle_teaser_eyebrow: "تغلّب على العرّاف",

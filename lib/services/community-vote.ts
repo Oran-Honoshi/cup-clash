@@ -23,7 +23,8 @@ export type VoteState = {
   closed: boolean;
   options: VoteOption[];
   userOptionId: string | null; // set once this user has cast a vote
-  results: { optionId: string; votes: number; pct: number }[] | null; // only populated once the caller has voted or the vote is closed
+  totalVotes: number;
+  results: { optionId: string; votes: number; pct: number }[];
 };
 
 async function getNextMatchdayStart(sb: SupabaseClient, afterKickoffAt: string): Promise<string | null> {
@@ -131,20 +132,22 @@ export async function getMatchVoteState(
 
   const userOptionId: string | null = ownCast?.data?.option_id ?? null;
 
-  let results: VoteState["results"] = null;
-  if (closed || userOptionId) {
-    const { data: castRows } = await sb.from("community_vote_casts").select("option_id").eq("vote_id", vote.id);
-    const counts = new Map<string, number>();
-    for (const o of options) counts.set(o.optionId, 0);
-    for (const c of (castRows ?? [])) counts.set(c.option_id, (counts.get(c.option_id) ?? 0) + 1);
-    const total = (castRows ?? []).length || 1;
-    results = options.map(o => {
-      const votes = counts.get(o.optionId) ?? 0;
-      return { optionId: o.optionId, votes, pct: Math.round((votes / total) * 100) };
-    });
-  }
+  // Always tally so callers can decide when a result is meaningful enough to
+  // display (see mvp-vote-panel.tsx / news-mvp-teaser-card.tsx) — previously
+  // this was gated on closed/userOptionId, which meant a vote with real
+  // community casts stayed hidden from anyone who hadn't voted themselves.
+  const { data: castRows } = await sb.from("community_vote_casts").select("option_id").eq("vote_id", vote.id);
+  const counts = new Map<string, number>();
+  for (const o of options) counts.set(o.optionId, 0);
+  for (const c of (castRows ?? [])) counts.set(c.option_id, (counts.get(c.option_id) ?? 0) + 1);
+  const totalVotes = (castRows ?? []).length;
+  const total = totalVotes || 1;
+  const results = options.map(o => {
+    const votes = counts.get(o.optionId) ?? 0;
+    return { optionId: o.optionId, votes, pct: Math.round((votes / total) * 100) };
+  });
 
-  return { voteId: vote.id, closesAt: vote.closes_at, closed, options, userOptionId, results };
+  return { voteId: vote.id, closesAt: vote.closes_at, closed, options, userOptionId, totalVotes, results };
 }
 
 export type CastVoteResult = { ok: true } | { ok: false; error: "closed" | "already_voted" | "invalid_option" };

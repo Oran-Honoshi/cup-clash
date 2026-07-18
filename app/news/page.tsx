@@ -37,7 +37,9 @@ async function getMvpTeaser(sb: ReturnType<typeof sbAdmin>, userId: string | nul
   const vote = await getMatchVoteState(sb, match.id, userId);
   if (!vote) return null; // shouldn't happen for a finished match, but be defensive
 
-  const topResult = vote.results && vote.results.length
+  // Only surface a "leading" pick once there's at least one real vote to back
+  // it — otherwise ties at 0% would crown an arbitrary candidate as "leading".
+  const topResult = vote.totalVotes > 0
     ? [...vote.results].sort((a, b) => b.votes - a.votes)[0]
     : null;
   const topOption = topResult ? vote.options.find((o) => o.optionId === topResult.optionId) ?? null : null;
@@ -54,7 +56,7 @@ async function getMvpTeaser(sb: ReturnType<typeof sbAdmin>, userId: string | nul
     stadium: match.stadium ?? undefined,
     city: match.city ?? undefined,
     topPick: topOption ? { name: topOption.fullName, photo: topOption.photo, pct: topResult!.pct } : null,
-    totalVotes: (vote.results ?? []).reduce((sum, r) => sum + r.votes, 0),
+    totalVotes: vote.totalVotes,
     closed: vote.closed,
   };
 }
