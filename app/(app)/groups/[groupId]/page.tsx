@@ -6,15 +6,16 @@ import { getCurrentUserProfile } from "@/lib/services/user-group";
 import { getGroup as getAdminGroupData, getMembers as getLeaderboardMembers } from "@/lib/services/groups";
 import { getAllMatches } from "@/lib/services/matches";
 import { GroupDetailClient } from "@/components/groups/group-detail-client";
+import { matchInGroupScope } from "@/lib/schedule";
 import type { Group as AdminGroup, Member as LeaderboardMember } from "@/lib/types";
 
 async function getGroupDetail(groupId: string) {
   const { data } = await sbAdmin()
     .from("groups")
-    .select("id, name, passkey, admin_id, buy_in_amount, payout_first, payout_second, payout_third, max_members, enrollment_fee_cents, is_corporate_paid, max_group_capacity, payment_model, corporate_prize, currency_symbol, payment_link, enable_group_stage_prize, group_stage_prize_amount, group_stage_prize_label, show_prize_split, show_entry_fee, show_prize_pot, show_buy_in_tracker, show_payment_link, group_mode, winner_message")
+    .select("id, name, passkey, admin_id, buy_in_amount, payout_first, payout_second, payout_third, max_members, enrollment_fee_cents, is_corporate_paid, max_group_capacity, payment_model, corporate_prize, currency_symbol, payment_link, enable_group_stage_prize, group_stage_prize_amount, group_stage_prize_label, show_prize_split, show_entry_fee, show_prize_pot, show_buy_in_tracker, show_payment_link, group_mode, winner_message, competition_id, competitions(name)")
     .eq("id", groupId)
     .single();
-  return data as {
+  return data as unknown as {
     id: string; name: string; passkey: string; admin_id: string;
     buy_in_amount: number; payout_first: number; payout_second: number;
     payout_third: number; max_members: number; enrollment_fee_cents: number;
@@ -31,6 +32,8 @@ async function getGroupDetail(groupId: string) {
     show_payment_link: boolean | null;
     group_mode: string | null;
     winner_message: string | null;
+    competition_id: string | null;
+    competitions: { name: string } | null;
   } | null;
 }
 
@@ -106,11 +109,23 @@ export default async function GroupDetailPage({ params, searchParams }: { params
   const isAdFree    = adStatus?.is_ad_free ?? false;
   const isCorporate = adStatus?.groups?.is_corporate_paid ?? false;
 
+  // Scope matches to this group's own competition — allMatches comes from
+  // getAllMatches() (every competition), so every consumer downstream
+  // (Predictions tabs, Group Predictions matrix, etc.) would otherwise see
+  // every other competition's fixtures too. null competition_id = World Cup
+  // 2026 (legacy groups), matching matchInGroupScope's fallback.
+  const groupMatches = allMatches.filter(m => matchInGroupScope(m.stage, m.competitionId, group.competition_id));
+
   let adminData: { group: AdminGroup; members: LeaderboardMember[]; isOwner: boolean; finalLocked: boolean } | null = null;
   if (isAdmin) {
+    // The "final" match id is a World Cup-only concept (single bracket
+    // final) — non-WC groups have no such match, so finalLocked is always
+    // false for them (nothing to lock).
     const [adminGroup, finalMatch] = await Promise.all([
       getAdminGroupData(params.groupId),
-      sbAdmin().from("matches").select("status").eq("id", "final").maybeSingle(),
+      group.competition_id
+        ? Promise.resolve({ data: null })
+        : sbAdmin().from("matches").select("status").eq("id", "final").maybeSingle(),
     ]);
     adminData = {
       group: adminGroup,
@@ -128,7 +143,7 @@ export default async function GroupDetailPage({ params, searchParams }: { params
       rules={rules}
       members={members}
       leaderboardMembers={leaderboardMembers}
-      allMatches={allMatches}
+      allMatches={groupMatches}
       allGroups={allGroups}
       currentUserId={userProfile.id}
       currentUserName={userProfile.name}

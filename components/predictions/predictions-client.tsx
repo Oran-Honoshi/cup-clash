@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { GroupStagePredictions } from "@/components/predictions/group-stage-predictions";
 import { KnockoutPredictions } from "@/components/predictions/knockout-predictions";
+import { LeaguePredictions } from "@/components/predictions/league-predictions";
 import { TournamentPicks } from "@/components/dashboard/tournament-picks";
 import { BonusQuestions } from "@/components/predictions/bonus-questions";
 import { GuestStore } from "@/components/ui/guest-signup-modal";
@@ -14,6 +15,12 @@ import { getNextScheduleMatch, toMatchType, type ScheduleMatch } from "@/lib/sch
 interface PredictionsClientProps {
   groupId:            string;
   groupName:          string;
+  // null/omitted = World Cup 2026 (every group's implicit competition before
+  // groups.competition_id existed). Set = a league-format competition, which
+  // has no group letters/knockout bracket, so the tab set/section content
+  // differs (see isLeagueFormat below).
+  groupCompetitionId?: string | null;
+  groupCompetitionName?: string | null;
   allGroups:          Array<{ id: string; name: string; passkey: string }>;
   userId:             string;
   isPaid:             boolean;
@@ -28,38 +35,54 @@ interface PredictionsClientProps {
   showNextMatchHero?: boolean;
 }
 
-type SectionKey = "group" | "knockout" | "tournament" | "bonus";
+type SectionKey = "group" | "knockout" | "league" | "tournament" | "bonus";
 
-const TABS: { key: SectionKey; label: string }[] = [
+const WC_TABS: { key: SectionKey; label: string }[] = [
   { key: "group",      label: "GROUP STAGE" },
   { key: "knockout",   label: "KNOCKOUT" },
   { key: "tournament", label: "TOURNAMENT PICKS" },
   { key: "bonus",      label: "BONUS QUESTIONS" },
 ];
 
+// League-format competitions (Premier League, La Liga, ...) have no group
+// letters/knockout bracket — a single flat "MATCHES" tab replaces both.
+const LEAGUE_TABS: { key: SectionKey; label: string }[] = [
+  { key: "league",     label: "MATCHES" },
+  { key: "tournament", label: "TOURNAMENT PICKS" },
+  { key: "bonus",      label: "BONUS QUESTIONS" },
+];
+
 export function PredictionsClient({
-  groupId, groupName, allGroups, userId, isPaid, migrateGuestPicks = false, isAdFree, isCorporate, allMatches = [],
+  groupId, groupName, groupCompetitionId = null, groupCompetitionName = null, allGroups, userId, isPaid, migrateGuestPicks = false, isAdFree, isCorporate, allMatches = [],
   showNextMatchHero = false,
 }: PredictionsClientProps) {
   void isPaid; void allGroups;
 
   const { predictions: ctxPredictions, refreshPredictions, setActiveUserId } = useGroupContext();
 
-  const [activeTab, setActiveTab] = useState<SectionKey>("group");
+  const isLeagueFormat = Boolean(groupCompetitionId);
+  const TABS = isLeagueFormat ? LEAGUE_TABS : WC_TABS;
+
+  const [activeTab, setActiveTab] = useState<SectionKey>(TABS[0].key);
   const [migrated,  setMigrated]  = useState(false);
   const [openMatchId, setOpenMatchId] = useState<string | null>(null);
 
-  const groupStageMatchIds = allMatches.filter(m => m.stage === "Group").map(m => m.id);
-  const predictedCount = groupStageMatchIds.filter(id => ctxPredictions[id] != null).length;
+  // WC groups track "Group Stage predicted" specifically (the counter next
+  // to the tab pills); a league-format group has no such distinction, so it
+  // counts every predictable match instead.
+  const trackedMatchIds = isLeagueFormat
+    ? allMatches.filter(m => m.status !== "finished").map(m => m.id)
+    : allMatches.filter(m => m.stage === "Group").map(m => m.id);
+  const predictedCount = trackedMatchIds.filter(id => ctxPredictions[id] != null).length;
 
   const nextMatch = useMemo(() => {
     if (!showNextMatchHero) return null;
-    const next = getNextScheduleMatch(allMatches);
+    const next = getNextScheduleMatch(allMatches, groupCompetitionId);
     return next ? toMatchType(next) : null;
-  }, [showNextMatchHero, allMatches]);
+  }, [showNextMatchHero, allMatches, groupCompetitionId]);
 
   const carouselRef  = useRef<HTMLDivElement>(null);
-  const sectionRefs  = useRef<(HTMLDivElement | null)[]>([null, null, null, null]);
+  const sectionRefs  = useRef<(HTMLDivElement | null)[]>(TABS.map(() => null));
   // Prevent observer from overriding an in-flight programmatic scroll
   const scrollingRef = useRef(false);
 
@@ -142,7 +165,7 @@ export function PredictionsClient({
       {/* Page header */}
       <div className="pt-2 pb-3">
         <div className="ta-section-label">
-          FIFA World Cup 2026
+          {groupCompetitionName ?? "FIFA World Cup 2026"}
         </div>
         <h1 className="ta-screen-title" style={{ color: "var(--tx)", lineHeight: 1.1 }}>
           My Picks
@@ -221,7 +244,7 @@ export function PredictionsClient({
 
         {/* Progress counter */}
         <div className="ta-meta pb-2">
-          {predictedCount}/{groupStageMatchIds.length} MATCHES PREDICTED
+          {predictedCount}/{trackedMatchIds.length} MATCHES PREDICTED
         </div>
       </div>
 
@@ -237,49 +260,66 @@ export function PredictionsClient({
         }}
       >
 
-        {/* ── Section 1: GROUP STAGE ─────────────────────────────── */}
-        <div ref={el => { sectionRefs.current[0] = el; }} className="cc-elevated" style={cardStyle}>
-          <div className="flex items-center justify-between mb-3">
-            <span className="ta-match-label" style={{ color: "var(--tx)" }}>
-              Group Stage
-            </span>
-            <span className="ta-meta">
-              {predictedCount}/{groupStageMatchIds.length} PREDICTED
-            </span>
+        {isLeagueFormat ? (
+          /* ── Section: MATCHES (league-format competitions) ─────── */
+          <div ref={el => { sectionRefs.current[TABS.findIndex(t => t.key === "league")] = el; }} className="cc-elevated" style={cardStyle}>
+            <div className="flex items-center justify-between mb-3">
+              <span className="ta-match-label" style={{ color: "var(--tx)" }}>
+                Matches
+              </span>
+              <span className="ta-meta">
+                {predictedCount}/{trackedMatchIds.length} PREDICTED
+              </span>
+            </div>
+            <LeaguePredictions key={groupId} groupId={groupId} userId={userId} allMatches={allMatches} />
           </div>
-          <GroupStagePredictions
-            key={groupId}
-            groupId={groupId}
-            userId={userId}
-            locked={false}
-            isAdFree={isAdFree}
-            isCorporate={isCorporate}
-            allMatches={allMatches}
-          />
-        </div>
+        ) : (
+          <>
+            {/* ── Section: GROUP STAGE ─────────────────────────────── */}
+            <div ref={el => { sectionRefs.current[TABS.findIndex(t => t.key === "group")] = el; }} className="cc-elevated" style={cardStyle}>
+              <div className="flex items-center justify-between mb-3">
+                <span className="ta-match-label" style={{ color: "var(--tx)" }}>
+                  Group Stage
+                </span>
+                <span className="ta-meta">
+                  {predictedCount}/{trackedMatchIds.length} PREDICTED
+                </span>
+              </div>
+              <GroupStagePredictions
+                key={groupId}
+                groupId={groupId}
+                userId={userId}
+                locked={false}
+                isAdFree={isAdFree}
+                isCorporate={isCorporate}
+                allMatches={allMatches}
+              />
+            </div>
 
-        {/* ── Section 2: KNOCKOUT ───────────────────────────────── */}
-        <div ref={el => { sectionRefs.current[1] = el; }} className="cc-elevated" style={cardStyle}>
-          <div className="mb-3">
-            <span className="ta-match-label" style={{ color: "var(--tx)" }}>
-              Knockout
-            </span>
-          </div>
-          <KnockoutPredictions key={groupId} groupId={groupId} userId={userId} allMatches={allMatches} />
-        </div>
+            {/* ── Section: KNOCKOUT ───────────────────────────────── */}
+            <div ref={el => { sectionRefs.current[TABS.findIndex(t => t.key === "knockout")] = el; }} className="cc-elevated" style={cardStyle}>
+              <div className="mb-3">
+                <span className="ta-match-label" style={{ color: "var(--tx)" }}>
+                  Knockout
+                </span>
+              </div>
+              <KnockoutPredictions key={groupId} groupId={groupId} userId={userId} allMatches={allMatches} />
+            </div>
+          </>
+        )}
 
-        {/* ── Section 3: TOURNAMENT PICKS ───────────────────────── */}
-        <div ref={el => { sectionRefs.current[2] = el; }} className="cc-elevated" style={cardStyle}>
+        {/* ── Section: TOURNAMENT PICKS ───────────────────────── */}
+        <div ref={el => { sectionRefs.current[TABS.findIndex(t => t.key === "tournament")] = el; }} className="cc-elevated" style={cardStyle}>
           <div className="mb-3">
             <span className="ta-match-label" style={{ color: "var(--tx)" }}>
               Tournament Picks
             </span>
           </div>
-          <TournamentPicks key={groupId} groupId={groupId} userId={userId} locked={false} />
+          <TournamentPicks key={groupId} groupId={groupId} userId={userId} locked={false} isLeagueFormat={isLeagueFormat} competitionId={groupCompetitionId} competitionName={groupCompetitionName} />
         </div>
 
-        {/* ── Section 4: BONUS QUESTIONS ────────────────────────── */}
-        <div ref={el => { sectionRefs.current[3] = el; }} className="cc-elevated" style={cardStyle}>
+        {/* ── Section: BONUS QUESTIONS ────────────────────────── */}
+        <div ref={el => { sectionRefs.current[TABS.findIndex(t => t.key === "bonus")] = el; }} className="cc-elevated" style={cardStyle}>
           <div className="mb-3">
             <span className="ta-match-label" style={{ color: "var(--tx)" }}>
               Bonus Questions

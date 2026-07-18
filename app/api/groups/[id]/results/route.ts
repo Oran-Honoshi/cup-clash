@@ -4,6 +4,18 @@ import { NextRequest, NextResponse } from "next/server";
 import { sbAdmin } from "@/lib/supabase/admin";
 import { WORLD_CUP_STAGE_LIST } from "@/lib/schedule";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function matchesQueryFor(sb: any, competitionId: string | null) {
+  const base = sb
+    .from("matches")
+    .select("id, home, away, home_score, away_score, home_score_et, away_score_et, home_flag, away_flag, kickoff_at, stage, group_letter, status")
+    .order("kickoff_at", { ascending: false });
+  // null competition_id = World Cup 2026 (legacy groups) — scoped via the
+  // stage whitelist. A real competition_id filters directly, so a Premier
+  // League group's Results tab never sees other competitions' fixtures.
+  return competitionId ? base.eq("competition_id", competitionId) : base.in("stage", WORLD_CUP_STAGE_LIST);
+}
+
 // PostgREST caps any single response at 1000 rows by default. A group's
 // group_predictions rows (members × matches, plus bonus/tournament picks)
 // blow past that for larger groups, so a plain .select() silently truncates
@@ -32,18 +44,17 @@ export async function GET(
   const { id: groupId } = params;
   const sb = sbAdmin();
 
-  // All World Cup matches (every stage, every status) — the Results tab
-  // shows the group's complete picture: finished results, live-in-progress,
-  // and upcoming matches with the prediction already locked in but no points
-  // yet. Scoped to World Cup stages only (not the multi-league expansion's
-  // "League"/"UCL R16" etc. rows) — groups aren't scoped to a competition_id
-  // yet, so without this a World Cup group's Results tab would get flooded
-  // with hundreds of unrelated league/UCL fixtures.
-  const { data: matches, error: matchErr } = await sb
-    .from("matches")
-    .select("id, home, away, home_score, away_score, home_score_et, away_score_et, home_flag, away_flag, kickoff_at, stage, group_letter, status")
-    .in("stage", WORLD_CUP_STAGE_LIST)
-    .order("kickoff_at", { ascending: false });
+  const { data: group, error: groupErr } = await sb
+    .from("groups").select("competition_id").eq("id", groupId).maybeSingle();
+  if (groupErr) {
+    return NextResponse.json({ error: groupErr.message }, { status: 500 });
+  }
+
+  // All of the group's competition's matches (every stage, every status) —
+  // the Results tab shows the group's complete picture: finished results,
+  // live-in-progress, and upcoming matches with the prediction already
+  // locked in but no points yet.
+  const { data: matches, error: matchErr } = await matchesQueryFor(sb, (group as { competition_id: string | null } | null)?.competition_id ?? null);
 
   if (matchErr) {
     return NextResponse.json({ error: matchErr.message }, { status: 500 });

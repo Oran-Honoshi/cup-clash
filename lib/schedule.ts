@@ -25,6 +25,7 @@ export interface ScheduleMatch {
   status?: string;
   time_confirmed?: boolean;     // false ⇒ kickoff_at/stadium/city is a guessed placeholder, not yet confirmed by API-Football
   competitionId?: string | null; // ties this match to a row in the `competitions` table (multi-league expansion)
+  roundLabel?: string | null;    // e.g. "Matchday 5" — league-phase competitions only, null for World Cup
 }
 
 export const WC2026_MATCHES: ScheduleMatch[] = [];
@@ -45,6 +46,20 @@ export const WORLD_CUP_STAGE_LIST = ["Group", "R32", "R16", "QF", "SF", "3rd", "
 const WORLD_CUP_STAGES = new Set(WORLD_CUP_STAGE_LIST);
 export function isWorldCupStage(stage: string): boolean {
   return WORLD_CUP_STAGES.has(stage);
+}
+
+// groups.competition_id is nullable for backward compatibility (every group
+// created before it existed means "World Cup 2026"). This is the one place
+// that decision should be made — every surface that needs to know "does
+// this match belong to this group's competition" should call this instead
+// of re-deriving the null-means-WC fallback itself.
+export function matchInGroupScope(
+  matchStage: string,
+  matchCompetitionId: string | null | undefined,
+  groupCompetitionId: string | null | undefined,
+): boolean {
+  if (groupCompetitionId) return matchCompetitionId === groupCompetitionId;
+  return isWorldCupStage(matchStage);
 }
 
 export const HOST_CITY_FLAGS: Record<string, string> = {
@@ -78,13 +93,14 @@ export function toMatchType(m: ScheduleMatch): Match {
   };
 }
 
-// Earliest not-yet-finished World Cup match — excludes the multi-league
-// expansion's fixtures (see isWorldCupStage) so a Bundesliga/UCL kickoff
-// never surfaces as "next match" inside a World Cup group.
-export function getNextScheduleMatch(matches: ScheduleMatch[]): ScheduleMatch | null {
+// Earliest not-yet-finished match in the group's competition — excludes
+// every other competition's fixtures (see matchInGroupScope) so e.g. a
+// Bundesliga kickoff never surfaces as "next match" inside a World Cup
+// group, and vice versa. groupCompetitionId omitted/null = World Cup 2026.
+export function getNextScheduleMatch(matches: ScheduleMatch[], groupCompetitionId?: string | null): ScheduleMatch | null {
   const now = Date.now();
   const upcoming = matches
-    .filter(m => isWorldCupStage(m.stage) && m.status !== "finished" && new Date(m.kickoff_at).getTime() > now)
+    .filter(m => matchInGroupScope(m.stage, m.competitionId, groupCompetitionId) && m.status !== "finished" && new Date(m.kickoff_at).getTime() > now)
     .sort((a, b) => a.kickoff_at.localeCompare(b.kickoff_at));
   return upcoming[0] ?? null;
 }

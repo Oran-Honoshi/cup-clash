@@ -128,13 +128,14 @@ type DbAllMatch = {
   status: string;
   time_confirmed: boolean | null;
   competition_id: string | null;
+  round_label: string | null;
 };
 
 export async function getAllMatches(): Promise<ScheduleMatch[]> {
   try {
     const { data, error } = await sb()
       .from("matches")
-      .select("id, home, away, home_flag, away_flag, kickoff_at, stage, group_letter, stadium, city, home_score, away_score, home_score_et, away_score_et, status, time_confirmed, competition_id")
+      .select("id, home, away, home_flag, away_flag, kickoff_at, stage, group_letter, stadium, city, home_score, away_score, home_score_et, away_score_et, status, time_confirmed, competition_id, round_label")
       .order("kickoff_at", { ascending: true });
 
     if (!error && data?.length) {
@@ -155,6 +156,7 @@ export async function getAllMatches(): Promise<ScheduleMatch[]> {
         status:       m.status,
         time_confirmed: m.time_confirmed ?? true,
         competitionId: m.competition_id,
+        roundLabel:   m.round_label,
       }));
     }
   } catch { /* fall through */ }

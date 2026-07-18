@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { sbAdmin } from "@/lib/supabase/admin";
+import { matchInGroupScope } from "@/lib/schedule";
 
 export async function POST(req: NextRequest) {
   const auth = req.headers.get("authorization");
@@ -16,7 +17,7 @@ export async function POST(req: NextRequest) {
 
   const { data: matches } = await sb
     .from("matches")
-    .select("id, home, away")
+    .select("id, home, away, stage, competition_id")
     .eq("status", "upcoming")
     .gt("kickoff_at",  from)
     .lte("kickoff_at", until);
@@ -28,13 +29,16 @@ export async function POST(req: NextRequest) {
   let filled  = 0;
   let skipped = 0;
 
-  for (const match of matches as Array<{ id: string; home: string; away: string }>) {
-    // 2. Find group members who can predict, have auto_fill_enabled, and are in tournament groups
+  for (const match of matches as Array<{ id: string; home: string; away: string; stage: string; competition_id: string | null }>) {
+    // 2. Find group members who can predict, have auto_fill_enabled, and are in
+    // tournament groups whose competition actually matches this match — a
+    // group covers many matches over a season/tournament, but only the ones
+    // in its own competition (null competition_id = World Cup 2026).
     const { data: members } = await sb
       .from("group_members")
       .select(`
         user_id,
-        groups!inner ( id, group_type ),
+        groups!inner ( id, group_type, competition_id ),
         profiles!inner ( auto_fill_enabled, auto_fill_home, auto_fill_away )
       `)
       .eq("can_predict", true)
@@ -44,12 +48,12 @@ export async function POST(req: NextRequest) {
 
     type MemberRow = {
       user_id:  string;
-      groups:   { id: string; group_type: string };
+      groups:   { id: string; group_type: string; competition_id: string | null };
       profiles: { auto_fill_enabled: boolean; auto_fill_home: number; auto_fill_away: number };
     };
 
     const eligible = (members as unknown as MemberRow[]).filter(
-      m => m.profiles?.auto_fill_enabled === true
+      m => m.profiles?.auto_fill_enabled === true && matchInGroupScope(match.stage, match.competition_id, m.groups.competition_id)
     );
 
     if (!eligible.length) continue;

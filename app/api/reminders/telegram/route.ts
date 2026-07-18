@@ -8,6 +8,7 @@ import {
   type TelegramQueue,
 } from "@/lib/services/telegram";
 import { interpolate } from "@/lib/i18n";
+import { matchInGroupScope } from "@/lib/schedule";
 
 // Called every ~10-15 min by .github/workflows/telegram-reminders-cron.yml —
 // Vercel Hobby caps vercel.json crons at 2/day, so like scores-cron.yml this
@@ -29,7 +30,7 @@ export async function POST(req: NextRequest) {
   // 1. Find matches kicking off in the next hour that are still upcoming
   const { data: matches } = await sb
     .from("matches")
-    .select("id, home, away")
+    .select("id, home, away, stage, competition_id")
     .eq("status", "upcoming")
     .gt("kickoff_at",  new Date().toISOString())
     .lte("kickoff_at", new Date(Date.now() + 60 * 60 * 1000).toISOString());
@@ -42,14 +43,16 @@ export async function POST(req: NextRequest) {
   let queued  = 0;
   let skipped = 0;
 
-  for (const match of matches as Array<{ id: string; home: string; away: string }>) {
-    // 2. Find group_members who can predict and are in a group covering this tournament match
-    //    (tournament groups — not single_match groups for different matches)
+  for (const match of matches as Array<{ id: string; home: string; away: string; stage: string; competition_id: string | null }>) {
+    // 2. Find group_members who can predict and are in a group whose own
+    //    competition covers this match (tournament groups — not
+    //    single_match groups for different matches; null competition_id =
+    //    World Cup 2026)
     const { data: members } = await sb
       .from("group_members")
       .select(`
         user_id,
-        groups!inner ( id, group_type ),
+        groups!inner ( id, group_type, competition_id ),
         profiles!inner ( telegram_chat_id, notification_preferences, telegram_language_code )
       `)
       .eq("can_predict", true)
@@ -59,12 +62,12 @@ export async function POST(req: NextRequest) {
 
     type MemberRow = {
       user_id:  string;
-      groups:   { id: string; group_type: string };
+      groups:   { id: string; group_type: string; competition_id: string | null };
       profiles: { telegram_chat_id: string | null; notification_preferences: unknown; telegram_language_code: string | null };
     };
 
     const eligible = (members as unknown as MemberRow[]).filter(
-      m => m.profiles?.telegram_chat_id && isTelegramPrefEnabled(
+      m => m.profiles?.telegram_chat_id && matchInGroupScope(match.stage, match.competition_id, m.groups.competition_id) && isTelegramPrefEnabled(
         m.profiles.notification_preferences as Parameters<typeof isTelegramPrefEnabled>[0],
         "locking_reminder"
       )

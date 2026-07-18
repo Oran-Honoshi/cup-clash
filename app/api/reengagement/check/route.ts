@@ -7,7 +7,7 @@ import { getAllUserGroups } from "@/lib/services/user-group";
 import { getFollowCount } from "@/lib/services/follows";
 import { getMembers } from "@/lib/services/groups";
 import { sortMembersForRanking } from "@/lib/leaderboard-sort";
-import { isWorldCupStage } from "@/lib/schedule";
+import { matchInGroupScope } from "@/lib/schedule";
 
 const GAP_MS = 30 * 60 * 1000;
 
@@ -55,23 +55,29 @@ export async function GET() {
 
   const { data: candidateMatches } = await admin
     .from("matches")
-    .select("id, home, away, stage, finished_at")
+    .select("id, home, away, stage, competition_id, finished_at")
     .eq("status", "finished")
     .gt("finished_at", previousLastSeenAt)
     .order("finished_at", { ascending: false });
 
-  const relevantMatches = ((candidateMatches ?? []) as Array<{ id: string; home: string; away: string; stage: string; finished_at: string }>)
-    .filter(m => isWorldCupStage(m.stage));
+  // Only a match belonging to one of the user's OWN groups' competitions is
+  // "relevant" — a Bundesliga result finishing shouldn't trigger a
+  // World Cup group's reengagement nudge, and vice versa.
+  const memberCompetitionIds = new Set(allGroups.filter(g => g.groups).map(g => g.groups!.competition_id));
+  const relevantMatches = ((candidateMatches ?? []) as Array<{ id: string; home: string; away: string; stage: string; competition_id: string | null; finished_at: string }>)
+    .filter(m => [...memberCompetitionIds].some(competitionId => matchInGroupScope(m.stage, m.competition_id, competitionId)));
 
   if (relevantMatches.length === 0) {
     return NextResponse.json({ eligible: false } satisfies ReengagementResponse, { headers: { "Cache-Control": "no-store" } });
   }
 
-  const matchLabel = `${relevantMatches[0].home} vs ${relevantMatches[0].away}`;
+  const headlineMatch = relevantMatches[0];
+  const matchLabel = `${headlineMatch.home} vs ${headlineMatch.away}`;
 
+  // Only surface groups the headline match is actually relevant to.
   const groups = await Promise.all(
     allGroups
-      .filter(g => g.groups)
+      .filter(g => g.groups && matchInGroupScope(headlineMatch.stage, headlineMatch.competition_id, g.groups.competition_id))
       .map(async g => {
         const members = sortMembersForRanking(await getMembers(g.group_id));
         const rank = members.findIndex(m => m.id === user.id) + 1;

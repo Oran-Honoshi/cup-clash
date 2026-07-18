@@ -9,6 +9,8 @@ import { FlagBadge } from "@/components/ui/FlagBadge";
 import { FOCUS_RING } from "@/lib/a11y";
 import { cn } from "@/lib/utils";
 
+interface ClubTeam { id: string; name: string; badgeUrl: string | null; }
+
 // ─── Time locking ─────────────────────────────────────────────────────────────
 
 const TOURNAMENT_LOCK_DEFAULT = new Date("2026-06-11T19:55:00Z");
@@ -23,6 +25,12 @@ interface TournamentPicksProps {
   groupId: string;
   userId?: string;
   locked?: boolean;
+  // League-format competitions (Premier League, La Liga, ...): "Tournament
+  // Winner" is a club, not a national team, and there's no single "Final"
+  // match or 3rd-place-qualifier concept — those sections hide entirely.
+  isLeagueFormat?: boolean;
+  competitionId?:  string | null;
+  competitionName?: string | null;
 }
 
 interface Picks {
@@ -136,6 +144,82 @@ function CountryPicker({ value, onSelect, label, pts, isLocked }: CountryPickerP
   );
 }
 
+// ── Club-team picker — for league-format competitions (Premier League,
+// La Liga, ...) "Tournament Winner" means a club, not a national team, so
+// this replaces CountryPicker's ALL_COUNTRIES source with the competition's
+// real clubs (derived the same way lib/services/teams.ts does: teams that
+// have a standings row for this competition_id). FlagBadge already renders
+// arbitrary image URLs (not just flag codes) — components/teams/team-picker.tsx
+// uses it the same way for club crests.
+interface ClubPickerProps {
+  value:         string;
+  onSelect:      (name: string) => void;
+  label:         string;
+  pts:           number;
+  isLocked:      boolean;
+  competitionId: string;
+}
+
+function ClubPicker({ value, onSelect, label, pts, isLocked, competitionId }: ClubPickerProps) {
+  const [search, setSearch] = useState("");
+  const [teams,  setTeams]  = useState<ClubTeam[]>([]);
+
+  useEffect(() => {
+    const sb = createClient();
+    sb.from("standings")
+      .select("team_id, teams(id, name, badge_url)")
+      .eq("competition_id", competitionId)
+      .then(({ data }) => {
+        const seen = new Map<string, ClubTeam>();
+        (data as Array<{ teams: { id: string; name: string; badge_url: string | null } | null }> ?? []).forEach(row => {
+          if (row.teams) seen.set(row.teams.id, { id: row.teams.id, name: row.teams.name, badgeUrl: row.teams.badge_url });
+        });
+        setTeams([...seen.values()].sort((a, b) => a.name.localeCompare(b.name)));
+      });
+  }, [competitionId]);
+
+  const filtered = teams.filter(t => t.name.toLowerCase().includes(search.toLowerCase()));
+
+  return (
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <span className="ta-section-label">{label}</span>
+        <span className="text-xs font-bold" style={{ color: "var(--ac)", fontFamily: "var(--font-mono)" }}>+{pts} pts</span>
+      </div>
+      <div className="relative">
+        <Search size={13} className="absolute left-3 top-1/2 -translate-y-1/2" style={{ color: "var(--mt)" }} />
+        <input type="text" placeholder="Search team..." value={search}
+          onChange={e => setSearch(e.target.value)}
+          disabled={isLocked}
+          className="w-full pl-8 pr-3 py-2 rounded-xl text-sm focus:outline-none disabled:opacity-40"
+          style={{ background: "var(--ip)", border: "1px solid var(--br)", color: "var(--tx)" }}
+          onFocus={e => { e.target.style.border = "1px solid var(--ac)"; }}
+          onBlur={e => { e.target.style.border = "1px solid var(--br)"; }}
+        />
+      </div>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 max-h-64 overflow-y-auto">
+        {filtered.map(t => {
+          const isSelected = value === t.name;
+          return (
+            <button key={t.id} type="button" aria-pressed={isSelected} disabled={isLocked}
+              onClick={() => { onSelect(t.name); setSearch(""); }}
+              className={cn("flex items-center gap-2 p-2 rounded-lg transition-all text-left",
+                isLocked && "opacity-40 cursor-not-allowed",
+                FOCUS_RING)}
+              style={isSelected
+                ? { border: "1px solid var(--ac)", background: "rgba(0,207,128,0.12)" }
+                : { border: "1px solid var(--br)", background: "var(--ip)" }}>
+              <FlagBadge code={t.badgeUrl} label={t.name} size="sm" />
+              <span className="text-xs font-bold truncate" style={{ color: "var(--tx)" }}>{t.name}</span>
+            </button>
+          );
+        })}
+      </div>
+      {value && <div className="text-xs font-bold" style={{ color: "var(--ac)" }}>✓ {value}</div>}
+    </div>
+  );
+}
+
 // ── Best 3rd picker ────────────────────────────────────────────────────────
 interface BestThirdPickerProps {
   selected:  string[];
@@ -224,7 +308,7 @@ function BestThirdPicker({ selected, onToggle, isLocked, pts }: BestThirdPickerP
 }
 
 // ── Main component ─────────────────────────────────────────────────────────────
-export function TournamentPicks({ groupId, userId, locked = false }: TournamentPicksProps) {
+export function TournamentPicks({ groupId, userId, locked = false, isLeagueFormat = false, competitionId = null, competitionName = null }: TournamentPicksProps) {
   const [picks,  setPicks]  = useState<Picks>({ winner: "", topScorer: "", topAssister: "", goldenBall: "", bestDefence: "", bestYoungPlayer: "", bestThird: [], finalGoalMinute: "" });
   const [rules,  setRules]  = useState<ScoringRules>(DEFAULT_RULES);
   const [saving, setSaving] = useState(false);
@@ -423,43 +507,59 @@ export function TournamentPicks({ groupId, userId, locked = false }: TournamentP
               +{rules.tournament_winner} pts
             </span>
           </div>
-          <CountryPicker
-            value={picks.winner}
-            onSelect={v => updatePick("winner", v)}
-            label="Pick the World Cup 2026 champion"
-            pts={rules.tournament_winner}
-            isLocked={isLocked}
+          {isLeagueFormat && competitionId ? (
+            <ClubPicker
+              value={picks.winner}
+              onSelect={v => updatePick("winner", v)}
+              label={`Pick the ${competitionName ?? "league"} champion`}
+              pts={rules.tournament_winner}
+              isLocked={isLocked}
+              competitionId={competitionId}
+            />
+          ) : (
+            <CountryPicker
+              value={picks.winner}
+              onSelect={v => updatePick("winner", v)}
+              label="Pick the World Cup 2026 champion"
+              pts={rules.tournament_winner}
+              isLocked={isLocked}
+            />
+          )}
+        </div>
+      )}
+
+      {/* Golden Guess tiebreaker — a World Cup-only concept (there's a
+          single, well-known "Final" match); league-format competitions have
+          no equivalent single decisive match, so this section hides entirely. */}
+      {!isLeagueFormat && (
+        <div className="p-5 cc-elevated" style={glassCard}>
+          <div className="flex items-center gap-2 mb-1">
+            <Trophy size={18} style={{ color: "var(--ac)" }} />
+            <span className="ta-match-label" style={{ color: "var(--tx)" }}>Golden Guess Tiebreaker</span>
+          </div>
+          <p className="ta-body mb-3">
+            Guess the minute of the first goal in the Final — used only as a tiebreaker, not for points.
+          </p>
+          <input
+            type="number"
+            min={1}
+            max={130}
+            inputMode="numeric"
+            placeholder="e.g. 23"
+            value={picks.finalGoalMinute}
+            disabled={isLocked}
+            onChange={e => updatePick("finalGoalMinute", e.target.value)}
+            className="ta-score w-full sm:w-40 pl-4 pr-3 py-2 rounded-xl focus:outline-none disabled:opacity-40"
+            style={{ fontSize: 20, background: "var(--ip)", border: "1px solid var(--br)" }}
+            onFocus={e => { e.target.style.border = "1px solid var(--ac)"; }}
+            onBlur={e => { e.target.style.border = "1px solid var(--br)"; }}
           />
         </div>
       )}
 
-      {/* Golden Guess tiebreaker — always collected, used only to break ties */}
-      <div className="p-5 cc-elevated" style={glassCard}>
-        <div className="flex items-center gap-2 mb-1">
-          <Trophy size={18} style={{ color: "var(--ac)" }} />
-          <span className="ta-match-label" style={{ color: "var(--tx)" }}>Golden Guess Tiebreaker</span>
-        </div>
-        <p className="ta-body mb-3">
-          Guess the minute of the first goal in the Final — used only as a tiebreaker, not for points.
-        </p>
-        <input
-          type="number"
-          min={1}
-          max={130}
-          inputMode="numeric"
-          placeholder="e.g. 23"
-          value={picks.finalGoalMinute}
-          disabled={isLocked}
-          onChange={e => updatePick("finalGoalMinute", e.target.value)}
-          className="ta-score w-full sm:w-40 pl-4 pr-3 py-2 rounded-xl focus:outline-none disabled:opacity-40"
-          style={{ fontSize: 20, background: "var(--ip)", border: "1px solid var(--br)" }}
-          onFocus={e => { e.target.style.border = "1px solid var(--ac)"; }}
-          onBlur={e => { e.target.style.border = "1px solid var(--br)"; }}
-        />
-      </div>
-
-      {/* Best 3rd place — only if enabled */}
-      {rules.enable_best_third && (
+      {/* Best 3rd place — World Cup group-stage-qualifier concept only, not
+          applicable to a league season. Only if enabled */}
+      {!isLeagueFormat && rules.enable_best_third && (
         <div className="p-5 cc-elevated" style={glassCard}>
           <div className="flex items-center gap-2 mb-1">
             <BarChart2 size={18} style={{ color: "var(--ac)" }} />
@@ -549,7 +649,10 @@ export function TournamentPicks({ groupId, userId, locked = false }: TournamentP
 
       {!isLocked && (
         <p className="ta-body text-center">
-          ✓ Picks save automatically · All picks lock June 11, 2026 at first kickoff
+          ✓ Picks save automatically · All picks lock{" "}
+          {rules.tournament_lock_at
+            ? new Date(rules.tournament_lock_at).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" })
+            : "June 11, 2026"} at first kickoff
         </p>
       )}
     </div>

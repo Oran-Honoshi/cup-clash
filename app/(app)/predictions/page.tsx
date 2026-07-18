@@ -8,6 +8,7 @@ import { AdBanner }              from "@/components/ads/ad-banner";
 import { GroupPersistRedirect }  from "@/components/app/group-persist-redirect";
 import { GroupSwipeSelector }    from "@/components/groups/group-swipe-selector";
 import { getAllMatches }          from "@/lib/services/matches";
+import { matchInGroupScope } from "@/lib/schedule";
 import Link from "next/link";
 
 function GuestPredictionsBanner() {
@@ -72,18 +73,18 @@ export default async function PredictionsPage({
   // Get all groups this user belongs to
   const { data: memberships } = await sbAdmin()
     .from("group_members")
-    .select("group_id, groups(id, name, passkey)")
+    .select("group_id, groups(id, name, passkey, competition_id)")
     .eq("user_id", user.id);
 
   const groups = (memberships ?? [])
     .map((m: unknown) => {
       const row = m as {
         group_id: string;
-        groups: { id: string; name: string; passkey: string } | null;
+        groups: { id: string; name: string; passkey: string; competition_id: string | null } | null;
       };
       return row.groups;
     })
-    .filter(Boolean) as Array<{ id: string; name: string; passkey: string }>;
+    .filter(Boolean) as Array<{ id: string; name: string; passkey: string; competition_id: string | null }>;
 
   // Solo user: no groups yet, allow solo predictions
   if (!groups.length) {
@@ -135,13 +136,14 @@ export default async function PredictionsPage({
       <PredictionsClient
         groupId={activeGroupId}
         groupName={activeGroup.name}
+        groupCompetitionId={activeGroup.competition_id}
         allGroups={groups}
         userId={user.id}
         isPaid={true}
         migrateGuestPicks={shouldMigrate}
         isAdFree={isAdFree}
         isCorporate={isCorporate}
-        allMatches={allMatches}
+        allMatches={allMatches.filter(m => matchInGroupScope(m.stage, m.competitionId, activeGroup.competition_id))}
       />
       <AdBanner isAdFree={isAdFree} isCorporate={isCorporate} />
     </div>

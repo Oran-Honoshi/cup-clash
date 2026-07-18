@@ -104,7 +104,7 @@ export async function getAllUserGroups(userId: string) {
     .from("group_members")
     .select(`
       group_id, payment_status, can_predict, joined_at,
-      groups ( id, name, passkey, max_members, enrollment_fee_cents, admin_id )
+      groups ( id, name, passkey, max_members, enrollment_fee_cents, admin_id, competition_id )
     `)
     .eq("user_id", userId)
     .order("joined_at", { ascending: false });
@@ -117,6 +117,7 @@ export async function getAllUserGroups(userId: string) {
     groups: {
       id: string; name: string; passkey: string;
       max_members: number; enrollment_fee_cents: number; admin_id: string;
+      competition_id: string | null;
     } | null;
   }>;
 }
