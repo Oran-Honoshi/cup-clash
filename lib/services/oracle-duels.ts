@@ -89,38 +89,56 @@ export async function submitOracleDuel(
 }
 
 // ── Resolution ──────────────────────────────────────────────────────────
-// Lazily grades any unresolved duel whose match has finished, rather than a
-// dedicated cron — the Oracle Duel table is small (knockout matches only)
-// and this runs on every dashboard read. Fixed scoring rules (25 exact / 10
-// outcome, calcLivePoints's defaults) apply regardless of any group's
-// scoring_rules, and grading always uses the 90-minute score
+// Grades any unresolved duel whose match has finished. Originally lazy-only
+// (called from getOracleDuelDashboard on every dashboard read, no dedicated
+// cron) since the Oracle Duel table is small (knockout matches only) — that
+// lazy call remains as a safety net, but app/api/scores/route.ts (the only
+// proactive process in this codebase) now also calls this right after
+// matches are marked finished, so a resolved duel can trigger a push
+// notification instead of sitting unnotified until the user next opens the
+// app. Returns the newly-resolved duels for that purpose; callers that don't
+// need them (the dashboard) can ignore the return value. Fixed scoring rules
+// (25 exact / 10 outcome, calcLivePoints's defaults) apply regardless of any
+// group's scoring_rules, and grading always uses the 90-minute score
 // (home_score/away_score) — deliberately NOT effectiveScore()'s
 // ET-if-available convention from oracle.ts, since Oracle Duel's rule set
 // is fixed and simple by design, not tied to any knockout_policy.
-export async function resolveOracleDuels(): Promise<void> {
+export type ResolvedOracleDuel = {
+  userId:       string;
+  matchId:      string;
+  home:         string;
+  away:         string;
+  actualHome:   number;
+  actualAway:   number;
+  pointsUser:   number;
+  pointsOracle: number;
+};
+
+export async function resolveOracleDuels(): Promise<ResolvedOracleDuel[]> {
   const sb = sbAdmin();
 
   const { data: unresolved } = await sb
     .from("oracle_duels")
-    .select("id, match_id, user_home_score, user_away_score, oracle_home_score, oracle_away_score")
+    .select("id, user_id, match_id, user_home_score, user_away_score, oracle_home_score, oracle_away_score")
     .is("resolved_at", null);
-  if (!unresolved?.length) return;
+  if (!unresolved?.length) return [];
 
   const matchIds = [...new Set(unresolved.map(d => d.match_id))];
   const { data: matches } = await sb
     .from("matches")
-    .select("id, status, home_score, away_score")
+    .select("id, status, home, away, home_score, away_score")
     .in("id", matchIds)
     .eq("status", "finished");
 
   const finishedById = new Map(
     (matches ?? [])
-      .filter((m): m is { id: string; status: string; home_score: number; away_score: number } =>
+      .filter((m): m is { id: string; status: string; home: string; away: string; home_score: number; away_score: number } =>
         m.home_score != null && m.away_score != null)
       .map(m => [m.id, m])
   );
-  if (!finishedById.size) return;
+  if (!finishedById.size) return [];
 
+  const resolved: ResolvedOracleDuel[] = [];
   const updates = unresolved
     .filter(d => finishedById.has(d.match_id))
     .map(d => {
@@ -131,6 +149,10 @@ export async function resolveOracleDuels(): Promise<void> {
       const pointsOracle = calcLivePoints(
         { homeScore: d.oracle_home_score, awayScore: d.oracle_away_score }, m.home_score, m.away_score
       ).pts;
+      resolved.push({
+        userId: d.user_id, matchId: d.match_id, home: m.home, away: m.away,
+        actualHome: m.home_score, actualAway: m.away_score, pointsUser, pointsOracle,
+      });
       return { id: d.id as string, points_user: pointsUser, points_oracle: pointsOracle, resolved_at: new Date().toISOString() };
     });
 
@@ -139,6 +161,8 @@ export async function resolveOracleDuels(): Promise<void> {
       .update({ points_user: u.points_user, points_oracle: u.points_oracle, resolved_at: u.resolved_at })
       .eq("id", u.id)
   ));
+
+  return resolved;
 }
 
 // ── Reads ──────────────────────────────────────────────────────────────

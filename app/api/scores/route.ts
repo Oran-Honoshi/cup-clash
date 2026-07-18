@@ -16,6 +16,15 @@ import {
   telegramTranslations,
   type TelegramQueue,
 } from "@/lib/services/telegram";
+import {
+  queuePushItem,
+  flushPushQueue,
+  getPushSubscribersForTeam,
+  isPushPrefEnabled,
+  pushTranslations,
+  type PushQueue,
+} from "@/lib/services/push";
+import { resolveOracleDuels } from "@/lib/services/oracle-duels";
 import { getMembers } from "@/lib/services/groups";
 import { interpolate, TRANSLATIONS } from "@/lib/i18n";
 
@@ -1303,6 +1312,8 @@ export async function POST(request: NextRequest) {
     // alerts queued in the main loop below, result alerts queued once a
     // match is detected newly-finished, flushed once after STEP 3/3b.
     const telegramQueue: TelegramQueue = new Map();
+    // Same tick, same batching shape, separate channel — see lib/services/push.ts.
+    const pushQueue: PushQueue = new Map();
 
     function goalSignature(g: { minute: number; extra: number | null; player_id: number | null; team_id: number; detail: string }): string {
       return `${g.minute}-${g.extra ?? ""}-${g.player_id ?? ""}-${g.team_id}-${g.detail}`;
@@ -1323,13 +1334,23 @@ export async function POST(request: NextRequest) {
         const teamId = scoringHome ? dbMatch.home_team_id : dbMatch.away_team_id;
         if (!teamId) continue; // team not yet backfilled into public.teams — nothing to notify
 
-        const followers = await getTelegramFollowersForTeam(sb, teamId, "goals");
-        if (!followers.length) continue;
-
         const vars = { team: g.team_name ?? "", home: dbMatch.home, away: dbMatch.away, scorer: g.player_name ?? "" };
+
+        const followers = await getTelegramFollowersForTeam(sb, teamId, "goals");
         for (const f of followers) {
           const template = g.player_name ? f.t.notif_bot_goal_scorer : f.t.notif_bot_goal;
           queueTelegramLine(telegramQueue, f.chat_id, interpolate(template, vars));
+        }
+
+        const pushFollowers = await getPushSubscribersForTeam(sb, teamId, "goals");
+        for (const f of pushFollowers) {
+          const bodyTemplate = g.player_name ? f.t.notif_push_goal_scorer_body : f.t.notif_push_goal_body;
+          queuePushItem(pushQueue, f.userId, {
+            title: f.t.notif_push_goal_title,
+            body:  interpolate(bodyTemplate, vars),
+            url:   "/dashboard",
+            tag:   "cupclash-goal",
+          });
         }
       }
     }
@@ -1350,6 +1371,21 @@ export async function POST(request: NextRequest) {
           if (seenChatIds.has(f.chat_id)) continue; // follows both teams — one line, not two
           seenChatIds.add(f.chat_id);
           queueTelegramLine(telegramQueue, f.chat_id, interpolate(f.t.notif_bot_result, vars));
+        }
+      }
+
+      const pushFollowerLists = await Promise.all(teamIds.map(id => getPushSubscribersForTeam(sb, id, "results")));
+      const seenPushUserIds = new Set<string>();
+      for (const list of pushFollowerLists) {
+        for (const f of list) {
+          if (seenPushUserIds.has(f.userId)) continue; // follows both teams — one notification, not two
+          seenPushUserIds.add(f.userId);
+          queuePushItem(pushQueue, f.userId, {
+            title: f.t.notif_push_result_title,
+            body:  interpolate(f.t.notif_push_result_body, vars),
+            url:   "/dashboard",
+            tag:   "cupclash-result",
+          });
         }
       }
     }
@@ -1703,24 +1739,34 @@ export async function POST(request: NextRequest) {
     // ── STEP 4b: Leaderboard movement notifications ──────────────────────────
     // Ranks are computed live elsewhere (lib/services/groups.ts getMembers) —
     // nothing persists a "previous rank" outside telegram_leaderboard_rank
-    // (migration 047), which exists solely to diff against here. Only worth
-    // running for groups with at least one Telegram-linked member, so this
+    // (migration 047), which exists solely to diff against here — shared as a
+    // generic rank-tracking cache across both notification channels, not
+    // Telegram-specific despite the table name. Only worth running for groups
+    // with at least one Telegram-linked OR push-subscribed member, so this
     // stays cheap while adoption is low.
 
     if (newlyFinished.length > 0) {
-      console.log("[scores/cron] STEP 4b: Checking leaderboard movement for Telegram-linked groups...");
+      console.log("[scores/cron] STEP 4b: Checking leaderboard movement for notifiable groups...");
 
-      const { data: tgGroupRows } = await sb
-        .from("group_members")
-        .select("group_id, profiles!inner ( telegram_chat_id )")
-        .not("profiles.telegram_chat_id", "is", null);
+      const { data: pushSubUserRows } = await sb.from("push_subscriptions").select("user_id");
+      const pushSubUserIds = [...new Set((pushSubUserRows ?? []).map((r: { user_id: string }) => r.user_id))];
 
-      const groupsWithTelegram = [...new Set(
-        ((tgGroupRows ?? []) as Array<{ group_id: string }>).map(r => r.group_id)
-      )];
+      const [{ data: tgGroupRows }, { data: pushGroupRows }] = await Promise.all([
+        sb.from("group_members")
+          .select("group_id, profiles!inner ( telegram_chat_id )")
+          .not("profiles.telegram_chat_id", "is", null),
+        pushSubUserIds.length
+          ? sb.from("group_members").select("group_id").in("user_id", pushSubUserIds)
+          : Promise.resolve({ data: [] as Array<{ group_id: string }> }),
+      ]);
 
-      if (groupsWithTelegram.length > 0) {
-        const { data: candidateGroups } = await sb.from("groups").select("id, name").in("id", groupsWithTelegram);
+      const groupsWithNotifiable = [...new Set([
+        ...((tgGroupRows   ?? []) as Array<{ group_id: string }>).map(r => r.group_id),
+        ...((pushGroupRows ?? []) as Array<{ group_id: string }>).map(r => r.group_id),
+      ])];
+
+      if (groupsWithNotifiable.length > 0) {
+        const { data: candidateGroups } = await sb.from("groups").select("id, name").in("id", groupsWithNotifiable);
 
         for (const group of (candidateGroups ?? []) as Array<{ id: string; name: string }>) {
           const members = await getMembers(group.id);
@@ -1731,8 +1777,7 @@ export async function POST(request: NextRequest) {
             sb.from("telegram_leaderboard_rank").select("user_id, last_rank").eq("group_id", group.id),
             sb.from("profiles")
               .select("id, telegram_chat_id, notification_preferences, telegram_language_code")
-              .in("id", memberIds)
-              .not("telegram_chat_id", "is", null),
+              .in("id", memberIds),
           ]);
 
           const prevRankMap = new Map(
@@ -1740,7 +1785,7 @@ export async function POST(request: NextRequest) {
           );
           const profileMap = new Map(
             ((profileRows ?? []) as Array<{
-              id: string; telegram_chat_id: string; notification_preferences: unknown; telegram_language_code: string | null;
+              id: string; telegram_chat_id: string | null; notification_preferences: unknown; telegram_language_code: string | null;
             }>).map(p => [p.id, p])
           );
 
@@ -1751,19 +1796,34 @@ export async function POST(request: NextRequest) {
             const oldRank = prevRankMap.get(member.id);
             const profile = profileMap.get(member.id);
 
-            const droppedRank = profile && oldRank !== undefined && newRank > oldRank;
-            const wantsAlert  = droppedRank && isTelegramPrefEnabled(
-              profile!.notification_preferences as Parameters<typeof isTelegramPrefEnabled>[0], "leaderboard"
-            );
+            const droppedRank = !!profile && oldRank !== undefined && newRank > oldRank;
+            let notified = false;
 
-            if (wantsAlert) {
+            if (droppedRank && profile!.telegram_chat_id && isTelegramPrefEnabled(
+              profile!.notification_preferences as Parameters<typeof isTelegramPrefEnabled>[0], "leaderboard"
+            )) {
               const t = telegramTranslations(profile!.telegram_language_code);
               const line = interpolate(t.notif_bot_leaderboard_drop, { group: group.name, rank: newRank, oldRank: oldRank! });
               queueTelegramLine(telegramQueue, profile!.telegram_chat_id, line);
-              upserts.push({ user_id: member.id, group_id: group.id, last_rank: newRank, last_notified_at: now.toISOString() });
-            } else {
-              upserts.push({ user_id: member.id, group_id: group.id, last_rank: newRank });
+              notified = true;
             }
+
+            if (droppedRank && isPushPrefEnabled(
+              profile!.notification_preferences as Parameters<typeof isPushPrefEnabled>[0], "leaderboard"
+            )) {
+              const pt = pushTranslations(profile!.telegram_language_code);
+              queuePushItem(pushQueue, member.id, {
+                title: pt.notif_push_leaderboard_title,
+                body:  interpolate(pt.notif_push_leaderboard_body, { group: group.name, rank: newRank, oldRank: oldRank! }),
+                url:   "/leaderboard",
+                tag:   "cupclash-leaderboard",
+              });
+              notified = true;
+            }
+
+            upserts.push(notified
+              ? { user_id: member.id, group_id: group.id, last_rank: newRank, last_notified_at: now.toISOString() }
+              : { user_id: member.id, group_id: group.id, last_rank: newRank });
           });
 
           if (upserts.length) {
@@ -1772,6 +1832,53 @@ export async function POST(request: NextRequest) {
               .upsert(upserts, { onConflict: "user_id,group_id" });
             if (rankUpsertErr) console.error(`[scores/cron] STEP 4b:   rank upsert failed for group ${group.id}:`, rankUpsertErr);
           }
+        }
+      }
+    }
+
+    // ── STEP 4c: Oracle Duel resolution + push ────────────────────────────────
+    // resolveOracleDuels() (lib/services/oracle-duels.ts) previously only ran
+    // lazily on the Game Room dashboard read (getOracleDuelDashboard) — there
+    // was no proactive trigger point at all, so a resolved duel just sat
+    // unnotified until the user happened to open the app. The scores cron is
+    // the only proactive process in this codebase, so resolution now also
+    // happens here right after matches are marked finished; the dashboard's
+    // lazy call is now usually a no-op (already resolved) but stays as a
+    // safety net for any duel this tick's newlyFinished check missed.
+    if (newlyFinished.length > 0) {
+      const resolvedDuels = await resolveOracleDuels();
+      if (resolvedDuels.length > 0) {
+        console.log(`[scores/cron] STEP 4c: ${resolvedDuels.length} Oracle Duel(s) resolved`);
+        const duelUserIds = [...new Set(resolvedDuels.map(d => d.userId))];
+        const { data: duelProfiles } = await sb
+          .from("profiles")
+          .select("id, notification_preferences, telegram_language_code")
+          .in("id", duelUserIds);
+        const duelProfileMap = new Map(
+          ((duelProfiles ?? []) as Array<{ id: string; notification_preferences: unknown; telegram_language_code: string | null }>)
+            .map(p => [p.id, p])
+        );
+
+        for (const d of resolvedDuels) {
+          const profile = duelProfileMap.get(d.userId);
+          if (!profile || !isPushPrefEnabled(
+            profile.notification_preferences as Parameters<typeof isPushPrefEnabled>[0], "oracle_duel"
+          )) continue;
+
+          const pt = pushTranslations(profile.telegram_language_code);
+          const title = d.pointsUser > d.pointsOracle ? pt.notif_push_oracle_duel_win_title
+            : d.pointsUser < d.pointsOracle ? pt.notif_push_oracle_duel_lose_title
+            : pt.notif_push_oracle_duel_draw_title;
+
+          queuePushItem(pushQueue, d.userId, {
+            title,
+            body: interpolate(pt.notif_push_oracle_duel_body, {
+              home: d.home, away: d.away, actualHome: d.actualHome, actualAway: d.actualAway,
+              userScore: d.pointsUser, oracleScore: d.pointsOracle,
+            }),
+            url: "/game/oracle-duel",
+            tag: "cupclash-oracle-duel",
+          });
         }
       }
     }
@@ -1787,6 +1894,9 @@ export async function POST(request: NextRequest) {
 
     const tgResult = await flushTelegramQueue(telegramQueue, sb);
     console.log(`[scores/cron] STEP 6: Telegram — queued for ${telegramQueue.size} user(s), sent ${tgResult.sent}, failed ${tgResult.failed}, blocked ${tgResult.blocked}`);
+
+    const pushResult = await flushPushQueue(pushQueue, sb);
+    console.log(`[scores/cron] STEP 6: Push — queued for ${pushQueue.size} user(s), sent ${pushResult.sent}, failed ${pushResult.failed}`);
 
     // ── STEP 7: Daily points snapshot (Points-Race Chart) ────────────────────
     // Gated to once/day — a snapshot is a point-in-time total, not something
@@ -1823,6 +1933,7 @@ export async function POST(request: NextRequest) {
       upcoming: rows.length - liveCount - finishedCount,
       scored:   newlyFinished.map(m => m.matchId),
       telegram: tgResult,
+      push:     pushResult,
       timestamp: now.toISOString(),
     });
 
