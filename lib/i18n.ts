@@ -501,6 +501,14 @@ export interface Translations {
   reeng_anon_news_cta:     string;
   reeng_close:             string;
 
+  // House-group join-invite bottom sheet — shown once on Home/Game Room
+  // entry for a signed-in user not yet in an auto-created public house group
+  hgi_title:      string;
+  hgi_subtitle:   string;
+  hgi_cta_join:   string;
+  hgi_joining:    string;
+  hgi_dismiss:    string;
+
   // Copy-prediction bottom sheet — opt-in "copy this pick to other groups"
   cps_title:     string;
   cps_your_pick: string;
@@ -958,6 +966,12 @@ const en: Translations = {
   reeng_anon_news_cta: "See what's new in your followed leagues",
   reeng_close: "Close",
 
+  hgi_title: "{name} predictions are open",
+  hgi_subtitle: "Join free — {count} members already predicting",
+  hgi_cta_join: "Join for free",
+  hgi_joining: "Joining...",
+  hgi_dismiss: "Not now",
+
   cps_title:     "Copy this pick to your other groups?",
   cps_your_pick: "Your pick: {home}–{away}",
   cps_skip:      "Skip",
@@ -1413,6 +1427,12 @@ const fr: Translations = {
   reeng_anon_guess_cta: "Devine le joueur du jour",
   reeng_anon_news_cta: "Découvre les actus de tes ligues suivies",
   reeng_close: "Fermer",
+
+  hgi_title: "Les pronostics {name} sont ouverts",
+  hgi_subtitle: "Rejoins gratuitement — {count} membres pronostiquent déjà",
+  hgi_cta_join: "Rejoindre gratuitement",
+  hgi_joining: "Inscription...",
+  hgi_dismiss: "Pas maintenant",
 
   cps_title:     "Copier ce pronostic dans tes autres groupes ?",
   cps_your_pick: "Ton pronostic : {home}–{away}",
@@ -1870,6 +1890,12 @@ const de: Translations = {
   reeng_anon_news_cta: "Neues aus deinen verfolgten Ligen",
   reeng_close: "Schließen",
 
+  hgi_title: "{name}-Tipps sind eröffnet",
+  hgi_subtitle: "Kostenlos beitreten — {count} Mitglieder tippen bereits",
+  hgi_cta_join: "Kostenlos beitreten",
+  hgi_joining: "Beitreten...",
+  hgi_dismiss: "Nicht jetzt",
+
   cps_title:     "Diesen Tipp in deine anderen Gruppen kopieren?",
   cps_your_pick: "Dein Tipp: {home}–{away}",
   cps_skip:      "Überspringen",
@@ -2325,6 +2351,12 @@ const nl: Translations = {
   reeng_anon_guess_cta: "Raad de speler van vandaag",
   reeng_anon_news_cta: "Bekijk het nieuws van je gevolgde competities",
   reeng_close: "Sluiten",
+
+  hgi_title: "{name}-voorspellingen zijn geopend",
+  hgi_subtitle: "Gratis meedoen — {count} leden voorspellen al",
+  hgi_cta_join: "Gratis meedoen",
+  hgi_joining: "Bezig met meedoen...",
+  hgi_dismiss: "Niet nu",
 
   cps_title:     "Deze voorspelling naar je andere groepen kopiëren?",
   cps_your_pick: "Jouw voorspelling: {home}–{away}",
@@ -2782,6 +2814,12 @@ const es: Translations = {
   reeng_anon_news_cta: "Descubre lo nuevo de tus ligas seguidas",
   reeng_close: "Cerrar",
 
+  hgi_title: "Los pronósticos de {name} están abiertos",
+  hgi_subtitle: "Únete gratis — {count} miembros ya están pronosticando",
+  hgi_cta_join: "Unirme gratis",
+  hgi_joining: "Uniéndome...",
+  hgi_dismiss: "Ahora no",
+
   cps_title:     "¿Copiar este pronóstico a tus otros grupos?",
   cps_your_pick: "Tu pronóstico: {home}–{away}",
   cps_skip:      "Omitir",
@@ -3237,6 +3275,12 @@ const pt: Translations = {
   reeng_anon_guess_cta: "Adivinhe o jogador de hoje",
   reeng_anon_news_cta: "Veja as novidades das suas ligas seguidas",
   reeng_close: "Fechar",
+
+  hgi_title: "Os palpites de {name} estão abertos",
+  hgi_subtitle: "Participe grátis — {count} membros já estão palpitando",
+  hgi_cta_join: "Participar grátis",
+  hgi_joining: "Entrando...",
+  hgi_dismiss: "Agora não",
 
   cps_title:     "Copiar esse palpite para os seus outros grupos?",
   cps_your_pick: "Seu palpite: {home}–{away}",
@@ -3694,6 +3738,12 @@ const he: Translations = {
   reeng_anon_news_cta: "מה חדש בליגות שאתם עוקבים אחריהן",
   reeng_close: "סגור",
 
+  hgi_title: "הניחושים של {name} פתוחים",
+  hgi_subtitle: "הצטרפו בחינם — {count} חברים כבר מנחשים",
+  hgi_cta_join: "הצטרפות בחינם",
+  hgi_joining: "מצטרף...",
+  hgi_dismiss: "לא עכשיו",
+
   cps_title:     "להעתיק את הניחוש הזה לקבוצות האחרות שלך?",
   cps_your_pick: "הניחוש שלך: {home}–{away}",
   cps_skip:      "דלג",
@@ -4149,6 +4199,12 @@ const ar: Translations = {
   reeng_anon_guess_cta: "خمّن لاعب اليوم",
   reeng_anon_news_cta: "شاهد ما الجديد في الدوريات التي تتابعها",
   reeng_close: "إغلاق",
+
+  hgi_title: "توقعات {name} مفتوحة الآن",
+  hgi_subtitle: "انضم مجانًا — {count} عضو يتوقعون بالفعل",
+  hgi_cta_join: "انضمام مجاني",
+  hgi_joining: "جارٍ الانضمام...",
+  hgi_dismiss: "ليس الآن",
 
   cps_title:     "هل تريد نسخ هذا التوقع إلى مجموعاتك الأخرى؟",
   cps_your_pick: "توقعك: {home}–{away}",
