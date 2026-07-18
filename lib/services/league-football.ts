@@ -137,30 +137,56 @@ async function resolveSeasonRow(sb: any, competitionId: string, year: number): P
   return inserted.id;
 }
 
-// ── Team resolution (cached per-run) ───────────────────────────────────
-
+// ── Team resolution (cached per-run, batched per-competition) ─────────
+// One competition's fixtures/standings can reference dozens of teams; the
+// original implementation resolved each with up to 3 sequential DB round
+// trips *per fixture* (not per unique team), which is the dominant cost
+// behind the full-refresh timeout below. This batches it to a handful of
+// round trips per competition regardless of fixture count. `teams.name`
+// is UNIQUE, so the final "insert missing" step uses upsert(onConflict:
+// "name") rather than insert() — safe even if the same club (e.g. a team
+// that plays in both its domestic league and UCL) is resolved from two
+// different competitions' fixture lists.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function resolveTeamId(sb: any, cache: Map<number, string>, team: APIFixtureTeam): Promise<string> {
-  const cached = cache.get(team.id);
-  if (cached) return cached;
+async function resolveTeamIds(sb: any, cache: Map<number, string>, teams: APIFixtureTeam[]): Promise<void> {
+  const byApiIdWanted = new Map<number, APIFixtureTeam>();
+  for (const t of teams) if (!cache.has(t.id)) byApiIdWanted.set(t.id, t);
+  if (byApiIdWanted.size === 0) return;
 
-  const { data: byApiId } = await sb.from("teams").select("id").eq("api_team_id", team.id).maybeSingle();
-  if (byApiId) { cache.set(team.id, byApiId.id); return byApiId.id; }
-
-  const { data: byName } = await sb.from("teams").select("id").eq("name", team.name).maybeSingle();
-  if (byName) {
-    await sb.from("teams").update({ api_team_id: team.id }).eq("id", byName.id);
-    cache.set(team.id, byName.id);
-    return byName.id;
+  const { data: foundByApiId } = await sb
+    .from("teams").select("id, api_team_id").in("api_team_id", [...byApiIdWanted.keys()]);
+  for (const row of foundByApiId ?? []) {
+    cache.set(row.api_team_id, row.id);
+    byApiIdWanted.delete(row.api_team_id);
   }
+  if (byApiIdWanted.size === 0) return;
 
-  const { data: inserted, error } = await sb
+  const remaining = [...byApiIdWanted.values()];
+  const { data: foundByName } = await sb
+    .from("teams").select("id, name").in("name", remaining.map(t => t.name));
+  const idByName = new Map((foundByName ?? []).map((r: { id: string; name: string }) => [r.name, r.id]));
+
+  const stillMissing: APIFixtureTeam[] = [];
+  for (const t of remaining) {
+    const existingId = idByName.get(t.name);
+    if (existingId) {
+      await sb.from("teams").update({ api_team_id: t.id }).eq("id", existingId);
+      cache.set(t.id, existingId as string);
+    } else {
+      stillMissing.push(t);
+    }
+  }
+  if (stillMissing.length === 0) return;
+
+  const { data: upserted, error } = await sb
     .from("teams")
-    .insert({ name: team.name, badge_url: team.logo, api_team_id: team.id })
-    .select("id").single();
+    .upsert(
+      stillMissing.map(t => ({ name: t.name, badge_url: t.logo, api_team_id: t.id })),
+      { onConflict: "name" },
+    )
+    .select("id, api_team_id");
   if (error) throw error;
-  cache.set(team.id, inserted.id);
-  return inserted.id;
+  for (const row of upserted ?? []) cache.set(row.api_team_id, row.id);
 }
 
 function toDbStatus(apiStatusShort: string): "upcoming" | "live" | "finished" {
@@ -176,17 +202,18 @@ async function refreshCompetitionFixtures(sb: any, competitionId: string, compet
   const seasonId = await resolveSeasonRow(sb, competitionId, year);
   const data = await apiFetch<APIFixturesResponse>(`/fixtures?league=${apiLeagueId}&season=${year}`);
   const fixtures = data.response ?? [];
+  if (fixtures.length === 0) return { fixturesUpserted: 0, seasonId };
 
-  let fixturesUpserted = 0;
-  for (const f of fixtures) {
-    const id = `lg-${f.fixture.id}`;
-    const homeTeamId = await resolveTeamId(sb, teamCache, f.teams.home);
-    const awayTeamId = await resolveTeamId(sb, teamCache, f.teams.away);
+  await resolveTeamIds(sb, teamCache, fixtures.flatMap(f => [f.teams.home, f.teams.away]));
+
+  // Single batched upsert instead of one select+insert/update pair per
+  // fixture — the per-row round trips were the dominant cost behind the
+  // full-refresh timing out before reaching leagues later in
+  // TRACKED_LEAGUES (see runLeagueScoresCron).
+  const payloads = fixtures.map(f => {
     const { stage, roundLabel } = mapRound(competitionName, f.league.round);
-
-    const { data: existing } = await sb.from("matches").select("id").eq("id", id).maybeSingle();
-    const payload = {
-      id,
+    return {
+      id: `lg-${f.fixture.id}`,
       home: f.teams.home.name,
       away: f.teams.away.name,
       home_flag: f.teams.home.logo,
@@ -203,22 +230,16 @@ async function refreshCompetitionFixtures(sb: any, competitionId: string, compet
       api_fixture_id: f.fixture.id,
       competition_id: competitionId,
       season_id: seasonId,
-      home_team_id: homeTeamId,
-      away_team_id: awayTeamId,
+      home_team_id: teamCache.get(f.teams.home.id)!,
+      away_team_id: teamCache.get(f.teams.away.id)!,
       time_confirmed: true,
     };
+  });
 
-    if (existing) {
-      const { error } = await sb.from("matches").update(payload).eq("id", id);
-      if (error) throw error;
-    } else {
-      const { error } = await sb.from("matches").insert(payload);
-      if (error) throw error;
-    }
-    fixturesUpserted++;
-  }
+  const { error } = await sb.from("matches").upsert(payloads, { onConflict: "id" });
+  if (error) throw error;
 
-  return { fixturesUpserted, seasonId };
+  return { fixturesUpserted: payloads.length, seasonId };
 }
 
 // ── Standings refresh (one competition) ────────────────────────────────
@@ -227,44 +248,43 @@ async function refreshCompetitionFixtures(sb: any, competitionId: string, compet
 async function refreshCompetitionStandings(sb: any, competitionId: string, seasonId: string, apiLeagueId: number, year: number, teamCache: Map<number, string>) {
   const data = await apiFetch<APIStandingsResponse>(`/standings?league=${apiLeagueId}&season=${year}`);
   const groups = data.response?.[0]?.league?.standings ?? [];
+  if (groups.length === 0) return 0;
 
-  let rowsUpserted = 0;
-  for (const group of groups) {
-    // API-Football always returns a group label even for single-table leagues
-    // (e.g. "Premier League"); we only want a non-null group_label for genuine
-    // multi-group competitions (UCL group/league phase).
-    const isMultiGroup = groups.length > 1;
-    for (const row of group) {
-      const teamId = await resolveTeamId(sb, teamCache, row.team);
-      const payload = {
-        competition_id: competitionId,
-        season_id: seasonId,
-        team_id: teamId,
-        // "" rather than null for the single-table case — Postgres treats
-        // NULL as distinct from NULL for uniqueness/ON CONFLICT purposes,
-        // which would silently turn every refresh into new duplicate rows
-        // instead of an update.
-        group_label: isMultiGroup ? row.group : "",
-        position: row.rank,
-        played: row.all.played,
-        won: row.all.win,
-        drawn: row.all.draw,
-        lost: row.all.lose,
-        goals_for: row.all.goals.for,
-        goals_against: row.all.goals.against,
-        goal_difference: row.goalsDiff,
-        points: row.points,
-        form: row.form,
-        updated_at: new Date().toISOString(),
-      };
-      const { error } = await sb
-        .from("standings")
-        .upsert(payload, { onConflict: "competition_id,season_id,team_id,group_label" });
-      if (error) throw error;
-      rowsUpserted++;
-    }
-  }
-  return rowsUpserted;
+  // API-Football always returns a group label even for single-table leagues
+  // (e.g. "Premier League"); we only want a non-null group_label for genuine
+  // multi-group competitions (UCL group/league phase).
+  const isMultiGroup = groups.length > 1;
+  const rows = groups.flat();
+  await resolveTeamIds(sb, teamCache, rows.map(r => r.team));
+
+  const updatedAt = new Date().toISOString();
+  const payloads = groups.flatMap(group => group.map(row => ({
+    competition_id: competitionId,
+    season_id: seasonId,
+    team_id: teamCache.get(row.team.id)!,
+    // "" rather than null for the single-table case — Postgres treats NULL
+    // as distinct from NULL for uniqueness/ON CONFLICT purposes, which would
+    // silently turn every refresh into new duplicate rows instead of an
+    // update.
+    group_label: isMultiGroup ? row.group : "",
+    position: row.rank,
+    played: row.all.played,
+    won: row.all.win,
+    drawn: row.all.draw,
+    lost: row.all.lose,
+    goals_for: row.all.goals.for,
+    goals_against: row.all.goals.against,
+    goal_difference: row.goalsDiff,
+    points: row.points,
+    form: row.form,
+    updated_at: updatedAt,
+  })));
+
+  const { error } = await sb
+    .from("standings")
+    .upsert(payloads, { onConflict: "competition_id,season_id,team_id,group_label" });
+  if (error) throw error;
+  return payloads.length;
 }
 
 // ── Live-window guard ───────────────────────────────────────────────────
