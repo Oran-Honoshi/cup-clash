@@ -16,11 +16,13 @@ interface NotifSetting {
 }
 
 const SETTINGS: NotifSetting[] = [
-  { key: "goals",       label: "Goal scored",         desc: "Get notified when a goal is scored in a live match", icon: <span className="text-lg">⚽</span>,                                  default: true  },
-  { key: "results",     label: "Match result",         desc: "Final score when a match ends",                      icon: <Trophy size={18} style={{ color: "#fbbf24" }} />,                   default: true  },
-  { key: "leaderboard", label: "Leaderboard change",   desc: "When your rank changes after a result",              icon: <span className="text-lg">📊</span>,                                  default: true  },
-  { key: "chat",        label: "New chat message",     desc: "When someone messages in your group chat",           icon: <MessageCircle size={18} style={{ color: "#00D4FF" }} />,            default: false },
-  { key: "newmember",   label: "New member joined",    desc: "When someone joins your group (admin only)",         icon: <Users size={18} style={{ color: "#00FF88" }} />,                    default: false },
+  { key: "goals",          label: "Goal scored",       desc: "Get notified when a goal is scored in a live match", icon: <span className="text-lg">⚽</span>,                                  default: true  },
+  { key: "results",        label: "Match result",       desc: "Final score when a match ends",                      icon: <Trophy size={18} style={{ color: "#fbbf24" }} />,                   default: true  },
+  { key: "leaderboard",    label: "Leaderboard change", desc: "When your rank changes after a result",              icon: <span className="text-lg">📊</span>,                                  default: true  },
+  { key: "chat",           label: "New chat message",   desc: "When someone messages in your group chat",           icon: <MessageCircle size={18} style={{ color: "#00D4FF" }} />,            default: false },
+  { key: "newmember",      label: "New member joined",  desc: "When someone joins your group (admin only)",         icon: <Users size={18} style={{ color: "#00FF88" }} />,                    default: false },
+  { key: "oracle_duel",    label: "Oracle Duel result", desc: "When your Beat-the-Oracle duel is settled",          icon: <span className="text-lg">🔮</span>,                                 default: false },
+  { key: "match_reminder", label: "Match reminder",     desc: "24h and 1h before kickoff, if you haven't predicted",icon: <span className="text-lg">🔔</span>,                                 default: false },
 ];
 
 interface TelegramSetting {
@@ -50,11 +52,13 @@ const POLL_MAX_TRIES   = 40; // ~2 minutes
 export function NotificationsClient({ userId }: { userId: string }) {
   const { t } = useLocale();
   const SETTING_LABELS: Record<string, string> = {
-    goals:       t("notif_goal"),
-    results:     t("notif_result"),
-    leaderboard: t("notif_leaderboard"),
-    chat:        t("notif_chat"),
-    newmember:   t("notif_new_member"),
+    goals:          t("notif_goal"),
+    results:        t("notif_result"),
+    leaderboard:    t("notif_leaderboard"),
+    chat:           t("notif_chat"),
+    newmember:      t("notif_new_member"),
+    oracle_duel:    t("notif_push_oracle_duel"),
+    match_reminder: t("notif_push_match_reminder"),
   };
   const TELEGRAM_LABELS: Record<TelegramPrefKey, { label: string; desc: string }> = {
     goals:            { label: t("notif_tg_goals"),         desc: t("notif_tg_goals_desc") },
@@ -314,6 +318,12 @@ export function NotificationsClient({ userId }: { userId: string }) {
                 ? t("notif_push_on_desc")
                 : t("notif_push_off_desc")}
             </div>
+            {!pushEnabled && isIOS && (
+              <div className="mt-2 text-xs rounded-lg px-3 py-2"
+                style={{ background: "rgba(251,191,36,0.06)", border: "1px solid rgba(251,191,36,0.2)", color: "rgba(251,191,36,0.8)" }}>
+                {t("notif_push_ios_note")}
+              </div>
+            )}
             {!pushEnabled && (
               <button onClick={enablePush} disabled={loading}
                 className="mt-3 px-4 py-2.5 rounded-xl text-sm font-bold uppercase tracking-wider disabled:opacity-50 transition-all hover:-translate-y-0.5"
