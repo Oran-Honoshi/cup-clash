@@ -58,8 +58,8 @@ async function getMembers(groupId: string) {
   }>;
 }
 
-export type SubSector = "predictions" | "leaderboard" | "group-predictions" | "chat" | "rules" | "admin" | "info";
-const VALID_TABS: SubSector[] = ["predictions", "leaderboard", "group-predictions", "chat", "rules", "admin", "info"];
+export type SubSector = "predictions" | "leaderboard" | "group-predictions" | "bracket" | "chat" | "rules" | "admin" | "info";
+const VALID_TABS: SubSector[] = ["predictions", "leaderboard", "group-predictions", "bracket", "chat", "rules", "admin", "info"];
 
 function resolveInitialTab(requested: string | undefined, isAdmin: boolean): SubSector {
   if (requested === "results") return "group-predictions"; // legacy — results matrix now lives in Group Predictions

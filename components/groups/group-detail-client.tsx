@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Trophy, Users, DollarSign, Target, Lock, Shield, ArrowRight, MessageCircle, Info, Trash2, Gift, CheckCircle, Clock, GraduationCap, ClipboardList, Table2 } from "lucide-react";
+import { Trophy, Users, DollarSign, Target, Lock, Shield, ArrowRight, MessageCircle, Info, Trash2, Gift, CheckCircle, Clock, GraduationCap, ClipboardList, Table2, GitBranch, Star, Brain } from "lucide-react";
 import Link from "next/link";
 import { GroupChat } from "@/components/chat/group-chat";
 import { GroupStreakCard } from "@/components/daily-challenge/group-streak-card";
@@ -11,6 +11,9 @@ import { PointsRaceChart } from "@/components/groups/points-race-chart";
 import { MemberAvatar } from "@/components/ui/member-avatar";
 import { MatchResultsTable } from "@/components/groups/match-results-table";
 import { LeaderboardList } from "@/components/dashboard/leaderboard-list";
+import { TopScorersLeaderboard, TopAssistersLeaderboard } from "@/components/dashboard/player-stats-leaderboard";
+import { TriviaLeaderboard } from "@/components/trivia/trivia-leaderboard";
+import { KnockoutBracket } from "@/components/dashboard/knockout-bracket";
 import { PredictionsClient } from "@/components/predictions/predictions-client";
 import { RulesSummary } from "@/components/groups/rules-summary";
 import { AdminGroupSector } from "@/components/admin/admin-group-sector";
@@ -22,7 +25,8 @@ import { compareMembersForRanking } from "@/lib/leaderboard-sort";
 import type { Group as AdminGroup, Member as LeaderboardMember } from "@/lib/types";
 import type { ScheduleMatch } from "@/lib/schedule";
 
-export type SubSector = "predictions" | "leaderboard" | "group-predictions" | "chat" | "rules" | "admin" | "info";
+export type SubSector = "predictions" | "leaderboard" | "group-predictions" | "bracket" | "chat" | "rules" | "admin" | "info";
+type LeaderboardSubTab = "picks" | "scorers" | "assisters" | "trivia";
 
 interface GroupDetailClientProps {
   group: { id: string; name: string; passkey: string; admin_id: string; buy_in_amount: number; payout_first: number; payout_second: number; payout_third: number; max_members: number; is_corporate_paid?: boolean; corporate_prize?: string | null; currency_symbol?: string | null; payment_link?: string | null; enable_group_stage_prize?: boolean | null; group_stage_prize_amount?: number | null; group_stage_prize_label?: string | null; show_prize_split?: boolean | null; show_entry_fee?: boolean | null; show_prize_pot?: boolean | null; show_buy_in_tracker?: boolean | null; show_payment_link?: boolean | null; group_mode?: string | null; winner_message?: string | null; competition_id?: string | null; competitions?: { name: string } | null };
@@ -51,6 +55,7 @@ export function GroupDetailClient({
   const { t } = useLocale();
   const router = useRouter();
   const [tab, setTab] = useState<SubSector>(initialTab);
+  const [lbSubTab, setLbSubTab] = useState<LeaderboardSubTab>("picks");
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const paidCount = members.filter(m => m.paid || m.payment_status === "paid").length;
@@ -59,6 +64,7 @@ export function GroupDetailClient({
     { id: "predictions"       as const, label: t("nav_predictions"),       icon: Target       },
     { id: "leaderboard"       as const, label: t("nav_leaderboard"),       icon: Trophy       },
     { id: "group-predictions" as const, label: t("nav_group_predictions"), icon: Table2       },
+    { id: "bracket"           as const, label: t("nav_bracket"),           icon: GitBranch     },
     { id: "chat"              as const, label: t("nav_chat"),              icon: MessageCircle },
     { id: "rules"             as const, label: t("grp_rules"),             icon: ClipboardList },
     ...(isAdmin ? [{ id: "admin" as const, label: t("common_admin"), icon: Shield }] : []),
@@ -127,6 +133,11 @@ export function GroupDetailClient({
       {tab === "predictions" && (
         <div className="space-y-4">
           <TournamentPicksNag groupId={group.id} />
+          <div className="flex justify-end">
+            <Link href={`/schedule?group=${group.id}`} className="text-xs font-bold" style={{ color: "#00D4FF" }}>
+              View full schedule →
+            </Link>
+          </div>
           <PredictionsClient
             groupId={group.id}
             groupName={group.name}
@@ -145,29 +156,66 @@ export function GroupDetailClient({
 
       {tab === "leaderboard" && (
         <div className="space-y-4">
-          <LeaderboardList
-            members={leaderboardMembers}
-            currentUserId={currentUserId}
-            groupId={group.id}
-            groupName={group.name}
-            variant="full"
-            isAdFree={isAdFree}
-            isCorporate={isCorporate}
-          />
-          <PointsRaceChart groupId={group.id} />
-          <RivalScoreboardCard groupId={group.id} />
+          <div className="flex gap-2 overflow-x-auto" style={{ scrollbarWidth: "none" }}>
+            {[
+              { id: "picks"     as const, label: "Picks",     icon: Trophy },
+              { id: "scorers"   as const, label: "Scorers",   icon: Star   },
+              { id: "assisters" as const, label: "Assisters", icon: Users  },
+              { id: "trivia"    as const, label: "Trivia",    icon: Brain  },
+            ].map(sub => {
+              const active = lbSubTab === sub.id;
+              return (
+                <button key={sub.id} onClick={() => setLbSubTab(sub.id)}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl font-bold text-xs transition-all shrink-0"
+                  style={active ? { background: "rgba(0,212,255,0.12)", border: "1px solid rgba(0,212,255,0.35)", color: "#00D4FF" } : { background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)", color: "rgba(255,255,255,0.5)" }}>
+                  <sub.icon size={13} style={{ color: active ? "#00D4FF" : "rgba(255,255,255,0.3)" }} />
+                  {sub.label}
+                </button>
+              );
+            })}
+          </div>
+
+          {lbSubTab === "picks" && (
+            <>
+              <LeaderboardList
+                members={leaderboardMembers}
+                currentUserId={currentUserId}
+                groupId={group.id}
+                groupName={group.name}
+                variant="full"
+                isAdFree={isAdFree}
+                isCorporate={isCorporate}
+              />
+              <PointsRaceChart groupId={group.id} />
+              <RivalScoreboardCard groupId={group.id} />
+            </>
+          )}
+          {lbSubTab === "scorers"   && <TopScorersLeaderboard />}
+          {lbSubTab === "assisters" && <TopAssistersLeaderboard />}
+          {lbSubTab === "trivia"    && <TriviaLeaderboard currentUserId={currentUserId} />}
         </div>
       )}
 
       {tab === "group-predictions" && (
         <div className="space-y-4">
-          <div>
-            <h2 className="font-display text-xl uppercase font-black text-white">Group Predictions</h2>
-            <p className="text-xs mt-1" style={{ color: "rgba(255,255,255,0.4)" }}>
-              Every member&apos;s pick and points, match by match.
-            </p>
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <h2 className="font-display text-xl uppercase font-black text-white">Group Predictions</h2>
+              <p className="text-xs mt-1" style={{ color: "rgba(255,255,255,0.4)" }}>
+                Every member&apos;s pick and points, match by match.
+              </p>
+            </div>
+            <Link href="/predictions/summary" className="text-xs font-bold shrink-0" style={{ color: "#00D4FF" }}>
+              Compare across all your groups →
+            </Link>
           </div>
           <MatchResultsTable groupId={group.id} members={members} />
+        </div>
+      )}
+
+      {tab === "bracket" && (
+        <div className="space-y-4">
+          <KnockoutBracket groupId={group.id} />
         </div>
       )}
 
