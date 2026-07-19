@@ -18,7 +18,7 @@ import { PredictionBadge } from "@/components/predictions/prediction-badge";
 import { PredictionDistribution } from "@/components/dashboard/prediction-distribution";
 import { AdBanner } from "@/components/ads/ad-banner";
 import { createClient } from "@/lib/supabase/client";
-import { WC2026_MATCHES, STAGE_LABELS, type ScheduleMatch } from "@/lib/schedule";
+import { WC2026_MATCHES, STAGE_LABELS, matchInGroupScope, type ScheduleMatch } from "@/lib/schedule";
 import { getTeamColor } from "@/lib/countries";
 import { cn } from "@/lib/utils";
 
@@ -64,7 +64,7 @@ export interface ScheduleClientProps {
   userId?: string;
   groupId: string;
   groupName: string;
-  allGroups: Array<{ id: string; name: string; passkey: string; groupType: string; singleMatchId: string | null }>;
+  allGroups: Array<{ id: string; name: string; passkey: string; groupType: string; singleMatchId: string | null; competitionId: string | null }>;
   allMatches?: ScheduleMatch[];
   matchResults: Record<string, MatchResult>;
   matchTeams?: Record<string, { home: string; away: string; homeFlagCode?: string; awayFlagCode?: string }>;
@@ -599,6 +599,21 @@ export function ScheduleClient({
     if (userId) setActiveUserId(userId);
   }, [userId, setActiveUserId]);
 
+  // Lookup maps used to enforce matchInGroupScope() before any prediction
+  // write — the Schedule page deliberately shows every competition's
+  // matches for browsing, but a prediction may only be saved against a
+  // group whose own competition the match actually belongs to.
+  const matchById = useMemo(() => {
+    const map = new Map<string, ScheduleMatch>();
+    for (const m of allMatches) map.set(m.id, m);
+    return map;
+  }, [allMatches]);
+  const groupById = useMemo(() => {
+    const map = new Map<string, { competitionId: string | null }>();
+    for (const g of allGroups) map.set(g.id, { competitionId: g.competitionId });
+    return map;
+  }, [allGroups]);
+
   // ── Auto-refresh every 60s when a match is live
   const hasLive = useMemo(
     () => Object.values(matchResults).some(r => r.status === LIVE_STATUS),
@@ -706,6 +721,18 @@ export function ScheduleClient({
     const a = parseInt(away, 10);
     if (isNaN(h) || isNaN(a)) return;
 
+    // Guard against saving a match that doesn't belong to the active
+    // group's own competition (e.g. a League match while a World Cup
+    // group is active) — the Schedule page browses every competition at
+    // once, but writes must stay scoped per group.
+    const match = matchById.get(matchId);
+    const activeGroupCompetitionId = groupById.get(groupId)?.competitionId ?? null;
+    if (!match || !matchInGroupScope(match.stage, match.competitionId, activeGroupCompetitionId)) {
+      setSaveFlash(prev => ({ ...prev, [matchId]: "error" }));
+      setTimeout(() => setSaveFlash(prev => ({ ...prev, [matchId]: null })), 2000);
+      return;
+    }
+
     const success = await upsertGroupPrediction({ userId, groupId, matchId, homeScore: h, awayScore: a });
 
     if (success) {
@@ -726,7 +753,11 @@ export function ScheduleClient({
       // predictable (a single_match group only predicts its own match)
       // and copying would actually change something there.
       const eligibleIds = allGroups
-        .filter(g => g.id !== groupId && (g.groupType !== "single_match" || g.singleMatchId === matchId))
+        .filter(g =>
+          g.id !== groupId &&
+          (g.groupType !== "single_match" || g.singleMatchId === matchId) &&
+          matchInGroupScope(match.stage, match.competitionId, g.competitionId)
+        )
         .map(g => g.id);
 
       if (eligibleIds.length > 0) {
@@ -758,7 +789,7 @@ export function ScheduleClient({
       setSaveFlash(prev => ({ ...prev, [matchId]: "error" }));
       setTimeout(() => setSaveFlash(prev => ({ ...prev, [matchId]: null })), 2000);
     }
-  }, [userId, groupId, setPrediction, allGroups]);
+  }, [userId, groupId, setPrediction, allGroups, matchById, groupById]);
 
   const handleLocalPredChange = useCallback((matchId: string, home: string, away: string) => {
     setLocalPreds(prev => ({ ...prev, [matchId]: { home, away } }));

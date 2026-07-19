@@ -397,11 +397,9 @@ export function GroupDetailClient({
           </div>
 
           <div className="flex gap-3">
-            <Link href="/dashboard" className="flex-1">
-              <button className="w-full py-3 rounded-xl font-bold text-sm uppercase tracking-wider flex items-center justify-center gap-2" style={{ background: "linear-gradient(135deg, #00FF88, #00D4FF)", color: "#0B141B" }}>
-                {t("common_dashboard")} <ArrowRight size={15} />
-              </button>
-            </Link>
+            <button onClick={() => setTab("predictions")} className="flex-1 py-3 rounded-xl font-bold text-sm uppercase tracking-wider flex items-center justify-center gap-2" style={{ background: "linear-gradient(135deg, #00FF88, #00D4FF)", color: "#0B141B" }}>
+              {t("nav_predictions")} <ArrowRight size={15} />
+            </button>
             {isAdmin && (
               <button onClick={() => setTab("admin")} className="px-5 py-3 rounded-xl font-bold text-sm uppercase tracking-wider" style={{ background: "rgba(0,212,255,0.1)", border: "1px solid rgba(0,212,255,0.2)", color: "#00D4FF" }}>
                 {t("common_admin_panel")}

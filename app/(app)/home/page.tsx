@@ -44,15 +44,20 @@ export default async function HomePage() {
     );
   }
 
-  const [allGroups, followedTeamIds, followedCompetitionIds, heroArticle, competitions, nextMatch, oracleMatch] = await Promise.all([
+  const [allGroups, followedTeamIds, followedCompetitionIds, heroArticle, competitions, oracleMatch] = await Promise.all([
     getAllUserGroups(userProfile.id),
     getFollowedTeamIds(userProfile.id),
     getFollowedCompetitionIds(userProfile.id),
     getHeroArticle(userProfile.id),
     getCompetitions(),
-    getNextMatch(),
     getNextOracleMatch(),
   ]);
+
+  // Scope "next match" to the user's primary group's own competition (null
+  // = World Cup) so it never shows an unrelated competition's fixture next
+  // to that group's name — see matchInGroupScope() in lib/schedule.ts.
+  const primaryGroupCompetitionId = allGroups[0]?.groups?.competition_id ?? null;
+  const nextMatch = await getNextMatch(primaryGroupCompetitionId);
 
   const followedTeamIdList = Array.from(followedTeamIds);
   const [followedTeams, resultsByTeam] = await Promise.all([

@@ -1,5 +1,5 @@
 import type { Match } from "@/lib/types";
-import { WC2026_MATCHES } from "@/lib/schedule";
+import { WC2026_MATCHES, matchInGroupScope } from "@/lib/schedule";
 import type { ScheduleMatch } from "@/lib/schedule";
 import { sbAnon as sb } from "@/lib/supabase/anon";
 
@@ -7,16 +7,23 @@ import { sbAnon as sb } from "@/lib/supabase/anon";
 // Primary: Supabase matches table (seeded from seed.sql)
 // Fallback: lib/schedule.ts (same data, no DB needed)
 
-export async function getUpcomingMatches(limit = 20): Promise<Match[]> {
+// groupCompetitionId is REQUIRED (not optional) so every call site is forced
+// to state its scope explicitly — an unscoped query here previously leaked
+// other competitions' matches into a group's "next match" UI. Pass the
+// group's own competition_id (null for World Cup groups) — see
+// matchInGroupScope() in lib/schedule.ts for the scoping rule.
+export async function getUpcomingMatches(limit: number, groupCompetitionId: string | null): Promise<Match[]> {
   try {
+    // Over-fetch before scoping down to `limit`, since most rows may belong
+    // to other competitions and get filtered out below.
     const { data, error } = await sb()
       .from("matches")
-      .select("id, home, away, home_flag, away_flag, kickoff_at, stage, group_letter, stadium, city, time_confirmed")
+      .select("id, home, away, home_flag, away_flag, kickoff_at, stage, group_letter, stadium, city, time_confirmed, competition_id")
       .gt("kickoff_at", new Date().toISOString())
       .neq("home", "TBD")
       .neq("away", "TBD")
       .order("kickoff_at", { ascending: true })
-      .limit(limit);
+      .limit(Math.max(limit * 10, 100));
 
     if (!error && data?.length) {
       return (data as Array<{
@@ -26,24 +33,30 @@ export async function getUpcomingMatches(limit = 20): Promise<Match[]> {
         group_letter: string | null;
         stadium: string | null; city: string | null;
         time_confirmed: boolean | null;
-      }>).map(m => ({
-        id:          m.id,
-        home:        m.home,
-        away:        m.away,
-        homeFlagCode:m.home_flag  ?? undefined,
-        awayFlagCode:m.away_flag  ?? undefined,
-        time:        m.kickoff_at,
-        utcTime:     m.kickoff_at,
-        stage:       m.stage as Match["stage"],
-        group:       m.group_letter ?? undefined,
-        stadium:     m.stadium ?? undefined,
-        city:        m.city    ?? undefined,
-        timeConfirmed: m.time_confirmed ?? true,
-      }));
+        competition_id: string | null;
+      }>)
+        .filter(m => matchInGroupScope(m.stage, m.competition_id, groupCompetitionId))
+        .slice(0, limit)
+        .map(m => ({
+          id:          m.id,
+          home:        m.home,
+          away:        m.away,
+          homeFlagCode:m.home_flag  ?? undefined,
+          awayFlagCode:m.away_flag  ?? undefined,
+          time:        m.kickoff_at,
+          utcTime:     m.kickoff_at,
+          stage:       m.stage as Match["stage"],
+          group:       m.group_letter ?? undefined,
+          stadium:     m.stadium ?? undefined,
+          city:        m.city    ?? undefined,
+          timeConfirmed: m.time_confirmed ?? true,
+        }));
     }
   } catch { /* fall through to schedule fallback */ }
 
-  // Fallback — WC2026_MATCHES is now empty; returns [] if DB unreachable
+  // Fallback — WC2026_MATCHES is now empty; returns [] if DB unreachable.
+  // Only ever World Cup matches, so only serve it for World Cup scope.
+  if (groupCompetitionId) return [];
   const now = Date.now();
   return WC2026_MATCHES
     .filter(m => new Date(m.kickoff_at).getTime() > now)
@@ -63,8 +76,8 @@ export async function getUpcomingMatches(limit = 20): Promise<Match[]> {
     }));
 }
 
-export async function getNextMatch(): Promise<Match | null> {
-  const upcoming = await getUpcomingMatches(1);
+export async function getNextMatch(groupCompetitionId: string | null): Promise<Match | null> {
+  const upcoming = await getUpcomingMatches(1, groupCompetitionId);
   return upcoming[0] ?? null;
 }
 

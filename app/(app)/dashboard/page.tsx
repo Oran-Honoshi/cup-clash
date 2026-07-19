@@ -95,16 +95,16 @@ export default async function DashboardPage({
   // Get all groups this user belongs to
   const { data: memberships } = await sbAdmin()
     .from("group_members")
-    .select("group_id, groups(id, name, passkey)")
+    .select("group_id, groups(id, name, passkey, competition_id)")
     .eq("user_id", userProfile.id)
     .order("joined_at", { ascending: false });
 
   const allGroups = (memberships ?? [])
     .map((m: unknown) => {
-      const row = m as { group_id: string; groups: { id: string; name: string; passkey: string } | null };
-      return row.groups ? { id: row.groups.id, name: row.groups.name, passkey: row.groups.passkey } : null;
+      const row = m as { group_id: string; groups: { id: string; name: string; passkey: string; competition_id: string | null } | null };
+      return row.groups ? { id: row.groups.id, name: row.groups.name, passkey: row.groups.passkey, competitionId: row.groups.competition_id } : null;
     })
-    .filter(Boolean) as Array<{ id: string; name: string; passkey: string }>;
+    .filter(Boolean) as Array<{ id: string; name: string; passkey: string; competitionId: string | null }>;
 
   // My Teams — real followed teams + their last 5 finished results.
   const followedTeamIds = await getFollowedTeamIds(userProfile.id);
@@ -144,7 +144,7 @@ export default async function DashboardPage({
   const [members, group, upcomingMatches, adStatusResult] = await Promise.all([
     getMembers(activeGroupId),
     getGroup(activeGroupId),
-    getUpcomingMatches(5),
+    getUpcomingMatches(5, activeGroup.competitionId),
     sbAdmin()
       .from("group_members")
       .select("is_ad_free, groups(is_corporate_paid)")
