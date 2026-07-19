@@ -506,6 +506,14 @@ export interface Translations {
   mc_h2h_empty:          string;
   mc_h2h_error:          string;
   mc_h2h_pens:           string;
+  mc_lineups_early:      string;
+  mc_lineups_loading:    string;
+  mc_lineups_pending:    string;
+  mc_lineups_error:      string;
+  mc_lineups_formation:  string;
+  mc_lineups_starting_xi: string;
+  mc_lineups_bench:      string;
+  mc_lineups_coach:      string;
 
   // Oracle Predictions — "Beat the Oracle" (Home teaser + Game Room)
   oracle_label:               string;
@@ -1032,6 +1040,14 @@ const en: Translations = {
   mc_h2h_empty:          "No previous meetings found",
   mc_h2h_error:          "Couldn't load head-to-head record",
   mc_h2h_pens:           "Pens",
+  mc_lineups_early:      "Lineups available closer to kickoff",
+  mc_lineups_loading:    "Loading lineups…",
+  mc_lineups_pending:    "Lineups not yet announced — check back closer to kickoff",
+  mc_lineups_error:      "Couldn't load lineups",
+  mc_lineups_formation:  "Formation",
+  mc_lineups_starting_xi: "Starting XI",
+  mc_lineups_bench:      "Bench",
+  mc_lineups_coach:      "Coach",
 
   oracle_label: "The Oracle",
   oracle_teaser_eyebrow: "Beat the Oracle",
@@ -1551,6 +1567,14 @@ const fr: Translations = {
   mc_h2h_empty:          "Aucune confrontation précédente trouvée",
   mc_h2h_error:          "Impossible de charger l'historique des confrontations",
   mc_h2h_pens:           "Tab",
+  mc_lineups_early:      "Compositions disponibles à l'approche du coup d'envoi",
+  mc_lineups_loading:    "Chargement des compositions…",
+  mc_lineups_pending:    "Compositions pas encore annoncées — revenez plus près du coup d'envoi",
+  mc_lineups_error:      "Impossible de charger les compositions",
+  mc_lineups_formation:  "Formation",
+  mc_lineups_starting_xi: "Onze de départ",
+  mc_lineups_bench:      "Remplaçants",
+  mc_lineups_coach:      "Entraîneur",
 
   oracle_label: "L'Oracle",
   oracle_teaser_eyebrow: "Battez l'Oracle",
@@ -2070,6 +2094,14 @@ const de: Translations = {
   mc_h2h_empty:          "Keine bisherigen Begegnungen gefunden",
   mc_h2h_error:          "Direktvergleich konnte nicht geladen werden",
   mc_h2h_pens:           "Elfm.",
+  mc_lineups_early:      "Aufstellungen sind kurz vor Anpfiff verfügbar",
+  mc_lineups_loading:    "Aufstellungen werden geladen…",
+  mc_lineups_pending:    "Aufstellungen noch nicht bekannt gegeben — kurz vor Anpfiff erneut prüfen",
+  mc_lineups_error:      "Aufstellungen konnten nicht geladen werden",
+  mc_lineups_formation:  "Formation",
+  mc_lineups_starting_xi: "Startelf",
+  mc_lineups_bench:      "Ersatzbank",
+  mc_lineups_coach:      "Trainer",
 
   oracle_label: "Das Orakel",
   oracle_teaser_eyebrow: "Schlag das Orakel",
@@ -2589,6 +2621,14 @@ const nl: Translations = {
   mc_h2h_empty:          "Geen eerdere ontmoetingen gevonden",
   mc_h2h_error:          "Onderling record laden mislukt",
   mc_h2h_pens:           "Pen.",
+  mc_lineups_early:      "Opstellingen beschikbaar dichter bij de aftrap",
+  mc_lineups_loading:    "Opstellingen laden…",
+  mc_lineups_pending:    "Opstellingen nog niet bekendgemaakt — kom terug dichter bij de aftrap",
+  mc_lineups_error:      "Opstellingen laden mislukt",
+  mc_lineups_formation:  "Formatie",
+  mc_lineups_starting_xi: "Basisopstelling",
+  mc_lineups_bench:      "Bank",
+  mc_lineups_coach:      "Coach",
 
   oracle_label: "Het Orakel",
   oracle_teaser_eyebrow: "Versla het Orakel",
@@ -3108,6 +3148,14 @@ const es: Translations = {
   mc_h2h_empty:          "No se encontraron enfrentamientos anteriores",
   mc_h2h_error:          "No se pudo cargar el historial de enfrentamientos",
   mc_h2h_pens:           "Pens",
+  mc_lineups_early:      "Las alineaciones estarán disponibles más cerca del inicio",
+  mc_lineups_loading:    "Cargando alineaciones…",
+  mc_lineups_pending:    "Alineaciones aún no anunciadas — vuelve más cerca del inicio",
+  mc_lineups_error:      "No se pudieron cargar las alineaciones",
+  mc_lineups_formation:  "Formación",
+  mc_lineups_starting_xi: "Once inicial",
+  mc_lineups_bench:      "Suplentes",
+  mc_lineups_coach:      "Entrenador",
 
   oracle_label: "El Oráculo",
   oracle_teaser_eyebrow: "Vence al Oráculo",
@@ -3627,6 +3675,14 @@ const pt: Translations = {
   mc_h2h_empty:          "Nenhum confronto anterior encontrado",
   mc_h2h_error:          "Não foi possível carregar o histórico de confrontos",
   mc_h2h_pens:           "Pên.",
+  mc_lineups_early:      "As escalações estarão disponíveis mais perto do início",
+  mc_lineups_loading:    "Carregando escalações…",
+  mc_lineups_pending:    "Escalações ainda não anunciadas — volte mais perto do início",
+  mc_lineups_error:      "Não foi possível carregar as escalações",
+  mc_lineups_formation:  "Formação",
+  mc_lineups_starting_xi: "Time titular",
+  mc_lineups_bench:      "Banco de reservas",
+  mc_lineups_coach:      "Técnico",
 
   oracle_label: "O Oráculo",
   oracle_teaser_eyebrow: "Vença o Oráculo",
@@ -4146,6 +4202,14 @@ const he: Translations = {
   mc_h2h_empty:          "לא נמצאו עימותים קודמים",
   mc_h2h_error:          "טעינת ההיסטוריה נכשלה",
   mc_h2h_pens:           "פנדלים",
+  mc_lineups_early:      "ההרכבים יהיו זמינים סמוך למשחק",
+  mc_lineups_loading:    "טוען הרכבים…",
+  mc_lineups_pending:    "ההרכבים טרם פורסמו — בדקו שוב סמוך למשחק",
+  mc_lineups_error:      "טעינת ההרכבים נכשלה",
+  mc_lineups_formation:  "מערך",
+  mc_lineups_starting_xi: "ההרכב הפותח",
+  mc_lineups_bench:      "ספסל",
+  mc_lineups_coach:      "מאמן",
 
   oracle_label: "המגיד העתידות",
   oracle_teaser_eyebrow: "נצחו את המגיד העתידות",
@@ -4665,6 +4729,14 @@ const ar: Translations = {
   mc_h2h_empty:          "لم يتم العثور على مواجهات سابقة",
   mc_h2h_error:          "تعذّر تحميل سجل المواجهات",
   mc_h2h_pens:           "ركلات ترجيح",
+  mc_lineups_early:      "التشكيلات ستكون متاحة قرب موعد المباراة",
+  mc_lineups_loading:    "جارٍ تحميل التشكيلات…",
+  mc_lineups_pending:    "لم يتم الإعلان عن التشكيلات بعد — عد لاحقًا قرب موعد المباراة",
+  mc_lineups_error:      "تعذّر تحميل التشكيلات",
+  mc_lineups_formation:  "التشكيل",
+  mc_lineups_starting_xi: "التشكيلة الأساسية",
+  mc_lineups_bench:      "دكة البدلاء",
+  mc_lineups_coach:      "المدرب",
 
   oracle_label: "العرّاف",
   oracle_teaser_eyebrow: "تغلّب على العرّاف",

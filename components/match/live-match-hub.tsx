@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
-import { X, Clock, MapPin, RefreshCw, Activity, Target, ChevronDown, Swords } from "lucide-react";
+import { X, Clock, MapPin, RefreshCw, Activity, Target, ChevronDown, Shirt, Swords } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { FlagBadge } from "@/components/ui/FlagBadge";
 import { MvpVotePanel } from "@/components/match/mvp-vote-panel";
@@ -87,6 +87,26 @@ interface H2HMatch {
   homeScore:    number | null;
   awayScore:    number | null;
   penalties:    boolean;
+}
+
+interface LineupPlayerRef { apiPlayerId: number; name: string; number: number | null; position: string | null }
+
+interface TeamLineup {
+  team:        FixtureTeamRef;
+  formation:   string | null;
+  startXI:     LineupPlayerRef[];
+  substitutes: LineupPlayerRef[];
+  coach:       { name: string; photo: string | null } | null;
+}
+
+type LineupsState = "early" | "loading" | "pending" | "available" | "error";
+
+// Mirrors lib/services/match-center.ts's isInLineupsWindow — duplicated
+// (rather than imported) so this client component never pulls in that
+// server-only module (API_FOOTBALL_KEY access) into the browser bundle.
+function isInLineupsWindow(kickoffAt: string, status: string): boolean {
+  if (status === "live" || status === "finished") return true;
+  return new Date(kickoffAt).getTime() - Date.now() <= 60 * 60 * 1000;
 }
 
 interface LiveMatchHubProps {
@@ -284,6 +304,11 @@ export function LiveMatchHub({
   const [playerStatsError,   setPlayerStatsError]   = useState(false);
   const statsFetched = useRef(false);
 
+  // ── Lineups (Lineups tab) — state-aware: "early" needs no fetch at all.
+  const [lineupsState, setLineupsState] = useState<LineupsState>("early");
+  const [lineups,      setLineups]      = useState<TeamLineup[]>([]);
+  const lineupsFetched = useRef(false);
+
   // Portal target only exists client-side.
   useEffect(() => { setMounted(true); }, []);
 
@@ -373,6 +398,22 @@ export function LiveMatchHub({
       .catch(() => setPlayerStatsError(true))
       .finally(() => setPlayerStatsLoading(false));
   }, [tab, matchId]);
+
+  // Lineups — on-demand only inside the kickoff window; more than ~1h out,
+  // no request is ever issued (server re-checks the same window regardless).
+  useEffect(() => {
+    if (tab !== "lineups" || lineupsFetched.current || !data) return;
+    if (!isInLineupsWindow(kickoffAt, data.status)) { setLineupsState("early"); return; }
+    lineupsFetched.current = true;
+    setLineupsState("loading");
+    fetch(`/api/match-center/lineups?matchId=${encodeURIComponent(matchId)}`)
+      .then(res => { if (!res.ok) throw new Error(String(res.status)); return res.json(); })
+      .then((body: { state: LineupsState; lineups: TeamLineup[] }) => {
+        setLineups(body.lineups);
+        setLineupsState(body.state);
+      })
+      .catch(() => setLineupsState("error"));
+  }, [tab, matchId, data, kickoffAt]);
 
   const status      = data?.status ?? "upcoming";
   const live        = status === "live";
@@ -664,6 +705,72 @@ export function LiveMatchHub({
                   </div>
                 )}
               </div>
+            </div>
+          )}
+
+          {/* Lineups — state-aware: early (no fetch) / loading / pending (fetched, unannounced) / available */}
+          {!loading && tab === "lineups" && (
+            <div className="space-y-4">
+              {(lineupsState === "early" || lineupsState === "pending") && (
+                <div className="py-8 text-center text-sm flex flex-col items-center gap-2" style={{ color: "var(--mt)" }}>
+                  <Shirt size={20} style={{ color: "var(--mt)" }} />
+                  {lineupsState === "early" ? t("mc_lineups_early") : t("mc_lineups_pending")}
+                </div>
+              )}
+              {lineupsState === "loading" && (
+                <div className="py-8 flex justify-center"><BallLoader size="sm" label={t("mc_lineups_loading")} /></div>
+              )}
+              {lineupsState === "error" && (
+                <div className="py-8 text-center text-sm" style={{ color: "var(--mt)" }}>{t("mc_lineups_error")}</div>
+              )}
+              {lineupsState === "available" && lineups.map(teamLineup => (
+                <div key={teamLineup.team.id} className="rounded-2xl p-4 space-y-3" style={{ background: "var(--sf)", border: "1px solid var(--br)" }}>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <FlagBadge code={teamLineup.team.logo} size="sm" />
+                      <span className="text-xs font-black uppercase" style={{ color: "var(--tx)" }}>{teamLineup.team.name}</span>
+                    </div>
+                    {teamLineup.formation && (
+                      <span className="text-xs font-bold px-2 py-0.5 rounded-full" style={{ color: "var(--ac)", background: "color-mix(in srgb, var(--ac) 12%, transparent)" }}>
+                        {t("mc_lineups_formation")} {teamLineup.formation}
+                      </span>
+                    )}
+                  </div>
+
+                  <div>
+                    <div className="ta-section-label mb-1.5">{t("mc_lineups_starting_xi")}</div>
+                    <div className="grid grid-cols-2 gap-x-2 gap-y-1">
+                      {teamLineup.startXI.map(p => (
+                        <div key={p.apiPlayerId} className="flex items-center gap-1.5 text-xs">
+                          <span className="font-mono font-bold w-5 text-right shrink-0" style={{ color: "var(--ac)" }}>{p.number ?? ""}</span>
+                          <span className="truncate" style={{ color: "var(--tx)" }}>{p.name}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {teamLineup.substitutes.length > 0 && (
+                    <div>
+                      <div className="ta-section-label mb-1.5">{t("mc_lineups_bench")}</div>
+                      <div className="grid grid-cols-2 gap-x-2 gap-y-1">
+                        {teamLineup.substitutes.map(p => (
+                          <div key={p.apiPlayerId} className="flex items-center gap-1.5 text-xs">
+                            <span className="font-mono font-bold w-5 text-right shrink-0" style={{ color: "var(--mt)" }}>{p.number ?? ""}</span>
+                            <span className="truncate" style={{ color: "var(--t2)" }}>{p.name}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {teamLineup.coach && (
+                    <div className="flex items-center justify-between text-xs pt-1" style={{ borderTop: "1px solid var(--br)" }}>
+                      <span style={{ color: "var(--t2)" }}>{t("mc_lineups_coach")}</span>
+                      <span className="font-bold" style={{ color: "var(--tx)" }}>{teamLineup.coach.name}</span>
+                    </div>
+                  )}
+                </div>
+              ))}
             </div>
           )}
 

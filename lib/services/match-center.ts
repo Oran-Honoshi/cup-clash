@@ -170,3 +170,51 @@ export async function getHeadToHead(homeTeamId: number, awayTeamId: number, limi
     }))
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 }
+
+// ── Lineups ──────────────────────────────────────────────────────────────
+
+export interface LineupPlayer { apiPlayerId: number; name: string; number: number | null; position: string | null }
+
+export interface TeamLineup {
+  team:         FixtureTeam;
+  formation:    string | null;
+  startXI:      LineupPlayer[];
+  substitutes:  LineupPlayer[];
+  coach:        { name: string; photo: string | null } | null;
+}
+
+interface APILineupsResponse {
+  response: Array<{
+    team:        FixtureTeam;
+    formation:   string | null;
+    startXI:     Array<{ player: { id: number; name: string; number: number | null; pos: string | null } }>;
+    substitutes: Array<{ player: { id: number; name: string; number: number | null; pos: string | null } }>;
+    coach:       { name: string; photo: string | null } | null;
+  }>;
+}
+
+function mapLineupPlayers(entries: APILineupsResponse["response"][number]["startXI"]): LineupPlayer[] {
+  return entries.map(e => ({ apiPlayerId: e.player.id, name: e.player.name, number: e.player.number, position: e.player.pos }));
+}
+
+export async function getLineups(apiFixtureId: number): Promise<TeamLineup[]> {
+  const data = await apiFetch<APILineupsResponse>(`/fixtures/lineups?fixture=${apiFixtureId}`);
+  return (data.response ?? []).map(t => ({
+    team:        t.team,
+    formation:   t.formation,
+    startXI:     mapLineupPlayers(t.startXI),
+    substitutes: mapLineupPlayers(t.substitutes),
+    coach:       t.coach ? { name: t.coach.name, photo: t.coach.photo } : null,
+  }));
+}
+
+// ── Kickoff-window gate ─────────────────────────────────────────────────
+// Shared by the lineups route (server-side, defense-in-depth) and the
+// client tab (so it never even issues the request before the window opens).
+
+export const LINEUPS_WINDOW_MS = 60 * 60 * 1000; // 1h
+
+export function isInLineupsWindow(kickoffAt: string, status: string): boolean {
+  if (status === "live" || status === "finished") return true;
+  return new Date(kickoffAt).getTime() - Date.now() <= LINEUPS_WINDOW_MS;
+}
