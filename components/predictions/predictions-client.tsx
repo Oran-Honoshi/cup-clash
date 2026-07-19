@@ -9,6 +9,7 @@ import { BonusQuestions } from "@/components/predictions/bonus-questions";
 import { GuestStore } from "@/components/ui/guest-signup-modal";
 import { useGroupContext } from "@/lib/contexts/group-context";
 import { NextMatchCard } from "@/components/dashboard/next-match-card";
+import { RecentResultsStrip } from "@/components/predictions/recent-results-strip";
 import { LiveMatchHub } from "@/components/match/live-match-hub";
 import { getNextScheduleMatch, toMatchType, type ScheduleMatch } from "@/lib/schedule";
 
@@ -181,6 +182,10 @@ export function PredictionsClient({
         <div className="pb-4">
           <NextMatchCard match={nextMatch} groupId={groupId} onOpenMatchCenter={setOpenMatchId} />
         </div>
+      )}
+
+      {showNextMatchHero && (
+        <RecentResultsStrip groupId={groupId} userId={userId} groupCompetitionId={groupCompetitionId} allMatches={allMatches} />
       )}
 
       {/* ── Match Center overlay ─────────────────────────────────── */}

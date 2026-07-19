@@ -11,6 +11,7 @@ import { GroupTable, type TeamStanding } from "@/components/predictions/group-st
 import { AccuracyChart } from "@/components/stats/accuracy-chart";
 import { CompetitionFilterChips } from "@/components/stats/competition-filter-chips";
 import { EmptyState } from "@/components/ui/empty-state";
+import { GroupStandings } from "@/components/dashboard/group-standings";
 
 function toTeamStandings(rows: StandingsRow[]): TeamStanding[] {
   return rows.map((r) => ({
@@ -45,9 +46,9 @@ export default async function StatsPage({
     : null;
 
   if (!activeCompetition) {
-    // Default to the first competition (excluding World Cup, which isn't
-    // tracked in the generic `standings` table — see Standings page) that
-    // actually has a synced table, rather than landing on an empty one.
+    // Default to the first competition (excluding World Cup, which has its
+    // own live-computed table below rather than a synced `standings` row)
+    // that actually has a synced table, rather than landing on an empty one.
     for (const c of competitions) {
       if (c.slug === WORLD_CUP_SLUG) continue;
       const rows = await getStandings(c.id);
@@ -61,7 +62,11 @@ export default async function StatsPage({
     }
   }
 
-  const standingsRows = activeCompetition ? await getStandings(activeCompetition.id) : [];
+  const isWorldCup = activeCompetition?.slug === WORLD_CUP_SLUG;
+  // World Cup standings are never written to the generic `standings` table
+  // (see comment above) — computed live from `matches` instead, via the
+  // same GroupStandings widget the standalone /standings route uses.
+  const standingsRows = activeCompetition && !isWorldCup ? await getStandings(activeCompetition.id) : [];
   const teamStandings = toTeamStandings(standingsRows);
 
   return (
@@ -100,7 +105,9 @@ export default async function StatsPage({
           Standings
         </div>
         <CompetitionFilterChips competitions={competitions} activeSlug={activeCompetition?.slug} />
-        {teamStandings.length > 0 ? (
+        {isWorldCup ? (
+          <GroupStandings />
+        ) : teamStandings.length > 0 ? (
           <GroupTable standings={teamStandings} highlightTopN={0} />
         ) : (
           <EmptyState

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Trophy, Users, DollarSign, Target, Lock, Shield, ArrowRight, MessageCircle, Info, Trash2, Gift, CheckCircle, Clock, GraduationCap, ClipboardList, Table2, GitBranch, Star, Brain } from "lucide-react";
+import { Trophy, Users, DollarSign, Target, Lock, Shield, ArrowRight, MessageCircle, Info, Trash2, Gift, CheckCircle, Clock, GraduationCap, ClipboardList, Table2, GitBranch, Star, Brain, ChevronDown } from "lucide-react";
 import Link from "next/link";
 import { GroupChat } from "@/components/chat/group-chat";
 import { GroupStreakCard } from "@/components/daily-challenge/group-streak-card";
@@ -25,7 +25,7 @@ import { compareMembersForRanking } from "@/lib/leaderboard-sort";
 import type { Group as AdminGroup, Member as LeaderboardMember } from "@/lib/types";
 import type { ScheduleMatch } from "@/lib/schedule";
 
-export type SubSector = "predictions" | "leaderboard" | "group-predictions" | "bracket" | "chat" | "rules" | "admin" | "info";
+export type SubSector = "predictions" | "leaderboard" | "group-predictions" | "bracket" | "chat" | "admin" | "info";
 type LeaderboardSubTab = "picks" | "scorers" | "assisters" | "trivia";
 
 interface GroupDetailClientProps {
@@ -58,6 +58,7 @@ export function GroupDetailClient({
   const [lbSubTab, setLbSubTab] = useState<LeaderboardSubTab>("picks");
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [rulesOpen, setRulesOpen] = useState(false);
   const paidCount = members.filter(m => m.paid || m.payment_status === "paid").length;
 
   const TABS = [
@@ -66,7 +67,6 @@ export function GroupDetailClient({
     { id: "group-predictions" as const, label: t("nav_group_predictions"), icon: Table2       },
     { id: "bracket"           as const, label: t("nav_bracket"),           icon: GitBranch     },
     { id: "chat"              as const, label: t("nav_chat"),              icon: MessageCircle },
-    { id: "rules"             as const, label: t("grp_rules"),             icon: ClipboardList },
     ...(isAdmin ? [{ id: "admin" as const, label: t("common_admin"), icon: Shield }] : []),
     { id: "info"              as const, label: t("grp_info"),              icon: Info         },
   ];
@@ -227,10 +227,6 @@ export function GroupDetailClient({
         </div>
       )}
 
-      {tab === "rules" && (
-        <RulesSummary rules={rules} />
-      )}
-
       {tab === "admin" && isAdmin && adminData && (
         <AdminGroupSector
           group={adminData.group}
@@ -359,6 +355,22 @@ export function GroupDetailClient({
               </p>
             </div>
           )}
+
+          <div className="rounded-2xl overflow-hidden" style={glass}>
+            <button onClick={() => setRulesOpen(o => !o)}
+              className="w-full px-5 py-4 flex items-center justify-between gap-2"
+              style={rulesOpen ? { borderBottom: "1px solid rgba(255,255,255,0.07)" } : undefined}>
+              <span className="flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.35)" }}>
+                <ClipboardList size={14} style={{ color: "rgba(255,255,255,0.35)" }} /> {t("grp_rules")}
+              </span>
+              <ChevronDown size={16} style={{ color: "rgba(255,255,255,0.35)", transform: rulesOpen ? "rotate(180deg)" : undefined, transition: "transform 0.2s" }} />
+            </button>
+            {rulesOpen && (
+              <div className="p-5 pt-0">
+                <RulesSummary rules={rules} />
+              </div>
+            )}
+          </div>
 
           <div className="rounded-2xl overflow-hidden" style={glass}>
             <div className="px-5 py-4 border-b flex items-center justify-between" style={{ borderColor: "rgba(255,255,255,0.07)" }}>
