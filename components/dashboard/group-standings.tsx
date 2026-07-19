@@ -4,7 +4,6 @@ import { useState, useEffect } from "react";
 import { createClient } from "@supabase/supabase-js";
 import Image from "next/image";
 import { flagUrl } from "@/lib/countries";
-import { NeonBar } from "@/components/ui/neon-bar";
 import { FOCUS_RING } from "@/lib/a11y";
 
 function createSb() {
@@ -94,39 +93,29 @@ function GroupTable({ group, results }: { group: string; results: MatchResult[] 
   );
 
   return (
-    <div
-      style={{
-        background: "rgba(18,14,38,0.32)",
-        backdropFilter: "blur(40px) saturate(180%)",
-        WebkitBackdropFilter: "blur(40px) saturate(180%)",
-        border: "1px solid rgba(255,255,255,0.14)",
-        borderRadius: 22,
-        overflow: "hidden",
-      }}>
-      <NeonBar />
-
+    <div style={{ background: "var(--sf)", border: "1px solid var(--br)", borderRadius: 18, overflow: "hidden" }}>
       {/* Group header */}
       <div className="px-4 py-3 border-b flex items-center justify-between"
-        style={{ borderColor: "rgba(255,255,255,0.07)", background: "rgba(255,255,255,0.03)" }}>
-        <span className="font-display text-lg font-black uppercase" style={{ color: "white" }}>
+        style={{ borderColor: "var(--br)", background: "var(--ip)" }}>
+        <span className="font-display text-lg font-black uppercase" style={{ color: "var(--tx)" }}>
           Group {group}
         </span>
         <span className="text-xs font-bold px-2 py-0.5 rounded-full"
-          style={{ background: "rgba(0,212,255,0.08)", color: "#00D4FF" }}>
+          style={{ background: "rgba(0,207,128,0.12)", color: "var(--ac)", border: "1px solid rgba(0,207,128,0.3)" }}>
           Starts Jun {group === "A" ? "11" : "12–17"}
         </span>
       </div>
 
       {/* Table header */}
       <div className="grid text-[10px] font-bold uppercase tracking-widest px-4 py-2"
-        style={{ gridTemplateColumns: "1fr 28px 28px 28px 28px 28px 36px", background: "rgba(255,255,255,0.03)", color: "rgba(255,255,255,0.3)" }}>
+        style={{ gridTemplateColumns: "1fr 28px 28px 28px 28px 28px 36px", background: "var(--ip)", color: "var(--ft)" }}>
         <span>Team</span>
         <span className="text-center">P</span>
         <span className="text-center">W</span>
         <span className="text-center">D</span>
         <span className="text-center">L</span>
         <span className="text-center">GD</span>
-        <span className="text-center">Pts</span>
+        <span className="text-center" style={{ color: "var(--ac)" }}>Pts</span>
       </div>
 
       {/* Rows */}
@@ -135,66 +124,66 @@ function GroupTable({ group, results }: { group: string; results: MatchResult[] 
           className="grid items-center px-4 py-2.5 border-t"
           style={{
             gridTemplateColumns: "1fr 28px 28px 28px 28px 28px 36px",
-            borderColor: "rgba(255,255,255,0.05)",
-            background: i < 2 ? "rgba(0,255,136,0.04)" : "transparent",
+            borderColor: "var(--dv)",
+            background: i < 2 ? "rgba(0,207,128,0.04)" : "transparent",
             borderLeft: i < 2
-              ? "2px solid rgba(0,255,136,0.5)"
+              ? "2px solid var(--ac)"
               : i === 2
               ? "2px solid rgba(251,191,36,0.35)"
               : "2px solid transparent",
           }}>
           {/* Team */}
           <div className="flex items-center gap-2 min-w-0">
-            <span className="text-xs font-bold w-4 shrink-0" style={{ color: i < 2 ? "#00FF88" : "rgba(255,255,255,0.3)" }}>
+            <span className="text-xs font-bold w-4 shrink-0" style={{ color: i < 2 ? "var(--ac)" : "var(--ft)" }}>
               {i + 1}
             </span>
             <div className="relative h-4 w-6 rounded-sm overflow-hidden shrink-0">
               <Image src={flagUrl(FLAG_CODES[row.team] ?? "un", 20)} alt={row.team}
                 fill className="object-cover" unoptimized />
             </div>
-            <span className="text-sm font-bold truncate" style={{ color: "white" }}>
+            <span className="text-sm font-bold truncate" style={{ color: "var(--tx)" }}>
               {row.team}
             </span>
           </div>
           {/* Stats: played */}
-          <span className="text-xs text-center" style={{ color: "rgba(255,255,255,0.4)" }}>{row.played}</span>
+          <span className="text-xs text-center" style={{ color: "var(--mt)" }}>{row.played}</span>
           {/* Stats: won */}
-          <span className="text-xs text-center" style={{ color: "#00FF88" }}>{row.won}</span>
+          <span className="text-xs text-center" style={{ color: "var(--ac)" }}>{row.won}</span>
           {/* Stats: drawn */}
-          <span className="text-xs text-center" style={{ color: "rgba(255,255,255,0.4)" }}>{row.drawn}</span>
+          <span className="text-xs text-center" style={{ color: "var(--mt)" }}>{row.drawn}</span>
           {/* Stats: lost */}
           <span className="text-xs text-center" style={{ color: "#f87171" }}>{row.lost}</span>
           {/* GD */}
-          <span className="text-xs text-center" style={{ color: row.gd > 0 ? "#00FF88" : row.gd < 0 ? "#f87171" : "rgba(255,255,255,0.4)" }}>
+          <span className="text-xs text-center" style={{ color: row.gd > 0 ? "var(--ac)" : row.gd < 0 ? "#f87171" : "var(--mt)" }}>
             {row.gd > 0 ? `+${row.gd}` : row.gd}
           </span>
           {/* Points */}
-          <span className="text-sm font-mono font-black text-center" style={{ color: "#00D4FF" }}>{row.points}</span>
+          <span className="text-sm font-mono font-black text-center" style={{ color: "var(--ac)" }}>{row.points}</span>
         </div>
       ))}
 
       {/* Qualification note */}
       <div className="px-4 py-2 border-t flex items-center gap-3"
-        style={{ borderColor: "rgba(255,255,255,0.07)", background: "transparent" }}>
+        style={{ borderColor: "var(--br)", background: "transparent" }}>
         <div className="flex items-center gap-1.5">
-          <div className="h-2.5 w-2.5 rounded-sm" style={{ background: "rgba(0,255,136,0.4)" }} />
-          <span className="text-[10px]" style={{ color: "rgba(255,255,255,0.3)" }}>Advance to Round of 32</span>
+          <div className="h-2.5 w-2.5 rounded-sm" style={{ background: "rgba(0,207,128,0.4)" }} />
+          <span className="text-[10px]" style={{ color: "var(--ft)" }}>Advance to Round of 32</span>
         </div>
       </div>
 
       {/* Played matches */}
       {played.length > 0 && (
-        <div className="border-t" style={{ borderColor: "rgba(255,255,255,0.07)" }}>
+        <div className="border-t" style={{ borderColor: "var(--br)" }}>
           <div className="px-4 py-2 text-[10px] font-bold uppercase tracking-widest"
-            style={{ color: "rgba(255,255,255,0.25)", background: "rgba(255,255,255,0.02)" }}>
+            style={{ color: "var(--ft)", background: "var(--ip)" }}>
             Results
           </div>
           {played.map((r, i) => (
             <div key={i} className="px-4 py-2.5 border-t flex items-center gap-2"
-              style={{ borderColor: "rgba(255,255,255,0.05)" }}>
+              style={{ borderColor: "var(--dv)" }}>
               {/* Home */}
               <div className="flex items-center gap-1.5 flex-1 min-w-0 justify-end">
-                <span className="text-xs font-bold truncate" style={{ color: "rgba(255,255,255,0.75)" }}>{r.home}</span>
+                <span className="text-xs font-bold truncate" style={{ color: "var(--t2)" }}>{r.home}</span>
                 {r.homeFlagCode && (
                   <div className="relative h-3.5 w-5 rounded-sm overflow-hidden shrink-0">
                     <Image src={flagUrl(r.homeFlagCode, 20)} alt={r.home} fill className="object-cover" unoptimized />
@@ -202,7 +191,7 @@ function GroupTable({ group, results }: { group: string; results: MatchResult[] 
                 )}
               </div>
               {/* Score */}
-              <div className="font-mono font-black text-sm shrink-0 px-2 tabular-nums" style={{ color: "white" }}>
+              <div className="font-mono font-black text-sm shrink-0 px-2 tabular-nums" style={{ color: "var(--tx)" }}>
                 {r.homeScore}–{r.awayScore}
               </div>
               {/* Away */}
@@ -212,11 +201,11 @@ function GroupTable({ group, results }: { group: string; results: MatchResult[] 
                     <Image src={flagUrl(r.awayFlagCode, 20)} alt={r.away} fill className="object-cover" unoptimized />
                   </div>
                 )}
-                <span className="text-xs font-bold truncate" style={{ color: "rgba(255,255,255,0.75)" }}>{r.away}</span>
+                <span className="text-xs font-bold truncate" style={{ color: "var(--t2)" }}>{r.away}</span>
               </div>
               {/* Date */}
               {r.kickoffAt && (
-                <span className="text-[10px] shrink-0 tabular-nums" style={{ color: "rgba(255,255,255,0.25)" }}>
+                <span className="text-[10px] shrink-0 tabular-nums" style={{ color: "var(--ft)" }}>
                   {new Date(r.kickoffAt).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
                 </span>
               )}
@@ -287,17 +276,16 @@ export function GroupStandings({ groupId: _groupId }: { groupId?: string }) {
               width: 36,
               height: 36,
               borderRadius: 10,
-              background: "rgba(0,212,255,0.15)",
-              border: "1px solid rgba(0,212,255,0.4)",
-              color: "#00D4FF",
-              boxShadow: "0 0 12px rgba(0,212,255,0.15)",
+              background: "var(--ac)",
+              border: "1px solid transparent",
+              color: "var(--at)",
             } : {
               width: 36,
               height: 36,
               borderRadius: 10,
-              background: "rgba(255,255,255,0.05)",
-              border: "1px solid rgba(255,255,255,0.1)",
-              color: "rgba(255,255,255,0.5)",
+              background: "var(--ip)",
+              border: "1px solid var(--br)",
+              color: "var(--t2)",
             }}>
             {g}
           </button>
