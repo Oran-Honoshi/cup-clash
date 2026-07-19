@@ -27,6 +27,7 @@ import {
 import { resolveOracleDuels } from "@/lib/services/oracle-duels";
 import { getMembers } from "@/lib/services/groups";
 import { interpolate, TRANSLATIONS } from "@/lib/i18n";
+import { matchInGroupScope } from "@/lib/schedule";
 
 // Every internal Supabase fetch AND every API-Football fetch below must
 // carry cache: "no-store" explicitly (see apiFetch()) — this route has no
@@ -1678,7 +1679,7 @@ export async function POST(request: NextRequest) {
         ((allRulesRows ?? []) as unknown as ScoringRulesRow[]).map(r => [r.group_id, r])
       );
 
-      const { data: allGroups } = await sb.from("groups").select("id");
+      const { data: allGroups } = await sb.from("groups").select("id, competition_id");
       console.log(`[scores/cron]   Groups to score: ${allGroups?.length ?? 0}`);
 
       const allNewlyExact: NewlyExactPrediction[] = [];
@@ -1686,10 +1687,23 @@ export async function POST(request: NextRequest) {
       for (const { matchId, homeScore, awayScore, homeScoreET, awayScoreET, penaltyWinner } of newlyFinished) {
         const etLabel = homeScoreET != null ? ` (AET: ${homeScoreET}-${awayScoreET})` : "";
         const penLabel = penaltyWinner ? ` pens: ${penaltyWinner}` : "";
-        console.log(`[scores/cron]   Scoring match ${matchId}: ${homeScore}-${awayScore}${etLabel}${penLabel} across ${allGroups?.length ?? 0} group(s)`);
+
+        // A group's leaderboard may only be affected by a match in that
+        // group's own competition — a stray group_predictions row saved
+        // for an out-of-scope match (e.g. before a scoping bug was fixed
+        // upstream) must never actually earn real points. See
+        // matchInGroupScope() in lib/schedule.ts.
+        const { data: matchRow } = await sb.from("matches").select("stage, competition_id").eq("id", matchId).maybeSingle();
+        const matchStage = (matchRow as { stage: string; competition_id: string | null } | null)?.stage ?? "Group";
+        const matchCompetitionId = (matchRow as { stage: string; competition_id: string | null } | null)?.competition_id ?? null;
+        const scopedGroups = (allGroups ?? []).filter(group =>
+          matchInGroupScope(matchStage, matchCompetitionId, (group as { competition_id: string | null }).competition_id)
+        );
+
+        console.log(`[scores/cron]   Scoring match ${matchId}: ${homeScore}-${awayScore}${etLabel}${penLabel} across ${scopedGroups.length}/${allGroups?.length ?? 0} in-scope group(s)`);
 
         const results = await Promise.allSettled(
-          (allGroups ?? []).map(group =>
+          scopedGroups.map(group =>
             scoreMatchResult({
               matchId,
               groupId:       group.id,
