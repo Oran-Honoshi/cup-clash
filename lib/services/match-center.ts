@@ -122,3 +122,51 @@ export async function getPlayerSeasonStats(teamId: number, leagueId: number, sea
   }
   return out;
 }
+
+// ── Head-to-head ─────────────────────────────────────────────────────────
+// /fixtures/headtohead is a global fixture search between two team ids —
+// confirmed to return meetings across every competition, not just the one
+// the current match belongs to. Scores only in this pass; deliberately not
+// fetching /fixtures/events per historical match (a real cost/complexity
+// add, left as a stretch goal).
+
+export interface H2HMatch {
+  apiFixtureId: number;
+  date:         string;
+  competition:  string;
+  venue:        string | null;
+  city:         string | null;
+  home:         FixtureTeam;
+  away:         FixtureTeam;
+  homeScore:    number | null;
+  awayScore:    number | null;
+  penalties:    boolean;
+}
+
+interface APIHeadToHeadResponse {
+  response: Array<{
+    fixture: { id: number; date: string; venue: { name: string | null; city: string | null } };
+    league:  { name: string };
+    teams:   { home: FixtureTeam; away: FixtureTeam };
+    goals:   { home: number | null; away: number | null };
+    score:   { penalty: { home: number | null; away: number | null } };
+  }>;
+}
+
+export async function getHeadToHead(homeTeamId: number, awayTeamId: number, limit = 10): Promise<H2HMatch[]> {
+  const data = await apiFetch<APIHeadToHeadResponse>(`/fixtures/headtohead?h2h=${homeTeamId}-${awayTeamId}&last=${limit}`);
+  return (data.response ?? [])
+    .map(f => ({
+      apiFixtureId: f.fixture.id,
+      date:         f.fixture.date,
+      competition:  f.league.name,
+      venue:        f.fixture.venue.name,
+      city:         f.fixture.venue.city,
+      home:         f.teams.home,
+      away:         f.teams.away,
+      homeScore:    f.goals.home,
+      awayScore:    f.goals.away,
+      penalties:    f.score.penalty.home != null || f.score.penalty.away != null,
+    }))
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+}

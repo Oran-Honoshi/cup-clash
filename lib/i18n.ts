@@ -501,6 +501,11 @@ export interface Translations {
   mc_stats_loading:      string;
   mc_stats_empty:        string;
   mc_stats_error:        string;
+  mc_h2h_heading:        string;
+  mc_h2h_loading:        string;
+  mc_h2h_empty:          string;
+  mc_h2h_error:          string;
+  mc_h2h_pens:           string;
 
   // Oracle Predictions — "Beat the Oracle" (Home teaser + Game Room)
   oracle_label:               string;
@@ -1022,6 +1027,11 @@ const en: Translations = {
   mc_stats_loading:      "Loading season stats…",
   mc_stats_empty:        "Season stats not available for this match",
   mc_stats_error:        "Couldn't load season stats",
+  mc_h2h_heading:        "Head-to-Head",
+  mc_h2h_loading:        "Loading head-to-head…",
+  mc_h2h_empty:          "No previous meetings found",
+  mc_h2h_error:          "Couldn't load head-to-head record",
+  mc_h2h_pens:           "Pens",
 
   oracle_label: "The Oracle",
   oracle_teaser_eyebrow: "Beat the Oracle",
@@ -1536,6 +1546,11 @@ const fr: Translations = {
   mc_stats_loading:      "Chargement des stats de la saison…",
   mc_stats_empty:        "Stats de la saison indisponibles pour ce match",
   mc_stats_error:        "Impossible de charger les stats de la saison",
+  mc_h2h_heading:        "Confrontations directes",
+  mc_h2h_loading:        "Chargement des confrontations…",
+  mc_h2h_empty:          "Aucune confrontation précédente trouvée",
+  mc_h2h_error:          "Impossible de charger l'historique des confrontations",
+  mc_h2h_pens:           "Tab",
 
   oracle_label: "L'Oracle",
   oracle_teaser_eyebrow: "Battez l'Oracle",
@@ -2050,6 +2065,11 @@ const de: Translations = {
   mc_stats_loading:      "Saisonstatistik wird geladen…",
   mc_stats_empty:        "Für dieses Spiel sind keine Saisonstatistiken verfügbar",
   mc_stats_error:        "Saisonstatistik konnte nicht geladen werden",
+  mc_h2h_heading:        "Direkter Vergleich",
+  mc_h2h_loading:        "Direktvergleich wird geladen…",
+  mc_h2h_empty:          "Keine bisherigen Begegnungen gefunden",
+  mc_h2h_error:          "Direktvergleich konnte nicht geladen werden",
+  mc_h2h_pens:           "Elfm.",
 
   oracle_label: "Das Orakel",
   oracle_teaser_eyebrow: "Schlag das Orakel",
@@ -2564,6 +2584,11 @@ const nl: Translations = {
   mc_stats_loading:      "Seizoensstatistieken laden…",
   mc_stats_empty:        "Geen seizoensstatistieken beschikbaar voor deze wedstrijd",
   mc_stats_error:        "Seizoensstatistieken laden mislukt",
+  mc_h2h_heading:        "Onderling record",
+  mc_h2h_loading:        "Onderling record laden…",
+  mc_h2h_empty:          "Geen eerdere ontmoetingen gevonden",
+  mc_h2h_error:          "Onderling record laden mislukt",
+  mc_h2h_pens:           "Pen.",
 
   oracle_label: "Het Orakel",
   oracle_teaser_eyebrow: "Versla het Orakel",
@@ -3078,6 +3103,11 @@ const es: Translations = {
   mc_stats_loading:      "Cargando estadísticas de temporada…",
   mc_stats_empty:        "No hay estadísticas de temporada para este partido",
   mc_stats_error:        "No se pudieron cargar las estadísticas de temporada",
+  mc_h2h_heading:        "Cara a cara",
+  mc_h2h_loading:        "Cargando historial de enfrentamientos…",
+  mc_h2h_empty:          "No se encontraron enfrentamientos anteriores",
+  mc_h2h_error:          "No se pudo cargar el historial de enfrentamientos",
+  mc_h2h_pens:           "Pens",
 
   oracle_label: "El Oráculo",
   oracle_teaser_eyebrow: "Vence al Oráculo",
@@ -3592,6 +3622,11 @@ const pt: Translations = {
   mc_stats_loading:      "Carregando estatísticas da temporada…",
   mc_stats_empty:        "Estatísticas da temporada indisponíveis para esta partida",
   mc_stats_error:        "Não foi possível carregar as estatísticas da temporada",
+  mc_h2h_heading:        "Confronto direto",
+  mc_h2h_loading:        "Carregando confrontos anteriores…",
+  mc_h2h_empty:          "Nenhum confronto anterior encontrado",
+  mc_h2h_error:          "Não foi possível carregar o histórico de confrontos",
+  mc_h2h_pens:           "Pên.",
 
   oracle_label: "O Oráculo",
   oracle_teaser_eyebrow: "Vença o Oráculo",
@@ -4106,6 +4141,11 @@ const he: Translations = {
   mc_stats_loading:      "טוען סטטיסטיקת עונה…",
   mc_stats_empty:        "אין סטטיסטיקת עונה זמינה למשחק זה",
   mc_stats_error:        "טעינת סטטיסטיקת העונה נכשלה",
+  mc_h2h_heading:        "עימותים היסטוריים",
+  mc_h2h_loading:        "טוען עימותים קודמים…",
+  mc_h2h_empty:          "לא נמצאו עימותים קודמים",
+  mc_h2h_error:          "טעינת ההיסטוריה נכשלה",
+  mc_h2h_pens:           "פנדלים",
 
   oracle_label: "המגיד העתידות",
   oracle_teaser_eyebrow: "נצחו את המגיד העתידות",
@@ -4620,6 +4660,11 @@ const ar: Translations = {
   mc_stats_loading:      "جارٍ تحميل إحصاءات الموسم…",
   mc_stats_empty:        "لا تتوفر إحصاءات موسم لهذه المباراة",
   mc_stats_error:        "تعذّر تحميل إحصاءات الموسم",
+  mc_h2h_heading:        "المواجهات المباشرة",
+  mc_h2h_loading:        "جارٍ تحميل المواجهات السابقة…",
+  mc_h2h_empty:          "لم يتم العثور على مواجهات سابقة",
+  mc_h2h_error:          "تعذّر تحميل سجل المواجهات",
+  mc_h2h_pens:           "ركلات ترجيح",
 
   oracle_label: "العرّاف",
   oracle_teaser_eyebrow: "تغلّب على العرّاف",

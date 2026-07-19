@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
-import { X, Clock, MapPin, RefreshCw, Activity, Target, ChevronDown } from "lucide-react";
+import { X, Clock, MapPin, RefreshCw, Activity, Target, ChevronDown, Swords } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { FlagBadge } from "@/components/ui/FlagBadge";
 import { MvpVotePanel } from "@/components/match/mvp-vote-panel";
@@ -74,6 +74,21 @@ interface PlayerSeasonStat {
   tacklesTotal:     number | null;
 }
 
+interface FixtureTeamRef { id: number; name: string; logo: string | null }
+
+interface H2HMatch {
+  apiFixtureId: number;
+  date:         string;
+  competition:  string;
+  venue:        string | null;
+  city:         string | null;
+  home:         FixtureTeamRef;
+  away:         FixtureTeamRef;
+  homeScore:    number | null;
+  awayScore:    number | null;
+  penalties:    boolean;
+}
+
 interface LiveMatchHubProps {
   matchId:      string;
   home:         string;
@@ -122,6 +137,12 @@ function formatKickoff(iso: string): string {
     const d = new Date(iso);
     return d.toLocaleDateString("en-GB", { weekday: "short", day: "2-digit", month: "short" })
       + " · " + d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
+  } catch { return ""; }
+}
+
+function formatH2HDate(iso: string): string {
+  try {
+    return new Date(iso).toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
   } catch { return ""; }
 }
 
@@ -249,6 +270,14 @@ export function LiveMatchHub({
   const { t } = useLocale();
   const prevScore = useRef<{ h: number; a: number } | null>(null);
 
+  // ── Head-to-head (Overview tab) — fetched once, lazily, the first time
+  // the tab is active (which for the default "overview" tab means as soon
+  // as the modal opens, matching "fetch when the user opens this tab").
+  const [h2h,        setH2h]        = useState<H2HMatch[] | null>(null);
+  const [h2hLoading, setH2hLoading] = useState(false);
+  const [h2hError,   setH2hError]   = useState(false);
+  const h2hFetched = useRef(false);
+
   // ── Player season stats (Stats tab) ─────────────────────────────────────
   const [playerStats,        setPlayerStats]        = useState<{ home: PlayerSeasonStat[]; away: PlayerSeasonStat[] } | null>(null);
   const [playerStatsLoading, setPlayerStatsLoading] = useState(false);
@@ -320,6 +349,18 @@ export function LiveMatchHub({
       .subscribe();
     return () => { sb.removeChannel(channel); };
   }, [matchId]);
+
+  // Head-to-head — on-demand, only when the Overview tab is actually shown.
+  useEffect(() => {
+    if (tab !== "overview" || h2hFetched.current) return;
+    h2hFetched.current = true;
+    setH2hLoading(true);
+    fetch(`/api/match-center/head-to-head?matchId=${encodeURIComponent(matchId)}`)
+      .then(res => { if (!res.ok) throw new Error(String(res.status)); return res.json(); })
+      .then((body: { matches: H2HMatch[] }) => setH2h(body.matches))
+      .catch(() => setH2hError(true))
+      .finally(() => setH2hLoading(false));
+  }, [tab, matchId]);
 
   // Player season stats — on-demand, only when the Stats tab is shown.
   useEffect(() => {
@@ -493,6 +534,43 @@ export function LiveMatchHub({
                 <div className="text-center py-3 text-sm" style={{ color: "var(--mt)" }}>No prediction saved for this match</div>
               ) : null}
 
+              {/* Head-to-head — last 5-10 meetings across every competition, scores only */}
+              <div className="rounded-2xl p-4 space-y-2.5" style={{ background: "var(--sf)", border: "1px solid var(--br)" }}>
+                <div className="flex items-center gap-1.5 ta-section-label">
+                  <Swords size={11} /> {t("mc_h2h_heading")}
+                </div>
+                {h2hLoading && (
+                  <div className="py-4 flex justify-center"><BallLoader size="inline" label={t("mc_h2h_loading")} /></div>
+                )}
+                {!h2hLoading && h2hError && (
+                  <div className="py-3 text-center text-xs" style={{ color: "var(--mt)" }}>{t("mc_h2h_error")}</div>
+                )}
+                {!h2hLoading && !h2hError && h2h && h2h.length === 0 && (
+                  <div className="py-3 text-center text-xs" style={{ color: "var(--mt)" }}>{t("mc_h2h_empty")}</div>
+                )}
+                {!h2hLoading && !h2hError && h2h && h2h.length > 0 && (
+                  <div className="space-y-2">
+                    {h2h.map(m => (
+                      <div key={m.apiFixtureId} className="flex items-center justify-between gap-2 py-1.5" style={{ borderTop: "1px solid var(--br)" }}>
+                        <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                          <FlagBadge code={m.home.logo} size="sm" label={m.home.name} />
+                          <span className="text-xs truncate" style={{ color: "var(--tx)" }}>{m.home.name}</span>
+                        </div>
+                        <div className="flex flex-col items-center shrink-0 px-1">
+                          <span className="font-mono font-black text-sm" style={{ color: "var(--tx)" }}>
+                            {m.homeScore ?? "–"}–{m.awayScore ?? "–"}{m.penalties ? ` (${t("mc_h2h_pens")})` : ""}
+                          </span>
+                          <span className="ta-meta whitespace-nowrap">{formatH2HDate(m.date)}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 min-w-0 flex-1 flex-row-reverse">
+                          <FlagBadge code={m.away.logo} size="sm" label={m.away.name} />
+                          <span className="text-xs truncate text-right" style={{ color: "var(--tx)" }}>{m.away.name}</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
           )}
 
