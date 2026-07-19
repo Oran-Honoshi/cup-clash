@@ -22,20 +22,41 @@ export interface PersonalAccuracyHistory {
 }
 
 export async function getPersonalAccuracyHistory(sb: SupabaseClient, userId: string): Promise<PersonalAccuracyHistory> {
-  const { data } = await sb
+  // group_predictions.match_id has no FK to matches — PostgREST can't
+  // resolve an embedded `matches(kickoff_at)` select (no relationship to
+  // join on), so it must be fetched as two separate queries and joined in
+  // JS, same as every other group_predictions call site in the codebase.
+  const { data, error } = await sb
     .from("group_predictions")
-    .select("is_exact, points_earned, matches(kickoff_at)")
+    .select("match_id, is_exact, points_earned")
     .eq("user_id", userId)
     .eq("pred_type", "match")
     .not("points_earned", "is", null);
 
-  type Row = { is_exact: boolean | null; points_earned: number | null; matches: { kickoff_at: string } | { kickoff_at: string }[] | null };
-  const rows = ((data ?? []) as unknown as Row[])
+  if (error) throw error;
+
+  type PredRow = { match_id: string; is_exact: boolean | null; points_earned: number | null };
+  const predRows = (data ?? []) as PredRow[];
+  if (predRows.length === 0) return { points: [], hasHistory: false, overallAccuracyPct: 0 };
+
+  const matchIds = Array.from(new Set(predRows.map(r => r.match_id)));
+  const { data: matchRows, error: matchError } = await sb
+    .from("matches")
+    .select("id, kickoff_at")
+    .in("id", matchIds);
+
+  if (matchError) throw matchError;
+
+  const kickoffById = new Map(
+    ((matchRows ?? []) as Array<{ id: string; kickoff_at: string }>).map(m => [m.id, m.kickoff_at])
+  );
+
+  const rows = predRows
     .map(r => {
-      const m = Array.isArray(r.matches) ? r.matches[0] : r.matches;
-      if (!m?.kickoff_at) return null;
+      const kickoffAt = kickoffById.get(r.match_id);
+      if (!kickoffAt) return null;
       const correct = !!r.is_exact || (r.points_earned ?? 0) > 0;
-      return { date: m.kickoff_at.slice(0, 10), correct };
+      return { date: kickoffAt.slice(0, 10), correct };
     })
     .filter((r): r is { date: string; correct: boolean } => !!r);
 

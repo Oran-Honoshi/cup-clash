@@ -113,9 +113,11 @@ export function GroupDetailClient({
 
       <div className="flex gap-2 overflow-x-auto" style={{
         scrollbarWidth: "none",
+        paddingRight: 28,
+        scrollPaddingRight: 28,
         WebkitMaskImage: "linear-gradient(to right, black calc(100% - 28px), transparent 100%)",
         maskImage: "linear-gradient(to right, black calc(100% - 28px), transparent 100%)",
-      }}>
+      } as React.CSSProperties}>
         {TABS.map(tab_ => {
           const active = tab === tab_.id;
           return (
