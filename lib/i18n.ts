@@ -485,6 +485,23 @@ export interface Translations {
   mvp_teaser_leading:       string;
   mvp_teaser_cta:           string;
 
+  // Match Center — player season stats, head-to-head, lineups
+  mc_stats_heading:      string;
+  mc_stats_apps:         string;
+  mc_stats_minutes:      string;
+  mc_stats_goals:        string;
+  mc_stats_assists:      string;
+  mc_stats_yellow:       string;
+  mc_stats_red:          string;
+  mc_stats_shots:        string;
+  mc_stats_key_passes:   string;
+  mc_stats_dribbles:     string;
+  mc_stats_tackles:      string;
+  mc_stats_per90:        string;
+  mc_stats_loading:      string;
+  mc_stats_empty:        string;
+  mc_stats_error:        string;
+
   // Oracle Predictions — "Beat the Oracle" (Home teaser + Game Room)
   oracle_label:               string;
   oracle_teaser_eyebrow:      string;
@@ -990,6 +1007,22 @@ const en: Translations = {
   mvp_teaser_leading: "Leading: {name} ({pct}%)",
   mvp_teaser_cta: "Who was {home} vs {away}'s best player? Cast your vote →",
 
+  mc_stats_heading:      "Season Stats",
+  mc_stats_apps:         "Apps",
+  mc_stats_minutes:      "Mins",
+  mc_stats_goals:        "Goals",
+  mc_stats_assists:      "Assists",
+  mc_stats_yellow:       "Yellow",
+  mc_stats_red:          "Red",
+  mc_stats_shots:        "Shots",
+  mc_stats_key_passes:   "Key Passes",
+  mc_stats_dribbles:     "Dribbles",
+  mc_stats_tackles:      "Tackles",
+  mc_stats_per90:        "Per 90",
+  mc_stats_loading:      "Loading season stats…",
+  mc_stats_empty:        "Season stats not available for this match",
+  mc_stats_error:        "Couldn't load season stats",
+
   oracle_label: "The Oracle",
   oracle_teaser_eyebrow: "Beat the Oracle",
   oracle_teaser_your_pick: "Your pick",
@@ -1487,6 +1520,22 @@ const fr: Translations = {
   mvp_teaser_live_label: "Vote MVP de la journée",
   mvp_teaser_leading: "En tête : {name} ({pct}%)",
   mvp_teaser_cta: "Qui a été le meilleur joueur de {home} vs {away} ? Votez →",
+
+  mc_stats_heading:      "Stats de la saison",
+  mc_stats_apps:         "Matchs",
+  mc_stats_minutes:      "Min",
+  mc_stats_goals:        "Buts",
+  mc_stats_assists:      "Passes déc.",
+  mc_stats_yellow:       "Jaunes",
+  mc_stats_red:          "Rouges",
+  mc_stats_shots:        "Tirs",
+  mc_stats_key_passes:   "Passes clés",
+  mc_stats_dribbles:     "Dribbles",
+  mc_stats_tackles:      "Tacles",
+  mc_stats_per90:        "Par 90 min",
+  mc_stats_loading:      "Chargement des stats de la saison…",
+  mc_stats_empty:        "Stats de la saison indisponibles pour ce match",
+  mc_stats_error:        "Impossible de charger les stats de la saison",
 
   oracle_label: "L'Oracle",
   oracle_teaser_eyebrow: "Battez l'Oracle",
@@ -1986,6 +2035,22 @@ const de: Translations = {
   mvp_teaser_leading: "Führend: {name} ({pct}%)",
   mvp_teaser_cta: "Wer war der beste Spieler von {home} gegen {away}? Jetzt abstimmen →",
 
+  mc_stats_heading:      "Saisonstatistik",
+  mc_stats_apps:         "Einsätze",
+  mc_stats_minutes:      "Min.",
+  mc_stats_goals:        "Tore",
+  mc_stats_assists:      "Vorlagen",
+  mc_stats_yellow:       "Gelb",
+  mc_stats_red:          "Rot",
+  mc_stats_shots:        "Schüsse",
+  mc_stats_key_passes:   "Schlüsselpässe",
+  mc_stats_dribbles:     "Dribblings",
+  mc_stats_tackles:      "Tacklings",
+  mc_stats_per90:        "Pro 90 Min.",
+  mc_stats_loading:      "Saisonstatistik wird geladen…",
+  mc_stats_empty:        "Für dieses Spiel sind keine Saisonstatistiken verfügbar",
+  mc_stats_error:        "Saisonstatistik konnte nicht geladen werden",
+
   oracle_label: "Das Orakel",
   oracle_teaser_eyebrow: "Schlag das Orakel",
   oracle_teaser_your_pick: "Dein Tipp",
@@ -2483,6 +2548,22 @@ const nl: Translations = {
   mvp_teaser_live_label: "MVP-stemming van de speeldag",
   mvp_teaser_leading: "Op kop: {name} ({pct}%)",
   mvp_teaser_cta: "Wie was de beste speler van {home} vs {away}? Breng je stem uit →",
+
+  mc_stats_heading:      "Seizoensstatistieken",
+  mc_stats_apps:         "Wedstrijden",
+  mc_stats_minutes:      "Min",
+  mc_stats_goals:        "Goals",
+  mc_stats_assists:      "Assists",
+  mc_stats_yellow:       "Geel",
+  mc_stats_red:          "Rood",
+  mc_stats_shots:        "Schoten",
+  mc_stats_key_passes:   "Sleutelpasses",
+  mc_stats_dribbles:     "Dribbels",
+  mc_stats_tackles:      "Tackles",
+  mc_stats_per90:        "Per 90 min",
+  mc_stats_loading:      "Seizoensstatistieken laden…",
+  mc_stats_empty:        "Geen seizoensstatistieken beschikbaar voor deze wedstrijd",
+  mc_stats_error:        "Seizoensstatistieken laden mislukt",
 
   oracle_label: "Het Orakel",
   oracle_teaser_eyebrow: "Versla het Orakel",
@@ -2982,6 +3063,22 @@ const es: Translations = {
   mvp_teaser_leading: "Liderando: {name} ({pct}%)",
   mvp_teaser_cta: "¿Quién fue el mejor jugador de {home} vs {away}? Vota →",
 
+  mc_stats_heading:      "Estadísticas de temporada",
+  mc_stats_apps:         "PJ",
+  mc_stats_minutes:      "Min",
+  mc_stats_goals:        "Goles",
+  mc_stats_assists:      "Asistencias",
+  mc_stats_yellow:       "Amarillas",
+  mc_stats_red:          "Rojas",
+  mc_stats_shots:        "Tiros",
+  mc_stats_key_passes:   "Pases clave",
+  mc_stats_dribbles:     "Regates",
+  mc_stats_tackles:      "Entradas",
+  mc_stats_per90:        "Por 90 min",
+  mc_stats_loading:      "Cargando estadísticas de temporada…",
+  mc_stats_empty:        "No hay estadísticas de temporada para este partido",
+  mc_stats_error:        "No se pudieron cargar las estadísticas de temporada",
+
   oracle_label: "El Oráculo",
   oracle_teaser_eyebrow: "Vence al Oráculo",
   oracle_teaser_your_pick: "Tu pronóstico",
@@ -3479,6 +3576,22 @@ const pt: Translations = {
   mvp_teaser_live_label: "Votação MVP da rodada",
   mvp_teaser_leading: "Na liderança: {name} ({pct}%)",
   mvp_teaser_cta: "Quem foi o melhor jogador de {home} vs {away}? Vote →",
+
+  mc_stats_heading:      "Estatísticas da temporada",
+  mc_stats_apps:         "Jogos",
+  mc_stats_minutes:      "Min",
+  mc_stats_goals:        "Gols",
+  mc_stats_assists:      "Assistências",
+  mc_stats_yellow:       "Amarelos",
+  mc_stats_red:          "Vermelhos",
+  mc_stats_shots:        "Finalizações",
+  mc_stats_key_passes:   "Passes-chave",
+  mc_stats_dribbles:     "Dribles",
+  mc_stats_tackles:      "Desarmes",
+  mc_stats_per90:        "Por 90 min",
+  mc_stats_loading:      "Carregando estatísticas da temporada…",
+  mc_stats_empty:        "Estatísticas da temporada indisponíveis para esta partida",
+  mc_stats_error:        "Não foi possível carregar as estatísticas da temporada",
 
   oracle_label: "O Oráculo",
   oracle_teaser_eyebrow: "Vença o Oráculo",
@@ -3978,6 +4091,22 @@ const he: Translations = {
   mvp_teaser_leading: "מוביל: {name} ({pct}%)",
   mvp_teaser_cta: "מי היה השחקן הטוב ביותר של {home} נגד {away}? הצביעו →",
 
+  mc_stats_heading:      "סטטיסטיקת עונה",
+  mc_stats_apps:         "הופעות",
+  mc_stats_minutes:      "דקות",
+  mc_stats_goals:        "שערים",
+  mc_stats_assists:      "בישולים",
+  mc_stats_yellow:       "צהובים",
+  mc_stats_red:          "אדומים",
+  mc_stats_shots:        "בעיטות",
+  mc_stats_key_passes:   "מסירות מפתח",
+  mc_stats_dribbles:     "כדרורים",
+  mc_stats_tackles:      "טקלים",
+  mc_stats_per90:        "ל-90 דקות",
+  mc_stats_loading:      "טוען סטטיסטיקת עונה…",
+  mc_stats_empty:        "אין סטטיסטיקת עונה זמינה למשחק זה",
+  mc_stats_error:        "טעינת סטטיסטיקת העונה נכשלה",
+
   oracle_label: "המגיד העתידות",
   oracle_teaser_eyebrow: "נצחו את המגיד העתידות",
   oracle_teaser_your_pick: "הניחוש שלך",
@@ -4475,6 +4604,22 @@ const ar: Translations = {
   mvp_teaser_live_label: "تصويت الأفضل ليوم المباريات",
   mvp_teaser_leading: "المتصدر: {name} ({pct}%)",
   mvp_teaser_cta: "من كان أفضل لاعب في {home} ضد {away}؟ صوّت →",
+
+  mc_stats_heading:      "إحصاءات الموسم",
+  mc_stats_apps:         "المباريات",
+  mc_stats_minutes:      "الدقائق",
+  mc_stats_goals:        "الأهداف",
+  mc_stats_assists:      "التمريرات الحاسمة",
+  mc_stats_yellow:       "بطاقات صفراء",
+  mc_stats_red:          "بطاقات حمراء",
+  mc_stats_shots:        "التسديدات",
+  mc_stats_key_passes:   "التمريرات المفتاحية",
+  mc_stats_dribbles:     "المراوغات",
+  mc_stats_tackles:      "التدخلات",
+  mc_stats_per90:        "لكل 90 دقيقة",
+  mc_stats_loading:      "جارٍ تحميل إحصاءات الموسم…",
+  mc_stats_empty:        "لا تتوفر إحصاءات موسم لهذه المباراة",
+  mc_stats_error:        "تعذّر تحميل إحصاءات الموسم",
 
   oracle_label: "العرّاف",
   oracle_teaser_eyebrow: "تغلّب على العرّاف",

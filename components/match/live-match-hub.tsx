@@ -2,11 +2,13 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
-import { X, Clock, MapPin, RefreshCw, Activity, Target } from "lucide-react";
+import { X, Clock, MapPin, RefreshCw, Activity, Target, ChevronDown } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { FlagBadge } from "@/components/ui/FlagBadge";
 import { MvpVotePanel } from "@/components/match/mvp-vote-panel";
+import { BallLoader } from "@/components/ui/BallLoader";
 import { useLocale } from "@/components/i18n/locale-provider";
+import type { Translations } from "@/lib/i18n";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 // Mirrors what app/api/scores/route.ts actually writes to the `matches` table
@@ -51,6 +53,25 @@ interface UserPrediction {
   awayScore:    number;
   pointsEarned: number | null;
   isExact:      boolean | null;
+}
+
+// Mirrors app/api/match-center/*'s JSON shapes (see lib/services/match-center.ts).
+
+interface PlayerSeasonStat {
+  apiPlayerId:      number;
+  name:             string;
+  photo:            string | null;
+  position:         string | null;
+  appearances:      number | null;
+  minutes:          number | null;
+  goals:            number | null;
+  assists:          number | null;
+  yellowCards:      number | null;
+  redCards:         number | null;
+  shotsTotal:       number | null;
+  keyPasses:        number | null;
+  dribblesAttempts: number | null;
+  tacklesTotal:     number | null;
 }
 
 interface LiveMatchHubProps {
@@ -104,6 +125,13 @@ function formatKickoff(iso: string): string {
   } catch { return ""; }
 }
 
+// API-Football doesn't return per-90 rates directly — derived client-side
+// from season totals. null when minutes are 0/unknown (division by zero).
+function per90(total: number | null, minutes: number | null): string {
+  if (total == null || !minutes) return "–";
+  return (total / (minutes / 90)).toFixed(2);
+}
+
 // ── Event icon ───────────────────────────────────────────────────────────────
 
 function EventIcon({ type }: { type: string }) {
@@ -154,6 +182,59 @@ const STAT_ROWS: Array<{ key: keyof TeamLiveStats; label: string; isPercent?: bo
   { key: "offsides",      label: "Offsides" },
 ];
 
+// ── Player season stat row (expandable) ─────────────────────────────────────
+
+function PlayerStatRow({ player, t }: { player: PlayerSeasonStat; t: (k: keyof Translations) => string }) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div className="rounded-xl overflow-hidden" style={{ background: "var(--ip)", border: "1px solid var(--br)" }}>
+      <button
+        onClick={() => setOpen(o => !o)}
+        className="w-full flex items-center gap-2.5 px-3 py-2.5 text-left"
+      >
+        <div className="flex-1 min-w-0">
+          <div className="text-xs font-bold truncate" style={{ color: "var(--tx)" }}>{player.name}</div>
+          <div className="ta-meta">{[player.position, `${player.appearances ?? 0} ${t("mc_stats_apps")}`, `${player.minutes ?? 0} ${t("mc_stats_minutes")}`].filter(Boolean).join(" · ")}</div>
+        </div>
+        <div className="flex items-center gap-3 shrink-0">
+          <div className="text-center">
+            <div className="text-xs font-black" style={{ color: "var(--ac)" }}>{player.goals ?? 0}</div>
+            <div className="ta-meta">{t("mc_stats_goals")}</div>
+          </div>
+          <div className="text-center">
+            <div className="text-xs font-black" style={{ color: "var(--tx)" }}>{player.assists ?? 0}</div>
+            <div className="ta-meta">{t("mc_stats_assists")}</div>
+          </div>
+          <ChevronDown size={14} style={{ color: "var(--mt)", transform: open ? "rotate(180deg)" : undefined, transition: "transform 0.15s" }} />
+        </div>
+      </button>
+
+      {open && (
+        <div className="grid grid-cols-3 gap-2 px-3 pb-3 pt-1" style={{ borderTop: "1px solid var(--br)" }}>
+          {[
+            { label: t("mc_stats_yellow"),     value: player.yellowCards ?? 0 },
+            { label: t("mc_stats_red"),        value: player.redCards ?? 0 },
+            { label: t("mc_stats_shots"),      value: player.shotsTotal ?? "–" },
+            { label: t("mc_stats_key_passes"), value: player.keyPasses ?? "–" },
+            { label: t("mc_stats_dribbles"),   value: player.dribblesAttempts ?? "–" },
+            { label: t("mc_stats_tackles"),    value: player.tacklesTotal ?? "–" },
+          ].map(row => (
+            <div key={row.label} className="text-center rounded-lg py-1.5" style={{ background: "var(--sf)" }}>
+              <div className="text-xs font-bold" style={{ color: "var(--tx)" }}>{row.value}</div>
+              <div className="ta-meta">{row.label}</div>
+            </div>
+          ))}
+          <div className="col-span-3 flex items-center justify-center gap-4 pt-1">
+            <span className="ta-meta">{t("mc_stats_per90")} — {t("mc_stats_goals")} <b style={{ color: "var(--tx)" }}>{per90(player.goals, player.minutes)}</b></span>
+            <span className="ta-meta">{t("mc_stats_assists")} <b style={{ color: "var(--tx)" }}>{per90(player.assists, player.minutes)}</b></span>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Main Component ────────────────────────────────────────────────────────────
 
 export function LiveMatchHub({
@@ -167,6 +248,12 @@ export function LiveMatchHub({
   const [mounted, setMounted] = useState(false);
   const { t } = useLocale();
   const prevScore = useRef<{ h: number; a: number } | null>(null);
+
+  // ── Player season stats (Stats tab) ─────────────────────────────────────
+  const [playerStats,        setPlayerStats]        = useState<{ home: PlayerSeasonStat[]; away: PlayerSeasonStat[] } | null>(null);
+  const [playerStatsLoading, setPlayerStatsLoading] = useState(false);
+  const [playerStatsError,   setPlayerStatsError]   = useState(false);
+  const statsFetched = useRef(false);
 
   // Portal target only exists client-side.
   useEffect(() => { setMounted(true); }, []);
@@ -233,6 +320,18 @@ export function LiveMatchHub({
       .subscribe();
     return () => { sb.removeChannel(channel); };
   }, [matchId]);
+
+  // Player season stats — on-demand, only when the Stats tab is shown.
+  useEffect(() => {
+    if (tab !== "stats" || statsFetched.current) return;
+    statsFetched.current = true;
+    setPlayerStatsLoading(true);
+    fetch(`/api/match-center/player-stats?matchId=${encodeURIComponent(matchId)}`)
+      .then(res => { if (!res.ok) throw new Error(String(res.status)); return res.json(); })
+      .then((body: { home: PlayerSeasonStat[]; away: PlayerSeasonStat[] }) => setPlayerStats({ home: body.home, away: body.away }))
+      .catch(() => setPlayerStatsError(true))
+      .finally(() => setPlayerStatsLoading(false));
+  }, [tab, matchId]);
 
   const status      = data?.status ?? "upcoming";
   const live        = status === "live";
@@ -393,6 +492,7 @@ export function LiveMatchHub({
               ) : groupId ? (
                 <div className="text-center py-3 text-sm" style={{ color: "var(--mt)" }}>No prediction saved for this match</div>
               ) : null}
+
             </div>
           )}
 
@@ -455,13 +555,37 @@ export function LiveMatchHub({
                   })}
                 </>
               )}
-            </div>
-          )}
 
-          {/* Lineups — no fetch pipeline exists yet; honest empty state */}
-          {!loading && tab === "lineups" && (
-            <div className="py-8 text-center text-sm" style={{ color: "var(--mt)" }}>
-              Lineups not available
+              {/* Player season stats — competition/season totals, fetched on-demand for this tab */}
+              <div className="pt-1">
+                <div className="ta-section-label mb-2">{t("mc_stats_heading")}</div>
+                {playerStatsLoading && (
+                  <div className="py-6 flex justify-center"><BallLoader size="inline" label={t("mc_stats_loading")} /></div>
+                )}
+                {!playerStatsLoading && playerStatsError && (
+                  <div className="py-4 text-center text-xs" style={{ color: "var(--mt)" }}>{t("mc_stats_error")}</div>
+                )}
+                {!playerStatsLoading && !playerStatsError && playerStats && playerStats.home.length === 0 && playerStats.away.length === 0 && (
+                  <div className="py-4 text-center text-xs" style={{ color: "var(--mt)" }}>{t("mc_stats_empty")}</div>
+                )}
+                {!playerStatsLoading && !playerStatsError && playerStats && (playerStats.home.length > 0 || playerStats.away.length > 0) && (
+                  <div className="space-y-4">
+                    {[{ label: home, flag: homeFlagCode, players: playerStats.home }, { label: away, flag: awayFlagCode, players: playerStats.away }]
+                      .filter(side => side.players.length > 0)
+                      .map(side => (
+                        <div key={side.label} className="space-y-1.5">
+                          <div className="flex items-center gap-2">
+                            <FlagBadge code={side.flag} size="sm" />
+                            <span className="text-xs font-black uppercase" style={{ color: "var(--tx)" }}>{side.label}</span>
+                          </div>
+                          {[...side.players]
+                            .sort((a, b) => (b.minutes ?? 0) - (a.minutes ?? 0))
+                            .map(p => <PlayerStatRow key={p.apiPlayerId} player={p} t={t} />)}
+                        </div>
+                      ))}
+                  </div>
+                )}
+              </div>
             </div>
           )}
 
