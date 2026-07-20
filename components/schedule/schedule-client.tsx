@@ -20,6 +20,7 @@ import { AdBanner } from "@/components/ads/ad-banner";
 import { createClient } from "@/lib/supabase/client";
 import { WC2026_MATCHES, STAGE_LABELS, matchInGroupScope, type ScheduleMatch } from "@/lib/schedule";
 import { getTeamColor } from "@/lib/countries";
+import { useLocale } from "@/components/i18n/locale-provider";
 import { cn } from "@/lib/utils";
 
 // ── Types ──────────────────────────────────────────────────────────────────────
@@ -592,6 +593,7 @@ export function ScheduleClient({
   userCountry,
 }: ScheduleClientProps) {
   const router = useRouter();
+  const { t } = useLocale();
   const { setPrediction, refreshPredictions, setActiveUserId } = useGroupContext();
 
   // ── Register userId so GroupSwipeSelector can refresh predictions ──────────
@@ -874,14 +876,11 @@ export function ScheduleClient({
 
       {/* ── Page header ────────────────────────────────────────── */}
       <div className="pt-2 pb-1">
-        <div className="ta-section-label mb-1">
-          FIFA World Cup 2026
-        </div>
         <h1 className="ta-screen-title uppercase" style={{ color: "var(--tx)" }}>
-          Schedule
+          {t("sch_title")}
         </h1>
         <p className="ta-body mt-2">
-          All 104 matches · Group Stage through Final
+          {t("sch_subtitle")}
         </p>
       </div>
 

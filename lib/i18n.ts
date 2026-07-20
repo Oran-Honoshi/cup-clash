@@ -591,6 +591,10 @@ export interface Translations {
   cps_saving:    string;
   cps_copied:    string;
   cps_close:     string;
+
+  // Schedule — multi-competition header
+  sch_title:    string;
+  sch_subtitle: string;
 }
 
 // ── English (base) ─────────────────────────────────────────────────────────────
@@ -1122,6 +1126,9 @@ const en: Translations = {
   cps_saving:    "Saving…",
   cps_copied:    "Copied!",
   cps_close:     "Close",
+
+  sch_title:    "Schedule",
+  sch_subtitle: "All matches across every competition you follow",
 };
 
 // ── French ─────────────────────────────────────────────────────────────────────
@@ -1653,6 +1660,9 @@ const fr: Translations = {
   cps_saving:    "Enregistrement…",
   cps_copied:    "Copié !",
   cps_close:     "Fermer",
+
+  sch_title:    "Calendrier",
+  sch_subtitle: "Tous les matchs de toutes les compétitions que vous suivez",
 };
 
 // ── German ─────────────────────────────────────────────────────────────────────
@@ -2184,6 +2194,9 @@ const de: Translations = {
   cps_saving:    "Wird gespeichert…",
   cps_copied:    "Kopiert!",
   cps_close:     "Schließen",
+
+  sch_title:    "Spielplan",
+  sch_subtitle: "Alle Spiele aus jedem Wettbewerb, dem du folgst",
 };
 
 // ── Dutch ──────────────────────────────────────────────────────────────────────
@@ -2715,6 +2728,9 @@ const nl: Translations = {
   cps_saving:    "Opslaan…",
   cps_copied:    "Gekopieerd!",
   cps_close:     "Sluiten",
+
+  sch_title:    "Programma",
+  sch_subtitle: "Alle wedstrijden van elke competitie die je volgt",
 };
 
 // ── Spanish ────────────────────────────────────────────────────────────────────
@@ -3246,6 +3262,9 @@ const es: Translations = {
   cps_saving:    "Guardando…",
   cps_copied:    "¡Copiado!",
   cps_close:     "Cerrar",
+
+  sch_title:    "Calendario",
+  sch_subtitle: "Todos los partidos de cada competición que sigues",
 };
 
 // ── Portuguese ─────────────────────────────────────────────────────────────────
@@ -3777,6 +3796,9 @@ const pt: Translations = {
   cps_saving:    "Salvando…",
   cps_copied:    "Copiado!",
   cps_close:     "Fechar",
+
+  sch_title:    "Calendário",
+  sch_subtitle: "Todos os jogos de todas as competições que você segue",
 };
 
 // ── Hebrew ─────────────────────────────────────────────────────────────────────
@@ -4308,6 +4330,9 @@ const he: Translations = {
   cps_saving:    "שומר…",
   cps_copied:    "הועתק!",
   cps_close:     "סגור",
+
+  sch_title:    "לוח משחקים",
+  sch_subtitle: "כל המשחקים מכל תחרות שאתה עוקב אחריה",
 };
 
 // ── Arabic ─────────────────────────────────────────────────────────────────────
@@ -4839,6 +4864,9 @@ const ar: Translations = {
   cps_saving:    "جارٍ الحفظ…",
   cps_copied:    "تم النسخ!",
   cps_close:     "إغلاق",
+
+  sch_title:    "الجدول",
+  sch_subtitle: "كل المباريات من كل بطولة تتابعها",
 };
 
 // ── Translation map ────────────────────────────────────────────────────────────

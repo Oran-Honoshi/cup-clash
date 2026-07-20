@@ -9,13 +9,13 @@ import { GroupSwipeSelector }   from "@/components/groups/group-swipe-selector";
 import { getAllMatches }         from "@/lib/services/matches";
 
 export const metadata: Metadata = {
-  title: "FIFA World Cup 2026 Schedule — All 104 Matches | Cup Clash",
+  title: "Schedule — Every Competition | Cup Clash",
   description:
-    "Complete FIFA World Cup 2026 match schedule with predictions. All 104 games across 16 host cities in USA, Canada and Mexico. Predict scores directly in the schedule.",
+    "Every match across every competition you follow — World Cup, Premier League, La Liga, Serie A, Bundesliga, Ligue 1, Copa Libertadores, Copa Sudamericana, MLS and Brazil Serie A. Predict scores directly in the schedule.",
   openGraph: {
-    title: "FIFA World Cup 2026 Full Schedule",
+    title: "Cup Clash Schedule",
     description:
-      "All 104 World Cup 2026 matches — group stage through the MetLife Stadium final on July 19. Predict scores inline.",
+      "All matches across every competition you follow. Predict scores inline.",
     type: "website",
   },
 };
