@@ -26,6 +26,8 @@ export interface ScheduleMatch {
   time_confirmed?: boolean;     // false ⇒ kickoff_at/stadium/city is a guessed placeholder, not yet confirmed by API-Football
   competitionId?: string | null; // ties this match to a row in the `competitions` table (multi-league expansion)
   roundLabel?: string | null;    // e.g. "Matchday 5" — league-phase competitions only, null for World Cup
+  homeTeamId?: string | null;    // ties to `teams.id` — used to match against user_follows(followed_type='team')
+  awayTeamId?: string | null;
 }
 
 export const WC2026_MATCHES: ScheduleMatch[] = [];

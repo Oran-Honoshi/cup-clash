@@ -7,6 +7,8 @@ import { ScheduleClient }      from "@/components/schedule/schedule-client";
 import { GroupPersistRedirect } from "@/components/app/group-persist-redirect";
 import { GroupSwipeSelector }   from "@/components/groups/group-swipe-selector";
 import { getAllMatches }         from "@/lib/services/matches";
+import { getCompetitions }       from "@/lib/services/competitions";
+import { getFollowedTeamIds, getFollowedCompetitionIds } from "@/lib/services/follows";
 
 export const metadata: Metadata = {
   title: "Schedule — Every Competition | Cup Clash",
@@ -63,12 +65,16 @@ export default async function SchedulePage({
     data: { user },
   } = await sb.auth.getUser();
 
-  // ── Fetch all matches and live state ──────────────────────────────────────
-  const [allMatches, { data: dbMatchRows }] = await Promise.all([
+  // ── Fetch all matches, live state, and the competition/follow data the
+  // filter row needs ──────────────────────────────────────────────────────
+  const [allMatches, { data: dbMatchRows }, competitions, followedTeamIds, followedCompetitionIds] = await Promise.all([
     getAllMatches(),
     sbAdmin()
       .from("matches")
       .select("id, status, home_score, away_score, home_score_et, away_score_et, minute, match_events, home, away, home_flag, away_flag, kickoff_at, time_confirmed"),
+    getCompetitions(),
+    getFollowedTeamIds(user?.id ?? null),
+    getFollowedCompetitionIds(user?.id ?? null),
   ]);
 
   const matchResults: Record<string, {
@@ -217,6 +223,9 @@ export default async function SchedulePage({
         isAdFree={isAdFree}
         isCorporate={isCorporate}
         userCountry={userCountry}
+        competitions={competitions}
+        followedTeamIds={Array.from(followedTeamIds)}
+        followedCompetitionIds={Array.from(followedCompetitionIds)}
       />
     </>
   );

@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useGroupContext } from "@/lib/contexts/group-context";
 import {
   Calendar, Lock, Search, X as XIcon,
-  Users, Zap,
+  Users, Zap, Trophy,
 } from "lucide-react";
 import { CopyPredictionSheet } from "@/components/predictions/copy-prediction-sheet";
 import { upsertGroupPrediction } from "@/lib/services/predictions-client";
@@ -18,7 +18,8 @@ import { PredictionBadge } from "@/components/predictions/prediction-badge";
 import { PredictionDistribution } from "@/components/dashboard/prediction-distribution";
 import { AdBanner } from "@/components/ads/ad-banner";
 import { createClient } from "@/lib/supabase/client";
-import { WC2026_MATCHES, STAGE_LABELS, matchInGroupScope, type ScheduleMatch } from "@/lib/schedule";
+import { WC2026_MATCHES, STAGE_LABELS, matchInGroupScope, isWorldCupStage, type ScheduleMatch } from "@/lib/schedule";
+import { WORLD_CUP_SLUG, type CompetitionRow } from "@/lib/services/competitions";
 import { getTeamColor } from "@/lib/countries";
 import { useLocale } from "@/components/i18n/locale-provider";
 import { cn } from "@/lib/utils";
@@ -76,6 +77,12 @@ export interface ScheduleClientProps {
   isCorporate: boolean;
   /** Viewer's own "Your Team" country selection — tints the exact-score confetti burst. */
   userCountry?: string | null;
+  /** Every real competition row — World Cup first, then alphabetical (see getCompetitions()). */
+  competitions?: CompetitionRow[];
+  /** teams.id values from user_follows(followed_type='team') — matched against ScheduleMatch.homeTeamId/awayTeamId. */
+  followedTeamIds?: string[];
+  /** competitions.id values from user_follows(followed_type='competition'). */
+  followedCompetitionIds?: string[];
 }
 
 // ── Constants ──────────────────────────────────────────────────────────────────
@@ -591,6 +598,9 @@ export function ScheduleClient({
   isAdFree,
   isCorporate,
   userCountry,
+  competitions = [],
+  followedTeamIds = [],
+  followedCompetitionIds = [],
 }: ScheduleClientProps) {
   const router = useRouter();
   const { t } = useLocale();
@@ -683,6 +693,35 @@ export function ScheduleClient({
   // ── Filter state
   const [tabFilter, setTabFilter] = useState<"live" | "today" | "upcoming" | "done">("today");
   const [searchQuery, setSearchQuery]   = useState("");
+  // "all" = every competition, null = World Cup (matches matchInGroupScope's
+  // own null-means-WC convention), a uuid = that competitions.id row.
+  const [competitionFilter, setCompetitionFilter] = useState<string | null | "all">("all");
+  const [followedOnly, setFollowedOnly] = useState(false);
+
+  const followedTeamIdSet = useMemo(() => new Set(followedTeamIds), [followedTeamIds]);
+  const followedCompetitionIdSet = useMemo(() => new Set(followedCompetitionIds), [followedCompetitionIds]);
+
+  // The World Cup's matches carry competitionId=null (see matchInGroupScope's
+  // doc comment) — resolve its real competitions.id here so "following World
+  // Cup" can still be checked against a match, and so the World Cup chip has
+  // something to render a badge for.
+  const worldCupCompetitionId = useMemo(
+    () => competitions.find(c => c.slug === WORLD_CUP_SLUG)?.id ?? null,
+    [competitions]
+  );
+
+  function effectiveCompetitionId(m: ScheduleMatch): string | null {
+    return m.competitionId ?? (isWorldCupStage(m.stage) ? worldCupCompetitionId : null);
+  }
+
+  function isFollowed(m: ScheduleMatch): boolean {
+    const compId = effectiveCompetitionId(m);
+    return (
+      (!!compId && followedCompetitionIdSet.has(compId)) ||
+      (!!m.homeTeamId && followedTeamIdSet.has(m.homeTeamId)) ||
+      (!!m.awayTeamId && followedTeamIdSet.has(m.awayTeamId))
+    );
+  }
 
   // ── Copy-to-groups sheet
   const [copySheet, setCopySheet] = useState<{
@@ -827,14 +866,16 @@ export function ScheduleClient({
       if (tabFilter === "today"    && matchDate !== todayStr)        return false;
       if (tabFilter === "upcoming" && (s.type !== "upcoming" || matchDate <= todayStr)) return false;
       if (tabFilter === "done"     && s.type !== "finished")        return false;
+      if (competitionFilter !== "all" && !matchInGroupScope(m.stage, m.competitionId, competitionFilter)) return false;
+      if (followedOnly && !isFollowed(m)) return false;
       if (q) {
-        const t = matchTeams?.[m.id];
-        const haystack = `${t?.home ?? m.home} ${t?.away ?? m.away}`.toLowerCase();
+        const tm = matchTeams?.[m.id];
+        const haystack = `${tm?.home ?? m.home} ${tm?.away ?? m.away}`.toLowerCase();
         if (!haystack.includes(q)) return false;
       }
       return true;
     });
-  }, [allMatches, tabFilter, searchQuery, matchStates, todayStr, matchTeams]);
+  }, [allMatches, tabFilter, searchQuery, matchStates, todayStr, matchTeams, competitionFilter, followedOnly, followedTeamIdSet, followedCompetitionIdSet, worldCupCompetitionId]);
 
   // ── Group by date
   const groupedDates = useMemo(() => {
@@ -944,6 +985,63 @@ export function ScheduleClient({
             </button>
           )}
         </div>
+
+        {/* Competition chips + Following toggle */}
+        {competitions.length > 0 && (
+          <div className="flex items-center gap-2">
+            <div className="flex-1 min-w-0 flex gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
+              <button
+                onClick={() => setCompetitionFilter("all")}
+                className="shrink-0 px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap"
+                style={{
+                  background: competitionFilter === "all" ? "var(--ac)" : "var(--ip)",
+                  color: competitionFilter === "all" ? "var(--at)" : "var(--t2)",
+                  border: "1px solid var(--br)",
+                }}
+              >
+                {t("sch_all_competitions")}
+              </button>
+              {competitions.map(c => {
+                const isWc = c.slug === WORLD_CUP_SLUG;
+                const active = isWc ? competitionFilter === null : competitionFilter === c.id;
+                return (
+                  <button
+                    key={c.id}
+                    onClick={() => setCompetitionFilter(isWc ? null : c.id)}
+                    className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap"
+                    style={{
+                      background: active ? "var(--ac)" : "var(--ip)",
+                      color: active ? "var(--at)" : "var(--t2)",
+                      border: "1px solid var(--br)",
+                    }}
+                  >
+                    {c.logoUrl
+                      ? <FlagBadge code={c.logoUrl} size="sm" label={c.name} />
+                      : <Trophy size={12} style={{ color: active ? "var(--at)" : "var(--mt)" }} />}
+                    {c.name}
+                  </button>
+                );
+              })}
+            </div>
+            {!!userId && (
+              <button
+                onClick={() => setFollowedOnly(v => !v)}
+                role="switch"
+                aria-checked={followedOnly}
+                aria-label={t("sch_following_toggle")}
+                className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap"
+                style={{
+                  background: followedOnly ? "color-mix(in srgb, var(--ac) 15%, transparent)" : "var(--ip)",
+                  color: followedOnly ? "var(--ac)" : "var(--t2)",
+                  border: followedOnly ? "1px solid color-mix(in srgb, var(--ac) 35%, transparent)" : "1px solid var(--br)",
+                }}
+              >
+                <Users size={12} />
+                {t("sch_following_toggle")}
+              </button>
+            )}
+          </div>
+        )}
 
         {/* Status tab row */}
         <div style={{ background: "var(--nv)", borderRadius: 10, border: "1px solid var(--br)", overflow: "hidden", padding: 3, gap: 2, display: "flex" }}>

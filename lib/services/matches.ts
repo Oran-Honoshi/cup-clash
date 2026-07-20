@@ -142,17 +142,34 @@ type DbAllMatch = {
   time_confirmed: boolean | null;
   competition_id: string | null;
   round_label: string | null;
+  home_team_id: string | null;
+  away_team_id: string | null;
 };
+
+// PostgREST caps a single response at 1000 rows — with 6 competitions now
+// live the `matches` table holds 3000+ rows, so a single unpaginated select
+// silently truncated the schedule to the chronologically-earliest 1000
+// fixtures (everything after ~Matchday 2 of any league season vanished).
+// Page through in batches until a page comes back short.
+const MATCHES_PAGE_SIZE = 1000;
 
 export async function getAllMatches(): Promise<ScheduleMatch[]> {
   try {
-    const { data, error } = await sb()
-      .from("matches")
-      .select("id, home, away, home_flag, away_flag, kickoff_at, stage, group_letter, stadium, city, home_score, away_score, home_score_et, away_score_et, status, time_confirmed, competition_id, round_label")
-      .order("kickoff_at", { ascending: true });
+    const rows: DbAllMatch[] = [];
+    for (let from = 0; ; from += MATCHES_PAGE_SIZE) {
+      const { data, error } = await sb()
+        .from("matches")
+        .select("id, home, away, home_flag, away_flag, kickoff_at, stage, group_letter, stadium, city, home_score, away_score, home_score_et, away_score_et, status, time_confirmed, competition_id, round_label, home_team_id, away_team_id")
+        .order("kickoff_at", { ascending: true })
+        .range(from, from + MATCHES_PAGE_SIZE - 1);
 
-    if (!error && data?.length) {
-      return (data as DbAllMatch[]).map(m => ({
+      if (error) break;
+      rows.push(...((data ?? []) as DbAllMatch[]));
+      if (!data || data.length < MATCHES_PAGE_SIZE) break;
+    }
+
+    if (rows.length) {
+      return rows.map(m => ({
         id:           m.id,
         kickoff_at:   m.kickoff_at,
         date:         m.kickoff_at.slice(0, 10),
@@ -170,6 +187,8 @@ export async function getAllMatches(): Promise<ScheduleMatch[]> {
         time_confirmed: m.time_confirmed ?? true,
         competitionId: m.competition_id,
         roundLabel:   m.round_label,
+        homeTeamId:   m.home_team_id,
+        awayTeamId:   m.away_team_id,
       }));
     }
   } catch { /* fall through */ }

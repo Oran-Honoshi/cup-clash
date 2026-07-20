@@ -595,6 +595,10 @@ export interface Translations {
   // Schedule — multi-competition header
   sch_title:    string;
   sch_subtitle: string;
+
+  // Schedule — competition + follows filter row
+  sch_all_competitions: string;
+  sch_following_toggle: string;
 }
 
 // ── English (base) ─────────────────────────────────────────────────────────────
@@ -1129,6 +1133,9 @@ const en: Translations = {
 
   sch_title:    "Schedule",
   sch_subtitle: "All matches across every competition you follow",
+
+  sch_all_competitions: "All",
+  sch_following_toggle: "Following only",
 };
 
 // ── French ─────────────────────────────────────────────────────────────────────
@@ -1663,6 +1670,9 @@ const fr: Translations = {
 
   sch_title:    "Calendrier",
   sch_subtitle: "Tous les matchs de toutes les compétitions que vous suivez",
+
+  sch_all_competitions: "Toutes",
+  sch_following_toggle: "Suivis uniquement",
 };
 
 // ── German ─────────────────────────────────────────────────────────────────────
@@ -2197,6 +2207,9 @@ const de: Translations = {
 
   sch_title:    "Spielplan",
   sch_subtitle: "Alle Spiele aus jedem Wettbewerb, dem du folgst",
+
+  sch_all_competitions: "Alle",
+  sch_following_toggle: "Nur gefolgte",
 };
 
 // ── Dutch ──────────────────────────────────────────────────────────────────────
@@ -2731,6 +2744,9 @@ const nl: Translations = {
 
   sch_title:    "Programma",
   sch_subtitle: "Alle wedstrijden van elke competitie die je volgt",
+
+  sch_all_competitions: "Alles",
+  sch_following_toggle: "Alleen gevolgd",
 };
 
 // ── Spanish ────────────────────────────────────────────────────────────────────
@@ -3265,6 +3281,9 @@ const es: Translations = {
 
   sch_title:    "Calendario",
   sch_subtitle: "Todos los partidos de cada competición que sigues",
+
+  sch_all_competitions: "Todas",
+  sch_following_toggle: "Solo seguidos",
 };
 
 // ── Portuguese ─────────────────────────────────────────────────────────────────
@@ -3799,6 +3818,9 @@ const pt: Translations = {
 
   sch_title:    "Calendário",
   sch_subtitle: "Todos os jogos de todas as competições que você segue",
+
+  sch_all_competitions: "Todas",
+  sch_following_toggle: "Apenas seguidos",
 };
 
 // ── Hebrew ─────────────────────────────────────────────────────────────────────
@@ -4333,6 +4355,9 @@ const he: Translations = {
 
   sch_title:    "לוח משחקים",
   sch_subtitle: "כל המשחקים מכל תחרות שאתה עוקב אחריה",
+
+  sch_all_competitions: "הכול",
+  sch_following_toggle: "רק נעקבים",
 };
 
 // ── Arabic ─────────────────────────────────────────────────────────────────────
@@ -4867,6 +4892,9 @@ const ar: Translations = {
 
   sch_title:    "الجدول",
   sch_subtitle: "كل المباريات من كل بطولة تتابعها",
+
+  sch_all_competitions: "الكل",
+  sch_following_toggle: "المتابَعة فقط",
 };
 
 // ── Translation map ────────────────────────────────────────────────────────────
