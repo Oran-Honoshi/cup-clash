@@ -276,7 +276,7 @@ export function AppSidebar() {
             <button
               onClick={() => { setShowDeleteTool(v => !v); setDelMsg(""); setDelPreview(null); }}
               className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold transition-all"
-              style={{ color: showDeleteTool ? "#f87171" : "rgba(255,255,255,0.35)" }}
+              style={{ color: showDeleteTool ? "#f87171" : "var(--ft)" }}
               onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "rgba(239,68,68,0.08)"; }}
               onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}
             >
@@ -293,11 +293,11 @@ export function AppSidebar() {
                   value={delEmail}
                   onChange={e => { setDelEmail(e.target.value); setDelPreview(null); setDelMsg(""); }}
                   onKeyDown={e => e.key === "Enter" && handleFindUser()}
-                  className="w-full rounded-lg px-3 py-2 text-xs placeholder:text-[rgba(255,255,255,0.3)]"
+                  className="w-full rounded-lg px-3 py-2 text-xs placeholder:text-[color:var(--ft)]"
                   style={{
-                    background: "rgba(255,255,255,0.06)",
-                    border: "1px solid rgba(255,255,255,0.12)",
-                    color: "#fff",
+                    background: "var(--ip)",
+                    border: "1px solid var(--br)",
+                    color: "var(--tx)",
                     outline: "none",
                   }}
                 />
@@ -308,8 +308,8 @@ export function AppSidebar() {
                     disabled={delLoading || !delEmail.trim()}
                     className="w-full rounded-lg py-1.5 text-xs font-bold"
                     style={{
-                      background: "rgba(255,255,255,0.08)",
-                      color: "rgba(255,255,255,0.7)",
+                      background: "var(--ip)",
+                      color: "var(--t2)",
                       opacity: (!delEmail.trim() || delLoading) ? 0.4 : 1,
                     }}
                   >
@@ -318,9 +318,9 @@ export function AppSidebar() {
                 ) : (
                   <>
                     <div className="rounded-lg px-3 py-2"
-                      style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}>
-                      <div className="text-xs font-bold text-white truncate">{delPreview.name}</div>
-                      <div className="text-[10px] mt-0.5" style={{ color: "rgba(255,255,255,0.45)" }}>
+                      style={{ background: "var(--ip)", border: "1px solid var(--br)" }}>
+                      <div className="text-xs font-bold truncate" style={{ color: "var(--tx)" }}>{delPreview.name}</div>
+                      <div className="text-[10px] mt-0.5" style={{ color: "var(--mt)" }}>
                         {delPreview.groups.length > 0
                           ? delPreview.groups.join(", ")
                           : "No groups"}
@@ -331,11 +331,11 @@ export function AppSidebar() {
                       placeholder="Reason (optional)"
                       value={delReason}
                       onChange={e => setDelReason(e.target.value)}
-                      className="w-full rounded-lg px-3 py-2 text-xs placeholder:text-[rgba(255,255,255,0.3)]"
+                      className="w-full rounded-lg px-3 py-2 text-xs placeholder:text-[color:var(--ft)]"
                       style={{
-                        background: "rgba(255,255,255,0.06)",
-                        border: "1px solid rgba(255,255,255,0.12)",
-                        color: "#fff",
+                        background: "var(--ip)",
+                        border: "1px solid var(--br)",
+                        color: "var(--tx)",
                         outline: "none",
                       }}
                     />
@@ -351,7 +351,7 @@ export function AppSidebar() {
                       <button
                         onClick={() => { setDelPreview(null); setDelReason(""); }}
                         className="flex-1 rounded-lg py-1.5 text-xs font-bold"
-                        style={{ background: "rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.5)" }}
+                        style={{ background: "var(--ip)", color: "var(--t2)" }}
                       >
                         Cancel
                       </button>
