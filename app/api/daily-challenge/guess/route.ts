@@ -11,6 +11,7 @@ import {
   getOrCreateTodayChallenge,
   getClueState,
   isCorrectGuess,
+  getGuessFeedback,
   recordGuess,
   TRY_LIMIT,
 } from "@/lib/services/daily-challenge";
@@ -80,6 +81,7 @@ export async function POST(req: Request) {
   const { data: { user } } = await sb.auth.getUser();
 
   const correct = isCorrectGuess(challenge, playerId);
+  const { guessedName, letters } = await getGuessFeedback(admin, challenge, playerId);
 
   let guessCount: number;
   let solved: boolean;
@@ -101,7 +103,7 @@ export async function POST(req: Request) {
       .maybeSingle();
     const wasAlreadyComplete = !!before.data?.completed_at;
 
-    const result = await recordGuess(admin, user.id, challenge, playerId, correct);
+    const result = await recordGuess(admin, user.id, challenge, playerId, correct, guessedName, letters);
     guessCount = result.guessCount;
     solved = result.solved;
     outOfTries = result.outOfTries;
@@ -137,7 +139,7 @@ export async function POST(req: Request) {
   }
 
   return NextResponse.json(
-    { correct, solved, outOfTries, guessCount, clueState, shareText, reveal },
+    { correct, solved, outOfTries, guessCount, clueState, shareText, reveal, guessedName, letters },
     { headers: { "Cache-Control": "no-store" } }
   );
 }

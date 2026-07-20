@@ -439,6 +439,10 @@ export interface Translations {
   dc_result_correct:          string;
   dc_result_incorrect:        string;
   dc_result_out_of_tries:     string;
+  dc_guesses_heading:         string;
+  dc_letter_correct:          string;
+  dc_letter_present:          string;
+  dc_letter_absent:           string;
   dc_reveal_heading:          string;
   dc_share_button:            string;
   dc_share_copied:            string;
@@ -978,6 +982,10 @@ const en: Translations = {
   dc_result_correct: "You got it! 🎉",
   dc_result_incorrect: "Not quite — try again",
   dc_result_out_of_tries: "Out of guesses",
+  dc_guesses_heading: "Your guesses",
+  dc_letter_correct: "Correct letter, correct spot",
+  dc_letter_present: "Correct letter, wrong spot",
+  dc_letter_absent: "Letter not in the name",
   dc_reveal_heading: "Today's footballer was",
   dc_share_button: "Share result",
   dc_share_copied: "Copied to clipboard",
@@ -1505,6 +1513,10 @@ const fr: Translations = {
   dc_result_correct: "Bravo ! 🎉",
   dc_result_incorrect: "Pas tout à fait — réessayez",
   dc_result_out_of_tries: "Plus d'essais",
+  dc_guesses_heading: "Vos essais",
+  dc_letter_correct: "Bonne lettre, bonne position",
+  dc_letter_present: "Bonne lettre, mauvaise position",
+  dc_letter_absent: "Lettre absente du nom",
   dc_reveal_heading: "Le footballeur du jour était",
   dc_share_button: "Partager le résultat",
   dc_share_copied: "Copié dans le presse-papiers",
@@ -2032,6 +2044,10 @@ const de: Translations = {
   dc_result_correct: "Richtig! 🎉",
   dc_result_incorrect: "Leider falsch — versuch's nochmal",
   dc_result_out_of_tries: "Keine Versuche mehr",
+  dc_guesses_heading: "Deine Versuche",
+  dc_letter_correct: "Richtiger Buchstabe, richtige Position",
+  dc_letter_present: "Richtiger Buchstabe, falsche Position",
+  dc_letter_absent: "Buchstabe kommt nicht im Namen vor",
   dc_reveal_heading: "Der heutige Fußballer war",
   dc_share_button: "Ergebnis teilen",
   dc_share_copied: "In die Zwischenablage kopiert",
@@ -2559,6 +2575,10 @@ const nl: Translations = {
   dc_result_correct: "Helemaal goed! 🎉",
   dc_result_incorrect: "Niet helemaal — probeer opnieuw",
   dc_result_out_of_tries: "Geen pogingen meer",
+  dc_guesses_heading: "Jouw pogingen",
+  dc_letter_correct: "Juiste letter, juiste plek",
+  dc_letter_present: "Juiste letter, verkeerde plek",
+  dc_letter_absent: "Letter komt niet voor in de naam",
   dc_reveal_heading: "De voetballer van vandaag was",
   dc_share_button: "Resultaat delen",
   dc_share_copied: "Gekopieerd naar klembord",
@@ -3086,6 +3106,10 @@ const es: Translations = {
   dc_result_correct: "¡Correcto! 🎉",
   dc_result_incorrect: "No es correcto — inténtalo de nuevo",
   dc_result_out_of_tries: "Sin intentos restantes",
+  dc_guesses_heading: "Tus intentos",
+  dc_letter_correct: "Letra correcta, posición correcta",
+  dc_letter_present: "Letra correcta, posición incorrecta",
+  dc_letter_absent: "La letra no está en el nombre",
   dc_reveal_heading: "El futbolista de hoy era",
   dc_share_button: "Compartir resultado",
   dc_share_copied: "Copiado al portapapeles",
@@ -3613,6 +3637,10 @@ const pt: Translations = {
   dc_result_correct: "Acertou! 🎉",
   dc_result_incorrect: "Quase — tente novamente",
   dc_result_out_of_tries: "Sem mais tentativas",
+  dc_guesses_heading: "Suas tentativas",
+  dc_letter_correct: "Letra correta, posição correta",
+  dc_letter_present: "Letra correta, posição errada",
+  dc_letter_absent: "Letra não está no nome",
   dc_reveal_heading: "O jogador de hoje era",
   dc_share_button: "Compartilhar resultado",
   dc_share_copied: "Copiado para a área de transferência",
@@ -4140,6 +4168,10 @@ const he: Translations = {
   dc_result_correct: "ניחשת נכון! 🎉",
   dc_result_incorrect: "לא בדיוק — נסו שוב",
   dc_result_out_of_tries: "נגמרו הניחושים",
+  dc_guesses_heading: "הניחושים שלך",
+  dc_letter_correct: "אות נכונה, מיקום נכון",
+  dc_letter_present: "אות נכונה, מיקום שגוי",
+  dc_letter_absent: "האות לא מופיעה בשם",
   dc_reveal_heading: "הכדורגלן של היום היה",
   dc_share_button: "שיתוף תוצאה",
   dc_share_copied: "הועתק ללוח",
@@ -4667,6 +4699,10 @@ const ar: Translations = {
   dc_result_correct: "أحسنت! 🎉",
   dc_result_incorrect: "ليس تمامًا — حاول مرة أخرى",
   dc_result_out_of_tries: "انتهت المحاولات",
+  dc_guesses_heading: "محاولاتك",
+  dc_letter_correct: "حرف صحيح، موضع صحيح",
+  dc_letter_present: "حرف صحيح، موضع خاطئ",
+  dc_letter_absent: "الحرف غير موجود في الاسم",
   dc_reveal_heading: "لاعب اليوم كان",
   dc_share_button: "مشاركة النتيجة",
   dc_share_copied: "تم النسخ إلى الحافظة",

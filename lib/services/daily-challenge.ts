@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { getPlayerEnrichment } from "@/lib/services/wikidata";
+import { computeWordleFeedback, type LetterTile } from "@/lib/services/wordle-feedback";
 
 // Core "Guess the Footballer" game logic — puzzle selection, progressive
 // clue reveal, guess validation, and the group streak calculation. Kept as
@@ -289,11 +290,48 @@ export function isCorrectGuess(challenge: DailyChallengeRow, guessedEntityId: st
   return getAnswerId(challenge) === guessedEntityId;
 }
 
+// Batch name lookup for the Wordle letter-feedback diff — keyed by
+// game_type since a challenge's entities are always all-players or
+// all-teams, never mixed. `players.full_name` / `teams.name` are the only
+// name fields either table has (full_name is sometimes API-Football's
+// abbreviated form like "R. Freuler" — a pre-existing data-quality issue,
+// not something this diff tries to work around).
+async function getEntityNames(sb: SupabaseClient, gameType: GameType, ids: string[]): Promise<Map<string, string>> {
+  const uniqueIds = Array.from(new Set(ids)).filter(Boolean);
+  const map = new Map<string, string>();
+  if (uniqueIds.length === 0) return map;
+
+  if (gameType === "guess_club") {
+    const { data } = await sb.from("teams").select("id, name").in("id", uniqueIds);
+    for (const row of (data ?? []) as { id: string; name: string }[]) map.set(row.id, row.name);
+  } else {
+    const { data } = await sb.from("players").select("id, full_name").in("id", uniqueIds);
+    for (const row of (data ?? []) as { id: string; full_name: string }[]) map.set(row.id, row.full_name);
+  }
+  return map;
+}
+
+// Computes the per-letter Wordle feedback for one guess against the real
+// answer — the answer string itself is never returned to the caller, only
+// the derived tile colors, same "never ship the answer" posture as the rest
+// of this module.
+export async function getGuessFeedback(
+  sb: SupabaseClient,
+  challenge: DailyChallengeRow,
+  guessedEntityId: string
+): Promise<{ guessedName: string; letters: LetterTile[] }> {
+  const answerId = getAnswerId(challenge);
+  const names = await getEntityNames(sb, challenge.game_type, [guessedEntityId, answerId]);
+  const guessedName = names.get(guessedEntityId) ?? "";
+  const answerName = names.get(answerId) ?? "";
+  return { guessedName, letters: computeWordleFeedback(guessedName, answerName) };
+}
+
 // Field name kept as `player_id` for both game types — this is the guessed
 // entity id (a player or a team, per challenge.game_type), and repurposing
 // it avoids a schema-shape difference between historical footballer rows
 // and new club rows in the same jsonb column.
-export type GuessRecord = { player_id: string; correct: boolean };
+export type GuessRecord = { player_id: string; correct: boolean; name: string; letters: LetterTile[] };
 
 export function buildShareText(challenge: DailyChallengeRow, guesses: GuessRecord[], solved: boolean): string {
   const squares = guesses.map(g => (g.correct ? "🟩" : "⬛")).join("");
@@ -314,7 +352,9 @@ export async function recordGuess(
   userId: string,
   challenge: DailyChallengeRow,
   guessedPlayerId: string,
-  correct: boolean
+  correct: boolean,
+  guessedName: string,
+  letters: LetterTile[]
 ): Promise<RecordGuessResult> {
   const { data: existing } = await sb
     .from("daily_challenge_attempts")
@@ -335,7 +375,7 @@ export async function recordGuess(
   }
 
   const priorGuesses = ((existing?.guesses as GuessRecord[] | null) ?? []).filter(Boolean);
-  const guesses = [...priorGuesses, { player_id: guessedPlayerId, correct }];
+  const guesses = [...priorGuesses, { player_id: guessedPlayerId, correct, name: guessedName, letters }];
   const solved = correct;
   const outOfTries = !solved && guesses.length >= TRY_LIMIT;
   const completed = solved || outOfTries;
@@ -379,9 +419,18 @@ export async function saveAnonymousAttempt(
   if (existing) return { saved: false };
 
   const answerId = getAnswerId(challenge);
-  const recomputed: GuessRecord[] = clientGuesses
-    .slice(0, TRY_LIMIT)
-    .map(g => ({ player_id: g.player_id, correct: g.player_id === answerId }));
+  const limitedGuesses = clientGuesses.slice(0, TRY_LIMIT);
+  const names = await getEntityNames(sb, challenge.game_type, [...limitedGuesses.map(g => g.player_id), answerId]);
+  const answerName = names.get(answerId) ?? "";
+  const recomputed: GuessRecord[] = limitedGuesses.map(g => {
+    const guessedName = names.get(g.player_id) ?? "";
+    return {
+      player_id: g.player_id,
+      correct: g.player_id === answerId,
+      name: guessedName,
+      letters: computeWordleFeedback(guessedName, answerName),
+    };
+  });
   if (recomputed.length === 0) return { saved: false };
 
   const firstCorrectIndex = recomputed.findIndex(g => g.correct);

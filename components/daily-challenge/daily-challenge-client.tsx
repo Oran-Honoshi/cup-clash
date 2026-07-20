@@ -8,10 +8,12 @@ import { interpolate } from "@/lib/i18n";
 import { cn } from "@/lib/utils";
 import { PlayerPicker } from "@/components/predictions/player-picker";
 import { DailyChallengeTeamPicker } from "@/components/daily-challenge/daily-challenge-team-picker";
+import { WordleTileRow } from "@/components/daily-challenge/wordle-tiles";
 import { BallLoader } from "@/components/ui/BallLoader";
 import { buildDailyPuzzleAuthWallUrl } from "@/lib/auth-wall";
 import { loadLocalAttempt, saveLocalAttempt } from "@/lib/daily-challenge-storage";
 import type { ClueField, GameType } from "@/lib/services/daily-challenge";
+import type { LetterTile } from "@/lib/services/wordle-feedback";
 
 const surface = { background: "var(--sf)", border: "1px solid var(--br)", borderRadius: 22 } as const;
 
@@ -122,7 +124,13 @@ type TodayResponse = {
   tryLimit: number;
   clueOrder: ClueField[];
   clueState: ClueState;
-  attempt: { guessCount: number; solved: boolean; outOfTries: boolean; guesses: { player_id: string; correct: boolean }[]; shareText: string | null } | null;
+  attempt: {
+    guessCount: number;
+    solved: boolean;
+    outOfTries: boolean;
+    guesses: { player_id: string; correct: boolean; name?: string; letters?: LetterTile[] }[];
+    shareText: string | null;
+  } | null;
 };
 
 type GuessResponse = {
@@ -133,7 +141,11 @@ type GuessResponse = {
   clueState: ClueState;
   shareText: string | null;
   reveal: Reveal | null;
+  guessedName: string;
+  letters: LetterTile[];
 };
+
+type GuessHistoryItem = { name: string; correct: boolean; letters: LetterTile[] };
 
 const FOOTBALLER_CLUE_LABEL_KEY: Record<string, "dc_clue_nationality" | "dc_clue_club" | "dc_clue_position" | "dc_clue_age" | "dc_clue_silhouette"> = {
   nationality: "dc_clue_nationality",
@@ -152,6 +164,14 @@ function clueLabelKey(gameType: GameType, clue: ClueField) {
   return gameType === "guess_club" ? CLUB_CLUE_LABEL_KEY[clue] : FOOTBALLER_CLUE_LABEL_KEY[clue];
 }
 
+// Guesses made before this feature shipped won't have `name`/`letters` —
+// skip those rather than rendering a broken/empty tile row for them.
+function toHistory(guesses: { correct: boolean; name?: string; letters?: LetterTile[] }[]): GuessHistoryItem[] {
+  return guesses
+    .filter((g): g is { correct: boolean; name: string; letters: LetterTile[] } => !!g.letters && g.name !== undefined)
+    .map(g => ({ name: g.name, correct: g.correct, letters: g.letters }));
+}
+
 export function DailyChallengeClient({ userId }: { userId: string | null }) {
   const { t } = useLocale();
   const router = useRouter();
@@ -168,6 +188,7 @@ export function DailyChallengeClient({ userId }: { userId: string | null }) {
   const [submitting, setSubmitting] = useState(false);
   const [lastGuessCorrect, setLastGuessCorrect] = useState<boolean | null>(null);
   const [copied, setCopied] = useState(false);
+  const [history, setHistory] = useState<GuessHistoryItem[]>([]);
 
   const completed = solved || outOfTries;
 
@@ -186,6 +207,7 @@ export function DailyChallengeClient({ userId }: { userId: string | null }) {
           setGuessCount(local.guesses.length);
           setSolved(local.guesses.some(g => g.correct));
           setOutOfTries(!local.guesses.some(g => g.correct) && local.guesses.length >= refreshed.tryLimit);
+          setHistory(toHistory(local.guesses));
           setLoading(false);
           return;
         }
@@ -197,6 +219,7 @@ export function DailyChallengeClient({ userId }: { userId: string | null }) {
         setSolved(data.attempt.solved);
         setOutOfTries(data.attempt.outOfTries);
         setShareText(data.attempt.shareText);
+        setHistory(toHistory(data.attempt.guesses));
       }
       setLoading(false);
     })();
@@ -225,11 +248,12 @@ export function DailyChallengeClient({ userId }: { userId: string | null }) {
         setReveal(data.reveal);
         setToday(prev => (prev ? { ...prev, clueState: data.clueState } : prev));
         setSelectedName("");
+        setHistory(prev => [...prev, { name: data.guessedName, correct: data.correct, letters: data.letters }]);
 
         if (!userId) {
           const local = loadLocalAttempt(today.challengeDate);
           saveLocalAttempt(today.challengeDate, {
-            guesses: [...local.guesses, { player_id: playerId, correct: data.correct }],
+            guesses: [...local.guesses, { player_id: playerId, correct: data.correct, name: data.guessedName, letters: data.letters }],
           });
         }
       } finally {
@@ -363,6 +387,28 @@ export function DailyChallengeClient({ userId }: { userId: string | null }) {
           );
         })}
       </div>
+
+      {/* Guess history — Wordle-style per-letter feedback for every guess so far */}
+      {history.length > 0 && (
+        <div className="p-5 cc-elevated space-y-3" style={surface}>
+          <span className="text-xs font-bold uppercase tracking-widest" style={{ color: "var(--t2)" }}>
+            {t("dc_guesses_heading")}
+          </span>
+          <div className="space-y-2">
+            {history.map((item, i) => (
+              <WordleTileRow
+                key={i}
+                letters={item.letters}
+                labels={{
+                  correct: t("dc_letter_correct"),
+                  present: t("dc_letter_present"),
+                  absent: t("dc_letter_absent"),
+                }}
+              />
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Result banner */}
       {lastGuessCorrect === false && !completed && (

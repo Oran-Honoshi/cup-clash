@@ -2,7 +2,12 @@
 // place that defines the localStorage key/shape, shared by the puzzle page
 // and <ConsumeDailyChallengeParam> so they can never drift out of sync.
 
-export type LocalGuess = { player_id: string; correct: boolean };
+import type { LetterTile } from "@/lib/services/wordle-feedback";
+
+// `name`/`letters` are optional because guesses saved before this feature
+// shipped won't have them — the UI falls back to skipping the tile row for
+// those rather than crashing.
+export type LocalGuess = { player_id: string; correct: boolean; name?: string; letters?: LetterTile[] };
 export type LocalAttempt = { guesses: LocalGuess[] };
 
 function storageKey(challengeDate: string): string {
