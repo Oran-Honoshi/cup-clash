@@ -11,6 +11,7 @@ import { NeonBar } from "@/components/ui/neon-bar";
 import { Chip } from "@/components/ui/chip";
 import { BallLoader } from "@/components/ui/BallLoader";
 import { useLocale } from "@/components/i18n/locale-provider";
+import { getCompetitions, WORLD_CUP_SLUG, type CompetitionRow } from "@/lib/services/competitions";
 
 const inputStyle = {
   width: "100%",
@@ -108,6 +109,38 @@ function RuleRow({ label, desc, pts, setPts, enabled, onToggle }: {
   );
 }
 
+function CompetitionSelector({
+  competitions, value, onChange,
+}: {
+  competitions: CompetitionRow[]; value: string; onChange: (slug: string) => void;
+}) {
+  const { t } = useLocale();
+  if (competitions.length === 0) return null;
+  return (
+    <div>
+      <label style={labelStyle}>{t("cg_competition_label")}</label>
+      <div className="flex flex-wrap gap-1.5">
+        {competitions.map(c => {
+          const active = c.slug === value;
+          return (
+            <button key={c.id} type="button" onClick={() => onChange(c.slug)}
+              className="transition-all"
+              style={{
+                borderRadius: 100, cursor: "pointer", padding: "7px 12px",
+                fontSize: 12, fontWeight: 700, fontFamily: "var(--font-ui)",
+                background: active ? "rgba(0,212,255,0.12)" : "rgba(255,255,255,0.04)",
+                border: active ? "1.5px solid rgba(0,212,255,0.4)" : "1px solid rgba(255,255,255,0.1)",
+                color: active ? "#00D4FF" : "rgba(255,255,255,0.5)",
+              }}>
+              {c.name}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 type PaymentModel = "pay_per_member" | "corporate_sponsored" | "friendly";
 
 const WINNER_MESSAGE_PRESETS = [
@@ -160,6 +193,21 @@ function CreateGroupInner() {
   const [showPicker,     setShowPicker]     = useState(false);
   const [corporatePrize, setCorporatePrize] = useState("");
   const [isPublic,       setIsPublic]       = useState(false);
+
+  const [competitions,     setCompetitions]     = useState<CompetitionRow[]>([]);
+  const [competitionSlug,  setCompetitionSlug]  = useState<string>(WORLD_CUP_SLUG);
+
+  useEffect(() => { getCompetitions().then(setCompetitions).catch(() => {}); }, []);
+
+  // Single-match groups are a World Cup bracket concept — the featured-match
+  // list has no per-competition data source yet (fast-follow), so switching
+  // away from the World Cup falls back to a full-tournament group.
+  useEffect(() => {
+    if (competitionSlug !== WORLD_CUP_SLUG && groupType === "single_match") setGroupType("tournament");
+  }, [competitionSlug, groupType]);
+
+  const selectedCompetition = competitions.find(c => c.slug === competitionSlug);
+  const competitionIdForInsert = competitionSlug === WORLD_CUP_SLUG ? null : (selectedCompetition?.id ?? null);
 
   const [buyIn,        setBuyIn]        = useState(20);
   const [memberCount,  setMemberCount]  = useState(10);
@@ -240,8 +288,9 @@ function CreateGroupInner() {
           payout_third:         0,
           max_members:          100,
           is_public:            isPublic,
-          group_type:           groupType,
-          single_match_id:      groupType === "single_match" ? selectedMatch : null,
+          group_type:           "tournament",
+          single_match_id:      null,
+          competition_id:       competitionIdForInsert,
           enrollment_fee_cents: 0,
           rules_mode:           "house_rules",
           is_corporate_paid:    false,
@@ -331,6 +380,7 @@ function CreateGroupInner() {
         is_public:            isPublic,
         group_type:           groupType,
         single_match_id:      groupType === "single_match" ? selectedMatch : null,
+        competition_id:       competitionIdForInsert,
         enrollment_fee_cents: isCorporate || isFriendly ? 0 : 200,
         payment_model:        isFriendly ? "pay_per_member" : paymentModel,
         group_mode:           isFriendly ? "friendly" : isCorporate ? "corporate" : "standard",
@@ -529,8 +579,8 @@ function CreateGroupInner() {
         <div style={{ fontSize: 10, textTransform: "uppercase", letterSpacing: "0.12em", color: "#00D4FF", fontFamily: "var(--font-ui)", fontWeight: 700, marginBottom: 4 }}>
           New Group
         </div>
-        <h1 className="font-display text-4xl uppercase" style={{ color: "white" }}>{t("cg_title")}</h1>
-        <p style={{ fontSize: 13, color: "rgba(255,255,255,0.4)", fontFamily: "var(--font-ui)", marginTop: 4 }}>
+        <h1 className="font-display text-4xl uppercase" style={{ color: "var(--tx)" }}>{t("cg_title")}</h1>
+        <p style={{ fontSize: 13, color: "var(--t2)", fontFamily: "var(--font-ui)", marginTop: 4 }}>
           {t("cg_subtitle")}
         </p>
       </div>
@@ -539,7 +589,7 @@ function CreateGroupInner() {
       {rulesMode === null && (
         <div className="space-y-3">
           <div style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.12em", color: "rgba(255,255,255,0.35)", fontFamily: "var(--font-ui)" }}>
-            How do you want to run this group?
+            {t("cg_mode_question")}
           </div>
 
           {/* House Rules */}
@@ -560,12 +610,12 @@ function CreateGroupInner() {
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6, flexWrap: "wrap" }}>
                     <span style={{ fontFamily: "var(--font-display)", fontWeight: 800, fontSize: 18, color: "white", textTransform: "uppercase" }}>
-                      House Rules
+                      {t("cg_house_rules_title")}
                     </span>
-                    <Chip label="No setup" color="#00FF88" />
+                    <Chip label={t("cg_house_rules_badge")} color="#00FF88" />
                   </div>
                   <p style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", fontFamily: "var(--font-ui)", lineHeight: 1.45, margin: 0 }}>
-                    Standard scoring, ready to go, no setup.
+                    {t("cg_house_rules_desc")}
                   </p>
                 </div>
                 <ArrowRight size={18} style={{ color: "#00FF88", flexShrink: 0, alignSelf: "center" }} />
@@ -591,17 +641,26 @@ function CreateGroupInner() {
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6, flexWrap: "wrap" }}>
                     <span style={{ fontFamily: "var(--font-display)", fontWeight: 800, fontSize: 18, color: "white", textTransform: "uppercase" }}>
-                      Customizable
+                      {t("cg_customizable_title")}
                     </span>
                   </div>
                   <p style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", fontFamily: "var(--font-ui)", lineHeight: 1.45, margin: 0 }}>
-                    Configure your own scoring rules and manage a prize pool with your group.
+                    {t("cg_customizable_desc")}
                   </p>
                 </div>
                 <ArrowRight size={18} style={{ color: "#00D4FF", flexShrink: 0, alignSelf: "center" }} />
               </div>
             </div>
           </button>
+
+          {/* Public / Private — applies to whichever mode is picked above */}
+          <div style={{ ...glassCard, padding: 16 }} className="flex items-center gap-3">
+            <Toggle enabled={isPublic} onToggle={() => setIsPublic(v => !v)} />
+            <div className="flex-1 min-w-0">
+              <div className="text-sm font-bold" style={{ color: isPublic ? "white" : "rgba(255,255,255,0.7)" }}>{t("cg_discoverable")}</div>
+              <div style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", fontFamily: "var(--font-ui)" }}>{t("cg_discoverable_desc")}</div>
+            </div>
+          </div>
         </div>
       )}
 
@@ -835,8 +894,47 @@ function CreateGroupInner() {
         </div>
       )}
 
-      {/* ── STEP 1 ─────────────────────────────────────────────────────────── */}
-      {step === 1 && (
+      {/* ── STEP 1 (House Rules) — name + competition, done ──────────────────── */}
+      {step === 1 && rulesMode === "house_rules" && (
+        <div className="space-y-4">
+          <div style={{ ...glassCard, padding: 20 }} className="space-y-4">
+            <div>
+              <label style={labelStyle}>{t("cg_group_name")} *</label>
+              <div className="relative">
+                <Users size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: "rgba(255,255,255,0.35)" }} />
+                <input type="text"
+                  placeholder="e.g. Sunday Squad World Cup"
+                  value={groupName} onChange={(e: { target: HTMLInputElement }) => setGroupName(e.target.value)}
+                  onFocus={(e: { target: HTMLInputElement }) => { e.target.style.borderColor = "rgba(0,255,136,0.5)"; e.target.style.boxShadow = "0 0 0 3px rgba(0,255,136,0.1)"; }}
+                  onBlur={(e: { target: HTMLInputElement }) => { e.target.style.borderColor = "rgba(255,255,255,0.12)"; e.target.style.boxShadow = "none"; }}
+                  className="placeholder:text-[rgba(255,255,255,0.3)]"
+                  style={{ ...inputStyle, padding: "12px 16px 12px 40px" }} />
+              </div>
+            </div>
+
+            <CompetitionSelector competitions={competitions} value={competitionSlug} onChange={setCompetitionSlug} />
+          </div>
+
+          <button type="button" disabled={loading} onClick={() => {
+            if (!groupName.trim()) { setError("Group name is required"); return; }
+            setError(null);
+            handleCreate();
+          }} className="w-full flex items-center justify-center gap-2 transition-all disabled:opacity-50 hover:-translate-y-0.5"
+            style={{
+              padding: "13px", borderRadius: 12, border: "none",
+              background: "linear-gradient(135deg, #00FF88, #00D4FF)", color: "#0B141B",
+              fontWeight: 700, fontFamily: "var(--font-ui)", fontSize: 14,
+              textTransform: "uppercase", letterSpacing: "0.06em",
+              cursor: loading ? "not-allowed" : "pointer",
+              boxShadow: "0 0 20px rgba(0,255,136,0.25)",
+            }}>
+            {loading ? <><BallLoader size="inline" label={null} /> Creating your league...</> : <>Create Group <ArrowRight size={16} /></>}
+          </button>
+        </div>
+      )}
+
+      {/* ── STEP 1 (Customizable) ─────────────────────────────────────────────── */}
+      {step === 1 && rulesMode === "customizable" && (
         <div className="space-y-4">
           <div style={{ ...glassCard, padding: 20 }} className="space-y-4">
             <div>
@@ -855,12 +953,16 @@ function CreateGroupInner() {
               </div>
             </div>
 
+            <CompetitionSelector competitions={competitions} value={competitionSlug} onChange={setCompetitionSlug} />
+
             <div>
               <label style={labelStyle}>{t("cg_group_type")}</label>
               <div className="grid grid-cols-2 gap-2">
                 {[
                   { type: "tournament" as const, icon: Trophy, label: t("cg_full_tournament"), desc: "All 104 matches" },
-                  { type: "single_match" as const, icon: Zap,  label: t("cg_single_match"),   desc: "One specific match" },
+                  ...(competitionSlug === WORLD_CUP_SLUG
+                    ? [{ type: "single_match" as const, icon: Zap, label: t("cg_single_match"), desc: "One specific match" }]
+                    : []),
                 ].map(({ type, icon: Icon, label, desc }) => (
                   <button key={type} type="button" onClick={() => setGroupType(type)}
                     className="p-3 text-left transition-all"
@@ -876,14 +978,6 @@ function CreateGroupInner() {
                     <div className="text-[10px] mt-0.5" style={{ color: "rgba(255,255,255,0.35)" }}>{desc}</div>
                   </button>
                 ))}
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3 pt-1">
-              <Toggle enabled={isPublic} onToggle={() => setIsPublic(v => !v)} />
-              <div className="flex-1 min-w-0">
-                <div className="text-sm font-bold" style={{ color: isPublic ? "white" : "rgba(255,255,255,0.7)" }}>{t("cg_discoverable")}</div>
-                <div style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", fontFamily: "var(--font-ui)" }}>{t("cg_discoverable_desc")}</div>
               </div>
             </div>
 
@@ -951,23 +1045,19 @@ function CreateGroupInner() {
             </div>
           )}
 
-          <button type="button" disabled={rulesMode === "house_rules" && loading} onClick={() => {
+          <button type="button" onClick={() => {
             if (!groupName.trim()) { setError("Group name is required"); return; }
             setError(null);
-            if (rulesMode === "house_rules") { handleCreate(); return; }
             setStep(isFriendly ? 3 : 2);
-          }} className="w-full flex items-center justify-center gap-2 transition-all disabled:opacity-50 hover:-translate-y-0.5"
+          }} className="w-full flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5"
             style={{
               padding: "13px", borderRadius: 12, border: "none",
               background: "linear-gradient(135deg, #00FF88, #00D4FF)", color: "#0B141B",
               fontWeight: 700, fontFamily: "var(--font-ui)", fontSize: 14,
-              textTransform: "uppercase", letterSpacing: "0.06em",
-              cursor: rulesMode === "house_rules" && loading ? "not-allowed" : "pointer",
+              textTransform: "uppercase", letterSpacing: "0.06em", cursor: "pointer",
               boxShadow: "0 0 20px rgba(0,255,136,0.25)",
             }}>
-            {rulesMode === "house_rules"
-              ? (loading ? <><BallLoader size="inline" label={null} /> Creating your league...</> : <>Create Group <ArrowRight size={16} /></>)
-              : <>{isFriendly ? t("cg_next_scoring") : t("cg_next_prizes")} <ArrowRight size={16} /></>}
+            {isFriendly ? t("cg_next_scoring") : t("cg_next_prizes")} <ArrowRight size={16} />
           </button>
         </div>
       )}
