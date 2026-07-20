@@ -380,6 +380,80 @@ async function updateTournamentScorerPoints(sb: SupabaseClient): Promise<void> {
   }
 }
 
+// Awards / resets points for tournament_winner ("winner" pred_type) predictions
+// across all groups, once the Final is finished. Reuses knockoutWinner() — the
+// same winner-determination bracket advancement already relies on — since the
+// Final can go to extra time / penalties just like any other knockout match,
+// and the 90-min home_score/away_score columns alone (0-0 here) don't reflect
+// who actually won.
+async function updateTournamentWinnerPoints(sb: SupabaseClient): Promise<void> {
+  console.log("[scores/cron] STEP 5b: Updating tournament winner points...");
+
+  const { data: finalMatch } = await sb
+    .from("matches")
+    .select("home, away, home_score, away_score, home_score_et, away_score_et, penalty_winner, status")
+    .eq("stage", "Final")
+    .maybeSingle();
+
+  type FinalMatchRow = BracketMatchRow | null;
+
+  if ((finalMatch as FinalMatchRow)?.status !== "finished") {
+    console.log("[scores/cron]   Final not yet finished — skipping tournament_winner scoring");
+    return;
+  }
+
+  const winner = knockoutWinner(finalMatch as BracketMatchRow);
+  if (!winner) {
+    console.log("[scores/cron]   Final finished but no winner could be determined — skipping");
+    return;
+  }
+
+  console.log(`[scores/cron]   Tournament winner: ${winner}`);
+
+  const [{ data: preds }, { data: rulesRows }] = await Promise.all([
+    sb.from("group_predictions")
+      .select("id, group_id, pred_value, points_earned")
+      .eq("pred_type", "winner"),
+    sb.from("scoring_rules")
+      .select("group_id, tournament_winner, enable_winner"),
+  ]);
+
+  type RulesRow = { group_id: string; tournament_winner: number; enable_winner: boolean | null };
+  type PredRow = { id: string; group_id: string; pred_value: string | null; points_earned: number };
+
+  const rulesMap = new Map<string, RulesRow>(
+    ((rulesRows ?? []) as unknown as RulesRow[]).map(r => [r.group_id, r])
+  );
+
+  const toUpdate: Array<{ id: string; points_earned: number }> = [];
+
+  for (const pred of ((preds ?? []) as unknown as PredRow[])) {
+    const rules = rulesMap.get(pred.group_id);
+    let pts = 0;
+
+    if (rules?.enable_winner !== false && normName(pred.pred_value ?? "") === normName(winner)) {
+      pts = rules?.tournament_winner ?? 100;
+    }
+
+    if (pts !== pred.points_earned) {
+      toUpdate.push({ id: pred.id, points_earned: pts });
+    }
+  }
+
+  console.log(`[scores/cron]   Tournament winner point changes: ${toUpdate.length}`);
+
+  if (toUpdate.length > 0) {
+    await Promise.allSettled(
+      toUpdate.map(u =>
+        sb.from("group_predictions")
+          .update({ points_earned: u.points_earned })
+          .eq("id", u.id)
+      )
+    );
+    console.log(`[scores/cron]   Updated ${toUpdate.length} tournament winner pick(s)`);
+  }
+}
+
 // ── Types ──────────────────────────────────────────────────────────────────────
 
 interface APIFixture {
@@ -1901,6 +1975,7 @@ export async function POST(request: NextRequest) {
     // Runs every cron tick (not just when new matches finish) so the stats
     // table and pick points stay consistent with the full live_scores history.
     await updateTournamentScorerPoints(sb);
+    await updateTournamentWinnerPoints(sb);
 
     // ── STEP 6: Flush batched Telegram notifications ─────────────────────────
     // One message per user per tick even if multiple goals/results queued a
