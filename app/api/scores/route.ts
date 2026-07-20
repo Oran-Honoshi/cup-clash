@@ -28,6 +28,7 @@ import { resolveOracleDuels } from "@/lib/services/oracle-duels";
 import { getMembers } from "@/lib/services/groups";
 import { interpolate, TRANSLATIONS } from "@/lib/i18n";
 import { matchInGroupScope } from "@/lib/schedule";
+import { buildStandings } from "@/lib/standings";
 
 // Every internal Supabase fetch AND every API-Football fetch below must
 // carry cache: "no-store" explicitly (see apiFetch()) — this route has no
@@ -451,6 +452,218 @@ async function updateTournamentWinnerPoints(sb: SupabaseClient): Promise<void> {
       )
     );
     console.log(`[scores/cron]   Updated ${toUpdate.length} tournament winner pick(s)`);
+  }
+}
+
+// Awards / resets points for "second" (tournament runner-up) predictions,
+// once the Final is finished. The runner-up is whichever Final finalist did
+// NOT win — reuses the same knockoutWinner() result updateTournamentWinnerPoints()
+// computes, so the two can never disagree about who won the Final.
+async function updateSecondPlacePoints(sb: SupabaseClient): Promise<void> {
+  console.log("[scores/cron] STEP 5c: Updating second-place points...");
+
+  const { data: finalMatch } = await sb
+    .from("matches")
+    .select("home, away, home_score, away_score, home_score_et, away_score_et, penalty_winner, status")
+    .eq("stage", "Final")
+    .maybeSingle();
+
+  const fm = finalMatch as BracketMatchRow | null;
+  if (fm?.status !== "finished") {
+    console.log("[scores/cron]   Final not yet finished — skipping second-place scoring");
+    return;
+  }
+
+  const winner = knockoutWinner(fm);
+  if (!winner) {
+    console.log("[scores/cron]   Final finished but no winner could be determined — skipping second-place scoring");
+    return;
+  }
+  const runnerUp = winner === fm.home ? fm.away : fm.home;
+
+  console.log(`[scores/cron]   Runner-up: ${runnerUp}`);
+
+  const [{ data: preds }, { data: rulesRows }] = await Promise.all([
+    sb.from("group_predictions")
+      .select("id, group_id, pred_value, points_earned")
+      .eq("pred_type", "second"),
+    sb.from("scoring_rules")
+      .select("group_id, second_place, enable_second"),
+  ]);
+
+  type RulesRow = { group_id: string; second_place: number; enable_second: boolean | null };
+  type PredRow = { id: string; group_id: string; pred_value: string | null; points_earned: number };
+
+  const rulesMap = new Map<string, RulesRow>(
+    ((rulesRows ?? []) as unknown as RulesRow[]).map(r => [r.group_id, r])
+  );
+
+  const toUpdate: Array<{ id: string; points_earned: number }> = [];
+  for (const pred of ((preds ?? []) as unknown as PredRow[])) {
+    const rules = rulesMap.get(pred.group_id);
+    let pts = 0;
+    if (rules?.enable_second !== false && normName(pred.pred_value ?? "") === normName(runnerUp)) {
+      pts = rules?.second_place ?? 4;
+    }
+    if (pts !== pred.points_earned) toUpdate.push({ id: pred.id, points_earned: pts });
+  }
+
+  console.log(`[scores/cron]   Second-place point changes: ${toUpdate.length}`);
+  if (toUpdate.length > 0) {
+    await Promise.allSettled(
+      toUpdate.map(u => sb.from("group_predictions").update({ points_earned: u.points_earned }).eq("id", u.id))
+    );
+    console.log(`[scores/cron]   Updated ${toUpdate.length} second-place pick(s)`);
+  }
+}
+
+// Awards / resets points for "third" (tournament 3rd-place finisher)
+// predictions, once the 3rd-place ("bronze") match is finished. Reuses
+// knockoutWinner() exactly like the Final does — the bronze match can go to
+// extra time / penalties too.
+async function updateThirdPlacePoints(sb: SupabaseClient): Promise<void> {
+  console.log("[scores/cron] STEP 5d: Updating third-place points...");
+
+  const { data: bronzeMatch } = await sb
+    .from("matches")
+    .select("home, away, home_score, away_score, home_score_et, away_score_et, penalty_winner, status")
+    .eq("stage", "3rd")
+    .maybeSingle();
+
+  const bm = bronzeMatch as BracketMatchRow | null;
+  if (bm?.status !== "finished") {
+    console.log("[scores/cron]   3rd-place match not yet finished — skipping third-place scoring");
+    return;
+  }
+
+  const thirdPlace = knockoutWinner(bm);
+  if (!thirdPlace) {
+    console.log("[scores/cron]   3rd-place match finished but no winner could be determined — skipping");
+    return;
+  }
+
+  console.log(`[scores/cron]   3rd place: ${thirdPlace}`);
+
+  const [{ data: preds }, { data: rulesRows }] = await Promise.all([
+    sb.from("group_predictions")
+      .select("id, group_id, pred_value, points_earned")
+      .eq("pred_type", "third"),
+    sb.from("scoring_rules")
+      .select("group_id, third_place, enable_third"),
+  ]);
+
+  type RulesRow = { group_id: string; third_place: number; enable_third: boolean | null };
+  type PredRow = { id: string; group_id: string; pred_value: string | null; points_earned: number };
+
+  const rulesMap = new Map<string, RulesRow>(
+    ((rulesRows ?? []) as unknown as RulesRow[]).map(r => [r.group_id, r])
+  );
+
+  const toUpdate: Array<{ id: string; points_earned: number }> = [];
+  for (const pred of ((preds ?? []) as unknown as PredRow[])) {
+    const rules = rulesMap.get(pred.group_id);
+    let pts = 0;
+    if (rules?.enable_third !== false && normName(pred.pred_value ?? "") === normName(thirdPlace)) {
+      pts = rules?.third_place ?? 2;
+    }
+    if (pts !== pred.points_earned) toUpdate.push({ id: pred.id, points_earned: pts });
+  }
+
+  console.log(`[scores/cron]   Third-place point changes: ${toUpdate.length}`);
+  if (toUpdate.length > 0) {
+    await Promise.allSettled(
+      toUpdate.map(u => sb.from("group_predictions").update({ points_earned: u.points_earned }).eq("id", u.id))
+    );
+    console.log(`[scores/cron]   Updated ${toUpdate.length} third-place pick(s)`);
+  }
+}
+
+// Awards / resets points for best_third_1..8 ("best 8 third-placed teams")
+// predictions, once the entire World Cup group stage is finished. The real
+// advancing 8 are derived the same way the app already displays group
+// standings (buildStandings(), shared with
+// components/dashboard/group-standings.tsx so the two can't drift): take the
+// 3rd-ranked team in each of the 12 groups, then rank those 12 candidates by
+// the same points/GD/GF criteria and keep the top 8. Verified against the
+// real R32 bracket (the 32 actual R32 participants) — this reproduces it
+// exactly.
+async function updateBestThirdPoints(sb: SupabaseClient): Promise<void> {
+  console.log("[scores/cron] STEP 5e: Updating best-third-place points...");
+
+  const { data: groupMatches } = await sb
+    .from("matches")
+    .select("group_letter, home, away, home_score, away_score, status")
+    .eq("stage", "Group");
+
+  type GroupMatchRow = {
+    group_letter: string | null; home: string; away: string;
+    home_score: number | null; away_score: number | null; status: string;
+  };
+  // Excludes rows with no group_letter (e.g. E2E test scaffolding matches) —
+  // they aren't part of any real group and would otherwise block this gate
+  // forever since they never transition to "finished".
+  const rows = ((groupMatches ?? []) as GroupMatchRow[]).filter(m => m.group_letter);
+
+  if (rows.length === 0 || rows.some(m => m.status !== "finished")) {
+    console.log("[scores/cron]   Group stage not yet finished — skipping best-third scoring");
+    return;
+  }
+
+  const byLetter = new Map<string, GroupMatchRow[]>();
+  for (const m of rows) {
+    const letter = m.group_letter!;
+    if (!byLetter.has(letter)) byLetter.set(letter, []);
+    byLetter.get(letter)!.push(m);
+  }
+
+  const thirdPlaceCandidates: { team: string; points: number; gd: number; gf: number }[] = [];
+  for (const [, groupRows] of byLetter) {
+    const teams = [...new Set(groupRows.flatMap(m => [m.home, m.away]))];
+    const results = groupRows.map(m => ({
+      home: m.home, away: m.away,
+      homeScore: m.home_score ?? 0, awayScore: m.away_score ?? 0,
+    }));
+    const standings = buildStandings(teams, results);
+    const third = standings[2];
+    if (third) thirdPlaceCandidates.push({ team: third.team, points: third.points, gd: third.gd, gf: third.gf });
+  }
+
+  const ranked = [...thirdPlaceCandidates].sort((a, b) => b.points - a.points || b.gd - a.gd || b.gf - a.gf);
+  const best8 = new Set(ranked.slice(0, 8).map(c => normName(c.team)));
+
+  console.log(`[scores/cron]   Best 8 third-placed teams: ${ranked.slice(0, 8).map(c => c.team).join(", ")}`);
+
+  const [{ data: preds }, { data: rulesRows }] = await Promise.all([
+    sb.from("group_predictions")
+      .select("id, group_id, pred_value, points_earned")
+      .like("pred_type", "best_third_%"),
+    sb.from("scoring_rules")
+      .select("group_id, best_third, enable_best_third"),
+  ]);
+
+  type RulesRow = { group_id: string; best_third: number; enable_best_third: boolean | null };
+  type PredRow = { id: string; group_id: string; pred_value: string | null; points_earned: number };
+
+  const rulesMap = new Map<string, RulesRow>(
+    ((rulesRows ?? []) as unknown as RulesRow[]).map(r => [r.group_id, r])
+  );
+
+  const toUpdate: Array<{ id: string; points_earned: number }> = [];
+  for (const pred of ((preds ?? []) as unknown as PredRow[])) {
+    const rules = rulesMap.get(pred.group_id);
+    let pts = 0;
+    if (rules?.enable_best_third !== false && best8.has(normName(pred.pred_value ?? ""))) {
+      pts = rules?.best_third ?? 1;
+    }
+    if (pts !== pred.points_earned) toUpdate.push({ id: pred.id, points_earned: pts });
+  }
+
+  console.log(`[scores/cron]   Best-third point changes: ${toUpdate.length}`);
+  if (toUpdate.length > 0) {
+    await Promise.allSettled(
+      toUpdate.map(u => sb.from("group_predictions").update({ points_earned: u.points_earned }).eq("id", u.id))
+    );
+    console.log(`[scores/cron]   Updated ${toUpdate.length} best-third pick(s)`);
   }
 }
 
@@ -1976,6 +2189,9 @@ export async function POST(request: NextRequest) {
     // table and pick points stay consistent with the full live_scores history.
     await updateTournamentScorerPoints(sb);
     await updateTournamentWinnerPoints(sb);
+    await updateSecondPlacePoints(sb);
+    await updateThirdPlacePoints(sb);
+    await updateBestThirdPoints(sb);
 
     // ── STEP 6: Flush batched Telegram notifications ─────────────────────────
     // One message per user per tick even if multiple goals/results queued a
