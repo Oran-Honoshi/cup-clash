@@ -416,7 +416,7 @@ function MatchCard({
   const displayHomeFlagCode = teamOverride?.homeFlagCode ?? match.homeFlagCode;
   const displayAwayFlagCode = teamOverride?.awayFlagCode ?? match.awayFlagCode;
 
-  const stageName = match.group ? `Grp ${match.group}` : STAGE_LABELS[match.stage] ?? match.stage;
+  const stageName = match.roundLabel ?? (match.group ? `Grp ${match.group}` : STAGE_LABELS[match.stage] ?? match.stage);
 
   const showPred = !!pred && (state.type !== "upcoming" || locked);
   const showInputs = canPredict && !pred;
