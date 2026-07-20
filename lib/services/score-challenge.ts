@@ -1,11 +1,16 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { HISTORIC_SCORES, type HistoricScore } from "@/lib/data/historic-scores";
+import { HISTORIC_SCORES, type HistoricScore, type TeamKind } from "@/lib/data/historic-scores";
 
 // "Guess the Score" — a historic match's final score, guessed like a
 // Wordle-for-numbers: each guess is a (home, away) goal pair, and every
 // wrong guess gets ↑/↓/✓ feedback per number PLUS unlocks the next
-// fixture-identifying clue (year, then each team name). Competition+stage
-// is shown from the start. See lib/data/historic-scores.ts for the pool.
+// fixture-identifying clue (year, then each team's crest/flag). Competition
+// +stage is shown from the start. See lib/data/historic-scores.ts for the
+// pool. Additionally, each side (home/away) independently "locks" the first
+// time its number is guessed correctly — from then on that side is pinned
+// to the real score for every subsequent guess, regardless of what's
+// resubmitted for it, so a player can nail one side early and keep
+// narrowing down the other.
 
 export const TRY_LIMIT = 4;
 export const CLUE_ORDER = ["year", "homeTeam", "awayTeam"] as const;
@@ -50,9 +55,11 @@ export function checkGuess(
   return { correct: homeFeedback === "correct" && awayFeedback === "correct", homeFeedback, awayFeedback };
 }
 
+export type TeamBadgeClue = { url: string; kind: TeamKind };
+
 export type ClueState = {
   cluesUnlocked: ClueField[];
-  values: { year?: number; homeTeam?: string; awayTeam?: string };
+  values: { year?: number; homeTeam?: TeamBadgeClue; awayTeam?: TeamBadgeClue };
 };
 
 export function getClueState(challenge: HistoricScore, wrongGuessCount: number): ClueState {
@@ -60,10 +67,19 @@ export function getClueState(challenge: HistoricScore, wrongGuessCount: number):
   const values: ClueState["values"] = {};
   for (const clue of cluesUnlocked) {
     if (clue === "year") values.year = challenge.year;
-    if (clue === "homeTeam") values.homeTeam = challenge.homeTeam;
-    if (clue === "awayTeam") values.awayTeam = challenge.awayTeam;
+    if (clue === "homeTeam") values.homeTeam = { url: challenge.homeBadgeUrl, kind: challenge.homeTeamKind };
+    if (clue === "awayTeam") values.awayTeam = { url: challenge.awayBadgeUrl, kind: challenge.awayTeamKind };
   }
   return { cluesUnlocked, values };
+}
+
+export type LockState = { home: boolean; away: boolean };
+
+export function getLockState(guesses: ScoreGuessRecord[]): LockState {
+  return {
+    home: guesses.some((g) => g.home_feedback === "correct"),
+    away: guesses.some((g) => g.away_feedback === "correct"),
+  };
 }
 
 export type ScoreAttemptRow = {
@@ -77,6 +93,10 @@ export type RecordScoreGuessResult = {
   guessCount: number;
   solved: boolean;
   outOfTries: boolean;
+  homeFeedback: NumberFeedback;
+  awayFeedback: NumberFeedback;
+  homeLocked: boolean;
+  awayLocked: boolean;
 };
 
 // Persists an authenticated guesser's attempt. Anonymous play stays
@@ -98,17 +118,37 @@ export async function recordScoreGuess(
     .eq("challenge_date", challengeDate)
     .maybeSingle();
 
+  const priorGuesses = ((existing?.guesses as ScoreGuessRecord[] | null) ?? []).filter(Boolean);
+
   if (existing?.completed_at) {
-    return { guessCount: existing.guess_count, solved: existing.solved, outOfTries: !existing.solved };
+    const feedback = checkGuess(challenge, homeGuess, awayGuess);
+    const lock = getLockState(priorGuesses);
+    return {
+      guessCount: existing.guess_count,
+      solved: existing.solved,
+      outOfTries: !existing.solved,
+      homeFeedback: feedback.homeFeedback,
+      awayFeedback: feedback.awayFeedback,
+      homeLocked: lock.home,
+      awayLocked: lock.away,
+    };
   }
 
-  const { correct, homeFeedback, awayFeedback } = checkGuess(challenge, homeGuess, awayGuess);
-  const priorGuesses = ((existing?.guesses as ScoreGuessRecord[] | null) ?? []).filter(Boolean);
+  // A side that's already locked (guessed correctly in a prior attempt)
+  // stays pinned to the real score from here on, no matter what's
+  // resubmitted for it — the client stops letting the player edit it, but
+  // this is the source of truth so a stray resubmission can't un-solve it.
+  const priorLock = getLockState(priorGuesses);
+  const effectiveHome = priorLock.home ? challenge.homeScore : homeGuess;
+  const effectiveAway = priorLock.away ? challenge.awayScore : awayGuess;
+
+  const { homeFeedback, awayFeedback } = checkGuess(challenge, effectiveHome, effectiveAway);
   const guesses: ScoreGuessRecord[] = [
     ...priorGuesses,
-    { home: homeGuess, away: awayGuess, home_feedback: homeFeedback, away_feedback: awayFeedback },
+    { home: effectiveHome, away: effectiveAway, home_feedback: homeFeedback, away_feedback: awayFeedback },
   ];
-  const solved = correct;
+  const lock = getLockState(guesses);
+  const solved = lock.home && lock.away;
   const outOfTries = !solved && guesses.length >= TRY_LIMIT;
   const completed = solved || outOfTries;
 
@@ -126,5 +166,13 @@ export async function recordScoreGuess(
     { onConflict: "user_id,challenge_date" }
   );
 
-  return { guessCount: guesses.length, solved, outOfTries };
+  return {
+    guessCount: guesses.length,
+    solved,
+    outOfTries,
+    homeFeedback,
+    awayFeedback,
+    homeLocked: lock.home,
+    awayLocked: lock.away,
+  };
 }

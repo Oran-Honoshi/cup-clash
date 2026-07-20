@@ -3,7 +3,7 @@ export const dynamic = "force-dynamic";
 import { NextResponse } from "next/server";
 import { sbAdmin } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
-import { getScoreChallengeForDate, getClueState, todayISO, TRY_LIMIT, type ScoreGuessRecord } from "@/lib/services/score-challenge";
+import { getScoreChallengeForDate, getClueState, getLockState, todayISO, TRY_LIMIT, type ScoreGuessRecord } from "@/lib/services/score-challenge";
 
 // Public, anonymous-playable — no auth required. The answer (teams/score)
 // is never sent to the client except via the gated clue state, same
@@ -15,7 +15,9 @@ export async function GET(req: Request) {
   const sb = createClient();
   const { data: { user } } = await sb.auth.getUser();
 
-  let attempt: { guessCount: number; solved: boolean; outOfTries: boolean; guesses: ScoreGuessRecord[] } | null = null;
+  let attempt:
+    | { guessCount: number; solved: boolean; outOfTries: boolean; guesses: ScoreGuessRecord[]; homeLocked: boolean; awayLocked: boolean }
+    | null = null;
 
   if (user) {
     const admin = sbAdmin();
@@ -26,11 +28,15 @@ export async function GET(req: Request) {
       .eq("challenge_date", challengeDate)
       .maybeSingle();
     if (data) {
+      const guesses = (data.guesses as ScoreGuessRecord[] | null) ?? [];
+      const lock = getLockState(guesses);
       attempt = {
         guessCount: data.guess_count,
         solved: data.solved,
         outOfTries: !data.solved && !!data.completed_at,
-        guesses: (data.guesses as ScoreGuessRecord[] | null) ?? [],
+        guesses,
+        homeLocked: lock.home,
+        awayLocked: lock.away,
       };
     }
   }

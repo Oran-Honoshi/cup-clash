@@ -10,44 +10,13 @@ import { PlayerPicker } from "@/components/predictions/player-picker";
 import { DailyChallengeTeamPicker } from "@/components/daily-challenge/daily-challenge-team-picker";
 import { WordleTileRow } from "@/components/daily-challenge/wordle-tiles";
 import { BallLoader } from "@/components/ui/BallLoader";
+import { CrestSilhouette } from "@/components/ui/crest-silhouette";
 import { buildDailyPuzzleAuthWallUrl } from "@/lib/auth-wall";
 import { loadLocalAttempt, saveLocalAttempt } from "@/lib/daily-challenge-storage";
 import type { ClueField, GameType } from "@/lib/services/daily-challenge";
 import type { LetterTile } from "@/lib/services/wordle-feedback";
 
 const surface = { background: "var(--sf)", border: "1px solid var(--br)", borderRadius: 22 } as const;
-
-// Club crests are flat, fully-opaque artwork — unlike a player cutout photo,
-// a crest's alpha channel only traces its outer boundary (almost every crest
-// is some kind of shield/circle), so a plain `filter: brightness(0)` collapses
-// every club into the same generic blob. This renders the crest as two masked
-// layers instead: a solid accent-color fill clipped to the crest's alpha
-// silhouette (the shield/circle outline), screen-blended with a second layer
-// masked by the crest's luminance, which "punches through" its bright regions
-// (emblems, text, stripes) to reveal the real internal shape.
-function CrestSilhouette({ url, className }: { url: string; className?: string }) {
-  const maskStyle = (mode: "alpha" | "luminance"): React.CSSProperties => ({
-    WebkitMaskImage: `url(${url})`,
-    maskImage: `url(${url})`,
-    maskMode: mode,
-    WebkitMaskSize: "contain",
-    maskSize: "contain",
-    WebkitMaskRepeat: "no-repeat",
-    maskRepeat: "no-repeat",
-    WebkitMaskPosition: "center",
-    maskPosition: "center",
-  });
-
-  return (
-    <div className={cn("relative overflow-hidden p-1.5", className)} style={{ background: "var(--ip)" }}>
-      <div className="absolute inset-0" style={{ backgroundColor: "var(--ac)", ...maskStyle("alpha") }} />
-      <div
-        className="absolute inset-0"
-        style={{ backgroundColor: "var(--ip)", mixBlendMode: "screen", ...maskStyle("luminance") }}
-      />
-    </div>
-  );
-}
 
 // Player photos (Wikimedia Commons headshots, API-Sports cutouts) are fully
 // opaque rectangles with no alpha channel at all, so the CrestSilhouette mask

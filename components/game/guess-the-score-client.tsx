@@ -3,16 +3,20 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { CheckCircle2, XCircle, Lock, ArrowUp, ArrowDown, Check, Minus, Plus } from "lucide-react";
 import { BallLoader } from "@/components/ui/BallLoader";
+import { CrestSilhouette } from "@/components/ui/crest-silhouette";
 import { loadLocalScoreAttempt, saveLocalScoreAttempt } from "@/lib/score-challenge-storage";
 
 const surface = { background: "var(--sf)", border: "1px solid var(--br)", borderRadius: 22 } as const;
+const GREEN = "#00c46a";
 
 type NumberFeedback = "correct" | "too_high" | "too_low";
 type ClueField = "year" | "homeTeam" | "awayTeam";
+type TeamKind = "club" | "national";
+type TeamBadgeClue = { url: string; kind: TeamKind };
 
 type ClueState = {
   cluesUnlocked: ClueField[];
-  values: { year?: number; homeTeam?: string; awayTeam?: string };
+  values: { year?: number; homeTeam?: TeamBadgeClue; awayTeam?: TeamBadgeClue };
 };
 
 type ScoreGuessRecord = { home: number; away: number; home_feedback: NumberFeedback; away_feedback: NumberFeedback };
@@ -23,7 +27,14 @@ type TodayResponse = {
   stage: string;
   tryLimit: number;
   clueState: ClueState;
-  attempt: { guessCount: number; solved: boolean; outOfTries: boolean; guesses: ScoreGuessRecord[] } | null;
+  attempt: {
+    guessCount: number;
+    solved: boolean;
+    outOfTries: boolean;
+    guesses: ScoreGuessRecord[];
+    homeLocked: boolean;
+    awayLocked: boolean;
+  } | null;
 };
 
 type Reveal = { competition: string; stage: string; year: number; homeTeam: string; awayTeam: string; homeScore: number; awayScore: number };
@@ -36,13 +47,22 @@ type GuessResponse = {
   clueState: ClueState;
   homeFeedback: NumberFeedback;
   awayFeedback: NumberFeedback;
+  homeLocked: boolean;
+  awayLocked: boolean;
   reveal: Reveal | null;
 };
 
 const CLUE_LABELS: Record<ClueField, string> = { year: "Year", homeTeam: "Home Team", awayTeam: "Away Team" };
 
+function deriveLock(guesses: ScoreGuessRecord[]): { home: boolean; away: boolean } {
+  return {
+    home: guesses.some((g) => g.home_feedback === "correct"),
+    away: guesses.some((g) => g.away_feedback === "correct"),
+  };
+}
+
 function FeedbackIcon({ feedback }: { feedback: NumberFeedback }) {
-  if (feedback === "correct") return <Check size={12} style={{ color: "#00c46a" }} />;
+  if (feedback === "correct") return <Check size={12} style={{ color: GREEN }} />;
   if (feedback === "too_high") return <ArrowDown size={12} style={{ color: "#f87171" }} />;
   return <ArrowUp size={12} style={{ color: "#f87171" }} />;
 }
@@ -66,6 +86,20 @@ function Stepper({ label, value, onChange }: { label: string; value: number; onC
   );
 }
 
+// Same visual language as a correct Wordle tile — a side that's been
+// guessed exactly right locks in green and stops being editable.
+function LockedScore({ label, value }: { label: string; value: number }) {
+  return (
+    <div className="flex flex-col items-center gap-1.5">
+      <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "var(--t2)" }}>{label}</span>
+      <div className="flex items-center gap-2">
+        <span className="text-2xl font-black w-8 text-center" style={{ color: GREEN }}>{value}</span>
+        <Check size={16} style={{ color: GREEN }} />
+      </div>
+    </div>
+  );
+}
+
 export function GuessTheScoreClient({ userId }: { userId: string | null }) {
   const [loading, setLoading] = useState(true);
   const [today, setToday] = useState<TodayResponse | null>(null);
@@ -73,6 +107,8 @@ export function GuessTheScoreClient({ userId }: { userId: string | null }) {
   const [guessCount, setGuessCount] = useState(0);
   const [solved, setSolved] = useState(false);
   const [outOfTries, setOutOfTries] = useState(false);
+  const [homeLocked, setHomeLocked] = useState(false);
+  const [awayLocked, setAwayLocked] = useState(false);
   const [reveal, setReveal] = useState<Reveal | null>(null);
   const [homeGuess, setHomeGuess] = useState(1);
   const [awayGuess, setAwayGuess] = useState(1);
@@ -91,11 +127,20 @@ export function GuessTheScoreClient({ userId }: { userId: string | null }) {
         if (local.guesses.length > 0) {
           const refetch = await fetch(`/api/score-challenge?wrongGuesses=${wrongCount}`);
           const refreshed = (await refetch.json()) as TodayResponse;
+          const mappedGuesses: ScoreGuessRecord[] = local.guesses.map(g => ({
+            home: g.home,
+            away: g.away,
+            home_feedback: g.homeFeedback as NumberFeedback,
+            away_feedback: g.awayFeedback as NumberFeedback,
+          }));
+          const lock = deriveLock(mappedGuesses);
           setToday(refreshed);
-          setGuesses(local.guesses.map(g => ({ home: g.home, away: g.away, home_feedback: g.homeFeedback as NumberFeedback, away_feedback: g.awayFeedback as NumberFeedback })));
+          setGuesses(mappedGuesses);
           setGuessCount(local.guesses.length);
-          setSolved(local.guesses.some(g => g.correct));
-          setOutOfTries(!local.guesses.some(g => g.correct) && local.guesses.length >= refreshed.tryLimit);
+          setSolved(lock.home && lock.away);
+          setOutOfTries(!(lock.home && lock.away) && local.guesses.length >= refreshed.tryLimit);
+          setHomeLocked(lock.home);
+          setAwayLocked(lock.away);
           setLoading(false);
           return;
         }
@@ -107,6 +152,8 @@ export function GuessTheScoreClient({ userId }: { userId: string | null }) {
         setGuessCount(data.attempt.guessCount);
         setSolved(data.attempt.solved);
         setOutOfTries(data.attempt.outOfTries);
+        setHomeLocked(data.attempt.homeLocked);
+        setAwayLocked(data.attempt.awayLocked);
       }
       setLoading(false);
     })();
@@ -115,35 +162,48 @@ export function GuessTheScoreClient({ userId }: { userId: string | null }) {
 
   const wrongGuessCount = guessCount - (solved ? 1 : 0);
 
+  const homeLockedValue = useMemo(() => guesses.find(g => g.home_feedback === "correct")?.home, [guesses]);
+  const awayLockedValue = useMemo(() => guesses.find(g => g.away_feedback === "correct")?.away, [guesses]);
+
   const handleGuess = useCallback(async () => {
     if (!today || completed || submitting) return;
     setSubmitting(true);
     try {
+      const effectiveHome = homeLocked ? homeLockedValue! : homeGuess;
+      const effectiveAway = awayLocked ? awayLockedValue! : awayGuess;
       const res = await fetch("/api/score-challenge/guess", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ homeGuess, awayGuess, priorWrongGuesses: wrongGuessCount }),
+        body: JSON.stringify({
+          homeGuess: effectiveHome,
+          awayGuess: effectiveAway,
+          priorWrongGuesses: wrongGuessCount,
+          homeLockedPrior: homeLocked,
+          awayLockedPrior: awayLocked,
+        }),
       });
       const data = (await res.json()) as GuessResponse;
 
-      const record: ScoreGuessRecord = { home: homeGuess, away: awayGuess, home_feedback: data.homeFeedback, away_feedback: data.awayFeedback };
+      const record: ScoreGuessRecord = { home: effectiveHome, away: effectiveAway, home_feedback: data.homeFeedback, away_feedback: data.awayFeedback };
       setGuesses(prev => [...prev, record]);
       setGuessCount(data.guessCount);
       setSolved(data.solved);
       setOutOfTries(data.outOfTries);
+      setHomeLocked(data.homeLocked);
+      setAwayLocked(data.awayLocked);
       setReveal(data.reveal);
       setToday(prev => (prev ? { ...prev, clueState: data.clueState } : prev));
 
       if (!userId) {
         const local = loadLocalScoreAttempt(today.challengeDate);
         saveLocalScoreAttempt(today.challengeDate, {
-          guesses: [...local.guesses, { home: homeGuess, away: awayGuess, homeFeedback: data.homeFeedback, awayFeedback: data.awayFeedback, correct: data.correct }],
+          guesses: [...local.guesses, { home: effectiveHome, away: effectiveAway, homeFeedback: data.homeFeedback, awayFeedback: data.awayFeedback, correct: data.correct }],
         });
       }
     } finally {
       setSubmitting(false);
     }
-  }, [today, completed, submitting, userId, homeGuess, awayGuess, wrongGuessCount]);
+  }, [today, completed, submitting, userId, homeGuess, awayGuess, wrongGuessCount, homeLocked, awayLocked, homeLockedValue, awayLockedValue]);
 
   const dots = useMemo(() => {
     if (!today) return [];
@@ -185,7 +245,7 @@ export function GuessTheScoreClient({ userId }: { userId: string | null }) {
         <div className="flex gap-1.5">
           {dots.map((d, i) => (
             <span key={i} className="h-2.5 w-2.5 rounded-full"
-              style={{ background: d === "correct" ? "#00c46a" : d === "wrong" ? "#f87171" : "var(--ip)" }} />
+              style={{ background: d === "correct" ? GREEN : d === "wrong" ? "#f87171" : "var(--ip)" }} />
           ))}
         </div>
       </div>
@@ -199,7 +259,6 @@ export function GuessTheScoreClient({ userId }: { userId: string | null }) {
         </div>
         {clueOrder.map(clue => {
           const unlocked = clueState.cluesUnlocked.includes(clue);
-          const value = clueState.values[clue];
           return (
             <div key={clue} className="flex flex-col items-center gap-1.5 text-center">
               <span className="text-[10px] font-bold uppercase tracking-widest" style={{ color: "var(--t2)" }}>
@@ -209,8 +268,13 @@ export function GuessTheScoreClient({ userId }: { userId: string | null }) {
                 <div className="flex items-center justify-center h-10 w-10 rounded-xl" style={{ background: "var(--ip)" }}>
                   <Lock size={14} style={{ color: "var(--t2)" }} />
                 </div>
+              ) : clue === "year" ? (
+                <span className="text-sm font-bold" style={{ color: "var(--tx)" }}>{clueState.values.year ?? "—"}</span>
               ) : (
-                <span className="text-sm font-bold" style={{ color: "var(--tx)" }}>{value ?? "—"}</span>
+                <CrestSilhouette
+                  url={clueState.values[clue]!.url}
+                  className="h-10 w-10 rounded-xl"
+                />
               )}
             </div>
           );
@@ -239,9 +303,17 @@ export function GuessTheScoreClient({ userId }: { userId: string | null }) {
       {!completed ? (
         <div className="p-5 cc-elevated space-y-4" style={surface}>
           <div className="flex items-center justify-center gap-6">
-            <Stepper label="Home" value={homeGuess} onChange={setHomeGuess} />
+            {homeLocked ? (
+              <LockedScore label="Home" value={homeLockedValue!} />
+            ) : (
+              <Stepper label="Home" value={homeGuess} onChange={setHomeGuess} />
+            )}
             <span className="text-xl font-black" style={{ color: "var(--t2)" }}>–</span>
-            <Stepper label="Away" value={awayGuess} onChange={setAwayGuess} />
+            {awayLocked ? (
+              <LockedScore label="Away" value={awayLockedValue!} />
+            ) : (
+              <Stepper label="Away" value={awayGuess} onChange={setAwayGuess} />
+            )}
           </div>
           <button
             type="button"
@@ -256,7 +328,7 @@ export function GuessTheScoreClient({ userId }: { userId: string | null }) {
       ) : (
         <div className="p-5 cc-elevated space-y-4" style={surface}>
           <div className="flex items-center gap-2">
-            {solved ? <CheckCircle2 size={18} style={{ color: "#00c46a" }} /> : <XCircle size={18} style={{ color: "#f87171" }} />}
+            {solved ? <CheckCircle2 size={18} style={{ color: GREEN }} /> : <XCircle size={18} style={{ color: "#f87171" }} />}
             <span className="text-base font-black" style={{ color: "var(--tx)" }}>
               {solved ? "You got it!" : "Out of tries"}
             </span>

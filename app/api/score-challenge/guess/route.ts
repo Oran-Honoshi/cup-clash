@@ -17,7 +17,13 @@ import {
 // state. Persistence only happens when signed in (see recordScoreGuess).
 export async function POST(req: Request) {
   const body = (await req.json().catch(() => null)) as
-    | { homeGuess?: number; awayGuess?: number; priorWrongGuesses?: number }
+    | {
+        homeGuess?: number;
+        awayGuess?: number;
+        priorWrongGuesses?: number;
+        homeLockedPrior?: boolean;
+        awayLockedPrior?: boolean;
+      }
     | null;
   const homeGuess = Number(body?.homeGuess);
   const awayGuess = Number(body?.awayGuess);
@@ -35,6 +41,8 @@ export async function POST(req: Request) {
   let outOfTries: boolean;
   let homeFeedback: string;
   let awayFeedback: string;
+  let homeLocked: boolean;
+  let awayLocked: boolean;
 
   if (user) {
     const admin = sbAdmin();
@@ -42,16 +50,27 @@ export async function POST(req: Request) {
     guessCount = result.guessCount;
     solved = result.solved;
     outOfTries = result.outOfTries;
-    const feedback = checkGuess(challenge, homeGuess, awayGuess);
-    homeFeedback = feedback.homeFeedback;
-    awayFeedback = feedback.awayFeedback;
+    homeFeedback = result.homeFeedback;
+    awayFeedback = result.awayFeedback;
+    homeLocked = result.homeLocked;
+    awayLocked = result.awayLocked;
   } else {
-    const feedback = checkGuess(challenge, homeGuess, awayGuess);
+    // Anonymous play has no server-stored guess history — the client (which
+    // persists its own history in localStorage) tells us what was already
+    // locked so a side pinned in an earlier guess stays pinned here too,
+    // regardless of what's resubmitted for it.
+    const homeLockedPrior = !!body?.homeLockedPrior;
+    const awayLockedPrior = !!body?.awayLockedPrior;
+    const effectiveHome = homeLockedPrior ? challenge.homeScore : homeGuess;
+    const effectiveAway = awayLockedPrior ? challenge.awayScore : awayGuess;
+    const feedback = checkGuess(challenge, effectiveHome, effectiveAway);
     homeFeedback = feedback.homeFeedback;
     awayFeedback = feedback.awayFeedback;
+    homeLocked = homeLockedPrior || homeFeedback === "correct";
+    awayLocked = awayLockedPrior || awayFeedback === "correct";
     const priorWrong = Math.max(0, Math.min(TRY_LIMIT, Number(body?.priorWrongGuesses) || 0));
     guessCount = priorWrong + 1;
-    solved = feedback.correct;
+    solved = homeLocked && awayLocked;
     outOfTries = !solved && guessCount >= TRY_LIMIT;
   }
 
@@ -68,6 +87,8 @@ export async function POST(req: Request) {
       clueState,
       homeFeedback,
       awayFeedback,
+      homeLocked,
+      awayLocked,
       reveal: completed
         ? {
             competition: challenge.competition,
