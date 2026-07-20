@@ -4,9 +4,11 @@ import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  LayoutDashboard, Users, Trophy, Target, BarChart2,
-  GitBranch, Brain, Shield, LogOut, Settings, MessageCircle, Trash2, CalendarDays, LayoutGrid, Newspaper, Gamepad2,
+  LayoutDashboard, Home, Users, Trophy, Target, BarChart2,
+  GitBranch, Brain, Shield, LogOut, Settings, MessageCircle, Trash2, CalendarDays, LayoutGrid, Newspaper, Gamepad2, ListChecks, Goal, LineChart,
 } from "lucide-react";
+import type { LucideIcon } from "lucide-react";
+import type { Translations } from "@/lib/i18n";
 import Image from "next/image";
 import { createClient } from "@/lib/supabase/client";
 import { flagUrl } from "@/lib/countries";
@@ -33,19 +35,97 @@ interface UserProfile {
   avatar_url: string | null;
 }
 
-const NAV_ITEMS = [
-  { href: "/dashboard",    key: "nav_dashboard"     as const, icon: LayoutDashboard },
-  { href: "/groups",       key: "nav_groups"        as const, icon: Users           },
-  { href: "/leaderboard",  key: "nav_leaderboard"   as const, icon: Trophy          },
-  { href: "/predictions",  key: "nav_predictions"   as const, icon: Target          },
-  { href: "/standings",    key: "nav_standings"     as const, icon: BarChart2       },
-  { href: "/bracket",      key: "nav_bracket"       as const, icon: GitBranch       },
-  { href: "/trivia",       key: "nav_trivia"        as const, icon: Brain           },
-  { href: "/daily-challenge", key: "nav_daily_challenge" as const, icon: Gamepad2   },
-  { href: "/admin",        key: "common_admin"      as const, icon: Shield          },
+function SidebarNavLink({ href, label, icon: Icon, active, faint }: {
+  href: string; label: string; icon: LucideIcon; active: boolean; faint?: boolean;
+}) {
+  return (
+    <Link href={href}
+      className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold transition-all"
+      style={active ? {
+        background: "color-mix(in srgb, var(--ac) 12%, transparent)",
+        color: "var(--ac)",
+        border: "1px solid color-mix(in srgb, var(--ac) 25%, transparent)",
+        boxShadow: "0 0 12px color-mix(in srgb, var(--ac) 8%, transparent)",
+      } : {
+        color: faint ? "var(--ft)" : "var(--t2)",
+      }}
+      onMouseEnter={e => { if (!active) { (e.currentTarget as HTMLElement).style.color = "var(--tx)"; (e.currentTarget as HTMLElement).style.background = "var(--ip)"; } }}
+      onMouseLeave={e => { if (!active) { (e.currentTarget as HTMLElement).style.color = faint ? "var(--ft)" : "var(--t2)"; (e.currentTarget as HTMLElement).style.background = "transparent"; } }}
+    >
+      <Icon size={17} strokeWidth={active ? 2.5 : 1.75} />
+      {label}
+    </Link>
+  );
+}
+
+function SidebarSectionLabel({ label }: { label: string }) {
+  return (
+    <div className="px-3 pt-3 pb-1 text-[10px] font-bold uppercase tracking-widest" style={{ color: "var(--ft)" }}>
+      {label}
+    </div>
+  );
+}
+
+interface NavItem {
+  href: string;
+  key: keyof Translations;
+  icon: LucideIcon;
+}
+
+interface NavSection {
+  headerKey?: keyof Translations;
+  items: NavItem[];
+}
+
+// Zones-aligned but denser — a desktop sidebar doesn't need to mirror the
+// mobile 5-zone bottom nav 1:1, it just needs every real destination
+// reachable without dead ends. See zone_design/README.md for the mobile side.
+const NAV_SECTIONS: NavSection[] = [
+  { items: [
+    { href: "/home", key: "nav_home", icon: Home },
+  ] },
+  { headerKey: "nav_section_social", items: [
+    { href: "/groups", key: "nav_groups", icon: Users },
+    { href: "/chat",   key: "nav_chat",   icon: MessageCircle },
+  ] },
+  { headerKey: "nav_section_game", items: [
+    { href: "/game",            key: "nav_game",            icon: Gamepad2 },
+    { href: "/daily-challenge", key: "nav_daily_challenge", icon: ListChecks },
+    { href: "/trivia",          key: "nav_trivia",          icon: Brain },
+  ] },
+  { headerKey: "nav_section_predictions", items: [
+    { href: "/predictions",         key: "nav_predictions", icon: Target },
+    { href: "/predictions/summary", key: "nav_summary",     icon: LayoutGrid },
+  ] },
+  { headerKey: "nav_section_tournament", items: [
+    { href: "/schedule",  key: "sch_title",     icon: CalendarDays },
+    { href: "/scores",    key: "nav_scores",    icon: Goal },
+    { href: "/standings", key: "nav_standings", icon: BarChart2 },
+    { href: "/bracket",   key: "nav_bracket",   icon: GitBranch },
+    { href: "/stats",     key: "nav_stats",     icon: LineChart },
+    { href: "/leaderboard", key: "nav_leaderboard", icon: Trophy },
+  ] },
+  { items: [
+    { href: "/news", key: "nav_news", icon: Newspaper },
+  ] },
 ];
 
-const CHAT_HREF = "/chat";
+const ADMIN_ITEMS: NavItem[] = [
+  { href: "/admin",   key: "common_admin", icon: Shield },
+  { href: "/testing", key: "nav_testing",  icon: Shield },
+];
+
+const ALL_NAV_HREFS = NAV_SECTIONS.flatMap(s => s.items.map(i => i.href));
+
+// Longest-prefix-wins so `/predictions` doesn't also light up on
+// `/predictions/summary` (they're siblings in the same section).
+function isNavActive(pathname: string, href: string): boolean {
+  if (pathname === href) return true;
+  if (!pathname.startsWith(`${href}/`)) return false;
+  return !ALL_NAV_HREFS.some(other =>
+    other.length > href.length && (pathname === other || pathname.startsWith(`${other}/`))
+  );
+}
 
 export function AppSidebar() {
   const pathname  = usePathname();
@@ -146,7 +226,7 @@ export function AppSidebar() {
     >
       {/* Logo */}
       <div className="px-5 py-5 border-b" style={{ borderColor: "var(--br)" }}>
-        <Link href="/dashboard" className="flex items-center gap-2.5">
+        <Link href="/home" className="flex items-center gap-2.5">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/icons/icon-192.png" alt="Cup Clash" className="h-8 w-8 rounded-xl object-cover" />
           <div>
@@ -154,7 +234,7 @@ export function AppSidebar() {
               Cup<span style={{ background: "linear-gradient(135deg,#00FF88,#00D4FF)", WebkitBackgroundClip: "text", backgroundClip: "text", WebkitTextFillColor: "transparent" }}>Clash</span>
             </div>
             <div className="text-[9px] font-bold uppercase tracking-widest" style={{ color: "#00D4FF" }}>
-              World Cup 2026
+              {t("sidebar_tagline")}
             </div>
           </div>
         </Link>
@@ -162,106 +242,37 @@ export function AppSidebar() {
 
       {/* Nav */}
       <nav className="flex-1 overflow-y-auto px-3 py-4 space-y-0.5">
-        {NAV_ITEMS.map(({ href, key, icon: Icon }) => {
-          const active = pathname === href || (href !== "/dashboard" && pathname.startsWith(href));
-          return (
-            <Link key={href} href={href}
-              className={cn(
-                "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold transition-all",
-              )}
-              style={active ? {
-                background: "color-mix(in srgb, var(--ac) 12%, transparent)",
-                color: "var(--ac)",
-                border: "1px solid color-mix(in srgb, var(--ac) 25%, transparent)",
-                boxShadow: "0 0 12px color-mix(in srgb, var(--ac) 8%, transparent)",
-              } : {
-                color: "var(--t2)",
-              }}
-              onMouseEnter={e => { if (!active) { (e.currentTarget as HTMLElement).style.color = "var(--tx)"; (e.currentTarget as HTMLElement).style.background = "var(--ip)"; } }}
-              onMouseLeave={e => { if (!active) { (e.currentTarget as HTMLElement).style.color = "var(--t2)"; (e.currentTarget as HTMLElement).style.background = "transparent"; } }}
-            >
-              <Icon size={17} strokeWidth={active ? 2.5 : 1.75} />
-              {t(key)}
-            </Link>
-          );
-        })}
+        {NAV_SECTIONS.map((section, i) => (
+          <div key={i} className={cn(i > 0 && "pt-1", "space-y-0.5")}>
+            {section.items.length > 1 && section.headerKey && (
+              <SidebarSectionLabel label={t(section.headerKey)} />
+            )}
+            {section.items.map(({ href, key, icon }) => (
+              <SidebarNavLink
+                key={href}
+                href={href}
+                label={t(key)}
+                icon={icon}
+                active={isNavActive(pathname, href)}
+              />
+            ))}
+          </div>
+        ))}
 
-        {/* Schedule */}
-        <Link href="/schedule"
-          className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold transition-all"
-          style={pathname === "/schedule" ? {
-            background: "color-mix(in srgb, var(--ac) 12%, transparent)",
-            color: "var(--ac)",
-            border: "1px solid color-mix(in srgb, var(--ac) 25%, transparent)",
-            boxShadow: "0 0 12px color-mix(in srgb, var(--ac) 8%, transparent)",
-          } : { color: "var(--t2)" }}
-          onMouseEnter={e => { if (pathname !== "/schedule") { (e.currentTarget as HTMLElement).style.color = "var(--tx)"; (e.currentTarget as HTMLElement).style.background = "var(--ip)"; } }}
-          onMouseLeave={e => { if (pathname !== "/schedule") { (e.currentTarget as HTMLElement).style.color = "var(--t2)"; (e.currentTarget as HTMLElement).style.background = "transparent"; } }}
-        >
-          <CalendarDays size={17} strokeWidth={pathname === "/schedule" ? 2.5 : 1.75} />
-          Schedule
-        </Link>
-
-        {/* Predictions Summary */}
-        <Link href="/predictions/summary"
-          className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold transition-all"
-          style={pathname.startsWith("/predictions/summary") ? {
-            background: "color-mix(in srgb, var(--ac) 12%, transparent)",
-            color: "var(--ac)",
-            border: "1px solid color-mix(in srgb, var(--ac) 25%, transparent)",
-            boxShadow: "0 0 12px color-mix(in srgb, var(--ac) 8%, transparent)",
-          } : { color: "var(--t2)" }}
-          onMouseEnter={e => { if (!pathname.startsWith("/predictions/summary")) { (e.currentTarget as HTMLElement).style.color = "var(--tx)"; (e.currentTarget as HTMLElement).style.background = "var(--ip)"; } }}
-          onMouseLeave={e => { if (!pathname.startsWith("/predictions/summary")) { (e.currentTarget as HTMLElement).style.color = "var(--t2)"; (e.currentTarget as HTMLElement).style.background = "transparent"; } }}
-        >
-          <LayoutGrid size={17} strokeWidth={pathname.startsWith("/predictions/summary") ? 2.5 : 1.75} />
-          Summary
-        </Link>
-
-        {/* Chat */}
-        <Link href={CHAT_HREF}
-          className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold transition-all"
-          style={{ color: "var(--t2)" }}
-          onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = "var(--tx)"; (e.currentTarget as HTMLElement).style.background = "var(--ip)"; }}
-          onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = "var(--t2)"; (e.currentTarget as HTMLElement).style.background = "transparent"; }}
-        >
-          <MessageCircle size={17} strokeWidth={1.75} />
-          {t("nav_chat")}
-        </Link>
-
-        {/* News */}
-        <Link href="/news"
-          className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold transition-all"
-          style={pathname.startsWith("/news") ? {
-            background: "color-mix(in srgb, var(--ac) 12%, transparent)",
-            color: "var(--ac)",
-            border: "1px solid color-mix(in srgb, var(--ac) 25%, transparent)",
-            boxShadow: "0 0 12px color-mix(in srgb, var(--ac) 8%, transparent)",
-          } : { color: "var(--t2)" }}
-          onMouseEnter={e => { if (!pathname.startsWith("/news")) { (e.currentTarget as HTMLElement).style.color = "var(--tx)"; (e.currentTarget as HTMLElement).style.background = "var(--ip)"; } }}
-          onMouseLeave={e => { if (!pathname.startsWith("/news")) { (e.currentTarget as HTMLElement).style.color = "var(--t2)"; (e.currentTarget as HTMLElement).style.background = "transparent"; } }}
-        >
-          <Newspaper size={17} strokeWidth={pathname.startsWith("/news") ? 2.5 : 1.75} />
-          News
-        </Link>
-
-        {/* Testing — admin only */}
+        {/* Admin-only tools */}
         {isAdmin && (
-          <Link href="/testing"
-            className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold transition-all"
-            style={pathname === "/testing" ? {
-              background: "color-mix(in srgb, var(--ac) 12%, transparent)",
-              color: "var(--ac)",
-              border: "1px solid color-mix(in srgb, var(--ac) 25%, transparent)",
-            } : { color: "var(--ft)" }}>
-            <Shield size={17} strokeWidth={1.75} />
-            Testing
-          </Link>
-        )}
+          <div className="pt-1 space-y-0.5">
+            {ADMIN_ITEMS.map(({ href, key, icon }) => (
+              <SidebarNavLink
+                key={href}
+                href={href}
+                label={t(key)}
+                icon={icon}
+                active={isNavActive(pathname, href)}
+                faint
+              />
+            ))}
 
-        {/* Delete User — super-admin only */}
-        {isAdmin && (
-          <div>
             <button
               onClick={() => { setShowDeleteTool(v => !v); setDelMsg(""); setDelPreview(null); }}
               className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-bold transition-all"
@@ -270,7 +281,7 @@ export function AppSidebar() {
               onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "transparent"; }}
             >
               <Trash2 size={17} strokeWidth={1.75} />
-              Delete User
+              {t("nav_delete_user")}
             </button>
 
             {showDeleteTool && (
@@ -375,10 +386,10 @@ export function AppSidebar() {
             }}
           >
             <div className="font-display uppercase font-black mb-1" style={{ fontSize: 15, color: "var(--tx)" }}>
-              Ready to compete?
+              {t("sidebar_guest_heading")}
             </div>
             <p className="text-xs mb-3" style={{ color: "var(--mt)" }}>
-              Save picks, join groups, and climb the leaderboard.
+              {t("sidebar_guest_body")}
             </p>
             <Link href="/signup" className="block">
               <button
@@ -387,12 +398,12 @@ export function AppSidebar() {
                   background: "linear-gradient(135deg, #00FF88, #00D4FF)",
                   color: "#0B141B",
                 }}>
-                Get started →
+                {t("auth_getStarted")} →
               </button>
             </Link>
             <Link href="/signin" className="block text-center text-xs font-bold"
               style={{ color: "var(--mt)" }}>
-              Sign in
+              {t("auth_signin")}
             </Link>
           </div>
         ) : profile ? (
@@ -428,6 +439,17 @@ export function AppSidebar() {
                 <div className="text-sm font-bold truncate" style={{ color: "var(--tx)" }}>{displayName}</div>
               </div>
               <Settings size={14} style={{ color: "var(--ft)" }} />
+            </Link>
+
+            {/* Superseded by /home (Zones IA), kept reachable but deliberately unobtrusive */}
+            <Link href="/dashboard"
+              className="flex items-center gap-2 px-3 py-1 rounded-lg text-[10px] font-bold transition-all"
+              style={{ color: "var(--ft)" }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.color = "var(--mt)"; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.color = "var(--ft)"; }}
+            >
+              <LayoutDashboard size={12} />
+              {t("nav_legacy_dashboard")}
             </Link>
 
             <button onClick={handleSignOut}
