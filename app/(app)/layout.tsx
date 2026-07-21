@@ -4,11 +4,9 @@ import { AppHeader } from "@/components/app/app-header";
 import { PageTransition } from "@/components/app/page-transition";
 import { AppInstallBanner } from "@/components/app/install-banner";
 import { JoinPromptModal } from "@/components/join/join-prompt-modal";
-import { ReengagementSheet } from "@/components/reengagement/reengagement-sheet";
-import { HouseGroupInviteSheet } from "@/components/house-groups/house-group-invite-sheet";
 import { MatchReminderSheet } from "@/components/reminders/match-reminder-sheet";
 import { OracleDuelCelebrationTrigger } from "@/components/game/oracle-duel-celebration-trigger";
-import { OracleDuelNudgeSheet } from "@/components/game/oracle-duel-nudge-sheet";
+import { NudgeCoordinator } from "@/components/nudges/nudge-coordinator";
 import { GroupProvider } from "@/lib/contexts/group-context";
 import { NavModeProvider } from "@/lib/contexts/nav-mode-context";
 
@@ -41,10 +39,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       </main>
       <ZoneNav />
       <JoinPromptModal />
-      <ReengagementSheet />
-      <HouseGroupInviteSheet />
+      <NudgeCoordinator />
       <MatchReminderSheet />
-      <OracleDuelNudgeSheet />
       <OracleDuelCelebrationTrigger />
     </div>
     </GroupProvider>

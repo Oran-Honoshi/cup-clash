@@ -1,61 +1,34 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { ArrowRight, Trophy } from "lucide-react";
-import { createClient } from "@/lib/supabase/client";
 import { interpolate } from "@/lib/i18n";
 import { useLocale } from "@/components/i18n/locale-provider";
 import { BottomSheet } from "@/components/ui/bottom-sheet";
-import { wasHouseInviteDismissed, dismissHouseInvite } from "@/lib/house-group-storage";
+import { dismissHouseInvite } from "@/lib/house-group-storage";
+import type { HouseGroupNudgeResult } from "@/lib/nudges/check-house-group";
 
-type SheetState =
-  | { kind: "closed" }
-  | { kind: "open"; groupId: string; groupName: string; memberCount: number };
+interface HouseGroupInviteSheetProps {
+  data: HouseGroupNudgeResult;
+  onClose: () => void;
+}
 
-// Trigger: specifically on Home/Game Room entry (not every route, unlike
-// ReengagementSheet which fires once per app-shell mount) — the (app) layout
-// persists across client-side navigation, so this watches pathname changes
-// rather than relying on a remount. Shown at most once ever per browser
-// (see lib/house-group-storage.ts) until the user joins or explicitly
-// dismisses — deliberately not the 30-min-gap/daily-cap logic reengagement
-// uses, per the brief's request for a distinct trigger.
-export function HouseGroupInviteSheet() {
-  const pathname = usePathname();
+// Purely presentational — eligibility is resolved once by the nudge
+// coordinator (components/nudges/nudge-coordinator.tsx), which is gated to
+// /home and /game routes there (see NUDGE_REGISTRY). Shown at most once ever
+// per browser (lib/house-group-storage.ts) until the user joins or explicitly
+// dismisses — deliberately not a daily cap, per the original brief's request
+// for a distinct trigger from reengagement.
+export function HouseGroupInviteSheet({ data, onClose }: HouseGroupInviteSheetProps) {
   const router = useRouter();
   const { t } = useLocale();
-  const [state, setState] = useState<SheetState>({ kind: "closed" });
   const [joining, setJoining] = useState(false);
-  const checkedRef = useRef(false);
-
-  useEffect(() => {
-    const isEntryRoute = pathname === "/home" || pathname === "/game";
-    if (!isEntryRoute || checkedRef.current) return;
-    if (wasHouseInviteDismissed()) return;
-    checkedRef.current = true;
-
-    (async () => {
-      const sb = createClient();
-      const { data: { user } } = await sb.auth.getUser();
-      if (!user) return;
-
-      const res = await fetch("/api/house-groups/check", { cache: "no-store" });
-      if (!res.ok) return;
-      const data = await res.json() as
-        | { eligible: false }
-        | { eligible: true; group: { id: string; name: string; memberCount: number } };
-
-      if (!data.eligible) return;
-      setState({ kind: "open", groupId: data.group.id, groupName: data.group.name, memberCount: data.group.memberCount });
-    })();
-  }, [pathname]);
 
   const close = () => {
     dismissHouseInvite();
-    setState({ kind: "closed" });
+    onClose();
   };
-
-  if (state.kind === "closed") return null;
 
   const join = async () => {
     setJoining(true);
@@ -63,12 +36,12 @@ export function HouseGroupInviteSheet() {
       const res = await fetch("/api/join-free", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ groupId: state.groupId }),
+        body: JSON.stringify({ groupId: data.groupId }),
       });
       if (!res.ok) { setJoining(false); return; }
       dismissHouseInvite();
-      setState({ kind: "closed" });
-      router.push(`/groups/${state.groupId}`);
+      onClose();
+      router.push(`/groups/${data.groupId}`);
     } catch {
       setJoining(false);
     }
@@ -82,10 +55,10 @@ export function HouseGroupInviteSheet() {
         </div>
         <div className="min-w-0">
           <p className="font-display text-base font-black leading-snug" style={{ color: "var(--tx)" }}>
-            {interpolate(t("hgi_title"), { name: state.groupName })}
+            {interpolate(t("hgi_title"), { name: data.groupName })}
           </p>
           <p className="ta-meta mt-0.5">
-            {interpolate(t("hgi_subtitle"), { count: state.memberCount })}
+            {interpolate(t("hgi_subtitle"), { count: data.memberCount })}
           </p>
         </div>
       </div>
