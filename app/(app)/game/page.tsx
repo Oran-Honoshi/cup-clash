@@ -83,13 +83,9 @@ export default async function GameRoomPage() {
       <div className="grid grid-cols-2 gap-3">
         {grid.map(cell => {
           const Icon = cell.icon;
-          return (
-            <Link
-              key={cell.key}
-              href={cell.href}
-              className="flex flex-col gap-2 p-4 transition-transform hover:-translate-y-0.5"
-              style={{ ...surface, textDecoration: "none", opacity: cell.live ? 1 : 0.55 }}
-            >
+          const isDailyChallengeGame = cell.key === "footballer" || cell.key === "club";
+          const cardContent = (
+            <>
               <div className="flex items-center justify-between">
                 <div
                   className="w-9 h-9 rounded-xl flex items-center justify-center"
@@ -97,7 +93,7 @@ export default async function GameRoomPage() {
                 >
                   <Icon size={16} style={{ color: zone.accent }} />
                 </div>
-                {(cell.key === "footballer" || cell.key === "club") && (
+                {isDailyChallengeGame && (
                   <span
                     className="text-[9px] font-bold uppercase tracking-wide px-1.5 py-0.5 rounded-full"
                     style={{
@@ -115,6 +111,34 @@ export default async function GameRoomPage() {
               <p style={{ fontFamily: "var(--font-ui)", fontSize: 11, color: "var(--t2)", margin: 0 }}>
                 {cell.subtitle}
               </p>
+            </>
+          );
+
+          // The two daily-challenge games alternate day-to-day — only one is
+          // "live" at a time. The other's card must not navigate at all: it
+          // used to still link to /daily-challenge, which silently rendered
+          // whichever game actually was live with no explanation.
+          if (isDailyChallengeGame && !cell.live) {
+            return (
+              <div
+                key={cell.key}
+                aria-disabled="true"
+                className="flex flex-col gap-2 p-4"
+                style={{ ...surface, opacity: 0.55, cursor: "default" }}
+              >
+                {cardContent}
+              </div>
+            );
+          }
+
+          return (
+            <Link
+              key={cell.key}
+              href={cell.href}
+              className="flex flex-col gap-2 p-4 transition-transform hover:-translate-y-0.5"
+              style={{ ...surface, textDecoration: "none" }}
+            >
+              {cardContent}
             </Link>
           );
         })}
