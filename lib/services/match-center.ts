@@ -134,6 +134,7 @@ export interface H2HMatch {
   apiFixtureId: number;
   date:         string;
   competition:  string;
+  stage:        string | null;
   venue:        string | null;
   city:         string | null;
   home:         FixtureTeam;
@@ -145,21 +146,33 @@ export interface H2HMatch {
 
 interface APIHeadToHeadResponse {
   response: Array<{
-    fixture: { id: number; date: string; venue: { name: string | null; city: string | null } };
-    league:  { name: string };
+    fixture: { id: number; date: string; status: { short: string }; venue: { name: string | null; city: string | null } };
+    league:  { name: string; round: string | null };
     teams:   { home: FixtureTeam; away: FixtureTeam };
     goals:   { home: number | null; away: number | null };
     score:   { penalty: { home: number | null; away: number | null } };
   }>;
 }
 
+// API-Football's headtohead endpoint returns every fixture between the two
+// teams regardless of status — including cancelled/postponed ones with no
+// score (confirmed live: a 2026-03-27 Finalissima fixture came back
+// status.short "CANC" sandwiched between two finished results). A history
+// list has no use for those, so only genuinely-played fixtures are kept.
+const FINISHED_STATUSES = new Set(["FT", "AET", "PEN"]);
+
 export async function getHeadToHead(homeTeamId: number, awayTeamId: number, limit = 10): Promise<H2HMatch[]> {
-  const data = await apiFetch<APIHeadToHeadResponse>(`/fixtures/headtohead?h2h=${homeTeamId}-${awayTeamId}&last=${limit}`);
+  // Fetch more than `limit` since some will be filtered out below — otherwise
+  // a cancelled fixture in the raw response quietly shrinks the final list.
+  const fetchCount = limit + 5;
+  const data = await apiFetch<APIHeadToHeadResponse>(`/fixtures/headtohead?h2h=${homeTeamId}-${awayTeamId}&last=${fetchCount}`);
   return (data.response ?? [])
+    .filter(f => FINISHED_STATUSES.has(f.fixture.status.short))
     .map(f => ({
       apiFixtureId: f.fixture.id,
       date:         f.fixture.date,
       competition:  f.league.name,
+      stage:        f.league.round,
       venue:        f.fixture.venue.name,
       city:         f.fixture.venue.city,
       home:         f.teams.home,
@@ -168,7 +181,8 @@ export async function getHeadToHead(homeTeamId: number, awayTeamId: number, limi
       awayScore:    f.goals.away,
       penalties:    f.score.penalty.home != null || f.score.penalty.away != null,
     }))
-    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+    .slice(0, limit);
 }
 
 // ── Lineups ──────────────────────────────────────────────────────────────

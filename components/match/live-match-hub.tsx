@@ -80,6 +80,7 @@ interface H2HMatch {
   apiFixtureId: number;
   date:         string;
   competition:  string;
+  stage:        string | null;
   venue:        string | null;
   city:         string | null;
   home:         FixtureTeamRef;
@@ -592,20 +593,25 @@ export function LiveMatchHub({
                 {!h2hLoading && !h2hError && h2h && h2h.length > 0 && (
                   <div className="space-y-2">
                     {h2h.map(m => (
-                      <div key={m.apiFixtureId} className="flex items-center justify-between gap-2 py-1.5" style={{ borderTop: "1px solid var(--br)" }}>
-                        <div className="flex items-center gap-1.5 min-w-0 flex-1">
-                          <FlagBadge code={m.home.logo} size="sm" label={m.home.name} />
-                          <span className="text-xs truncate" style={{ color: "var(--tx)" }}>{m.home.name}</span>
+                      <div key={m.apiFixtureId} className="py-1.5" style={{ borderTop: "1px solid var(--br)" }}>
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="flex items-center gap-1.5 min-w-0 flex-1">
+                            <FlagBadge code={m.home.logo} size="sm" label={m.home.name} />
+                            <span className="text-xs truncate" style={{ color: "var(--tx)" }}>{m.home.name}</span>
+                          </div>
+                          <div className="flex flex-col items-center shrink-0 px-1">
+                            <span className="font-mono font-black text-sm" style={{ color: "var(--tx)" }}>
+                              {m.homeScore ?? "–"}–{m.awayScore ?? "–"}{m.penalties ? ` (${t("mc_h2h_pens")})` : ""}
+                            </span>
+                            <span className="ta-meta whitespace-nowrap">{formatH2HDate(m.date)}</span>
+                          </div>
+                          <div className="flex items-center gap-1.5 min-w-0 flex-1 flex-row-reverse">
+                            <FlagBadge code={m.away.logo} size="sm" label={m.away.name} />
+                            <span className="text-xs truncate text-right" style={{ color: "var(--tx)" }}>{m.away.name}</span>
+                          </div>
                         </div>
-                        <div className="flex flex-col items-center shrink-0 px-1">
-                          <span className="font-mono font-black text-sm" style={{ color: "var(--tx)" }}>
-                            {m.homeScore ?? "–"}–{m.awayScore ?? "–"}{m.penalties ? ` (${t("mc_h2h_pens")})` : ""}
-                          </span>
-                          <span className="ta-meta whitespace-nowrap">{formatH2HDate(m.date)}</span>
-                        </div>
-                        <div className="flex items-center gap-1.5 min-w-0 flex-1 flex-row-reverse">
-                          <FlagBadge code={m.away.logo} size="sm" label={m.away.name} />
-                          <span className="text-xs truncate text-right" style={{ color: "var(--tx)" }}>{m.away.name}</span>
+                        <div className="ta-meta text-center truncate mt-0.5">
+                          {m.stage ? `${m.competition} · ${m.stage}` : m.competition}
                         </div>
                       </div>
                     ))}
