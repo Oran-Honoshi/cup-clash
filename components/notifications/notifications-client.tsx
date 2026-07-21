@@ -2,7 +2,7 @@
 import { useLocale } from "@/components/i18n/locale-provider";
 
 import { useState, useEffect, useRef } from "react";
-import { Bell, BellOff, Trophy, Users, MessageCircle, Check, Send, X, Loader2 } from "lucide-react";
+import { Bell, BellOff, Trophy, Users, MessageCircle, Check, Send, X, Loader2, Swords } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { subscribeToPush } from "@/lib/pwa";
 import { TELEGRAM_PREF_DEFAULTS, type TelegramPrefKey } from "@/lib/services/telegram";
@@ -23,6 +23,7 @@ const SETTINGS: NotifSetting[] = [
   { key: "newmember",      label: "New member joined",  desc: "When someone joins your group (admin only)",         icon: <Users size={18} style={{ color: "#00FF88" }} />,                    default: false },
   { key: "oracle_duel",    label: "Oracle Duel result", desc: "When your Beat-the-Oracle duel is settled",          icon: <span className="text-lg">🔮</span>,                                 default: false },
   { key: "match_reminder", label: "Match reminder",     desc: "24h and 1h before kickoff, if you haven't predicted",icon: <span className="text-lg">🔔</span>,                                 default: false },
+  { key: "match_duel",     label: "Match Duel result",  desc: "When a head-to-head match duel with a friend is settled", icon: <Swords size={18} style={{ color: "#f472b6" }} />,              default: false },
 ];
 
 interface TelegramSetting {
@@ -59,6 +60,7 @@ export function NotificationsClient({ userId }: { userId: string }) {
     newmember:      t("notif_new_member"),
     oracle_duel:    t("notif_push_oracle_duel"),
     match_reminder: t("notif_push_match_reminder"),
+    match_duel:     t("notif_push_match_duel"),
   };
   const TELEGRAM_LABELS: Record<TelegramPrefKey, { label: string; desc: string }> = {
     goals:            { label: t("notif_tg_goals"),         desc: t("notif_tg_goals_desc") },

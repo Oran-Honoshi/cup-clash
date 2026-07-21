@@ -50,3 +50,19 @@ export function buildDailyPuzzleAuthWallUrl(currentPathWithQuery: string, challe
 export function parsePuzzleParam(searchParams: URLSearchParams): string | null {
   return searchParams.get("puzzle");
 }
+
+// Same idea again for Match Duel invite links (/duel/[token]): the token is
+// already in the path, so this doesn't carry new information across the
+// signup round trip — its job is to signal "the visitor arrived here
+// specifically to accept" so /duel/[token] can auto-accept on landing
+// instead of making them find the Accept button a second time.
+export function buildMatchDuelAuthWallUrl(currentPathWithQuery: string, token: string): string {
+  const url = new URL(currentPathWithQuery, "https://placeholder.local");
+  url.searchParams.set("duel", token);
+  const next = `${url.pathname}${url.search}`;
+  return `/signup?next=${encodeURIComponent(next)}`;
+}
+
+export function parseMatchDuelParam(searchParams: URLSearchParams): string | null {
+  return searchParams.get("duel");
+}

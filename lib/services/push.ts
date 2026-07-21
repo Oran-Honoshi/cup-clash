@@ -20,7 +20,8 @@ export function pushTranslations(languageCode: string | null | undefined): Trans
 // what the UI displays as already-on would silently drop notifications users
 // believe they're subscribed to. oracle_duel and match_reminder are genuinely new
 // categories (migration 064) and default OFF per the established opt-in pattern.
-export type PushPrefKey = "goals" | "results" | "leaderboard" | "chat" | "newmember" | "oracle_duel" | "match_reminder";
+// match_duel (migration 066) follows the same opt-in convention.
+export type PushPrefKey = "goals" | "results" | "leaderboard" | "chat" | "newmember" | "oracle_duel" | "match_reminder" | "match_duel";
 
 export const PUSH_PREF_DEFAULTS: Record<PushPrefKey, boolean> = {
   goals:           true,
@@ -30,6 +31,7 @@ export const PUSH_PREF_DEFAULTS: Record<PushPrefKey, boolean> = {
   newmember:       false,
   oracle_duel:     false,
   match_reminder:  false,
+  match_duel:      false,
 };
 
 type NotificationPreferences = {

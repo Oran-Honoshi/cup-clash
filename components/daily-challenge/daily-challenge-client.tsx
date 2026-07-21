@@ -12,6 +12,7 @@ import { WordleTileRow } from "@/components/daily-challenge/wordle-tiles";
 import { BallLoader } from "@/components/ui/BallLoader";
 import { CrestSilhouette } from "@/components/ui/crest-silhouette";
 import { buildDailyPuzzleAuthWallUrl } from "@/lib/auth-wall";
+import { useWebShare } from "@/lib/hooks/use-web-share";
 import { loadLocalAttempt, saveLocalAttempt } from "@/lib/daily-challenge-storage";
 import type { ClueField, GameType } from "@/lib/services/daily-challenge";
 import type { LetterTile } from "@/lib/services/wordle-feedback";
@@ -156,7 +157,7 @@ export function DailyChallengeClient({ userId }: { userId: string | null }) {
   const [selectedName, setSelectedName] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [lastGuessCorrect, setLastGuessCorrect] = useState<boolean | null>(null);
-  const [copied, setCopied] = useState(false);
+  const { share, copied } = useWebShare();
   const [history, setHistory] = useState<GuessHistoryItem[]>([]);
 
   const completed = solved || outOfTries;
@@ -235,21 +236,8 @@ export function DailyChallengeClient({ userId }: { userId: string | null }) {
   const handleShare = useCallback(async () => {
     if (!shareText) return;
     const url = typeof window !== "undefined" ? `${window.location.origin}/daily-challenge` : "";
-    const text = `${shareText}\n${url}`;
-    if (typeof navigator !== "undefined" && navigator.share) {
-      try {
-        await navigator.share({ text });
-        return;
-      } catch {
-        // user cancelled or share failed — fall through to clipboard
-      }
-    }
-    if (typeof navigator !== "undefined" && navigator.clipboard) {
-      await navigator.clipboard.writeText(text);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2500);
-    }
-  }, [shareText]);
+    await share(`${shareText}\n${url}`);
+  }, [shareText, share]);
 
   const handleSignupPrompt = useCallback(() => {
     if (!today) return;

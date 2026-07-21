@@ -25,6 +25,7 @@ import {
   type PushQueue,
 } from "@/lib/services/push";
 import { resolveOracleDuels } from "@/lib/services/oracle-duels";
+import { resolveMatchDuels } from "@/lib/services/match-duels";
 import { getMembers } from "@/lib/services/groups";
 import { interpolate, TRANSLATIONS } from "@/lib/i18n";
 import { matchInGroupScope } from "@/lib/schedule";
@@ -2078,6 +2079,54 @@ export async function POST(request: NextRequest) {
             url: "/game/oracle-duel",
             tag: "cupclash-oracle-duel",
           });
+        }
+      }
+    }
+
+    // ── STEP 4d: Match Duel resolution + push ─────────────────────────────────
+    // Same trigger point and pattern as STEP 4c above, just fanned out to two
+    // users per resolved duel instead of one (Oracle Duel's other side is
+    // always the Oracle, which never needs notifying).
+    if (newlyFinished.length > 0) {
+      const resolvedMatchDuels = await resolveMatchDuels();
+      if (resolvedMatchDuels.length > 0) {
+        console.log(`[scores/cron] STEP 4d: ${resolvedMatchDuels.length} Match Duel(s) resolved`);
+        const matchDuelUserIds = [...new Set(resolvedMatchDuels.flatMap(d => [d.challengerId, d.opponentId]))];
+        const { data: matchDuelProfiles } = await sb
+          .from("profiles")
+          .select("id, notification_preferences, telegram_language_code")
+          .in("id", matchDuelUserIds);
+        const matchDuelProfileMap = new Map(
+          ((matchDuelProfiles ?? []) as Array<{ id: string; notification_preferences: unknown; telegram_language_code: string | null }>)
+            .map(p => [p.id, p])
+        );
+
+        for (const d of resolvedMatchDuels) {
+          const sides = [
+            { userId: d.challengerId, pointsMe: d.pointsChallenger, pointsThem: d.pointsOpponent },
+            { userId: d.opponentId, pointsMe: d.pointsOpponent, pointsThem: d.pointsChallenger },
+          ];
+          for (const side of sides) {
+            const profile = matchDuelProfileMap.get(side.userId);
+            if (!profile || !isPushPrefEnabled(
+              profile.notification_preferences as Parameters<typeof isPushPrefEnabled>[0], "match_duel"
+            )) continue;
+
+            const pt = pushTranslations(profile.telegram_language_code);
+            const title = side.pointsMe > side.pointsThem ? pt.notif_push_match_duel_win_title
+              : side.pointsMe < side.pointsThem ? pt.notif_push_match_duel_lose_title
+              : pt.notif_push_match_duel_draw_title;
+
+            queuePushItem(pushQueue, side.userId, {
+              title,
+              body: interpolate(pt.notif_push_match_duel_body, {
+                home: d.home, away: d.away, actualHome: d.actualHome, actualAway: d.actualAway,
+                userScore: side.pointsMe, opponentScore: side.pointsThem,
+              }),
+              url: "/game",
+              tag: "cupclash-match-duel",
+            });
+          }
         }
       }
     }

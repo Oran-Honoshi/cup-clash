@@ -6,6 +6,7 @@ import { getCurrentUserProfile, getAllUserGroups } from "@/lib/services/user-gro
 import { pickGameTypeForDate, todayISO } from "@/lib/services/daily-challenge";
 import { DailyLeaderboardPanel } from "@/components/daily-challenge/daily-leaderboard-panel";
 import { DuelCard } from "@/components/game/duel-card";
+import { MatchDuelCard } from "@/components/game/match-duel-card";
 import { OracleGameRoomSection } from "@/components/game/oracle-game-room-section";
 import { OracleDuelInviteCard } from "@/components/game/oracle-duel-card";
 import { getOracleGameRoomData, getNextOracleMatch } from "@/lib/services/oracle";
@@ -145,6 +146,8 @@ export default async function GameRoomPage() {
       </div>
 
       <DuelCard userId={profile?.id ?? null} />
+
+      <MatchDuelCard userId={profile?.id ?? null} />
 
       <OracleDuelInviteCard
         match={nextOracleDuelMatch?.match ?? null}
