@@ -36,6 +36,20 @@ export function sortMembersForRanking<T extends RankableMember>(members: T[]): T
   return [...members].sort(compareMembersForRanking);
 }
 
+// Dense rank (1,1,2 — not 1,1,3) for an already-sorted list. Two members are
+// only "tied" here if compareMembersForRanking finds them equal across every
+// tier, not just on points — so this reflects the same genuine-tie concept
+// used by findPayoutTieGroups below, applied to display rather than payout.
+export function computeDenseRanks<T extends RankableMember>(sortedMembers: T[]): number[] {
+  const ranks: number[] = [];
+  for (let i = 0; i < sortedMembers.length; i++) {
+    if (i === 0) { ranks.push(1); continue; }
+    const tied = compareMembersForRanking(sortedMembers[i - 1], sortedMembers[i]) === 0;
+    ranks.push(tied ? ranks[i - 1] : ranks[i - 1] + 1);
+  }
+  return ranks;
+}
+
 export type PayoutPosition = "first" | "second" | "third";
 export const PAYOUT_POSITIONS: PayoutPosition[] = ["first", "second", "third"];
 

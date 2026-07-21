@@ -12,7 +12,7 @@ import { FOCUS_RING, FOCUS_RING_INSET } from "@/lib/a11y";
 import { cn } from "@/lib/utils";
 import { countryFlagCode } from "@/lib/countries";
 import type { Member } from "@/lib/types";
-import { compareMembersForRanking } from "@/lib/leaderboard-sort";
+import { compareMembersForRanking, computeDenseRanks } from "@/lib/leaderboard-sort";
 
 // Single source of truth for how a ranked member list renders. Two visual
 // treatments share the same ranking pipeline (sort → top3/rest split →
@@ -65,35 +65,40 @@ function DeltaBadge({ delta }: { delta: number }) {
   );
 }
 
+// Indexed by (rank - 1), not visual slot — a tie for 1st means two columns
+// both render the gold treatment, regardless of which slot (left/center)
+// they land in.
 const PODIUM_BAR_STYLES = [
-  // 2nd (left) — silver
-  { background: "rgba(196,201,212,0.1)",     border: "1px solid rgba(196,201,212,0.35)", borderBottom: "none" },
-  // 1st (center) — gold wash
+  // 1st — gold wash
   { background: "color-mix(in srgb, var(--sc) 12%, transparent)", border: "1.5px solid var(--sc)", borderBottom: "none" },
-  // 3rd (right) — bronze
+  // 2nd — silver
+  { background: "rgba(196,201,212,0.1)",     border: "1px solid rgba(196,201,212,0.35)", borderBottom: "none" },
+  // 3rd — bronze
   { background: "rgba(249,115,22,0.1)",      border: "1px solid rgba(249,115,22,0.35)",  borderBottom: "none" },
 ] as const;
 
-const PODIUM_BAR_HEIGHTS = [64, 80, 50]; // 2nd, 1st, 3rd
-const PODIUM_ACTUAL_RANKS = [2, 1, 3];
-const PODIUM_POINT_COLORS = ["var(--t2)", "var(--sc)", "#f97316"];
-const PODIUM_RING_COLORS_FULL = ["#c4c9d4", "var(--sc)", "#f97316"]; // silver, gold, bronze
+const PODIUM_BAR_HEIGHTS = [80, 64, 50]; // 1st, 2nd, 3rd
+const PODIUM_POINT_COLORS = ["var(--sc)", "var(--t2)", "#f97316"];
+const PODIUM_RING_COLORS_FULL = ["var(--sc)", "#c4c9d4", "#f97316"]; // gold, silver, bronze
 
 // ── Compact (dashboard Home tab carousel) ──────────────────────────────────
 
-const COMPACT_PODIUM_ORDER = [1, 0, 2] as const; // left=2nd, center=1st, right=3rd
-const COMPACT_PODIUM_HEIGHTS = [80, 110, 60];
-const COMPACT_PODIUM_AVATAR_SIZES: Array<"sm" | "md"> = ["sm", "md", "sm"];
-const COMPACT_PODIUM_COLORS = ["#c4c9d4", "var(--sc)", "#cd7f45"];
-const COMPACT_PODIUM_RING_COLORS = ["#c4c9d4", "var(--sc)", "#cd7f45"];
+const COMPACT_PODIUM_ORDER = [1, 0, 2] as const; // slot layout: left=sorted[1], center=sorted[0], right=sorted[2]
+
+// Indexed by (rank - 1), not slot — a tie for 1st renders the gold
+// treatment on every column that's actually rank 1, wherever it lands.
+const COMPACT_PODIUM_HEIGHTS = [110, 80, 60]; // 1st, 2nd, 3rd
+const COMPACT_PODIUM_AVATAR_SIZES: Array<"sm" | "md"> = ["md", "sm", "sm"];
+const COMPACT_PODIUM_COLORS = ["var(--sc)", "#c4c9d4", "#cd7f45"];
+const COMPACT_PODIUM_RING_COLORS = ["var(--sc)", "#c4c9d4", "#cd7f45"];
 const COMPACT_PODIUM_BG = [
-  "var(--sf)",                                                     // 2nd — neutral surface
   "color-mix(in srgb, var(--sc) 12%, transparent)",                // 1st — gold wash
+  "var(--sf)",                                                     // 2nd — neutral surface
   "var(--sf)",                                                     // 3rd — neutral surface
 ];
 const COMPACT_PODIUM_BORDER = [
-  "1px solid rgba(196,201,212,0.35)",
   "1.5px solid var(--sc)",
+  "1px solid rgba(196,201,212,0.35)",
   "1px solid rgba(205,127,69,0.4)",
 ];
 
@@ -105,10 +110,11 @@ function ordinal(n: number): string {
 }
 
 function CompactBoard({
-  sorted, top3, rest, currentUserId, groupName, members, isAdFree, isCorporate, onSelect,
+  sorted, top3, rest, currentUserId, groupName, members, isAdFree, isCorporate, onSelect, rankById,
 }: {
   sorted: Member[]; top3: Member[]; rest: Member[]; currentUserId?: string; groupName?: string;
   members: Member[]; isAdFree?: boolean; isCorporate?: boolean; onSelect: (m: Member) => void;
+  rankById: Map<string, number>;
 }) {
   return (
     <div className="px-4 py-4 space-y-4">
@@ -136,7 +142,7 @@ function CompactBoard({
                 const member = top3[srcIdx];
                 if (!member) return null;
                 const isMe = member.id === currentUserId;
-                const rank = srcIdx + 1;
+                const rank = rankById.get(member.id)!;
                 return (
                   <button
                     key={member.id}
@@ -149,22 +155,22 @@ function CompactBoard({
                     <UserAvatar
                       name={member.name}
                       avatarUrl={member.avatarUrl}
-                      size={COMPACT_PODIUM_AVATAR_SIZES[pos]}
-                      ringColor={isMe && rank !== 1 ? "var(--ac)" : COMPACT_PODIUM_RING_COLORS[pos]}
+                      size={COMPACT_PODIUM_AVATAR_SIZES[rank - 1]}
+                      ringColor={isMe && rank !== 1 ? "var(--ac)" : COMPACT_PODIUM_RING_COLORS[rank - 1]}
                     />
                     <span className="ta-team-name text-center truncate w-full px-1" style={{ fontSize: 11, color: isMe ? "var(--ac)" : "var(--tx)" }}>
                       {member.name}
                     </span>
                     <div className="cc-elevated cc-elevated-interactive" style={{
-                      width: 80, height: COMPACT_PODIUM_HEIGHTS[pos],
+                      width: 80, height: COMPACT_PODIUM_HEIGHTS[rank - 1],
                       borderRadius: "var(--border-radius-lg) var(--border-radius-lg) 0 0",
-                      background: COMPACT_PODIUM_BG[pos],
-                      border: COMPACT_PODIUM_BORDER[pos],
+                      background: COMPACT_PODIUM_BG[rank - 1],
+                      border: COMPACT_PODIUM_BORDER[rank - 1],
                       borderBottom: "none",
                       boxShadow: rank === 1 ? "0 -4px 20px rgba(255,170,0,0.15)" : undefined,
                       display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: 2,
                     }}>
-                      <span className="ta-lb-points" style={{ fontSize: 18, color: COMPACT_PODIUM_COLORS[pos] }}>{member.points}</span>
+                      <span className="ta-lb-points" style={{ fontSize: 18, color: COMPACT_PODIUM_COLORS[rank - 1] }}>{member.points}</span>
                       <span className="ta-meta" style={{ fontSize: 9 }}>{ordinal(rank)}</span>
                     </div>
                   </button>
@@ -191,7 +197,7 @@ function CompactBoard({
           {rest.length > 0 && (
             <div className="rounded-2xl overflow-hidden cc-elevated" style={{ background: "var(--sf)", border: "0.5px solid var(--br)", borderRadius: "var(--border-radius-lg)" }}>
               {rest.map((member, i) => {
-                const rank = i + 4;
+                const rank = rankById.get(member.id)!;
                 const isMe = member.id === currentUserId;
                 return (
                   <button
@@ -225,11 +231,12 @@ function CompactBoard({
 // ── Full (standalone Leaderboard page) ─────────────────────────────────────
 
 function FullBoard({
-  sorted, top3, tableDisplay, display, currentUserId, members, isAdFree, isCorporate, showGhost, showBestThird, scrollable, onSelect, titlesByUser,
+  sorted, top3, tableDisplay, display, currentUserId, members, isAdFree, isCorporate, showGhost, showBestThird, scrollable, onSelect, titlesByUser, rankById,
 }: {
   sorted: Member[]; top3: Member[]; tableDisplay: Member[]; display: Member[]; currentUserId?: string;
   members: Member[]; isAdFree?: boolean; isCorporate?: boolean; showGhost: boolean; showBestThird: boolean;
   scrollable: boolean; onSelect: (m: Member) => void; titlesByUser: Record<string, GroupTitle>;
+  rankById: Map<string, number>;
 }) {
   const realMembers  = sorted.filter(m => !m.isGhost);
   const totalExact   = realMembers.reduce((s, m) => s + (m.exactScores        ?? 0), 0);
@@ -308,8 +315,8 @@ function FullBoard({
             padding: "16px 14px 0",
           }}
         >
-          {podiumOrder.map((member, pos) => {
-            const rank = PODIUM_ACTUAL_RANKS[pos];
+          {podiumOrder.map((member) => {
+            const rank = rankById.get(member.id)!;
             const isMe = member.id === currentUserId;
             return (
               <div
@@ -336,7 +343,7 @@ function FullBoard({
                     name={member.name}
                     avatarUrl={member.avatarUrl}
                     size="md"
-                    ringColor={isMe && rank !== 1 ? "var(--ac)" : PODIUM_RING_COLORS_FULL[pos]}
+                    ringColor={isMe && rank !== 1 ? "var(--ac)" : PODIUM_RING_COLORS_FULL[rank - 1]}
                   />
                 </div>
 
@@ -365,14 +372,14 @@ function FullBoard({
                   className="cc-elevated cc-elevated-interactive"
                   style={{
                     width: "100%",
-                    height: PODIUM_BAR_HEIGHTS[pos],
+                    height: PODIUM_BAR_HEIGHTS[rank - 1],
                     borderRadius: "var(--border-radius-lg) var(--border-radius-lg) 0 0",
                     display: "flex",
                     flexDirection: "column",
                     alignItems: "center",
                     justifyContent: "center",
                     gap: 1,
-                    ...PODIUM_BAR_STYLES[pos],
+                    ...PODIUM_BAR_STYLES[rank - 1],
                   }}
                 >
                   <div
@@ -381,7 +388,7 @@ function FullBoard({
                       fontWeight: 900,
                       fontSize: 18,
                       lineHeight: 1,
-                      color: PODIUM_POINT_COLORS[pos],
+                      color: PODIUM_POINT_COLORS[rank - 1],
                     }}
                   >
                     {member.points}
@@ -466,7 +473,7 @@ function FullBoard({
           {tableDisplay.map((member, i) => {
             const isCurrentUser = member.id === currentUserId;
             const isGhost       = member.isGhost;
-            const realRank      = isGhost ? null : sorted.findIndex(m => m.id === member.id) + 1;
+            const realRank      = isGhost ? null : rankById.get(member.id)!;
             const isLast        = i === tableDisplay.length - 1;
 
             const activate = () => { if (!isGhost) onSelect(member); };
@@ -635,6 +642,8 @@ export function LeaderboardList({
   const titlesByUser = useGroupTitles(groupId);
 
   const sorted = [...members].sort(compareMembersForRanking);
+  const denseRanks = computeDenseRanks(sorted);
+  const rankById = new Map(sorted.map((m, i) => [m.id, denseRanks[i]]));
 
   const full = variant === "full";
   const ghost = buildGhostPlayer(members);
@@ -659,12 +668,12 @@ export function LeaderboardList({
           sorted={sorted} top3={top3} tableDisplay={tableDisplay} display={display}
           currentUserId={currentUserId} members={members} isAdFree={isAdFree} isCorporate={isCorporate}
           showGhost={showGhost} showBestThird={showBestThird} scrollable={scrollable}
-          onSelect={setSelected} titlesByUser={titlesByUser}
+          onSelect={setSelected} titlesByUser={titlesByUser} rankById={rankById}
         />
       ) : (
         <CompactBoard
           sorted={sorted} top3={top3} rest={rest} currentUserId={currentUserId} groupName={groupName}
-          members={members} isAdFree={isAdFree} isCorporate={isCorporate} onSelect={setSelected}
+          members={members} isAdFree={isAdFree} isCorporate={isCorporate} onSelect={setSelected} rankById={rankById}
         />
       )}
 
@@ -678,7 +687,7 @@ export function LeaderboardList({
           avatarUrl={selected.avatarUrl}
           country={selected.country ?? ""}
           points={selected.points}
-          rank={sorted.findIndex(m => m.id === selected.id) + 1}
+          rank={rankById.get(selected.id)!}
           open={true}
           onClose={() => setSelected(null)}
         />
