@@ -539,6 +539,7 @@ export interface Translations {
   mc_lineups_formation:  string;
   mc_lineups_starting_xi: string;
   mc_lineups_bench:      string;
+  mc_lineups_subs:       string;
   mc_lineups_coach:      string;
 
   // Oracle Predictions — "Beat the Oracle" (Home teaser + Game Room)
@@ -1107,6 +1108,7 @@ const en: Translations = {
   mc_lineups_formation:  "Formation",
   mc_lineups_starting_xi: "Starting XI",
   mc_lineups_bench:      "Bench",
+  mc_lineups_subs:       "Substitutions",
   mc_lineups_coach:      "Coach",
 
   oracle_label: "The Oracle",
@@ -1666,6 +1668,7 @@ const fr: Translations = {
   mc_lineups_formation:  "Formation",
   mc_lineups_starting_xi: "Onze de départ",
   mc_lineups_bench:      "Remplaçants",
+  mc_lineups_subs:       "Remplacements",
   mc_lineups_coach:      "Entraîneur",
 
   oracle_label: "L'Oracle",
@@ -2225,6 +2228,7 @@ const de: Translations = {
   mc_lineups_formation:  "Formation",
   mc_lineups_starting_xi: "Startelf",
   mc_lineups_bench:      "Ersatzbank",
+  mc_lineups_subs:       "Auswechslungen",
   mc_lineups_coach:      "Trainer",
 
   oracle_label: "Das Orakel",
@@ -2784,6 +2788,7 @@ const nl: Translations = {
   mc_lineups_formation:  "Formatie",
   mc_lineups_starting_xi: "Basisopstelling",
   mc_lineups_bench:      "Bank",
+  mc_lineups_subs:       "Wissels",
   mc_lineups_coach:      "Coach",
 
   oracle_label: "Het Orakel",
@@ -3343,6 +3348,7 @@ const es: Translations = {
   mc_lineups_formation:  "Formación",
   mc_lineups_starting_xi: "Once inicial",
   mc_lineups_bench:      "Suplentes",
+  mc_lineups_subs:       "Sustituciones",
   mc_lineups_coach:      "Entrenador",
 
   oracle_label: "El Oráculo",
@@ -3902,6 +3908,7 @@ const pt: Translations = {
   mc_lineups_formation:  "Formação",
   mc_lineups_starting_xi: "Time titular",
   mc_lineups_bench:      "Banco de reservas",
+  mc_lineups_subs:       "Substituições",
   mc_lineups_coach:      "Técnico",
 
   oracle_label: "O Oráculo",
@@ -4461,6 +4468,7 @@ const he: Translations = {
   mc_lineups_formation:  "מערך",
   mc_lineups_starting_xi: "ההרכב הפותח",
   mc_lineups_bench:      "ספסל",
+  mc_lineups_subs:       "חילופים",
   mc_lineups_coach:      "מאמן",
 
   oracle_label: "המגיד העתידות",
@@ -5020,6 +5028,7 @@ const ar: Translations = {
   mc_lineups_formation:  "التشكيل",
   mc_lineups_starting_xi: "التشكيلة الأساسية",
   mc_lineups_bench:      "دكة البدلاء",
+  mc_lineups_subs:       "التبديلات",
   mc_lineups_coach:      "المدرب",
 
   oracle_label: "العرّاف",

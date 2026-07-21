@@ -187,7 +187,11 @@ export async function getHeadToHead(homeTeamId: number, awayTeamId: number, limi
 
 // ── Lineups ──────────────────────────────────────────────────────────────
 
-export interface LineupPlayer { apiPlayerId: number; name: string; number: number | null; position: string | null }
+// `grid` is API-Football's "row:col" pitch position for a startXI player
+// (e.g. "2:3" — row 2 from the back, 3rd from the left in that row), null
+// for bench players. Used to render an actual formation diagram rather than
+// just the "Formation" string label.
+export interface LineupPlayer { apiPlayerId: number; name: string; number: number | null; position: string | null; grid: string | null }
 
 export interface TeamLineup {
   team:         FixtureTeam;
@@ -201,14 +205,14 @@ interface APILineupsResponse {
   response: Array<{
     team:        FixtureTeam;
     formation:   string | null;
-    startXI:     Array<{ player: { id: number; name: string; number: number | null; pos: string | null } }>;
-    substitutes: Array<{ player: { id: number; name: string; number: number | null; pos: string | null } }>;
+    startXI:     Array<{ player: { id: number; name: string; number: number | null; pos: string | null; grid: string | null } }>;
+    substitutes: Array<{ player: { id: number; name: string; number: number | null; pos: string | null; grid: string | null } }>;
     coach:       { name: string; photo: string | null } | null;
   }>;
 }
 
 function mapLineupPlayers(entries: APILineupsResponse["response"][number]["startXI"]): LineupPlayer[] {
-  return entries.map(e => ({ apiPlayerId: e.player.id, name: e.player.name, number: e.player.number, position: e.player.pos }));
+  return entries.map(e => ({ apiPlayerId: e.player.id, name: e.player.name, number: e.player.number, position: e.player.pos, grid: e.player.grid }));
 }
 
 export async function getLineups(apiFixtureId: number): Promise<TeamLineup[]> {

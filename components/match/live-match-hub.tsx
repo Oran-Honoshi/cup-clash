@@ -90,7 +90,7 @@ interface H2HMatch {
   penalties:    boolean;
 }
 
-interface LineupPlayerRef { apiPlayerId: number; name: string; number: number | null; position: string | null }
+interface LineupPlayerRef { apiPlayerId: number; name: string; number: number | null; position: string | null; grid: string | null }
 
 interface TeamLineup {
   team:        FixtureTeamRef;
@@ -185,6 +185,76 @@ function EventIcon({ type }: { type: string }) {
   if (type === "red_card")    return <div style={{ width: 10, height: 14, borderRadius: 2, background: "#ef4444" }} />;
   if (type === "sub")         return <RefreshCw size={14} style={{ color: "var(--mt)" }} />;
   return <Activity size={14} style={{ color: "var(--mt)" }} />;
+}
+
+// ── Formation pitch ──────────────────────────────────────────────────────────
+// Plots the startXI using API-Football's per-player "grid" field ("row:col",
+// row 1 = goalkeeper). Players are grouped by row and spaced evenly across
+// that row's width by column order — this only needs relative left-to-right
+// order within a row, not the raw column numbers to line up across rows.
+
+function lastName(fullName: string): string {
+  const parts = fullName.trim().split(" ");
+  return parts[parts.length - 1];
+}
+
+function parseGrid(grid: string | null): { row: number; col: number } | null {
+  if (!grid) return null;
+  const [row, col] = grid.split(":").map(Number);
+  if (Number.isNaN(row) || Number.isNaN(col)) return null;
+  return { row, col };
+}
+
+function FormationPitch({ players }: { players: LineupPlayerRef[] }) {
+  const withGrid = players
+    .map(p => ({ p, pos: parseGrid(p.grid) }))
+    .filter((x): x is { p: LineupPlayerRef; pos: { row: number; col: number } } => x.pos !== null);
+  if (withGrid.length === 0) return null;
+
+  const rows = Array.from(new Set(withGrid.map(x => x.pos.row))).sort((a, b) => a - b);
+
+  return (
+    <div
+      style={{
+        position: "relative", width: "100%", aspectRatio: "4 / 5", borderRadius: 12,
+        background: "linear-gradient(180deg, color-mix(in srgb, #22c55e 18%, var(--sf)), color-mix(in srgb, #22c55e 10%, var(--sf)))",
+        border: "1px solid var(--br)", overflow: "hidden",
+      }}
+    >
+      <div style={{ position: "absolute", left: 0, right: 0, top: "50%", height: 1, background: "color-mix(in srgb, #22c55e 40%, transparent)" }} />
+      <div style={{ position: "absolute", left: "50%", top: "50%", width: 60, height: 60, borderRadius: "50%", border: "1px solid color-mix(in srgb, #22c55e 40%, transparent)", transform: "translate(-50%, -50%)" }} />
+      {rows.map((rowNum, rowIdx) => {
+        const rowPlayers = withGrid.filter(x => x.pos.row === rowNum).sort((a, b) => a.pos.col - b.pos.col);
+        const yPct = 92 - (rows.length > 1 ? (rowIdx / (rows.length - 1)) * 84 : 42);
+        return rowPlayers.map((x, colIdx) => {
+          const xPct = ((colIdx + 1) / (rowPlayers.length + 1)) * 100;
+          return (
+            <div
+              key={x.p.apiPlayerId}
+              style={{ position: "absolute", left: `${xPct}%`, top: `${yPct}%`, transform: "translate(-50%, -50%)", display: "flex", flexDirection: "column", alignItems: "center", gap: 2, width: 56 }}
+            >
+              <div
+                style={{
+                  width: 22, height: 22, borderRadius: "50%", flexShrink: 0,
+                  background: "var(--ac)", color: "#fff",
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  fontSize: 10, fontWeight: 800, boxShadow: "0 1px 4px rgba(0,0,0,0.3)",
+                }}
+              >
+                {x.p.number ?? ""}
+              </div>
+              <span
+                className="truncate"
+                style={{ fontSize: 9, fontWeight: 700, color: "var(--tx)", textShadow: "0 1px 2px var(--sf)", maxWidth: 56, textAlign: "center" }}
+              >
+                {lastName(x.p.name)}
+              </span>
+            </div>
+          );
+        });
+      })}
+    </div>
+  );
 }
 
 // ── Battle stat bar ───────────────────────────────────────────────────────────
@@ -743,6 +813,8 @@ export function LiveMatchHub({
                     )}
                   </div>
 
+                  <FormationPitch players={teamLineup.startXI} />
+
                   <div>
                     <div className="ta-section-label mb-1.5">{t("mc_lineups_starting_xi")}</div>
                     <div className="grid grid-cols-2 gap-x-2 gap-y-1">
@@ -763,6 +835,24 @@ export function LiveMatchHub({
                           <div key={p.apiPlayerId} className="flex items-center gap-1.5 text-xs">
                             <span className="font-mono font-bold w-5 text-right shrink-0" style={{ color: "var(--mt)" }}>{p.number ?? ""}</span>
                             <span className="truncate" style={{ color: "var(--t2)" }}>{p.name}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {events.filter(e => e.type === "sub" && e.team === teamLineup.team.name).length > 0 && (
+                    <div>
+                      <div className="ta-section-label mb-1.5">{t("mc_lineups_subs")}</div>
+                      <div className="space-y-1">
+                        {events.filter(e => e.type === "sub" && e.team === teamLineup.team.name).map((sub, i) => (
+                          <div key={i} className="flex items-center gap-1.5 text-xs">
+                            <span className="font-mono font-bold w-9 shrink-0" style={{ color: "var(--ac)" }}>
+                              {sub.minute}{sub.extra ? `+${sub.extra}` : ""}&apos;
+                            </span>
+                            <span className="truncate" style={{ color: "var(--mt)" }}>{sub.assist}</span>
+                            <span style={{ color: "var(--mt)" }}>→</span>
+                            <span className="truncate font-bold" style={{ color: "var(--tx)" }}>{sub.player}</span>
                           </div>
                         ))}
                       </div>
