@@ -7,6 +7,10 @@
     {
       "path": "/api/reminders/telegram-digest",
       "schedule": "0 8 * * 1"
+    },
+    {
+      "path": "/api/reminders/match-events-reconcile",
+      "schedule": "0 6 * * *"
     }
   ]
 }

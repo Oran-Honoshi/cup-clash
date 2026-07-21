@@ -29,6 +29,10 @@ import { getMembers } from "@/lib/services/groups";
 import { interpolate, TRANSLATIONS } from "@/lib/i18n";
 import { matchInGroupScope } from "@/lib/schedule";
 import { buildStandings } from "@/lib/standings";
+import {
+  fetchEvents, parseEvents, buildMatchEvents,
+  type ParsedGoal, type ParsedCard, type ParsedSub,
+} from "@/lib/services/match-events";
 
 // Every internal Supabase fetch AND every API-Football fetch below must
 // carry cache: "no-store" explicitly (see apiFetch()) — this route has no
@@ -704,108 +708,6 @@ interface APIFixture {
   };
 }
 
-interface APIEvent {
-  time:   { elapsed: number; extra: number | null };
-  team:   { id: number; name: string };
-  player: { id: number | null; name: string | null };
-  assist: { id: number | null; name: string | null };
-  type:   "Goal" | "Card" | "subst" | "Var";
-  detail: string;
-  comments: string | null;
-}
-
-interface ParsedGoal {
-  minute:      number;
-  extra:       number | null;
-  team_id:     number;
-  team_name:   string;
-  player_id:   number | null;
-  player_name: string | null;
-  assist_id:   number | null;
-  assist_name: string | null;
-  detail:      string;
-}
-
-interface ParsedCard {
-  minute:      number;
-  extra:       number | null;
-  team_id:     number;
-  team_name:   string;
-  player_id:   number | null;
-  player_name: string | null;
-  detail:      string;
-}
-
-interface ParsedSub {
-  minute:       number;
-  extra:        number | null;
-  team_id:      number;
-  team_name:    string;
-  player_in_id:   number | null;
-  player_in_name: string | null;
-  player_out_id:   number | null;
-  player_out_name: string | null;
-}
-
-async function fetchEvents(fixtureId: number): Promise<APIEvent[]> {
-  try {
-    const res = await apiFetch(`${API_BASE}/fixtures/events?fixture=${fixtureId}`, {
-      headers: apiHeaders(),
-    });
-    if (!res.ok) return [];
-    const data = await res.json() as { response: APIEvent[] };
-    return data.response ?? [];
-  } catch {
-    return [];
-  }
-}
-
-function parseEvents(events: APIEvent[]): { goals: ParsedGoal[]; cards: ParsedCard[]; subs: ParsedSub[] } {
-  const goals: ParsedGoal[] = [];
-  const cards: ParsedCard[] = [];
-  const subs:  ParsedSub[]  = [];
-
-  for (const e of events) {
-    if (e.type === "Goal") {
-      goals.push({
-        minute:      e.time.elapsed,
-        extra:       e.time.extra,
-        team_id:     e.team.id,
-        team_name:   e.team.name,
-        player_id:   e.player.id,
-        player_name: e.player.name,
-        assist_id:   e.assist.id,
-        assist_name: e.assist.name,
-        detail:      e.detail,
-      });
-    } else if (e.type === "Card") {
-      cards.push({
-        minute:      e.time.elapsed,
-        extra:       e.time.extra,
-        team_id:     e.team.id,
-        team_name:   e.team.name,
-        player_id:   e.player.id,
-        player_name: e.player.name,
-        detail:      e.detail,
-      });
-    } else if (e.type === "subst") {
-      // API-Football convention: `player` is the player coming ON, `assist` is who they replaced.
-      subs.push({
-        minute:          e.time.elapsed,
-        extra:           e.time.extra,
-        team_id:         e.team.id,
-        team_name:       e.team.name,
-        player_in_id:    e.player.id,
-        player_in_name:  e.player.name,
-        player_out_id:   e.assist.id,
-        player_out_name: e.assist.name,
-      });
-    }
-  }
-
-  return { goals, cards, subs };
-}
-
 // ── Match statistics (possession/corners/cards/shots/fouls) ────────────────
 // Fetched only for currently-live fixtures, and only when the match minute has
 // advanced since the last cron tick (see shouldFetchStats below) — this is the
@@ -880,63 +782,8 @@ function buildLiveStats(
 }
 
 // ── Combine goals/cards/subs into the chronological matches.match_events feed ─
-
-interface MatchEventEntry {
-  minute: number;
-  extra:  number | null;
-  player: string | null;
-  assist: string | null;
-  team:   string | null;
-  type:   string;
-}
-
-// API-Football spells the same player differently across events/endpoints
-// (e.g. "K. Mbappe" vs "Kylian Mbappé") even though the numeric player_id is
-// stable — look up the canonical players.full_name by id so everything we
-// write to match_events uses one consistent spelling per person.
-function canonicalPlayerName(id: number | null, raw: string | null, byId: Map<number, string>): string | null {
-  if (id != null) {
-    const canon = byId.get(id);
-    if (canon) return canon;
-  }
-  return raw;
-}
-
-function buildMatchEvents(
-  parsed: { goals: ParsedGoal[]; cards: ParsedCard[]; subs: ParsedSub[] } | undefined,
-  playerNameById: Map<number, string>
-): MatchEventEntry[] | null {
-  if (!parsed) return null;
-  const entries: MatchEventEntry[] = [
-    ...parsed.goals.map(g => ({
-      minute: g.minute, extra: g.extra,
-      player: canonicalPlayerName(g.player_id, g.player_name, playerNameById),
-      assist: canonicalPlayerName(g.assist_id, g.assist_name, playerNameById),
-      team:   g.team_name,
-      // "Missed Penalty" is API-Football's event type for a penalty that did NOT
-      // go in — it must never render (or score) as a goal.
-      type: g.detail === "Own Goal"      ? "own_goal"
-          : g.detail === "Missed Penalty" ? "missed_penalty"
-          : g.detail === "Penalty"        ? "penalty"
-          : "goal",
-    })),
-    ...parsed.cards.map(c => ({
-      minute: c.minute, extra: c.extra,
-      player: canonicalPlayerName(c.player_id, c.player_name, playerNameById),
-      assist: null, team: c.team_name,
-      type: c.detail.toLowerCase().includes("red") ? "red_card" : "yellow_card",
-    })),
-    ...parsed.subs.map(s => ({
-      minute: s.minute, extra: s.extra,
-      player: canonicalPlayerName(s.player_in_id,  s.player_in_name,  playerNameById),
-      assist: canonicalPlayerName(s.player_out_id, s.player_out_name, playerNameById),
-      team:   s.team_name,
-      type:   "sub",
-    })),
-  ];
-  entries.sort((a, b) => (a.minute - b.minute) || ((a.extra ?? 0) - (b.extra ?? 0)));
-  return entries;
-}
+// fetchEvents/parseEvents/buildMatchEvents now live in lib/services/match-events.ts
+// (shared with the match-events reconciliation cron).
 
 // Golden Guess tiebreaker: minute of the first goal of the match (any goal type).
 function firstGoalMinute(events: Array<{ minute: number; type: string }> | null): number | null {
@@ -1320,7 +1167,7 @@ export async function POST(request: NextRequest) {
 
     // Rate-guard: skip if last fetch was < 4 min ago, unless there are live
     // matches OR matches with api_fixture_id that are still showing 'upcoming'.
-    const [{ data: latest }, { data: liveInDB }, { data: staleDB }] = await Promise.all([
+    const [{ data: latest }, { data: liveInDB }, { data: staleDB }, { data: graceDB }] = await Promise.all([
       sb.from("live_scores").select("last_fetched").order("last_fetched", { ascending: false }).limit(1).maybeSingle(),
       sb.from("matches").select("id").eq("status", "live").limit(1),
       sb.from("matches")
@@ -1329,11 +1176,22 @@ export async function POST(request: NextRequest) {
         .eq("status", "upcoming")
         .gte("kickoff_at", `${yesterday}T00:00:00Z`)
         .lte("kickoff_at", `${tomorrow}T23:59:59Z`),
+      // Grace window (STEP 1c below): matches marked finished in the last 4h —
+      // API-Football sometimes amends events (VAR-confirmed goals,
+      // retrospective cards) shortly after full-time, so these get re-polled
+      // for events even though their score/status won't change.
+      sb.from("matches")
+        .select("api_fixture_id")
+        .not("api_fixture_id", "is", null)
+        .eq("status", "finished")
+        .gte("finished_at", new Date(now.getTime() - FOUR_HOURS_MS).toISOString()),
     ]);
 
     const hasLiveMatches  = (liveInDB?.length ?? 0) > 0;
     const staleFixtureIds = (staleDB ?? []).map(m => m.api_fixture_id as number);
     const hasStaleMatches = staleFixtureIds.length > 0;
+    const graceFixtureIds = (graceDB ?? []).map(m => m.api_fixture_id as number);
+    const graceFixtureIdSet = new Set(graceFixtureIds);
 
     if (!hasLiveMatches && !hasStaleMatches && latest?.last_fetched) {
       const age = now.getTime() - new Date(latest.last_fetched).getTime();
@@ -1391,27 +1249,65 @@ export async function POST(request: NextRequest) {
 
     console.log(`[scores/cron]   total unique fixtures: ${fixtures.length}`);
 
+    // Shared by STEP 1b and STEP 1c: re-fetch a set of fixture IDs directly
+    // (rather than via the live/today date-scoped queries) and merge any not
+    // already present into `fixtures`/`seen`. Batched rather than one giant
+    // Promise.all — confirmed directly against the live API (outside this app,
+    // via a bare script) that firing ~25 simultaneous by-ID lookups for
+    // known-good fixture IDs returns real data for only 6-8 of them, while
+    // every one of those same IDs succeeds when called individually. This is
+    // NOT the documented 300/min or 7500/day rate limit (nowhere near either
+    // count during these ticks) — it's an undocumented concurrent-connections
+    // ceiling on API-Football's side. A batch of 5 stays comfortably under the
+    // ~6-8 concurrent successes observed; no inter-batch delay is needed since
+    // total request volume per cron tick (rarely more than ~30) is far below
+    // the 300/min count limit regardless of how it's paced.
+    async function fetchFixturesByIdAndMerge(ids: number[], label: string): Promise<void> {
+      if (ids.length === 0) return;
+      console.log(`[scores/cron]   Re-fetching ${ids.length} ${label} fixture(s) by ID:`, ids);
+      const BATCH_SIZE = 5;
+      for (let i = 0; i < ids.length; i += BATCH_SIZE) {
+        const batch = ids.slice(i, i + BATCH_SIZE);
+        await Promise.all(
+          batch.map(async id => {
+            const res = await apiFetch(`${API_BASE}/fixtures?id=${id}`, { headers: apiHeaders() });
+            if (!res.ok) { console.warn(`[scores/cron]   fixture ${id} HTTP ${res.status}`); return; }
+            const data = await res.json() as { response: APIFixture[] };
+            for (const f of data.response ?? []) {
+              if (!seen.has(f.fixture.id)) {
+                seen.add(f.fixture.id);
+                fixtures.push(f);
+              }
+            }
+          })
+        );
+      }
+    }
+
     // ── STEP 1b: Re-fetch stale fixtures directly by ID ───────────────────────
     // Matches with api_fixture_id set but still 'upcoming' won't appear in the
     // today-only API query if they were played on a different date or if an
     // alias mismatch previously prevented the matches table from being updated.
     const missingStaleIds = staleFixtureIds.filter(id => !seen.has(id));
     if (missingStaleIds.length > 0) {
-      console.log(`[scores/cron] STEP 1b: Re-fetching ${missingStaleIds.length} stale fixture(s) by ID:`, missingStaleIds);
-      await Promise.all(
-        missingStaleIds.map(async id => {
-          const res = await apiFetch(`${API_BASE}/fixtures?id=${id}`, { headers: apiHeaders() });
-          if (!res.ok) { console.warn(`[scores/cron]   fixture ${id} HTTP ${res.status}`); return; }
-          const data = await res.json() as { response: APIFixture[] };
-          for (const f of data.response ?? []) {
-            if (!seen.has(f.fixture.id)) {
-              seen.add(f.fixture.id);
-              fixtures.push(f);
-            }
-          }
-        })
-      );
+      console.log(`[scores/cron] STEP 1b: Re-fetching stale fixture(s)...`);
+      await fetchFixturesByIdAndMerge(missingStaleIds, "stale");
       console.log(`[scores/cron]   After stale re-fetch: ${fixtures.length} total fixture(s)`);
+    }
+
+    // ── STEP 1c: Grace-window re-poll for recently-finished matches ──────────
+    // A match already marked "finished" in our DB is normally never re-fetched
+    // again (see shouldFetchEvents in STEP 1e) — but API-Football sometimes
+    // amends events (VAR-confirmed goals, retrospective cards) in the hours
+    // after full-time. Re-fetch by ID any match whose finished_at falls in the
+    // last 4 hours so it stays in `fixtures` this tick even if it's rolled off
+    // the "today" date query (e.g. finished just after a UTC day boundary),
+    // reusing the same by-ID pattern as STEP 1b.
+    const missingGraceIds = graceFixtureIds.filter(id => !seen.has(id));
+    if (missingGraceIds.length > 0) {
+      console.log(`[scores/cron] STEP 1c: Re-fetching grace-window fixture(s)...`);
+      await fetchFixturesByIdAndMerge(missingGraceIds, "grace-window");
+      console.log(`[scores/cron]   After grace-window re-fetch: ${fixtures.length} total fixture(s)`);
     }
 
     if (fixtures.length === 0) {
@@ -1431,7 +1327,7 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // ── STEP 1c: Fetch DB matches early — needed to decide what's worth re-fetching ──
+    // ── STEP 1d: Fetch DB matches early — needed to decide what's worth re-fetching ──
     // Fetch DB matches for a 3-day window (covers extra-time stragglers) and
     // any row already linked by api_fixture_id. Pulled up here (rather than
     // where it's consumed in STEP 3) so the minute-advanced throttle below can
@@ -1475,11 +1371,12 @@ export async function POST(request: NextRequest) {
       })
     );
 
-    // ── STEP 1d: Throttled events + statistics fetch ─────────────────────────
+    // ── STEP 1e: Throttled events + statistics fetch ─────────────────────────
     // Events (goals/cards/subs): re-fetch only when a fixture just went live,
-    // its minute has advanced since the last tick, or it just finished (once,
-    // for the final snapshot) — a fixture that's been "finished" since a
-    // previous tick is never re-fetched again.
+    // its minute has advanced since the last tick, it just finished (once,
+    // for the final snapshot), or it's within the STEP 1c grace window (a
+    // fixture that's been "finished" since a previous tick is otherwise never
+    // re-fetched again).
     // Statistics (possession/corners/etc): re-fetch only for currently-live
     // fixtures whose minute has advanced — this is the expensive call the
     // 5-min cadence needs to budget, so it's the strictest gate.
@@ -1490,10 +1387,11 @@ export async function POST(request: NextRequest) {
       const isFinishedNow  = FINISHED_STATUSES.has(status);
       const prev           = prevStateByFixtureId.get(f.fixture.id);
       const minuteAdvanced = !prev || prev.minute !== f.fixture.status.elapsed;
+      const inGraceWindow  = graceFixtureIdSet.has(f.fixture.id);
 
       const shouldFetchEvents =
         (isLiveNow && (prev?.status !== "live" || minuteAdvanced)) ||
-        (isFinishedNow && prev?.status !== "finished");
+        (isFinishedNow && (prev?.status !== "finished" || inGraceWindow));
       const shouldFetchStats = isLiveNow && minuteAdvanced;
 
       return { f, shouldFetchEvents, shouldFetchStats };
@@ -1582,7 +1480,7 @@ export async function POST(request: NextRequest) {
     console.log("[scores/cron]   live_scores upsert OK");
 
     // ── STEP 3: Update matches table ─────────────────────────────────────────
-    // dbMatches was already fetched in STEP 1c (needed there for the throttle
+    // dbMatches was already fetched in STEP 1d (needed there for the throttle
     // decisions); reused here to match fixtures to DB rows.
 
     console.log("[scores/cron] STEP 3: Matching fixtures to matches table...");
