@@ -20,6 +20,7 @@ import { getNextOracleMatch, getUserOraclePicks } from "@/lib/services/oracle";
 import { GroupNudgeCard } from "@/components/home/group-nudge-card";
 import { ZoneJumpGrid } from "@/components/home/zone-jump-grid";
 import { TournamentPicksNag } from "@/components/reminders/tournament-picks-nag";
+import { PickFollowsNudgeSheet } from "@/components/home/pick-follows-nudge-sheet";
 import { zoneFontVars } from "@/lib/fonts/zone-fonts";
 
 export default async function HomePage() {
@@ -92,6 +93,7 @@ export default async function HomePage() {
   return (
     <div className={`space-y-6 pb-32 ${zoneFontVars}`}>
       <PersonaHero persona={persona} nextMatch={nextMatch} group={groupInfo} />
+      <PickFollowsNudgeSheet hasFollows={followedTeamIds.size + followedCompetitionIds.size > 0} />
       {hasGroup && <TournamentPicksNag />}
       <MyTeamsSection teams={myTeams} teamCountry={userProfile.country} />
       <CompetitionsChipRow competitions={competitions} followedIds={followedCompetitionIds} />

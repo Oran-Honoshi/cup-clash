@@ -691,6 +691,15 @@ export interface Translations {
   cps_copied:    string;
   cps_close:     string;
 
+  // Pick-your-follows nudge — recurring bottom sheet on Home for a
+  // signed-in user with zero follows (teams or competitions); companion
+  // to the always-visible "Pick your teams" empty-state card
+  pyf_title:           string;
+  pyf_subtitle:        string;
+  pyf_cta:             string;
+  pyf_dont_ask_again:  string;
+  pyf_close:           string;
+
   // Schedule — multi-competition header
   sch_title:    string;
   sch_subtitle: string;
@@ -1317,6 +1326,12 @@ const en: Translations = {
   cps_copied:    "Copied!",
   cps_close:     "Close",
 
+  pyf_title: "Pick your teams & leagues",
+  pyf_subtitle: "Follow a team or competition to see personalized results, news and picks on Home.",
+  pyf_cta: "Browse leagues",
+  pyf_dont_ask_again: "Don't ask again",
+  pyf_close: "Close",
+
   sch_title:    "Schedule",
   sch_subtitle: "All matches across every competition you follow",
 
@@ -1940,6 +1955,12 @@ const fr: Translations = {
   cps_saving:    "Enregistrement…",
   cps_copied:    "Copié !",
   cps_close:     "Fermer",
+
+  pyf_title: "Choisis tes équipes et compétitions",
+  pyf_subtitle: "Suis une équipe ou une compétition pour voir des résultats, actus et pronostics personnalisés sur l'accueil.",
+  pyf_cta: "Parcourir les compétitions",
+  pyf_dont_ask_again: "Ne plus demander",
+  pyf_close: "Fermer",
 
   sch_title:    "Calendrier",
   sch_subtitle: "Tous les matchs de toutes les compétitions que vous suivez",
@@ -2565,6 +2586,12 @@ const de: Translations = {
   cps_copied:    "Kopiert!",
   cps_close:     "Schließen",
 
+  pyf_title: "Wähle deine Teams & Wettbewerbe",
+  pyf_subtitle: "Folge einem Team oder Wettbewerb, um personalisierte Ergebnisse, News und Tipps auf der Startseite zu sehen.",
+  pyf_cta: "Wettbewerbe durchsuchen",
+  pyf_dont_ask_again: "Nicht mehr fragen",
+  pyf_close: "Schließen",
+
   sch_title:    "Spielplan",
   sch_subtitle: "Alle Spiele aus jedem Wettbewerb, dem du folgst",
 
@@ -3188,6 +3215,12 @@ const nl: Translations = {
   cps_saving:    "Opslaan…",
   cps_copied:    "Gekopieerd!",
   cps_close:     "Sluiten",
+
+  pyf_title: "Kies je teams & competities",
+  pyf_subtitle: "Volg een team of competitie voor persoonlijke resultaten, nieuws en voorspellingen op Home.",
+  pyf_cta: "Competities bekijken",
+  pyf_dont_ask_again: "Niet meer vragen",
+  pyf_close: "Sluiten",
 
   sch_title:    "Programma",
   sch_subtitle: "Alle wedstrijden van elke competitie die je volgt",
@@ -3813,6 +3846,12 @@ const es: Translations = {
   cps_copied:    "¡Copiado!",
   cps_close:     "Cerrar",
 
+  pyf_title: "Elige tus equipos y competiciones",
+  pyf_subtitle: "Sigue un equipo o competición para ver resultados, noticias y pronósticos personalizados en Inicio.",
+  pyf_cta: "Explorar competiciones",
+  pyf_dont_ask_again: "No volver a preguntar",
+  pyf_close: "Cerrar",
+
   sch_title:    "Calendario",
   sch_subtitle: "Todos los partidos de cada competición que sigues",
 
@@ -4436,6 +4475,12 @@ const pt: Translations = {
   cps_saving:    "Salvando…",
   cps_copied:    "Copiado!",
   cps_close:     "Fechar",
+
+  pyf_title: "Escolha suas equipes e competições",
+  pyf_subtitle: "Siga uma equipe ou competição para ver resultados, notícias e palpites personalizados na Início.",
+  pyf_cta: "Ver competições",
+  pyf_dont_ask_again: "Não perguntar novamente",
+  pyf_close: "Fechar",
 
   sch_title:    "Calendário",
   sch_subtitle: "Todos os jogos de todas as competições que você segue",
@@ -5061,6 +5106,12 @@ const he: Translations = {
   cps_copied:    "הועתק!",
   cps_close:     "סגור",
 
+  pyf_title: "בחר את הקבוצות והתחרויות שלך",
+  pyf_subtitle: "עקוב אחרי קבוצה או תחרות כדי לראות תוצאות, חדשות וניחושים מותאמים אישית במסך הבית.",
+  pyf_cta: "עיין בתחרויות",
+  pyf_dont_ask_again: "אל תשאל שוב",
+  pyf_close: "סגור",
+
   sch_title:    "לוח משחקים",
   sch_subtitle: "כל המשחקים מכל תחרות שאתה עוקב אחריה",
 
@@ -5684,6 +5735,12 @@ const ar: Translations = {
   cps_saving:    "جارٍ الحفظ…",
   cps_copied:    "تم النسخ!",
   cps_close:     "إغلاق",
+
+  pyf_title: "اختر فرقك وبطولاتك",
+  pyf_subtitle: "تابع فريقًا أو بطولة لرؤية نتائج وأخبار وتوقعات مخصصة في الصفحة الرئيسية.",
+  pyf_cta: "تصفح البطولات",
+  pyf_dont_ask_again: "لا تسأل مرة أخرى",
+  pyf_close: "إغلاق",
 
   sch_title:    "الجدول",
   sch_subtitle: "كل المباريات من كل بطولة تتابعها",
