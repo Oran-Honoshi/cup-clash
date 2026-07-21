@@ -1,0 +1,27 @@
+name: Oracle Duel nudge cron
+
+# Once-daily by design (see last_oracle_nudge_sent_at, migration 067) — unlike
+# the tight-interval reminder workflows, this doesn't need a short poll
+# window, and adding it to vercel.json would push the Hobby-plan cron budget
+# past 2 invocations/day alongside auto-fill and match-events-reconcile. A
+# GitHub Actions daily schedule sidesteps that the same way the other
+# workflows in this directory sidestep the frequency cap.
+# Requires repo secrets SCORES_APP_URL and CRON_SECRET (shared with the
+# other cron workflows).
+on:
+  schedule:
+    - cron: "0 18 * * *"
+  workflow_dispatch: {}
+
+jobs:
+  ping-oracle-duel-nudge:
+    runs-on: ubuntu-latest
+    steps:
+      - name: POST /api/reminders/oracle-duel-nudge
+        run: |
+          curl -sf -X POST "${SCORES_APP_URL}/api/reminders/oracle-duel-nudge" \
+            -H "Authorization: Bearer ${CRON_SECRET}" \
+            -o - -w "\nHTTP %{http_code}\n"
+        env:
+          SCORES_APP_URL: ${{ secrets.SCORES_APP_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}

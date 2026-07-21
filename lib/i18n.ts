@@ -374,6 +374,8 @@ export interface Translations {
   notif_push_oracle_duel_lose_title:   string;
   notif_push_oracle_duel_draw_title:   string;
   notif_push_oracle_duel_body:         string;
+  notif_push_oracle_duel_nudge_title:  string;
+  notif_push_oracle_duel_nudge_body:   string;
   notif_push_match_duel_win_title:     string;
   notif_push_match_duel_lose_title:    string;
   notif_push_match_duel_draw_title:    string;
@@ -643,6 +645,26 @@ export interface Translations {
   match_duel_accept_error:              string;
   match_duel_signup_to_accept:          string;
   match_duel_signin_instead:            string;
+
+  // Oracle Duel nudge — once-daily proactive bottom sheet surfacing the
+  // day's featured Oracle Duel match (ranked, not just "soonest"; see
+  // getFeaturedOracleDuelMatch). Distinct from oracle_duel_* above, which
+  // is the passive Game Room entry point, not a proactive interruption.
+  oracle_duel_nudge_title:      string;
+  oracle_duel_nudge_subtitle:   string;
+  oracle_duel_nudge_cta:        string;
+  oracle_duel_nudge_dismiss:    string;
+
+  // Oracle Duel win-celebration popup — in-app half of a push that already
+  // existed (scores cron STEP 4c); this only fires once per resolved duel
+  // (lib/oracle-duel-celebration-storage.ts), on whichever app-open sees it.
+  oracle_duel_celebrate_win:          string;
+  oracle_duel_celebrate_lose:         string;
+  oracle_duel_celebrate_tie:          string;
+  oracle_duel_celebrate_result_label: string;
+  oracle_duel_celebrate_you:          string;
+  oracle_duel_celebrate_pick:         string;
+  oracle_duel_celebrate_cta:          string;
 
   // Re-engagement Bottom Sheet — "welcome back" nudge on app open
   reeng_title_single:      string;
@@ -1011,6 +1033,8 @@ const en: Translations = {
   notif_push_oracle_duel_lose_title:   "🔮 The Oracle won this one",
   notif_push_oracle_duel_draw_title:   "🤝 You tied the Oracle",
   notif_push_oracle_duel_body:         "{home} {actualHome}-{actualAway} {away} — you {userScore} pts, Oracle {oracleScore} pts.",
+  notif_push_oracle_duel_nudge_title:  "🔮 Beat the Oracle today?",
+  notif_push_oracle_duel_nudge_body:   "The Oracle has a pick for {home} vs {away} — think you can call it better?",
   notif_push_match_duel_win_title:     "🏆 You won the duel!",
   notif_push_match_duel_lose_title:    "😬 You lost the duel",
   notif_push_match_duel_draw_title:    "🤝 Your duel ended in a tie",
@@ -1258,6 +1282,19 @@ const en: Translations = {
   match_duel_accept_error: "Couldn't accept this invite — it may have already been claimed.",
   match_duel_signup_to_accept: "Sign up to accept",
   match_duel_signin_instead: "Already have an account? Sign in",
+
+  oracle_duel_nudge_title: "Today's Oracle pick: {home} vs {away}",
+  oracle_duel_nudge_subtitle: "Oracle says {home}-{away}",
+  oracle_duel_nudge_cta: "Take the challenge",
+  oracle_duel_nudge_dismiss: "Not now",
+
+  oracle_duel_celebrate_win: "You beat the Oracle!",
+  oracle_duel_celebrate_lose: "The Oracle won this one",
+  oracle_duel_celebrate_tie: "You tied the Oracle",
+  oracle_duel_celebrate_result_label: "Match result",
+  oracle_duel_celebrate_you: "You",
+  oracle_duel_celebrate_pick: "Picked {home}-{away}",
+  oracle_duel_celebrate_cta: "View Oracle Duel",
 
   reeng_title_single: "{match} just finished — you're #{rank} in {group}",
   reeng_title_multi: "{match} just finished — see where you stand",
@@ -1620,6 +1657,8 @@ const fr: Translations = {
   notif_push_oracle_duel_lose_title:   "🔮 L'Oracle a gagné celui-là",
   notif_push_oracle_duel_draw_title:   "🤝 Match nul avec l'Oracle",
   notif_push_oracle_duel_body:         "{home} {actualHome}-{actualAway} {away} — vous {userScore} pts, Oracle {oracleScore} pts.",
+  notif_push_oracle_duel_nudge_title:  "🔮 Battre l'Oracle aujourd'hui ?",
+  notif_push_oracle_duel_nudge_body:   "L'Oracle a un pronostic pour {home} vs {away} — vous pensez pouvoir faire mieux ?",
   notif_push_match_duel_win_title:     "🏆 Vous avez gagné le duel !",
   notif_push_match_duel_lose_title:    "😬 Vous avez perdu le duel",
   notif_push_match_duel_draw_title:    "🤝 Votre duel s'est terminé par un match nul",
@@ -1867,6 +1906,19 @@ const fr: Translations = {
   match_duel_accept_error: "Impossible d'accepter cette invitation — elle a peut-être déjà été acceptée.",
   match_duel_signup_to_accept: "S'inscrire pour accepter",
   match_duel_signin_instead: "Vous avez déjà un compte ? Connectez-vous",
+
+  oracle_duel_nudge_title: "Le pronostic de l'Oracle du jour : {home} vs {away}",
+  oracle_duel_nudge_subtitle: "L'Oracle dit {home}-{away}",
+  oracle_duel_nudge_cta: "Relever le défi",
+  oracle_duel_nudge_dismiss: "Pas maintenant",
+
+  oracle_duel_celebrate_win: "Vous avez battu l'Oracle !",
+  oracle_duel_celebrate_lose: "L'Oracle a gagné celui-là",
+  oracle_duel_celebrate_tie: "Match nul avec l'Oracle",
+  oracle_duel_celebrate_result_label: "Résultat du match",
+  oracle_duel_celebrate_you: "Vous",
+  oracle_duel_celebrate_pick: "Pronostic : {home}-{away}",
+  oracle_duel_celebrate_cta: "Voir le Duel avec l'Oracle",
 
   reeng_title_single: "{match} vient de se terminer — tu es #{rank} dans {group}",
   reeng_title_multi: "{match} vient de se terminer — découvre ton classement",
@@ -2229,6 +2281,8 @@ const de: Translations = {
   notif_push_oracle_duel_lose_title:   "🔮 Das Orakel hat diesmal gewonnen",
   notif_push_oracle_duel_draw_title:   "🤝 Unentschieden gegen das Orakel",
   notif_push_oracle_duel_body:         "{home} {actualHome}-{actualAway} {away} — du {userScore} Pkt., Orakel {oracleScore} Pkt.",
+  notif_push_oracle_duel_nudge_title:  "🔮 Heute das Orakel schlagen?",
+  notif_push_oracle_duel_nudge_body:   "Das Orakel hat einen Tipp für {home} gegen {away} — denkst du, du kannst es besser?",
   notif_push_match_duel_win_title:     "🏆 Du hast das Duell gewonnen!",
   notif_push_match_duel_lose_title:    "😬 Du hast das Duell verloren",
   notif_push_match_duel_draw_title:    "🤝 Dein Duell endete unentschieden",
@@ -2476,6 +2530,19 @@ const de: Translations = {
   match_duel_accept_error: "Diese Einladung konnte nicht angenommen werden — sie wurde möglicherweise bereits angenommen.",
   match_duel_signup_to_accept: "Registrieren, um anzunehmen",
   match_duel_signin_instead: "Schon ein Konto? Anmelden",
+
+  oracle_duel_nudge_title: "Der heutige Orakel-Tipp: {home} gegen {away}",
+  oracle_duel_nudge_subtitle: "Das Orakel tippt {home}-{away}",
+  oracle_duel_nudge_cta: "Herausforderung annehmen",
+  oracle_duel_nudge_dismiss: "Jetzt nicht",
+
+  oracle_duel_celebrate_win: "Du hast das Orakel geschlagen!",
+  oracle_duel_celebrate_lose: "Das Orakel hat diesmal gewonnen",
+  oracle_duel_celebrate_tie: "Unentschieden gegen das Orakel",
+  oracle_duel_celebrate_result_label: "Spielergebnis",
+  oracle_duel_celebrate_you: "Du",
+  oracle_duel_celebrate_pick: "Getippt: {home}-{away}",
+  oracle_duel_celebrate_cta: "Orakel-Duell ansehen",
 
   reeng_title_single: "{match} ist gerade zu Ende gegangen — du bist #{rank} in {group}",
   reeng_title_multi: "{match} ist gerade zu Ende gegangen — sieh dir deinen Stand an",
@@ -2838,6 +2905,8 @@ const nl: Translations = {
   notif_push_oracle_duel_lose_title:   "🔮 Het Orakel heeft deze gewonnen",
   notif_push_oracle_duel_draw_title:   "🤝 Gelijkspel tegen het Orakel",
   notif_push_oracle_duel_body:         "{home} {actualHome}-{actualAway} {away} — jij {userScore} pt, Orakel {oracleScore} pt.",
+  notif_push_oracle_duel_nudge_title:  "🔮 Vandaag het Orakel verslaan?",
+  notif_push_oracle_duel_nudge_body:   "Het Orakel heeft een voorspelling voor {home} tegen {away} — denk je dat je het beter kunt?",
   notif_push_match_duel_win_title:     "🏆 Je hebt het duel gewonnen!",
   notif_push_match_duel_lose_title:    "😬 Je hebt het duel verloren",
   notif_push_match_duel_draw_title:    "🤝 Je duel eindigde in een gelijkspel",
@@ -3085,6 +3154,19 @@ const nl: Translations = {
   match_duel_accept_error: "Kon deze uitnodiging niet accepteren — mogelijk is deze al geaccepteerd.",
   match_duel_signup_to_accept: "Registreer om te accepteren",
   match_duel_signin_instead: "Al een account? Log in",
+
+  oracle_duel_nudge_title: "De Orakel-voorspelling van vandaag: {home} tegen {away}",
+  oracle_duel_nudge_subtitle: "Het Orakel voorspelt {home}-{away}",
+  oracle_duel_nudge_cta: "Ga de uitdaging aan",
+  oracle_duel_nudge_dismiss: "Niet nu",
+
+  oracle_duel_celebrate_win: "Je hebt het Orakel verslagen!",
+  oracle_duel_celebrate_lose: "Het Orakel heeft deze gewonnen",
+  oracle_duel_celebrate_tie: "Gelijkspel tegen het Orakel",
+  oracle_duel_celebrate_result_label: "Wedstrijdresultaat",
+  oracle_duel_celebrate_you: "Jij",
+  oracle_duel_celebrate_pick: "Voorspeld: {home}-{away}",
+  oracle_duel_celebrate_cta: "Bekijk Orakel-Duel",
 
   reeng_title_single: "{match} is net afgelopen — je staat #{rank} in {group}",
   reeng_title_multi: "{match} is net afgelopen — bekijk je positie",
@@ -3447,6 +3529,8 @@ const es: Translations = {
   notif_push_oracle_duel_lose_title:   "🔮 El Oráculo ganó esta vez",
   notif_push_oracle_duel_draw_title:   "🤝 Empataste con el Oráculo",
   notif_push_oracle_duel_body:         "{home} {actualHome}-{actualAway} {away} — tú {userScore} pts, Oráculo {oracleScore} pts.",
+  notif_push_oracle_duel_nudge_title:  "🔮 ¿Vencer al Oráculo hoy?",
+  notif_push_oracle_duel_nudge_body:   "El Oráculo tiene un pronóstico para {home} vs {away} — ¿crees que puedes acertar mejor?",
   notif_push_match_duel_win_title:     "🏆 ¡Ganaste el duelo!",
   notif_push_match_duel_lose_title:    "😬 Perdiste el duelo",
   notif_push_match_duel_draw_title:    "🤝 Tu duelo terminó en empate",
@@ -3694,6 +3778,19 @@ const es: Translations = {
   match_duel_accept_error: "No se pudo aceptar esta invitación — puede que ya haya sido aceptada.",
   match_duel_signup_to_accept: "Regístrate para aceptar",
   match_duel_signin_instead: "¿Ya tienes una cuenta? Inicia sesión",
+
+  oracle_duel_nudge_title: "El pronóstico del Oráculo de hoy: {home} vs {away}",
+  oracle_duel_nudge_subtitle: "El Oráculo dice {home}-{away}",
+  oracle_duel_nudge_cta: "Acepta el desafío",
+  oracle_duel_nudge_dismiss: "Ahora no",
+
+  oracle_duel_celebrate_win: "¡Has vencido al Oráculo!",
+  oracle_duel_celebrate_lose: "El Oráculo ganó esta vez",
+  oracle_duel_celebrate_tie: "Empataste con el Oráculo",
+  oracle_duel_celebrate_result_label: "Resultado del partido",
+  oracle_duel_celebrate_you: "Tú",
+  oracle_duel_celebrate_pick: "Pronóstico: {home}-{away}",
+  oracle_duel_celebrate_cta: "Ver Duelo con el Oráculo",
 
   reeng_title_single: "{match} acaba de terminar — eres #{rank} en {group}",
   reeng_title_multi: "{match} acaba de terminar — mira tu posición",
@@ -4056,6 +4153,8 @@ const pt: Translations = {
   notif_push_oracle_duel_lose_title:   "🔮 O Oráculo venceu desta vez",
   notif_push_oracle_duel_draw_title:   "🤝 Empataste com o Oráculo",
   notif_push_oracle_duel_body:         "{home} {actualHome}-{actualAway} {away} — tu {userScore} pts, Oráculo {oracleScore} pts.",
+  notif_push_oracle_duel_nudge_title:  "🔮 Vencer o Oráculo hoje?",
+  notif_push_oracle_duel_nudge_body:   "O Oráculo tem um palpite para {home} x {away} — acha que consegue acertar melhor?",
   notif_push_match_duel_win_title:     "🏆 Você venceu o duelo!",
   notif_push_match_duel_lose_title:    "😬 Você perdeu o duelo",
   notif_push_match_duel_draw_title:    "🤝 Seu duelo terminou empatado",
@@ -4303,6 +4402,19 @@ const pt: Translations = {
   match_duel_accept_error: "Não foi possível aceitar este convite — ele já pode ter sido aceito.",
   match_duel_signup_to_accept: "Cadastre-se para aceitar",
   match_duel_signin_instead: "Já tem uma conta? Entrar",
+
+  oracle_duel_nudge_title: "O palpite do Oráculo de hoje: {home} x {away}",
+  oracle_duel_nudge_subtitle: "O Oráculo palpita {home}-{away}",
+  oracle_duel_nudge_cta: "Aceitar o desafio",
+  oracle_duel_nudge_dismiss: "Agora não",
+
+  oracle_duel_celebrate_win: "Você venceu o Oráculo!",
+  oracle_duel_celebrate_lose: "O Oráculo venceu desta vez",
+  oracle_duel_celebrate_tie: "Você empatou com o Oráculo",
+  oracle_duel_celebrate_result_label: "Resultado da partida",
+  oracle_duel_celebrate_you: "Você",
+  oracle_duel_celebrate_pick: "Palpite: {home}-{away}",
+  oracle_duel_celebrate_cta: "Ver Duelo com o Oráculo",
 
   reeng_title_single: "{match} acabou de terminar — você é #{rank} em {group}",
   reeng_title_multi: "{match} acabou de terminar — veja sua posição",
@@ -4665,6 +4777,8 @@ const he: Translations = {
   notif_push_oracle_duel_lose_title:   "🔮 האורקל ניצח הפעם",
   notif_push_oracle_duel_draw_title:   "🤝 סיימת בתיקו מול האורקל",
   notif_push_oracle_duel_body:         "{home} {actualHome}-{actualAway} {away} — אתה {userScore} נק', אורקל {oracleScore} נק'.",
+  notif_push_oracle_duel_nudge_title:  "🔮 לנצח את המגיד היום?",
+  notif_push_oracle_duel_nudge_body:   "למגיד יש ניחוש למשחק {home} מול {away} — חושבים שתוכלו לנחש טוב יותר?",
   notif_push_match_duel_win_title:     "🏆 ניצחתם בדו-קרב!",
   notif_push_match_duel_lose_title:    "😬 הפסדתם בדו-קרב",
   notif_push_match_duel_draw_title:    "🤝 הדו-קרב שלכם הסתיים בתיקו",
@@ -4912,6 +5026,19 @@ const he: Translations = {
   match_duel_accept_error: "לא ניתן לקבל את ההזמנה הזו — ייתכן שהיא כבר אושרה.",
   match_duel_signup_to_accept: "הרשמה כדי לקבל",
   match_duel_signin_instead: "כבר יש לכם חשבון? התחברות",
+
+  oracle_duel_nudge_title: "התחזית של המגיד להיום: {home} מול {away}",
+  oracle_duel_nudge_subtitle: "המגיד מנחש {home}-{away}",
+  oracle_duel_nudge_cta: "קבלו את האתגר",
+  oracle_duel_nudge_dismiss: "לא כרגע",
+
+  oracle_duel_celebrate_win: "ניצחתם את המגיד!",
+  oracle_duel_celebrate_lose: "המגיד ניצח הפעם",
+  oracle_duel_celebrate_tie: "סיימתם בתיקו מול המגיד",
+  oracle_duel_celebrate_result_label: "תוצאת המשחק",
+  oracle_duel_celebrate_you: "אתם",
+  oracle_duel_celebrate_pick: "ניחוש: {home}-{away}",
+  oracle_duel_celebrate_cta: "צפייה בדו-קרב מול המגיד",
 
   reeng_title_single: "{match} הסתיים ממש עכשיו — אתה במקום #{rank} ב-{group}",
   reeng_title_multi: "{match} הסתיים ממש עכשיו — בדוק את הדירוג שלך",
@@ -5274,6 +5401,8 @@ const ar: Translations = {
   notif_push_oracle_duel_lose_title:   "🔮 فاز الأوراكل هذه المرة",
   notif_push_oracle_duel_draw_title:   "🤝 تعادلت مع الأوراكل",
   notif_push_oracle_duel_body:         "{home} {actualHome}-{actualAway} {away} — أنت {userScore} نقطة، الأوراكل {oracleScore} نقطة.",
+  notif_push_oracle_duel_nudge_title:  "🔮 هزيمة العرّاف اليوم؟",
+  notif_push_oracle_duel_nudge_body:   "لدى العرّاف توقع لمباراة {home} ضد {away} — هل تظن أنك تستطيع توقعًا أفضل؟",
   notif_push_match_duel_win_title:     "🏆 لقد فزت بالمبارزة!",
   notif_push_match_duel_lose_title:    "😬 لقد خسرت المبارزة",
   notif_push_match_duel_draw_title:    "🤝 انتهت مبارزتك بالتعادل",
@@ -5521,6 +5650,19 @@ const ar: Translations = {
   match_duel_accept_error: "تعذّر قبول هذه الدعوة — ربما تم قبولها بالفعل.",
   match_duel_signup_to_accept: "سجّل للقبول",
   match_duel_signin_instead: "لديك حساب بالفعل؟ سجّل الدخول",
+
+  oracle_duel_nudge_title: "توقع العرّاف لليوم: {home} ضد {away}",
+  oracle_duel_nudge_subtitle: "العرّاف يتوقع {home}-{away}",
+  oracle_duel_nudge_cta: "قبول التحدي",
+  oracle_duel_nudge_dismiss: "ليس الآن",
+
+  oracle_duel_celebrate_win: "لقد هزمت العرّاف!",
+  oracle_duel_celebrate_lose: "فاز العرّاف هذه المرة",
+  oracle_duel_celebrate_tie: "تعادلت مع العرّاف",
+  oracle_duel_celebrate_result_label: "نتيجة المباراة",
+  oracle_duel_celebrate_you: "أنت",
+  oracle_duel_celebrate_pick: "التوقع: {home}-{away}",
+  oracle_duel_celebrate_cta: "عرض مبارزة العرّاف",
 
   reeng_title_single: "{match} انتهت للتو — أنت في المركز #{rank} في {group}",
   reeng_title_multi: "{match} انتهت للتو — تحقق من ترتيبك",

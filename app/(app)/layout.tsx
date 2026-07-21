@@ -7,6 +7,8 @@ import { JoinPromptModal } from "@/components/join/join-prompt-modal";
 import { ReengagementSheet } from "@/components/reengagement/reengagement-sheet";
 import { HouseGroupInviteSheet } from "@/components/house-groups/house-group-invite-sheet";
 import { MatchReminderSheet } from "@/components/reminders/match-reminder-sheet";
+import { OracleDuelCelebrationTrigger } from "@/components/game/oracle-duel-celebration-trigger";
+import { OracleDuelNudgeSheet } from "@/components/game/oracle-duel-nudge-sheet";
 import { GroupProvider } from "@/lib/contexts/group-context";
 import { NavModeProvider } from "@/lib/contexts/nav-mode-context";
 
@@ -42,6 +44,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       <ReengagementSheet />
       <HouseGroupInviteSheet />
       <MatchReminderSheet />
+      <OracleDuelNudgeSheet />
+      <OracleDuelCelebrationTrigger />
     </div>
     </GroupProvider>
     </NavModeProvider>

@@ -9,7 +9,10 @@
 import { sbAdmin } from "@/lib/supabase/admin";
 import { calcLivePoints } from "@/lib/services/predictions";
 import { isMatchLocked } from "@/lib/isMatchLocked";
-import { getNextOracleMatch, type OracleMatchInfo, type OraclePredictionRow } from "@/lib/services/oracle";
+import {
+  getNextOracleMatch, getAllOracleMatches, getOracleAgreementStats,
+  type OracleMatchInfo, type OraclePredictionRow,
+} from "@/lib/services/oracle";
 
 export interface OracleDuelRow {
   id: string;
@@ -282,4 +285,114 @@ export async function getOracleDuelDashboard(userId: string): Promise<OracleDuel
     : null;
 
   return { totals, nextChallenge, history };
+}
+
+// ── Latest resolved duel (win-celebration trigger) ──────────────────────────
+// Deliberately its own small query rather than a slice of
+// getOracleDuelDashboard() — that builds nextChallenge + a 10-row history
+// join on every call, which is too heavy to mount globally (app shell,
+// every page load) just to check "is there a fresh result to celebrate".
+
+export interface LatestResolvedOracleDuel {
+  duelId: string;
+  matchId: string;
+  home: string;
+  away: string;
+  homeFlagCode: string | null;
+  awayFlagCode: string | null;
+  actualScore: { home: number; away: number };
+  userScore: { home: number; away: number };
+  oracleScore: { home: number; away: number };
+  pointsUser: number;
+  pointsOracle: number;
+  resolvedAt: string;
+}
+
+export async function getLatestResolvedOracleDuel(userId: string): Promise<LatestResolvedOracleDuel | null> {
+  const sb = sbAdmin();
+  const { data: rows } = await sb
+    .from("oracle_duels")
+    .select("id, match_id, user_home_score, user_away_score, oracle_home_score, oracle_away_score, points_user, points_oracle, resolved_at")
+    .eq("user_id", userId)
+    .not("resolved_at", "is", null)
+    .order("resolved_at", { ascending: false })
+    .limit(1);
+  const row = rows?.[0] as {
+    id: string; match_id: string;
+    user_home_score: number; user_away_score: number;
+    oracle_home_score: number; oracle_away_score: number;
+    points_user: number | null; points_oracle: number | null;
+    resolved_at: string | null;
+  } | undefined;
+  if (!row || row.points_user == null || row.points_oracle == null || !row.resolved_at) return null;
+
+  const { data: match } = await sb
+    .from("matches")
+    .select("home, away, home_flag, away_flag, home_score, away_score")
+    .eq("id", row.match_id)
+    .maybeSingle();
+  const m = match as { home: string; away: string; home_flag: string | null; away_flag: string | null; home_score: number | null; away_score: number | null } | null;
+  if (!m || m.home_score == null || m.away_score == null) return null;
+
+  return {
+    duelId: row.id,
+    matchId: row.match_id,
+    home: m.home,
+    away: m.away,
+    homeFlagCode: m.home_flag,
+    awayFlagCode: m.away_flag,
+    actualScore: { home: m.home_score, away: m.away_score },
+    userScore: { home: row.user_home_score, away: row.user_away_score },
+    oracleScore: { home: row.oracle_home_score, away: row.oracle_away_score },
+    pointsUser: row.points_user,
+    pointsOracle: row.points_oracle,
+    resolvedAt: row.resolved_at,
+  };
+}
+
+// ── Featured match (nudge selection) ─────────────────────────────────────
+// getNextOracleMatch() picks the soonest kickoff, which is right for "the
+// challenge that's actually next" in the Game Room widget. The nudge needs
+// a different question — "which of the upcoming Oracle picks is worth
+// proactively interrupting someone for" — so it ranks by real engagement
+// (group_predictions volume, the same crowd signal getOracleAgreementStats
+// already computes) and only falls back to a static stage-importance tier
+// when there isn't enough volume yet to trust (e.g. early in the day,
+// before predictions have accumulated).
+
+const STAGE_TIER: Record<string, number> = {
+  Final: 100, SF: 80, "3rd": 70, QF: 60, R16: 50, R32: 40, Group: 10,
+};
+
+const SPARSE_VOLUME_THRESHOLD = 5;
+
+export interface FeaturedOracleDuelMatch {
+  match: OracleMatchInfo;
+  prediction: OraclePredictionRow;
+}
+
+export async function getFeaturedOracleDuelMatch(): Promise<FeaturedOracleDuelMatch | null> {
+  const all = await getAllOracleMatches();
+  const candidates = all.filter(({ match }) => match.status === "upcoming" && !isMatchLocked(match.kickoffAt));
+  if (!candidates.length) return null;
+  if (candidates.length === 1) return candidates[0];
+
+  const matchIds = candidates.map(c => c.match.id);
+  const predictionByMatchId = new Map(candidates.map(c => [c.match.id, c.prediction]));
+  const stats = await getOracleAgreementStats(matchIds, predictionByMatchId);
+
+  const volumeOf = (matchId: string) => stats.get(matchId)?.total ?? 0;
+  const useVolume = candidates.some(c => volumeOf(c.match.id) >= SPARSE_VOLUME_THRESHOLD);
+
+  const ranked = [...candidates].sort((a, b) => {
+    if (useVolume) {
+      const volDiff = volumeOf(b.match.id) - volumeOf(a.match.id);
+      if (volDiff !== 0) return volDiff;
+    }
+    const tierDiff = (STAGE_TIER[b.match.stage] ?? 0) - (STAGE_TIER[a.match.stage] ?? 0);
+    if (tierDiff !== 0) return tierDiff;
+    return new Date(a.match.kickoffAt).getTime() - new Date(b.match.kickoffAt).getTime();
+  });
+
+  return ranked[0];
 }
