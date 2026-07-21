@@ -153,7 +153,7 @@ export default async function GameRoomPage() {
         signedIn={!!profile}
       />
 
-      <OracleGameRoomSection cards={oracleData.cards} record={oracleData.record} />
+      <OracleGameRoomSection cards={oracleData.cards} record={oracleData.record} hasMore={oracleData.hasMore} />
 
       <div>
         <div className="flex items-center gap-2 mb-2">

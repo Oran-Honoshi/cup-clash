@@ -502,12 +502,18 @@ export interface OracleGameRoomData {
   // null when the user is anonymous or has no finished, self-predicted
   // matches yet to tally — distinct from a real 0-0 record.
   record: { you: number; oracle: number } | null;
+  // true once the tournament has produced more Oracle picks than the
+  // Game Room snippet shows — drives the "See full history" link.
+  hasMore: boolean;
 }
 
-export async function getOracleGameRoomData(
+// Shared by the Game Room snippet (capped) and the full history page
+// (uncapped) so both read the exact same closeness/record computation —
+// only how much of `cards` gets shown differs between the two callers.
+async function buildOracleGameData(
   userId: string | null,
   groupId: string | null
-): Promise<OracleGameRoomData> {
+): Promise<{ cards: OracleGameCard[]; record: { you: number; oracle: number } | null }> {
   const matches = await getAllOracleMatches();
   if (!matches.length) return { cards: [], record: null };
 
@@ -552,4 +558,30 @@ export async function getOracleGameRoomData(
   });
 
   return { cards, record: userId && hasComparableMatch ? { you: recordYou, oracle: recordOracle } : null };
+}
+
+const GAME_ROOM_CARD_LIMIT = 5;
+
+export async function getOracleGameRoomData(
+  userId: string | null,
+  groupId: string | null
+): Promise<OracleGameRoomData> {
+  const { cards, record } = await buildOracleGameData(userId, groupId);
+  // `cards` is ascending by kickoff_at (see getAllOracleMatches) — the most
+  // recent entries are the tail of that list, so take from the end and
+  // reverse for latest-first display, rather than showing the tournament's
+  // very first predictions forever as the list grows.
+  const recent = cards.slice(-GAME_ROOM_CARD_LIMIT).reverse();
+  return { cards: recent, record, hasMore: cards.length > GAME_ROOM_CARD_LIMIT };
+}
+
+// Full, uncapped version of the same data for the "See full history" page —
+// the record here is identical to the Game Room's (computed over the full
+// set already), only the card list itself is left untruncated.
+export async function getOracleHistoryData(
+  userId: string | null,
+  groupId: string | null
+): Promise<{ cards: OracleGameCard[]; record: { you: number; oracle: number } | null }> {
+  const { cards, record } = await buildOracleGameData(userId, groupId);
+  return { cards: [...cards].reverse(), record };
 }
