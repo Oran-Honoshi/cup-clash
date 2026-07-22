@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/client";
 import { Trophy, MapPin, Clock, Target } from "lucide-react";
 import { FlagBadge } from "@/components/ui/FlagBadge";
 import { Card } from "@/components/ui/card";
+import { getSessionCached, setSessionCached } from "@/lib/session-cache";
 
 interface BracketTeam {
   label: string;      // e.g. "1A" or "Spain"
@@ -304,6 +305,27 @@ export function KnockoutBracket({ groupId }: { groupId?: string }) {
 
   // Data-fetching/advancement logic — unchanged from the pre-redesign version.
   useEffect(() => {
+    const cacheKey = "knockout-bracket-matches";
+    const applyRows = (rows: DbMatch[]) => {
+      const r32 = rows.filter(m => m.stage === "R32");
+      const r16 = rows.filter(m => m.stage === "R16");
+      const qf  = rows.filter(m => m.stage === "QF");
+      const sf  = rows.filter(m => m.stage === "SF");
+      const tp  = rows.filter(m => m.stage === "3rd");
+      const fn  = rows.filter(m => m.stage === "Final");
+
+      if (r32.length) setR32Matches(r32.map(m => dbMatchToBracket(m, "Round of 32")));
+      if (r16.length) setR16Matches(r16.map(m => dbMatchToBracket(m, "Round of 16")));
+      if (qf.length)  setQfMatches(qf.map(m => dbMatchToBracket(m, "Quarter-Final")));
+      if (sf.length)  setSfMatches(sf.map(m => dbMatchToBracket(m, "Semi-Final")));
+      // Earliest kickoff wins if duplicate "3rd"-stage rows exist in the data.
+      if (tp.length)  setThirdPlaceMatch(dbMatchToBracket(tp[0], "Third Place"));
+      if (fn.length)  setFinalMatch(dbMatchToBracket(fn[0], "Final"));
+    };
+
+    const cached = getSessionCached<DbMatch[]>(cacheKey);
+    if (cached !== undefined) { applyRows(cached); return; }
+
     const SELECT = "id, home, away, home_flag, away_flag, kickoff_at, stage, stadium, city, home_score, away_score, home_score_et, away_score_et, penalty_winner, time_confirmed";
     createClient()
       .from("matches")
@@ -313,20 +335,8 @@ export function KnockoutBracket({ groupId }: { groupId?: string }) {
       .then(({ data }) => {
         if (!data?.length) return;
         const rows = data as DbMatch[];
-        const r32 = rows.filter(m => m.stage === "R32");
-        const r16 = rows.filter(m => m.stage === "R16");
-        const qf  = rows.filter(m => m.stage === "QF");
-        const sf  = rows.filter(m => m.stage === "SF");
-        const tp  = rows.filter(m => m.stage === "3rd");
-        const fn  = rows.filter(m => m.stage === "Final");
-
-        if (r32.length) setR32Matches(r32.map(m => dbMatchToBracket(m, "Round of 32")));
-        if (r16.length) setR16Matches(r16.map(m => dbMatchToBracket(m, "Round of 16")));
-        if (qf.length)  setQfMatches(qf.map(m => dbMatchToBracket(m, "Quarter-Final")));
-        if (sf.length)  setSfMatches(sf.map(m => dbMatchToBracket(m, "Semi-Final")));
-        // Earliest kickoff wins if duplicate "3rd"-stage rows exist in the data.
-        if (tp.length)  setThirdPlaceMatch(dbMatchToBracket(tp[0], "Third Place"));
-        if (fn.length)  setFinalMatch(dbMatchToBracket(fn[0], "Final"));
+        setSessionCached(cacheKey, rows);
+        applyRows(rows);
       });
   }, []);
 

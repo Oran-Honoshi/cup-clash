@@ -5,6 +5,7 @@ import { Swords, X } from "lucide-react";
 import { useLocale } from "@/components/i18n/locale-provider";
 import { interpolate } from "@/lib/i18n";
 import { UserAvatar } from "@/components/ui/UserAvatar";
+import { getSessionCached, setSessionCached } from "@/lib/session-cache";
 
 interface RivalSide {
   userId:      string;
@@ -57,12 +58,20 @@ export function RivalScoreboardCard({ groupId }: { groupId: string }) {
   const [data,     setData]     = useState<RivalData | null | undefined>(undefined); // undefined = loading
   const [removing, setRemoving] = useState(false);
 
+  const cacheKey = `rival-scoreboard:${groupId}`;
+
   const load = useCallback(() => {
+    const cached = getSessionCached<RivalData | null>(cacheKey);
+    if (cached !== undefined) { setData(cached); return; }
+
     fetch(`/api/rivalries?groupId=${encodeURIComponent(groupId)}`)
       .then(r => r.json())
-      .then((d: { rival: RivalData | null }) => setData(d.rival))
+      .then((d: { rival: RivalData | null }) => {
+        setData(d.rival);
+        setSessionCached(cacheKey, d.rival);
+      })
       .catch(() => setData(null));
-  }, [groupId]);
+  }, [groupId, cacheKey]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -77,6 +86,7 @@ export function RivalScoreboardCard({ groupId }: { groupId: string }) {
     try {
       await fetch(`/api/rivalries?groupId=${encodeURIComponent(groupId)}`, { method: "DELETE" });
       setData(null);
+      setSessionCached(cacheKey, null);
     } finally {
       setRemoving(false);
     }

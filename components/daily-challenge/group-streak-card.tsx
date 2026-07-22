@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { Flame } from "lucide-react";
 import { useLocale } from "@/components/i18n/locale-provider";
 import { interpolate } from "@/lib/i18n";
+import { getSessionCached, setSessionCached } from "@/lib/session-cache";
 
 // Group Streak for the Daily Challenge — always reads from
 // getGroupStreak() via /api/groups/[id]/daily-streak (see
@@ -13,10 +14,18 @@ export function GroupStreakCard({ groupId }: { groupId: string }) {
   const [streak, setStreak] = useState<number | null>(null);
 
   useEffect(() => {
+    const cacheKey = `group-streak:${groupId}`;
+    const cached = getSessionCached<number>(cacheKey);
+    if (cached !== undefined) { setStreak(cached); return; }
+
     let cancelled = false;
     fetch(`/api/groups/${groupId}/daily-streak`)
       .then(r => r.json())
-      .then((data: { currentStreak: number }) => { if (!cancelled) setStreak(data.currentStreak); })
+      .then((data: { currentStreak: number }) => {
+        if (cancelled) return;
+        setStreak(data.currentStreak);
+        setSessionCached(cacheKey, data.currentStreak);
+      })
       .catch(() => {});
     return () => { cancelled = true; };
   }, [groupId]);

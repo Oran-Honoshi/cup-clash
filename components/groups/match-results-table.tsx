@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Image from "next/image";
 import { Trophy, Check, X } from "lucide-react";
 import { flagUrl } from "@/lib/countries";
+import { getSessionCached, setSessionCached } from "@/lib/session-cache";
 
 interface FinishedMatch {
   id: string;
@@ -47,6 +48,12 @@ const glass = {
   overflow: "hidden",
 } as const;
 
+interface ResultsResponse {
+  matches: FinishedMatch[];
+  predictions: MemberPrediction[];
+  totals: Record<string, number>;
+}
+
 export function MatchResultsTable({ groupId, members }: Props) {
   const [matches, setMatches] = useState<FinishedMatch[]>([]);
   const [predictions, setPredictions] = useState<MemberPrediction[]>([]);
@@ -54,12 +61,23 @@ export function MatchResultsTable({ groupId, members }: Props) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const cacheKey = `match-results:${groupId}`;
+    const cached = getSessionCached<ResultsResponse>(cacheKey);
+    if (cached !== undefined) {
+      setMatches(cached.matches ?? []);
+      setPredictions(cached.predictions ?? []);
+      setTotals(cached.totals ?? {});
+      setLoading(false);
+      return;
+    }
+
     fetch(`/api/groups/${groupId}/results`, { cache: "no-store" })
       .then(r => r.json())
-      .then(data => {
+      .then((data: ResultsResponse) => {
         setMatches(data.matches ?? []);
         setPredictions(data.predictions ?? []);
         setTotals(data.totals ?? {});
+        setSessionCached(cacheKey, data);
       })
       .catch(console.error)
       .finally(() => setLoading(false));

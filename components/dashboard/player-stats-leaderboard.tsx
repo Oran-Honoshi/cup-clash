@@ -6,6 +6,7 @@ import { Star, Users, TrendingUp } from "lucide-react";
 import Image from "next/image";
 import { flagUrl } from "@/lib/countries";
 import { BallLoader } from "@/components/ui/BallLoader";
+import { getSessionCached, setSessionCached } from "@/lib/session-cache";
 
 function createSb() {
   return createClient(
@@ -114,6 +115,10 @@ export function TopScorersLeaderboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const cacheKey = "top-scorers";
+    const cached = getSessionCached<PlayerRow[]>(cacheKey);
+    if (cached !== undefined) { setPlayers(cached); setLoading(false); return; }
+
     createSb()
       .from("player_tournament_stats")
       .select("api_player_id, player_name, full_name, team_name, goals, assists")
@@ -121,7 +126,9 @@ export function TopScorersLeaderboard() {
       .order("goals", { ascending: false })
       .limit(20)
       .then(({ data }) => {
-        setPlayers((data ?? []) as PlayerRow[]);
+        const rows = (data ?? []) as PlayerRow[];
+        setPlayers(rows);
+        setSessionCached(cacheKey, rows);
         setLoading(false);
       });
   }, []);
@@ -165,6 +172,10 @@ export function TopAssistersLeaderboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    const cacheKey = "top-assisters";
+    const cached = getSessionCached<PlayerRow[]>(cacheKey);
+    if (cached !== undefined) { setPlayers(cached); setLoading(false); return; }
+
     createSb()
       .from("player_tournament_stats")
       .select("api_player_id, player_name, full_name, team_name, goals, assists")
@@ -172,7 +183,9 @@ export function TopAssistersLeaderboard() {
       .order("assists", { ascending: false })
       .limit(20)
       .then(({ data }) => {
-        setPlayers((data ?? []) as PlayerRow[]);
+        const rows = (data ?? []) as PlayerRow[];
+        setPlayers(rows);
+        setSessionCached(cacheKey, rows);
         setLoading(false);
       });
   }, []);

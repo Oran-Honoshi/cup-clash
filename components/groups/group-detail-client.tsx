@@ -1,29 +1,40 @@
 "use client";
 
 import { useState } from "react";
+import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { Trophy, Users, DollarSign, Target, Lock, Shield, ArrowRight, MessageCircle, Info, Trash2, Gift, CheckCircle, Clock, GraduationCap, ClipboardList, Table2, GitBranch, Star, Brain, ChevronDown } from "lucide-react";
 import Link from "next/link";
-import { GroupChat } from "@/components/chat/group-chat";
-import { GroupStreakCard } from "@/components/daily-challenge/group-streak-card";
-import { RivalScoreboardCard } from "@/components/groups/rival-scoreboard-card";
-import { PointsRaceChart } from "@/components/groups/points-race-chart";
 import { MemberAvatar } from "@/components/ui/member-avatar";
-import { MatchResultsTable } from "@/components/groups/match-results-table";
-import { LeaderboardList } from "@/components/dashboard/leaderboard-list";
-import { TopScorersLeaderboard, TopAssistersLeaderboard } from "@/components/dashboard/player-stats-leaderboard";
-import { TriviaLeaderboard } from "@/components/trivia/trivia-leaderboard";
-import { KnockoutBracket } from "@/components/dashboard/knockout-bracket";
-import { PredictionsClient } from "@/components/predictions/predictions-client";
-import { RulesSummary } from "@/components/groups/rules-summary";
-import { AdminGroupSector } from "@/components/admin/admin-group-sector";
 import { GroupSwitcherControl } from "@/components/groups/group-switcher-control";
-import { TournamentPicksNag } from "@/components/reminders/tournament-picks-nag";
+import { BallLoader } from "@/components/ui/BallLoader";
 import { useLocale } from "@/components/i18n/locale-provider";
 import { interpolate } from "@/lib/i18n";
 import { compareMembersForRanking } from "@/lib/leaderboard-sort";
 import type { Group as AdminGroup, Member as LeaderboardMember } from "@/lib/types";
 import type { ScheduleMatch } from "@/lib/schedule";
+
+// Sub-sector content, one dynamic import per tab, so only the active tab's
+// code ships instead of all ~14 components loading up front (see the
+// perf investigation this fixes — group-detail-client.tsx was the single
+// biggest contributor to Group Detail's initial JS payload).
+const sectorLoading = () => (
+  <div className="flex justify-center py-12"><BallLoader size="md" /></div>
+);
+const GroupChat = dynamic(() => import("@/components/chat/group-chat").then(m => m.GroupChat), { loading: sectorLoading });
+const GroupStreakCard = dynamic(() => import("@/components/daily-challenge/group-streak-card").then(m => m.GroupStreakCard), { loading: sectorLoading });
+const RivalScoreboardCard = dynamic(() => import("@/components/groups/rival-scoreboard-card").then(m => m.RivalScoreboardCard), { loading: sectorLoading });
+const PointsRaceChart = dynamic(() => import("@/components/groups/points-race-chart").then(m => m.PointsRaceChart), { loading: sectorLoading });
+const MatchResultsTable = dynamic(() => import("@/components/groups/match-results-table").then(m => m.MatchResultsTable), { loading: sectorLoading });
+const LeaderboardList = dynamic(() => import("@/components/dashboard/leaderboard-list").then(m => m.LeaderboardList), { loading: sectorLoading });
+const TopScorersLeaderboard = dynamic(() => import("@/components/dashboard/player-stats-leaderboard").then(m => m.TopScorersLeaderboard), { loading: sectorLoading });
+const TopAssistersLeaderboard = dynamic(() => import("@/components/dashboard/player-stats-leaderboard").then(m => m.TopAssistersLeaderboard), { loading: sectorLoading });
+const TriviaLeaderboard = dynamic(() => import("@/components/trivia/trivia-leaderboard").then(m => m.TriviaLeaderboard), { loading: sectorLoading });
+const KnockoutBracket = dynamic(() => import("@/components/dashboard/knockout-bracket").then(m => m.KnockoutBracket), { loading: sectorLoading });
+const PredictionsClient = dynamic(() => import("@/components/predictions/predictions-client").then(m => m.PredictionsClient), { loading: sectorLoading });
+const RulesSummary = dynamic(() => import("@/components/groups/rules-summary").then(m => m.RulesSummary), { loading: sectorLoading });
+const AdminGroupSector = dynamic(() => import("@/components/admin/admin-group-sector").then(m => m.AdminGroupSector), { loading: sectorLoading });
+const TournamentPicksNag = dynamic(() => import("@/components/reminders/tournament-picks-nag").then(m => m.TournamentPicksNag), { loading: sectorLoading });
 
 export type SubSector = "predictions" | "leaderboard" | "group-predictions" | "bracket" | "chat" | "admin" | "info";
 type LeaderboardSubTab = "picks" | "scorers" | "assisters" | "trivia";

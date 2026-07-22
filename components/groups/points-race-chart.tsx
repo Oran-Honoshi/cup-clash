@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { LineChart, Table2 } from "lucide-react";
 import { useLocale } from "@/components/i18n/locale-provider";
 import { BallLoader } from "@/components/ui/BallLoader";
+import { getSessionCached, setSessionCached } from "@/lib/session-cache";
 
 interface PointsHistoryMember { userId: string; name: string; avatarUrl: string | null }
 interface PointsHistoryRow { date: string; values: Record<string, number> }
@@ -50,10 +51,18 @@ export function PointsRaceChart({ groupId }: { groupId: string }) {
   const svgRef = useRef<SVGSVGElement>(null);
 
   useEffect(() => {
+    const cacheKey = `points-race:${groupId}`;
+    const cached = getSessionCached<PointsHistory>(cacheKey);
+    if (cached !== undefined) { setData(cached); return; }
+
     let cancelled = false;
     fetch(`/api/groups/${groupId}/points-history`)
       .then(r => r.json())
-      .then((d: PointsHistory) => { if (!cancelled) setData(d); })
+      .then((d: PointsHistory) => {
+        if (cancelled) return;
+        setData(d);
+        setSessionCached(cacheKey, d);
+      })
       .catch(() => { if (!cancelled) setData(null); });
     return () => { cancelled = true; };
   }, [groupId]);
