@@ -316,3 +316,81 @@ export async function getRecentResultsByTeam(
 
   return byTeam;
 }
+
+export interface ContinentalTie {
+  teamId: string;
+  teamName: string;
+  teamFlag: string | null;
+  competitionId: string;
+  competitionName: string;
+  matchId: string;
+  opponent: string;
+  opponentFlag: string | null;
+  isHome: boolean;
+  kickoffAt: string;
+  stage: string;
+}
+
+// Derived "your club is in continental competition" lookup — reuses the
+// same followedTeamIds callers already have (getRecentResultsByTeam's own
+// keying), no new follow type needed. A competition is "continental" here
+// iff it's a cup with no single country (competitions.country is null) —
+// the exact set migration 069 deliberately left null: UCL/UEL/UECL/
+// Libertadores/Sudamericana. One nearest-upcoming tie per team.
+export async function getContinentalInvolvement(teamIds: string[]): Promise<ContinentalTie[]> {
+  if (teamIds.length === 0) return [];
+
+  const { data: continentalComps } = await sb()
+    .from("competitions")
+    .select("id, name")
+    .eq("type", "cup")
+    .is("country", null);
+  const comps = (continentalComps ?? []) as Array<{ id: string; name: string }>;
+  if (comps.length === 0) return [];
+  const compNameById = new Map(comps.map((c) => [c.id, c.name]));
+  const compIds = comps.map((c) => c.id);
+
+  const orFilter = teamIds
+    .map((id) => `home_team_id.eq.${id},away_team_id.eq.${id}`)
+    .join(",");
+
+  const { data } = await sb()
+    .from("matches")
+    .select("id, home, away, home_flag, away_flag, kickoff_at, stage, competition_id, home_team_id, away_team_id, status")
+    .neq("status", "finished")
+    .in("competition_id", compIds)
+    .or(orFilter)
+    .order("kickoff_at", { ascending: true });
+
+  const seenTeam = new Set<string>();
+  const ties: ContinentalTie[] = [];
+  for (const m of (data ?? []) as Array<{
+    id: string; home: string; away: string;
+    home_flag: string | null; away_flag: string | null;
+    kickoff_at: string; stage: string; competition_id: string;
+    home_team_id: string | null; away_team_id: string | null;
+  }>) {
+    for (const teamId of teamIds) {
+      if (m.home_team_id !== teamId && m.away_team_id !== teamId) continue;
+      if (seenTeam.has(teamId)) continue; // nearest kickoff only, list is already date-ordered
+      seenTeam.add(teamId);
+
+      const isHome = m.home_team_id === teamId;
+      ties.push({
+        teamId,
+        teamName: isHome ? m.home : m.away,
+        teamFlag: isHome ? m.home_flag : m.away_flag,
+        competitionId: m.competition_id,
+        competitionName: compNameById.get(m.competition_id) ?? "",
+        matchId: m.id,
+        opponent: isHome ? m.away : m.home,
+        opponentFlag: isHome ? m.away_flag : m.home_flag,
+        isHome,
+        kickoffAt: m.kickoff_at,
+        stage: m.stage,
+      });
+    }
+  }
+
+  return ties;
+}

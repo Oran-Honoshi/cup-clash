@@ -718,6 +718,10 @@ export interface Translations {
   cf_no_match:            string;
   cf_suggest_prompt:      string;
   cf_suggest_dismiss:     string;
+
+  // Schedule — Continental Watch card
+  cw_title: string;
+  cw_vs:    string;
 }
 
 // ── English (base) ─────────────────────────────────────────────────────────────
@@ -1357,6 +1361,9 @@ const en: Translations = {
   cf_no_match:            "No countries match \"{query}\".",
   cf_suggest_prompt:      "Also follow {league} — {country}'s major league?",
   cf_suggest_dismiss:     "No thanks",
+
+  cw_title: "Continental Watch",
+  cw_vs:    "vs",
 };
 
 // ── French ─────────────────────────────────────────────────────────────────────
@@ -1996,6 +2003,9 @@ const fr: Translations = {
   cf_no_match:            "Aucun pays ne correspond à « {query} ».",
   cf_suggest_prompt:      "Suivre aussi {league}, le championnat majeur de {country} ?",
   cf_suggest_dismiss:     "Non merci",
+
+  cw_title: "Suivi continental",
+  cw_vs:    "contre",
 };
 
 // ── German ─────────────────────────────────────────────────────────────────────
@@ -2635,6 +2645,9 @@ const de: Translations = {
   cf_no_match:            "Keine Länder stimmen mit „{query}“ überein.",
   cf_suggest_prompt:      "Auch {league} folgen — die höchste Liga von {country}?",
   cf_suggest_dismiss:     "Nein danke",
+
+  cw_title: "Kontinental-Watch",
+  cw_vs:    "gegen",
 };
 
 // ── Dutch ──────────────────────────────────────────────────────────────────────
@@ -3274,6 +3287,9 @@ const nl: Translations = {
   cf_no_match:            "Geen landen komen overeen met \"{query}\".",
   cf_suggest_prompt:      "Ook {league} volgen — de topcompetitie van {country}?",
   cf_suggest_dismiss:     "Nee bedankt",
+
+  cw_title: "Continentaal overzicht",
+  cw_vs:    "tegen",
 };
 
 // ── Spanish ────────────────────────────────────────────────────────────────────
@@ -3913,6 +3929,9 @@ const es: Translations = {
   cf_no_match:            "Ningún país coincide con «{query}».",
   cf_suggest_prompt:      "¿Seguir también {league}, la liga principal de {country}?",
   cf_suggest_dismiss:     "No, gracias",
+
+  cw_title: "Vigilancia continental",
+  cw_vs:    "vs",
 };
 
 // ── Portuguese ─────────────────────────────────────────────────────────────────
@@ -4552,6 +4571,9 @@ const pt: Translations = {
   cf_no_match:            "Nenhum país corresponde a \"{query}\".",
   cf_suggest_prompt:      "Seguir também {league}, a principal liga de {country}?",
   cf_suggest_dismiss:     "Não, obrigado",
+
+  cw_title: "Vigilância continental",
+  cw_vs:    "vs",
 };
 
 // ── Hebrew ─────────────────────────────────────────────────────────────────────
@@ -5191,6 +5213,9 @@ const he: Translations = {
   cf_no_match:            "לא נמצאו מדינות התואמות ל-\"{query}\".",
   cf_suggest_prompt:      "לעקוב גם אחרי {league} — הליגה המובילה של {country}?",
   cf_suggest_dismiss:     "לא תודה",
+
+  cw_title: "מעקב קונטיננטלי",
+  cw_vs:    "נגד",
 };
 
 // ── Arabic ─────────────────────────────────────────────────────────────────────
@@ -5830,6 +5855,9 @@ const ar: Translations = {
   cf_no_match:            "لا توجد دول تطابق \"{query}\".",
   cf_suggest_prompt:      "هل تريد متابعة {league} أيضًا — الدوري الأبرز في {country}؟",
   cf_suggest_dismiss:     "لا شكرًا",
+
+  cw_title: "المتابعة القارية",
+  cw_vs:    "ضد",
 };
 
 // ── Translation map ────────────────────────────────────────────────────────────

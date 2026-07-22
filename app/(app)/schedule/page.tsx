@@ -8,7 +8,10 @@ import { GroupPersistRedirect } from "@/components/app/group-persist-redirect";
 import { GroupSwipeSelector }   from "@/components/groups/group-swipe-selector";
 import { getScheduleWindowBundle } from "@/lib/services/schedule-data";
 import { getCompetitions }       from "@/lib/services/competitions";
+import { getContinentalInvolvement } from "@/lib/services/matches";
+import { ContinentalWatchCard } from "@/components/schedule/continental-watch-card";
 import { getFollowedTeamIds, getFollowedCompetitionIds } from "@/lib/services/follows";
+import { getFollowedCompetitionIdsViaCountry } from "@/lib/services/countries";
 
 // Initial payload window — Live/Today/near-term Upcoming/recent Done all
 // fall inside this range; anything further out is fetched on demand by
@@ -60,13 +63,20 @@ export default async function SchedulePage({
   // ── Fetch the initial match window, plus the competition/follow data the
   // filter row needs ──────────────────────────────────────────────────────
   const { fromISO, toISO } = scheduleWindow();
-  const [scheduleBundle, competitions, followedTeamIds, followedCompetitionIds] = await Promise.all([
+  const [scheduleBundle, competitions, followedTeamIds, followedCompetitionIdsOwn, followedCompetitionIdsViaCountry] = await Promise.all([
     getScheduleWindowBundle(fromISO, toISO),
     getCompetitions(),
     getFollowedTeamIds(user?.id ?? null),
     getFollowedCompetitionIds(user?.id ?? null),
+    getFollowedCompetitionIdsViaCountry(user?.id ?? null),
   ]);
+  // A country-follow counts a match as followed via its resolved domestic
+  // league (see getFollowedCompetitionIdsViaCountry) — merged in here so
+  // ScheduleClient's isFollowed() needs no separate country branch.
+  const followedCompetitionIds = new Set([...followedCompetitionIdsOwn, ...followedCompetitionIdsViaCountry]);
   const { matches: allMatches, matchResults, matchTeams, matchKickoffs, matchTimeConfirmed } = scheduleBundle;
+
+  const continentalTies = await getContinentalInvolvement(Array.from(followedTeamIds));
 
   // ── Auth-only data ──────────────────────────────────────────────────────────
   let userId: string | undefined;
@@ -160,6 +170,7 @@ export default async function SchedulePage({
           <GroupSwipeSelector groups={allGroups} activeGroupId={activeGroupId} basePath="/schedule" />
         </div>
       )}
+      {continentalTies.length > 0 && <ContinentalWatchCard ties={continentalTies} />}
       <ScheduleClient
         userId={userId}
         groupId={activeGroupId}

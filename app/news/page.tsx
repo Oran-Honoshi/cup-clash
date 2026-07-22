@@ -6,6 +6,7 @@ import { Newspaper, ExternalLink } from "lucide-react";
 import { EmptyState } from "@/components/ui/empty-state";
 import { createClient } from "@/lib/supabase/server";
 import { getFollowedCompetitionIds, getFollowedTeamIds } from "@/lib/services/follows";
+import { getFollowedCompetitionIdsViaCountry } from "@/lib/services/countries";
 import { getCompetitions } from "@/lib/services/competitions";
 import { getMatchVoteState } from "@/lib/services/community-vote";
 import { relativeTime } from "@/lib/relative-time";
@@ -79,9 +80,13 @@ export default async function NewsPage({
     "foryou";
   const feed: FeedMode = userId ? requestedFeed : "all";
 
-  const [followedTeamIds, followedCompetitionIds] = userId
-    ? await Promise.all([getFollowedTeamIds(userId), getFollowedCompetitionIds(userId)])
-    : [new Set<string>(), new Set<string>()];
+  const [followedTeamIds, followedCompetitionIdsOwn, followedCompetitionIdsViaCountry] = userId
+    ? await Promise.all([getFollowedTeamIds(userId), getFollowedCompetitionIds(userId), getFollowedCompetitionIdsViaCountry(userId)])
+    : [new Set<string>(), new Set<string>(), new Set<string>()];
+  // A country-follow (e.g. "Israel") counts a match/article as followed via
+  // its resolved domestic league (e.g. Ligat Ha'al) — merged straight into
+  // the competition-id set so followedOrClause() needs no separate branch.
+  const followedCompetitionIds = new Set([...followedCompetitionIdsOwn, ...followedCompetitionIdsViaCountry]);
   const hasAnyFollow = followedTeamIds.size > 0 || followedCompetitionIds.size > 0;
 
   const sb = sbAdmin();

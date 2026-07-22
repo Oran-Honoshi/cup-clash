@@ -1,5 +1,6 @@
 import { XMLParser } from "fast-xml-parser";
 import { getFollowedCompetitionIds, getFollowedTeamIds } from "@/lib/services/follows";
+import { getFollowedCompetitionIdsViaCountry } from "@/lib/services/countries";
 import { sbAdmin } from "@/lib/supabase/admin";
 
 interface NewsSource {
@@ -226,9 +227,10 @@ interface ArticleRow {
 export async function getHeroArticle(userId: string | null): Promise<HeroArticle | null> {
   const sb = sbAdmin();
 
-  const [followedTeamIds, followedCompetitionIds] = userId
-    ? await Promise.all([getFollowedTeamIds(userId), getFollowedCompetitionIds(userId)])
-    : [new Set<string>(), new Set<string>()];
+  const [followedTeamIds, followedCompetitionIdsOwn, followedCompetitionIdsViaCountry] = userId
+    ? await Promise.all([getFollowedTeamIds(userId), getFollowedCompetitionIds(userId), getFollowedCompetitionIdsViaCountry(userId)])
+    : [new Set<string>(), new Set<string>(), new Set<string>()];
+  const followedCompetitionIds = new Set([...followedCompetitionIdsOwn, ...followedCompetitionIdsViaCountry]);
 
   let article: ArticleRow | null = null;
 
