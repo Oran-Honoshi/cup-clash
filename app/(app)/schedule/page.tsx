@@ -173,11 +173,22 @@ export default async function SchedulePage({
 
     groupName = allGroups.find(g => g.id === activeGroupId)?.name ?? "My Predictions";
 
-    const { data: predRows } = await sbAdmin()
-      .from("group_predictions")
-      .select("match_id, home_score, away_score, points_earned, is_exact")
-      .eq("user_id", user.id)
-      .eq("group_id", activeGroupId);
+    type AdStatus = { is_ad_free: boolean; groups: { is_corporate_paid: boolean } | null } | null;
+
+    const [{ data: predRows }, { data: adRaw }] = await Promise.all([
+      sbAdmin()
+        .from("group_predictions")
+        .select("match_id, home_score, away_score, points_earned, is_exact")
+        .eq("user_id", user.id)
+        .eq("group_id", activeGroupId),
+      // Ad status for this user+group
+      sbAdmin()
+        .from("group_members")
+        .select("is_ad_free, groups(is_corporate_paid)")
+        .eq("user_id", user.id)
+        .eq("group_id", activeGroupId)
+        .maybeSingle(),
+    ]);
 
     for (const p of (predRows ?? []) as DbPred[]) {
       initialPredictions[p.match_id] = {
@@ -188,14 +199,6 @@ export default async function SchedulePage({
       };
     }
 
-    // Fetch ad status for this user+group
-    type AdStatus = { is_ad_free: boolean; groups: { is_corporate_paid: boolean } | null } | null;
-    const { data: adRaw } = await sbAdmin()
-      .from("group_members")
-      .select("is_ad_free, groups(is_corporate_paid)")
-      .eq("user_id", user.id)
-      .eq("group_id", activeGroupId)
-      .maybeSingle();
     const adStatus = adRaw as AdStatus;
     isAdFree    = adStatus?.is_ad_free ?? false;
     isCorporate = adStatus?.groups?.is_corporate_paid ?? false;

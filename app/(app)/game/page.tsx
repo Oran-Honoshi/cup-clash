@@ -20,14 +20,19 @@ const surface = { background: "var(--sf)", border: "1px solid var(--br)", border
 // fully anonymous-playable except the Duel card, which needs an identified
 // opponent on both sides.
 export default async function GameRoomPage() {
-  const profile = await getCurrentUserProfile();
   const zone = ZONES.find(z => z.key === "game")!;
   const todayGameType = pickGameTypeForDate(todayISO());
+
+  // getNextOracleMatch() doesn't depend on the viewer's profile, so it can
+  // run alongside it instead of waiting behind the profile/group/oracleData chain.
+  const [profile, nextOracleDuelMatch] = await Promise.all([
+    getCurrentUserProfile(),
+    getNextOracleMatch(),
+  ]);
 
   const primaryGroupId = profile ? (await getAllUserGroups(profile.id))[0]?.group_id ?? null : null;
   const oracleData = await getOracleGameRoomData(profile?.id ?? null, primaryGroupId);
 
-  const nextOracleDuelMatch = await getNextOracleMatch();
   const myOracleDuelPick = profile && nextOracleDuelMatch
     ? await getMyDuelForMatch(profile.id, nextOracleDuelMatch.match.id)
     : null;
