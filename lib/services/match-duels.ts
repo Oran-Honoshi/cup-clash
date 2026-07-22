@@ -35,12 +35,6 @@ interface MatchRow {
   home_score: number | null; away_score: number | null;
 }
 
-export function formatMatchDuelDate(iso: string): string {
-  const d = new Date(iso);
-  return d.toLocaleDateString("en-GB", { weekday: "short", day: "2-digit", month: "short" })
-    + " · " + d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
-}
-
 function toMatchInfo(m: MatchRow): MatchDuelMatchInfo {
   return {
     id: m.id, home: m.home, away: m.away,

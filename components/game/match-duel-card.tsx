@@ -12,7 +12,7 @@ import { useWebShare } from "@/lib/hooks/use-web-share";
 import { isMatchLocked } from "@/lib/isMatchLocked";
 import { interpolate } from "@/lib/i18n";
 import type { MatchDuelStatus, MatchDuelMatchInfo, MatchDuelSummary } from "@/lib/services/match-duels";
-import { formatMatchDuelDate } from "@/lib/services/match-duels";
+import { formatMatchDuelDate } from "@/lib/formatMatchDuelDate";
 
 interface OpponentOption { id: string; name: string; avatarUrl: string | null }
 
