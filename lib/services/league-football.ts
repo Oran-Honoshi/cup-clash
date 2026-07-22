@@ -1,7 +1,8 @@
 // League fixtures/standings cron — fetches the non-World-Cup competitions
 // in TRACKED_LEAGUES below (Premier League, La Liga, Serie A, Bundesliga,
-// Ligue 1, UEFA Champions League, Copa Libertadores, Copa Sudamericana,
-// MLS, Brazil Serie A) from API-Football and caches them to Supabase.
+// Ligue 1, UEFA Champions League, UEFA Europa League, UEFA Europa
+// Conference League, Copa Libertadores, Copa Sudamericana, MLS, Brazil
+// Serie A, Ligat Ha'al) from API-Football and caches them to Supabase.
 //
 // Deliberately separate from app/api/scores/route.ts (the World Cup live
 // pipeline) — same conventions, but zero shared code path, so nothing here
@@ -28,10 +29,13 @@ const TRACKED_LEAGUES: Array<{ name: string; apiLeagueId: number }> = [
   { name: "Bundesliga",              apiLeagueId: 78  },
   { name: "Ligue 1",                 apiLeagueId: 61  },
   { name: "UEFA Champions League",   apiLeagueId: 2   },
+  { name: "UEFA Europa League",      apiLeagueId: 3   },
+  { name: "UEFA Europa Conference League", apiLeagueId: 848 },
   { name: "Copa Libertadores",       apiLeagueId: 13  },
   { name: "Copa Sudamericana",       apiLeagueId: 11  },
   { name: "MLS",                     apiLeagueId: 253 },
   { name: "Brazil Serie A",          apiLeagueId: 71  },
+  { name: "Ligat Ha'al",             apiLeagueId: 383 },
 ];
 
 function apiHeaders(): Record<string, string> {
@@ -97,19 +101,39 @@ interface APIStandingsResponse {
 
 // ── Round/stage mapping ─────────────────────────────────────────────────
 // League/group-phase matches all share stage="League" (never collides with
-// WC's Group/R32/R16/QF/SF/Final vocabulary). UCL knockout rounds are
-// namespaced ("UCL R16", "UCL QF", ...) so they can never be picked up by
-// WC bracket/scoring queries that match on stage string alone.
+// WC's Group/R32/R16/QF/SF/Final vocabulary). UEFA knockout rounds are
+// namespaced per competition ("UCL R16", "UEL R16", "UECL R16", ...) so they
+// can never be picked up by WC bracket/scoring queries that match on stage
+// string alone. Qualifying rounds (UCL/UEL/UECL all currently mid-qualifying
+// as of 2026-07) get their own namespaced stage ("UCL Q2", ...) rather than
+// falling through to the generic "Matchday N" label, which would misread a
+// knockout qualifying tie as a league fixture.
+
+const UEFA_STAGE_PREFIX: Record<string, string> = {
+  "UEFA Champions League": "UCL",
+  "UEFA Europa League": "UEL",
+  "UEFA Europa Conference League": "UECL",
+};
 
 function mapRound(competitionName: string, apiRound: string): { stage: string; roundLabel: string } {
   const r = apiRound.toLowerCase();
-  if (competitionName === "UEFA Champions League") {
+  const prefix = UEFA_STAGE_PREFIX[competitionName];
+  if (prefix) {
     if (r.includes("final") && !r.includes("semi") && !r.includes("quarter")) {
-      return { stage: "UCL Final", roundLabel: "Final" };
+      return { stage: `${prefix} Final`, roundLabel: "Final" };
     }
-    if (r.includes("semi"))    return { stage: "UCL SF", roundLabel: "Semi-finals" };
-    if (r.includes("quarter")) return { stage: "UCL QF", roundLabel: "Quarter-finals" };
-    if (r.includes("16"))      return { stage: "UCL R16", roundLabel: "Round of 16" };
+    if (r.includes("semi"))    return { stage: `${prefix} SF`, roundLabel: "Semi-finals" };
+    if (r.includes("quarter")) return { stage: `${prefix} QF`, roundLabel: "Quarter-finals" };
+    if (r.includes("16"))      return { stage: `${prefix} R16`, roundLabel: "Round of 16" };
+    const qualifying = r.match(/(\d)\w*\s+qualifying round/);
+    if (qualifying) return { stage: `${prefix} Q${qualifying[1]}`, roundLabel: apiRound };
+    if (r.includes("play off") || r.includes("playoff")) {
+      return { stage: `${prefix} PO`, roundLabel: "Play-offs" };
+    }
+    if (r.includes("league stage")) {
+      const m = apiRound.match(/(\d+)/);
+      return { stage: `${prefix} League Phase`, roundLabel: m ? `Matchday ${m[1]}` : apiRound };
+    }
   }
   const m = apiRound.match(/(\d+)/);
   return { stage: "League", roundLabel: m ? `Matchday ${m[1]}` : apiRound };

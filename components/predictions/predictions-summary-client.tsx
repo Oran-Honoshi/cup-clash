@@ -49,12 +49,18 @@ type GroupLookup = {
 const STAGE_ORDER: Record<string, number> = {
   Group: 0, R32: 1, R16: 2, QF: 3, SF: 4, "3rd": 5, Final: 6,
   "UCL R16": 7, "UCL QF": 8, "UCL SF": 9, "UCL Final": 10,
+  "UEL R16": 11, "UEL QF": 12, "UEL SF": 13, "UEL Final": 14,
+  "UECL R16": 15, "UECL QF": 16, "UECL SF": 17, "UECL Final": 18,
 };
 const STAGE_LABELS: Record<string, string> = {
   Group: "Group Stage", R32: "Round of 32", R16: "Round of 16", QF: "Quarter-Finals",
   SF: "Semi-Finals", "3rd": "Third Place", Final: "Final",
   "UCL R16": "UCL · Round of 16", "UCL QF": "UCL · Quarter-Finals",
   "UCL SF": "UCL · Semi-Finals", "UCL Final": "UCL · Final",
+  "UEL R16": "UEL · Round of 16", "UEL QF": "UEL · Quarter-Finals",
+  "UEL SF": "UEL · Semi-Finals", "UEL Final": "UEL · Final",
+  "UECL R16": "UECL · Round of 16", "UECL QF": "UECL · Quarter-Finals",
+  "UECL SF": "UECL · Semi-Finals", "UECL Final": "UECL · Final",
 };
 
 function stageRank(stage: string)  { return STAGE_ORDER[stage] ?? 99; }
