@@ -83,6 +83,9 @@ export interface ScheduleClientProps {
   followedTeamIds?: string[];
   /** competitions.id values from user_follows(followed_type='competition'). */
   followedCompetitionIds?: string[];
+  /** Bounds of the initial server-side fetch window — Upcoming/Done pagination extends from these. */
+  initialWindowFromISO?: string;
+  initialWindowToISO?: string;
 }
 
 // ── Constants ──────────────────────────────────────────────────────────────────
@@ -589,11 +592,11 @@ export function ScheduleClient({
   groupId,
   groupName,
   allGroups,
-  allMatches = WC2026_MATCHES,
-  matchResults,
-  matchTeams,
-  matchKickoffs,
-  matchTimeConfirmed,
+  allMatches: initialMatches = WC2026_MATCHES,
+  matchResults: initialMatchResults,
+  matchTeams: initialMatchTeams,
+  matchKickoffs: initialMatchKickoffs,
+  matchTimeConfirmed: initialMatchTimeConfirmed,
   initialPredictions,
   isAdFree,
   isCorporate,
@@ -601,10 +604,91 @@ export function ScheduleClient({
   competitions = [],
   followedTeamIds = [],
   followedCompetitionIds = [],
+  initialWindowFromISO,
+  initialWindowToISO,
 }: ScheduleClientProps) {
   const router = useRouter();
   const { t } = useLocale();
   const { setPrediction, refreshPredictions, setActiveUserId } = useGroupContext();
+
+  // ── Match data — seeded from the server's near-term window, extended on
+  // demand as the viewer navigates into Upcoming/Done (see loadEarlier/
+  // loadFurther below). Local state (not just the prop) so fetched chunks
+  // can be merged in without a full page reload.
+  const [allMatches, setAllMatches] = useState<ScheduleMatch[]>(initialMatches);
+  const [matchResults, setMatchResults] = useState(initialMatchResults);
+  const [matchTeams, setMatchTeams] = useState(initialMatchTeams ?? {});
+  const [matchKickoffs, setMatchKickoffs] = useState(initialMatchKickoffs ?? {});
+  const [matchTimeConfirmed, setMatchTimeConfirmed] = useState(initialMatchTimeConfirmed ?? {});
+
+  const loadedFromRef = useRef<string | null>(initialWindowFromISO ?? null);
+  const loadedToRef   = useRef<string | null>(initialWindowToISO ?? null);
+  const [doneFullyLoaded, setDoneFullyLoaded] = useState(false);
+  const [upcomingFullyLoaded, setUpcomingFullyLoaded] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const autoFetchedRef = useRef({ done: false, upcoming: false });
+
+  const CHUNK_LIMIT = 200;
+
+  const mergeScheduleBundle = useCallback((bundle: {
+    matches: ScheduleMatch[];
+    matchResults: Record<string, MatchResult>;
+    matchTeams: Record<string, { home: string; away: string; homeFlagCode?: string; awayFlagCode?: string }>;
+    matchKickoffs: Record<string, string>;
+    matchTimeConfirmed: Record<string, boolean>;
+  }) => {
+    setAllMatches(prev => {
+      const seen = new Set(prev.map(m => m.id));
+      const fresh = bundle.matches.filter(m => !seen.has(m.id));
+      return fresh.length ? [...prev, ...fresh] : prev;
+    });
+    setMatchResults(prev => ({ ...prev, ...bundle.matchResults }));
+    setMatchTeams(prev => ({ ...prev, ...bundle.matchTeams }));
+    setMatchKickoffs(prev => ({ ...prev, ...bundle.matchKickoffs }));
+    setMatchTimeConfirmed(prev => ({ ...prev, ...bundle.matchTimeConfirmed }));
+  }, []);
+
+  const loadEarlier = useCallback(async () => {
+    if (loadingMore || doneFullyLoaded || !loadedFromRef.current) return;
+    setLoadingMore(true);
+    try {
+      const res = await fetch(`/api/schedule/matches?before=${encodeURIComponent(loadedFromRef.current)}&limit=${CHUNK_LIMIT}`);
+      if (!res.ok) return;
+      const bundle = await res.json();
+      mergeScheduleBundle(bundle);
+      if (bundle.matches.length < CHUNK_LIMIT) {
+        setDoneFullyLoaded(true);
+      } else {
+        loadedFromRef.current = bundle.matches.reduce(
+          (min: string, m: ScheduleMatch) => (m.kickoff_at < min ? m.kickoff_at : min),
+          loadedFromRef.current,
+        );
+      }
+    } finally {
+      setLoadingMore(false);
+    }
+  }, [loadingMore, doneFullyLoaded, mergeScheduleBundle]);
+
+  const loadFurther = useCallback(async () => {
+    if (loadingMore || upcomingFullyLoaded || !loadedToRef.current) return;
+    setLoadingMore(true);
+    try {
+      const res = await fetch(`/api/schedule/matches?after=${encodeURIComponent(loadedToRef.current)}&limit=${CHUNK_LIMIT}`);
+      if (!res.ok) return;
+      const bundle = await res.json();
+      mergeScheduleBundle(bundle);
+      if (bundle.matches.length < CHUNK_LIMIT) {
+        setUpcomingFullyLoaded(true);
+      } else {
+        loadedToRef.current = bundle.matches.reduce(
+          (max: string, m: ScheduleMatch) => (m.kickoff_at > max ? m.kickoff_at : max),
+          loadedToRef.current,
+        );
+      }
+    } finally {
+      setLoadingMore(false);
+    }
+  }, [loadingMore, upcomingFullyLoaded, mergeScheduleBundle]);
 
   // ── Register userId so GroupSwipeSelector can refresh predictions ──────────
   useEffect(() => {
@@ -697,6 +781,20 @@ export function ScheduleClient({
   // own null-means-WC convention), a uuid = that competitions.id row.
   const [competitionFilter, setCompetitionFilter] = useState<string | null | "all">("all");
   const [followedOnly, setFollowedOnly] = useState(false);
+
+  // The first time the viewer opens Done/Upcoming, kick off one chunk fetch
+  // right away — otherwise those tabs would show only whatever sliver of
+  // finished/future matches happened to fall inside the initial window.
+  useEffect(() => {
+    if (tabFilter === "done" && !autoFetchedRef.current.done) {
+      autoFetchedRef.current.done = true;
+      loadEarlier();
+    }
+    if (tabFilter === "upcoming" && !autoFetchedRef.current.upcoming) {
+      autoFetchedRef.current.upcoming = true;
+      loadFurther();
+    }
+  }, [tabFilter, loadEarlier, loadFurther]);
 
   const followedTeamIdSet = useMemo(() => new Set(followedTeamIds), [followedTeamIds]);
   const followedCompetitionIdSet = useMemo(() => new Set(followedCompetitionIds), [followedCompetitionIds]);
@@ -1158,6 +1256,32 @@ export function ScheduleClient({
                   </section>
                 );
               })}
+            </div>
+          )}
+
+          {/* ── Load more — Upcoming/Done extend past the initial window ── */}
+          {tabFilter === "done" && !doneFullyLoaded && (
+            <div className="flex justify-center py-4">
+              <button
+                onClick={() => loadEarlier()}
+                disabled={loadingMore}
+                className="px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wide disabled:opacity-50"
+                style={{ background: "var(--ip)", border: "1px solid var(--br)", color: "var(--t2)" }}
+              >
+                {loadingMore ? <BallLoader size="sm" label={null} /> : "Load earlier results"}
+              </button>
+            </div>
+          )}
+          {tabFilter === "upcoming" && !upcomingFullyLoaded && (
+            <div className="flex justify-center py-4">
+              <button
+                onClick={() => loadFurther()}
+                disabled={loadingMore}
+                className="px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wide disabled:opacity-50"
+                style={{ background: "var(--ip)", border: "1px solid var(--br)", color: "var(--t2)" }}
+              >
+                {loadingMore ? <BallLoader size="sm" label={null} /> : "Load more upcoming matches"}
+              </button>
             </div>
           )}
         </div>

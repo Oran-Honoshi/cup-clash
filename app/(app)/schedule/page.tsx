@@ -6,9 +6,26 @@ import { sbAdmin } from "@/lib/supabase/admin";
 import { ScheduleClient }      from "@/components/schedule/schedule-client";
 import { GroupPersistRedirect } from "@/components/app/group-persist-redirect";
 import { GroupSwipeSelector }   from "@/components/groups/group-swipe-selector";
-import { getAllMatches }         from "@/lib/services/matches";
+import { getScheduleWindowBundle } from "@/lib/services/schedule-data";
 import { getCompetitions }       from "@/lib/services/competitions";
 import { getFollowedTeamIds, getFollowedCompetitionIds } from "@/lib/services/follows";
+
+// Initial payload window — Live/Today/near-term Upcoming/recent Done all
+// fall inside this range; anything further out is fetched on demand by
+// ScheduleClient via /api/schedule/matches as the viewer navigates past it.
+// This replaced an unscoped fetch of every match across every competition
+// (2.7MB) that shipped on every Schedule load regardless of which tab was
+// actually open.
+const WINDOW_DAYS_BACK    = 3;
+const WINDOW_DAYS_FORWARD = 21;
+
+function scheduleWindow(): { fromISO: string; toISO: string } {
+  const now = Date.now();
+  return {
+    fromISO: new Date(now - WINDOW_DAYS_BACK    * 86_400_000).toISOString(),
+    toISO:   new Date(now + WINDOW_DAYS_FORWARD * 86_400_000).toISOString(),
+  };
+}
 
 export const metadata: Metadata = {
   title: "Schedule — Every Competition | Cup Clash",
@@ -20,31 +37,6 @@ export const metadata: Metadata = {
       "All matches across every competition you follow. Predict scores inline.",
     type: "website",
   },
-};
-
-type DbMatchEvent = {
-  minute: number;
-  extra: number | null;
-  player: string | null;
-  team: string | null;
-  type: string;
-};
-
-type DbMatch = {
-  id: string;
-  status: string;
-  home_score: number | null;
-  away_score: number | null;
-  home_score_et: number | null;
-  away_score_et: number | null;
-  minute: number | null;
-  match_events: DbMatchEvent[] | null;
-  home: string;
-  away: string;
-  home_flag: string | null;
-  away_flag: string | null;
-  kickoff_at: string | null;
-  time_confirmed: boolean | null;
 };
 
 type DbPred = {
@@ -65,60 +57,16 @@ export default async function SchedulePage({
     data: { user },
   } = await sb.auth.getUser();
 
-  // ── Fetch all matches, live state, and the competition/follow data the
+  // ── Fetch the initial match window, plus the competition/follow data the
   // filter row needs ──────────────────────────────────────────────────────
-  const [allMatches, { data: dbMatchRows }, competitions, followedTeamIds, followedCompetitionIds] = await Promise.all([
-    getAllMatches(),
-    sbAdmin()
-      .from("matches")
-      .select("id, status, home_score, away_score, home_score_et, away_score_et, minute, match_events, home, away, home_flag, away_flag, kickoff_at, time_confirmed"),
+  const { fromISO, toISO } = scheduleWindow();
+  const [scheduleBundle, competitions, followedTeamIds, followedCompetitionIds] = await Promise.all([
+    getScheduleWindowBundle(fromISO, toISO),
     getCompetitions(),
     getFollowedTeamIds(user?.id ?? null),
     getFollowedCompetitionIds(user?.id ?? null),
   ]);
-
-  const matchResults: Record<string, {
-    status: string;
-    homeScore: number | null;
-    awayScore: number | null;
-    homeScore90: number | null;
-    awayScore90: number | null;
-    homeScoreET: number | null;
-    awayScoreET: number | null;
-    minute: number | null;
-    matchEvents: DbMatchEvent[] | null;
-  }> = {};
-  const matchTeams: Record<string, { home: string; away: string; homeFlagCode?: string; awayFlagCode?: string }> = {};
-  const matchKickoffs: Record<string, string> = {};
-  const matchTimeConfirmed: Record<string, boolean> = {};
-
-  for (const m of (dbMatchRows ?? []) as DbMatch[]) {
-    matchResults[m.id] = {
-      status:      m.status ?? "",
-      homeScore:   m.home_score_et ?? m.home_score,
-      awayScore:   m.away_score_et ?? m.away_score,
-      homeScore90: m.home_score,
-      awayScore90: m.away_score,
-      homeScoreET: m.home_score_et,
-      awayScoreET: m.away_score_et,
-      minute:      m.minute        ?? null,
-      matchEvents: m.match_events  ?? null,
-    };
-    if (m.home && m.away) {
-      matchTeams[m.id] = {
-        home:         m.home,
-        away:         m.away,
-        homeFlagCode: m.home_flag ?? undefined,
-        awayFlagCode: m.away_flag ?? undefined,
-      };
-    }
-    if (m.kickoff_at) {
-      matchKickoffs[m.id] = m.kickoff_at;
-    }
-    if (m.time_confirmed != null) {
-      matchTimeConfirmed[m.id] = m.time_confirmed;
-    }
-  }
+  const { matches: allMatches, matchResults, matchTeams, matchKickoffs, matchTimeConfirmed } = scheduleBundle;
 
   // ── Auth-only data ──────────────────────────────────────────────────────────
   let userId: string | undefined;
@@ -229,6 +177,8 @@ export default async function SchedulePage({
         competitions={competitions}
         followedTeamIds={Array.from(followedTeamIds)}
         followedCompetitionIds={Array.from(followedCompetitionIds)}
+        initialWindowFromISO={fromISO}
+        initialWindowToISO={toISO}
       />
     </>
   );
