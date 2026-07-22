@@ -1,22 +1,23 @@
 import Link from "next/link";
+import { serverT } from "@/lib/server-locale";
 
 interface LeaguesTabsProps {
-  active: "competitions" | "teams";
+  active: "competitions" | "teams" | "countries";
   basePath: string;
 }
 
-const TABS: Array<{ key: LeaguesTabsProps["active"]; label: string }> = [
-  { key: "competitions", label: "Competitions" },
-  { key: "teams", label: "Teams" },
-];
-
 export function LeaguesTabs({ active, basePath }: LeaguesTabsProps) {
+  const TABS: Array<{ key: LeaguesTabsProps["active"]; label: string }> = [
+    { key: "competitions", label: serverT("lg_tab_competitions") },
+    { key: "teams", label: serverT("lg_tab_teams") },
+    { key: "countries", label: serverT("lg_tab_countries") },
+  ];
   return (
     <div
       style={{
         gap: 8,
         display: "flex",
-        maxWidth: 320,
+        maxWidth: 460,
       }}
     >
       {TABS.map((tab) => {

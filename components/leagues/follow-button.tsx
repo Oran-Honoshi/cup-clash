@@ -12,9 +12,10 @@ interface FollowButtonProps {
   userId: string | null;
   initialFollowing: boolean;
   compact?: boolean;
+  onFollowChange?: (following: boolean) => void;
 }
 
-export function FollowButton({ type, id, userId, initialFollowing, compact = false }: FollowButtonProps) {
+export function FollowButton({ type, id, userId, initialFollowing, compact = false, onFollowChange }: FollowButtonProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -33,13 +34,13 @@ export function FollowButton({ type, id, userId, initialFollowing, compact = fal
     if (following) {
       const { error } = await sb.from("user_follows").delete()
         .eq("user_id", userId).eq("followed_type", type).eq("followed_id", id);
-      if (!error) setFollowing(false);
+      if (!error) { setFollowing(false); onFollowChange?.(false); }
     } else {
       const { error } = await sb.from("user_follows").upsert(
         { user_id: userId, followed_type: type, followed_id: id },
         { onConflict: "user_id,followed_type,followed_id", ignoreDuplicates: true }
       );
-      if (!error) setFollowing(true);
+      if (!error) { setFollowing(true); onFollowChange?.(true); }
     }
     setLoading(false);
   };

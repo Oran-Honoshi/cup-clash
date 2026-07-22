@@ -20,7 +20,17 @@ export async function getFollowedTeamIds(userId: string | null): Promise<Set<str
   return new Set(((data ?? []) as Array<{ followed_id: string }>).map((r) => r.followed_id));
 }
 
-// Total follow count across both types — used to decide whether the
+export async function getFollowedCountryIds(userId: string | null): Promise<Set<string>> {
+  if (!userId) return new Set();
+  const { data } = await sbAdmin()
+    .from("user_follows")
+    .select("followed_id")
+    .eq("user_id", userId)
+    .eq("followed_type", "country");
+  return new Set(((data ?? []) as Array<{ followed_id: string }>).map((r) => r.followed_id));
+}
+
+// Total follow count across all types — used to decide whether the
 // post-signup "Pick your teams" onboarding step has anything left to offer.
 export async function getFollowCount(userId: string | null): Promise<number> {
   if (!userId) return 0;

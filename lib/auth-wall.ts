@@ -10,7 +10,7 @@
 // param on the *next* path itself, so it survives the round trip and is
 // consumed once by <ConsumeFollowParam> on landing.
 
-export type FollowType = "team" | "competition";
+export type FollowType = "team" | "competition" | "country";
 
 export interface FollowAction {
   type: FollowType;
@@ -30,7 +30,7 @@ export function parseFollowParam(searchParams: URLSearchParams): FollowAction | 
   const raw = searchParams.get("follow");
   if (!raw) return null;
   const [type, id] = raw.split(":");
-  if ((type === "team" || type === "competition") && id) {
+  if ((type === "team" || type === "competition" || type === "country") && id) {
     return { type, id };
   }
   return null;

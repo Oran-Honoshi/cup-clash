@@ -707,6 +707,17 @@ export interface Translations {
   // Schedule — competition + follows filter row
   sch_all_competitions: string;
   sch_following_toggle: string;
+
+  // Leagues page tabs
+  lg_tab_competitions: string;
+  lg_tab_teams:        string;
+  lg_tab_countries:    string;
+
+  // Country-follow picker + "also follow the major league" suggestion chip
+  cf_search_placeholder: string;
+  cf_no_match:            string;
+  cf_suggest_prompt:      string;
+  cf_suggest_dismiss:     string;
 }
 
 // ── English (base) ─────────────────────────────────────────────────────────────
@@ -1337,6 +1348,15 @@ const en: Translations = {
 
   sch_all_competitions: "All",
   sch_following_toggle: "Following only",
+
+  lg_tab_competitions: "Competitions",
+  lg_tab_teams:        "Teams",
+  lg_tab_countries:    "Countries",
+
+  cf_search_placeholder: "Search countries…",
+  cf_no_match:            "No countries match \"{query}\".",
+  cf_suggest_prompt:      "Also follow {league} — {country}'s major league?",
+  cf_suggest_dismiss:     "No thanks",
 };
 
 // ── French ─────────────────────────────────────────────────────────────────────
@@ -1967,6 +1987,15 @@ const fr: Translations = {
 
   sch_all_competitions: "Toutes",
   sch_following_toggle: "Suivis uniquement",
+
+  lg_tab_competitions: "Compétitions",
+  lg_tab_teams:        "Équipes",
+  lg_tab_countries:    "Pays",
+
+  cf_search_placeholder: "Rechercher un pays…",
+  cf_no_match:            "Aucun pays ne correspond à « {query} ».",
+  cf_suggest_prompt:      "Suivre aussi {league}, le championnat majeur de {country} ?",
+  cf_suggest_dismiss:     "Non merci",
 };
 
 // ── German ─────────────────────────────────────────────────────────────────────
@@ -2597,6 +2626,15 @@ const de: Translations = {
 
   sch_all_competitions: "Alle",
   sch_following_toggle: "Nur gefolgte",
+
+  lg_tab_competitions: "Wettbewerbe",
+  lg_tab_teams:        "Teams",
+  lg_tab_countries:    "Länder",
+
+  cf_search_placeholder: "Länder suchen…",
+  cf_no_match:            "Keine Länder stimmen mit „{query}“ überein.",
+  cf_suggest_prompt:      "Auch {league} folgen — die höchste Liga von {country}?",
+  cf_suggest_dismiss:     "Nein danke",
 };
 
 // ── Dutch ──────────────────────────────────────────────────────────────────────
@@ -3227,6 +3265,15 @@ const nl: Translations = {
 
   sch_all_competitions: "Alles",
   sch_following_toggle: "Alleen gevolgd",
+
+  lg_tab_competitions: "Competities",
+  lg_tab_teams:        "Teams",
+  lg_tab_countries:    "Landen",
+
+  cf_search_placeholder: "Zoek landen…",
+  cf_no_match:            "Geen landen komen overeen met \"{query}\".",
+  cf_suggest_prompt:      "Ook {league} volgen — de topcompetitie van {country}?",
+  cf_suggest_dismiss:     "Nee bedankt",
 };
 
 // ── Spanish ────────────────────────────────────────────────────────────────────
@@ -3857,6 +3904,15 @@ const es: Translations = {
 
   sch_all_competitions: "Todas",
   sch_following_toggle: "Solo seguidos",
+
+  lg_tab_competitions: "Competiciones",
+  lg_tab_teams:        "Equipos",
+  lg_tab_countries:    "Países",
+
+  cf_search_placeholder: "Buscar países…",
+  cf_no_match:            "Ningún país coincide con «{query}».",
+  cf_suggest_prompt:      "¿Seguir también {league}, la liga principal de {country}?",
+  cf_suggest_dismiss:     "No, gracias",
 };
 
 // ── Portuguese ─────────────────────────────────────────────────────────────────
@@ -4487,6 +4543,15 @@ const pt: Translations = {
 
   sch_all_competitions: "Todas",
   sch_following_toggle: "Apenas seguidos",
+
+  lg_tab_competitions: "Competições",
+  lg_tab_teams:        "Times",
+  lg_tab_countries:    "Países",
+
+  cf_search_placeholder: "Buscar países…",
+  cf_no_match:            "Nenhum país corresponde a \"{query}\".",
+  cf_suggest_prompt:      "Seguir também {league}, a principal liga de {country}?",
+  cf_suggest_dismiss:     "Não, obrigado",
 };
 
 // ── Hebrew ─────────────────────────────────────────────────────────────────────
@@ -5117,6 +5182,15 @@ const he: Translations = {
 
   sch_all_competitions: "הכול",
   sch_following_toggle: "רק נעקבים",
+
+  lg_tab_competitions: "תחרויות",
+  lg_tab_teams:        "קבוצות",
+  lg_tab_countries:    "מדינות",
+
+  cf_search_placeholder: "חיפוש מדינות…",
+  cf_no_match:            "לא נמצאו מדינות התואמות ל-\"{query}\".",
+  cf_suggest_prompt:      "לעקוב גם אחרי {league} — הליגה המובילה של {country}?",
+  cf_suggest_dismiss:     "לא תודה",
 };
 
 // ── Arabic ─────────────────────────────────────────────────────────────────────
@@ -5747,6 +5821,15 @@ const ar: Translations = {
 
   sch_all_competitions: "الكل",
   sch_following_toggle: "المتابَعة فقط",
+
+  lg_tab_competitions: "المسابقات",
+  lg_tab_teams:        "الفرق",
+  lg_tab_countries:    "الدول",
+
+  cf_search_placeholder: "ابحث عن الدول…",
+  cf_no_match:            "لا توجد دول تطابق \"{query}\".",
+  cf_suggest_prompt:      "هل تريد متابعة {league} أيضًا — الدوري الأبرز في {country}؟",
+  cf_suggest_dismiss:     "لا شكرًا",
 };
 
 // ── Translation map ────────────────────────────────────────────────────────────

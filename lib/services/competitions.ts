@@ -14,6 +14,7 @@ export interface CompetitionRow {
   confederation: string | null;
   logoUrl: string | null;
   slug: string;
+  country: string | null;
 }
 
 export function slugify(name: string): string {
@@ -25,11 +26,11 @@ export const WORLD_CUP_SLUG = "world-cup-2026";
 export async function getCompetitions(): Promise<CompetitionRow[]> {
   const { data } = await sb()
     .from("competitions")
-    .select("id, name, type, confederation, logo_url")
+    .select("id, name, type, confederation, logo_url, country")
     .order("name", { ascending: true });
 
   const rows = ((data ?? []) as Array<{
-    id: string; name: string; type: string; confederation: string | null; logo_url: string | null;
+    id: string; name: string; type: string; confederation: string | null; logo_url: string | null; country: string | null;
   }>).map((c) => ({
     id: c.id,
     name: c.name,
@@ -37,6 +38,7 @@ export async function getCompetitions(): Promise<CompetitionRow[]> {
     confederation: c.confederation,
     logoUrl: c.logo_url,
     slug: slugify(c.name),
+    country: c.country,
   }));
 
   // World Cup first, then alphabetical (already sorted by the query above).
