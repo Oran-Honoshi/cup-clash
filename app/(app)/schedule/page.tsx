@@ -8,10 +8,15 @@ import { GroupPersistRedirect } from "@/components/app/group-persist-redirect";
 import { GroupSwipeSelector }   from "@/components/groups/group-swipe-selector";
 import { getScheduleWindowBundle } from "@/lib/services/schedule-data";
 import { getCompetitionsCached } from "@/lib/services/reference-cache";
+import { WORLD_CUP_SLUG } from "@/lib/services/competitions";
 import { getContinentalInvolvement } from "@/lib/services/matches";
 import { ContinentalWatchCard } from "@/components/schedule/continental-watch-card";
+import { ConsumeFollowParam } from "@/components/leagues/consume-follow-param";
 import { getFollowedTeamIds, getFollowedCompetitionIds } from "@/lib/services/follows";
 import { getFollowedCompetitionIdsViaCountry } from "@/lib/services/countries";
+
+const SCHEDULE_TABS = ["live", "today", "upcoming", "done"] as const;
+type ScheduleTab = (typeof SCHEDULE_TABS)[number];
 
 // Initial payload window — Live/Today/near-term Upcoming/recent Done all
 // fall inside this range; anything further out is fetched on demand by
@@ -53,7 +58,7 @@ type DbPred = {
 export default async function SchedulePage({
   searchParams,
 }: {
-  searchParams: { group?: string };
+  searchParams: { group?: string; tab?: string; competition?: string; follow?: string };
 }) {
   const sb = createClient();
   const {
@@ -77,6 +82,20 @@ export default async function SchedulePage({
   const { matches: allMatches, matchResults, matchTeams, matchKickoffs, matchTimeConfirmed } = scheduleBundle;
 
   const continentalTies = await getContinentalInvolvement(Array.from(followedTeamIds));
+
+  // ── Deep-link seeds (e.g. from the /scores → /schedule redirect) ────────────
+  const initialTab: ScheduleTab | undefined =
+    SCHEDULE_TABS.includes(searchParams.tab as ScheduleTab) ? (searchParams.tab as ScheduleTab) : undefined;
+
+  let initialCompetitionFilter: string | null | "all" | undefined;
+  if (searchParams.competition) {
+    if (searchParams.competition === WORLD_CUP_SLUG) {
+      initialCompetitionFilter = null;
+    } else {
+      const match = competitions.find(c => c.slug === searchParams.competition);
+      initialCompetitionFilter = match ? match.id : "all";
+    }
+  }
 
   // ── Auth-only data ──────────────────────────────────────────────────────────
   let userId: string | undefined;
@@ -171,6 +190,7 @@ export default async function SchedulePage({
         </div>
       )}
       {continentalTies.length > 0 && <ContinentalWatchCard ties={continentalTies} />}
+      <ConsumeFollowParam userId={userId ?? null} />
       <ScheduleClient
         userId={userId}
         groupId={activeGroupId}
@@ -190,6 +210,8 @@ export default async function SchedulePage({
         followedCompetitionIds={Array.from(followedCompetitionIds)}
         initialWindowFromISO={fromISO}
         initialWindowToISO={toISO}
+        initialTab={initialTab}
+        initialCompetitionFilter={initialCompetitionFilter}
       />
     </>
   );

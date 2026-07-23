@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, Home, Users, Trophy, Target, BarChart2,
-  GitBranch, Brain, Shield, LogOut, Settings, MessageCircle, Trash2, CalendarDays, LayoutGrid, Newspaper, Gamepad2, ListChecks, Goal, LineChart,
+  GitBranch, Brain, Shield, LogOut, Settings, MessageCircle, Trash2, CalendarDays, LayoutGrid, Newspaper, Gamepad2, ListChecks, LineChart,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import type { Translations } from "@/lib/i18n";
@@ -99,7 +99,6 @@ const NAV_SECTIONS: NavSection[] = [
   ] },
   { headerKey: "nav_section_tournament", items: [
     { href: "/schedule",  key: "sch_title",     icon: CalendarDays },
-    { href: "/scores",    key: "nav_scores",    icon: Goal },
     { href: "/standings", key: "nav_standings", icon: BarChart2 },
     { href: "/bracket",   key: "nav_bracket",   icon: GitBranch },
     { href: "/stats",     key: "nav_stats",     icon: LineChart },

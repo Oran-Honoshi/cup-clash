@@ -7,8 +7,8 @@ import { NextResponse, type NextRequest } from "next/server";
 // /leaderboard  — public view
 // /standings    — genuinely public: competition picker + WC26 group tables
 //                 (app shell chrome, same guest-mode pattern as /dashboard)
-// /scores       — genuinely public: competition picker + WC26 match list,
-//                 "coming soon" for the other 6 (app shell chrome)
+// /scores       — redirects to /schedule (Done tab); kept public so the
+//                 redirect itself doesn't hit the auth wall first
 // /bracket      — public view
 // /trivia       — public view
 // /schedule     — public match schedule

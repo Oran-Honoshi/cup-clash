@@ -12,7 +12,7 @@ import { UserAvatar } from "@/components/ui/UserAvatar";
 // visitor and get them signed in.
 const PUBLIC_NAV = [
   { href: "/news",      label: "News"      },
-  { href: "/scores",    label: "Scores"    },
+  { href: "/schedule",  label: "Scores"    },
   { href: "/standings", label: "Standings" },
   { href: "/leagues",   label: "Leagues"   },
 ];

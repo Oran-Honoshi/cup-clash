@@ -86,6 +86,10 @@ export interface ScheduleClientProps {
   /** Bounds of the initial server-side fetch window — Upcoming/Done pagination extends from these. */
   initialWindowFromISO?: string;
   initialWindowToISO?: string;
+  /** Deep-link seed for the status tab row — e.g. arriving from the /scores redirect. */
+  initialTab?: "live" | "today" | "upcoming" | "done";
+  /** Deep-link seed for the competition filter — null = World Cup, a uuid = that competition, "all" = every competition. */
+  initialCompetitionFilter?: string | null | "all";
 }
 
 // ── Constants ──────────────────────────────────────────────────────────────────
@@ -606,6 +610,8 @@ export function ScheduleClient({
   followedCompetitionIds = [],
   initialWindowFromISO,
   initialWindowToISO,
+  initialTab,
+  initialCompetitionFilter,
 }: ScheduleClientProps) {
   const router = useRouter();
   const { t } = useLocale();
@@ -775,11 +781,13 @@ export function ScheduleClient({
   }, [groupId, userId, refreshPredictions]);
 
   // ── Filter state
-  const [tabFilter, setTabFilter] = useState<"live" | "today" | "upcoming" | "done">("today");
+  const [tabFilter, setTabFilter] = useState<"live" | "today" | "upcoming" | "done">(initialTab ?? "today");
   const [searchQuery, setSearchQuery]   = useState("");
   // "all" = every competition, null = World Cup (matches matchInGroupScope's
   // own null-means-WC convention), a uuid = that competitions.id row.
-  const [competitionFilter, setCompetitionFilter] = useState<string | null | "all">("all");
+  const [competitionFilter, setCompetitionFilter] = useState<string | null | "all">(
+    initialCompetitionFilter !== undefined ? initialCompetitionFilter : "all"
+  );
   const [followedOnly, setFollowedOnly] = useState(false);
 
   // The first time the viewer opens Done/Upcoming, kick off one chunk fetch
