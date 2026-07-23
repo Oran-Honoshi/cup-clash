@@ -8,7 +8,8 @@ import { CompetitionPicker } from "@/components/leagues/competition-picker";
 import { ConsumeFollowParam } from "@/components/leagues/consume-follow-param";
 import { MatchList, type ScoreMatch } from "@/components/scores/match-list";
 import { EmptyState } from "@/components/ui/empty-state";
-import { getCompetitions, WORLD_CUP_SLUG } from "@/lib/services/competitions";
+import { WORLD_CUP_SLUG } from "@/lib/services/competitions";
+import { getCompetitionsCached } from "@/lib/services/reference-cache";
 import { getFollowedCompetitionIds } from "@/lib/services/follows";
 
 export const metadata: Metadata = {
@@ -26,7 +27,7 @@ export default async function ScoresPage({
   const userId = user?.id ?? null;
 
   const [competitions, followedCompetitionIds] = await Promise.all([
-    getCompetitions(),
+    getCompetitionsCached(),
     getFollowedCompetitionIds(userId),
   ]);
 

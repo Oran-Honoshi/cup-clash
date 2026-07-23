@@ -3,10 +3,9 @@ export const dynamic = "force-dynamic";
 import { getCurrentUserProfile } from "@/lib/services/user-group";
 import { getAllUserGroups } from "@/lib/services/user-group";
 import { getFollowedTeamIds, getFollowedCompetitionIds } from "@/lib/services/follows";
-import { getTeamsByIds } from "@/lib/services/teams";
 import { getRecentResultsByTeam, getNextMatch } from "@/lib/services/matches";
 import { getHeroArticle } from "@/lib/services/news";
-import { getCompetitions } from "@/lib/services/competitions";
+import { getCompetitionsCached, getTeamsByIdsCached } from "@/lib/services/reference-cache";
 import { getMembers, getGroup } from "@/lib/services/groups";
 import { pickGameTypeForDate, todayISO, getGroupStreak } from "@/lib/services/daily-challenge";
 import { sbAdmin } from "@/lib/supabase/admin";
@@ -29,7 +28,7 @@ export default async function HomePage() {
   // Anonymous — no follow graph yet, never blocked from browsing.
   if (!userProfile) {
     const [heroArticle, competitions, oracleMatch] = await Promise.all([
-      getHeroArticle(null), getCompetitions(), getNextOracleMatch(),
+      getHeroArticle(null), getCompetitionsCached(), getNextOracleMatch(),
     ]);
     return (
       <div className={`space-y-6 pb-32 ${zoneFontVars}`}>
@@ -49,7 +48,7 @@ export default async function HomePage() {
     getFollowedTeamIds(userProfile.id),
     getFollowedCompetitionIds(userProfile.id),
     getHeroArticle(userProfile.id),
-    getCompetitions(),
+    getCompetitionsCached(),
     getNextOracleMatch(),
   ]);
 
@@ -61,7 +60,7 @@ export default async function HomePage() {
 
   const followedTeamIdList = Array.from(followedTeamIds);
   const [followedTeams, resultsByTeam] = await Promise.all([
-    getTeamsByIds(followedTeamIdList),
+    getTeamsByIdsCached(followedTeamIdList),
     getRecentResultsByTeam(followedTeamIdList, 5),
   ]);
   const myTeams: MyTeamEntry[] = followedTeams.map((team) => ({

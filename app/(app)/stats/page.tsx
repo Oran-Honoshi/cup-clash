@@ -5,7 +5,8 @@ import { BarChart2 } from "lucide-react";
 import { zoneFontVars } from "@/lib/fonts/zone-fonts";
 import { ZONES } from "@/lib/zones";
 import { getCurrentUserProfile } from "@/lib/services/user-group";
-import { getCompetitions, WORLD_CUP_SLUG } from "@/lib/services/competitions";
+import { WORLD_CUP_SLUG } from "@/lib/services/competitions";
+import { getCompetitionsCached } from "@/lib/services/reference-cache";
 import { getStandings, type StandingsRow } from "@/lib/services/standings";
 import { GroupTable, type TeamStanding } from "@/components/predictions/group-stage-predictions";
 import { AccuracyChart } from "@/components/stats/accuracy-chart";
@@ -39,7 +40,7 @@ export default async function StatsPage({
 }) {
   const zone = ZONES.find((z) => z.key === "stats")!;
   const profile = await getCurrentUserProfile();
-  const competitions = await getCompetitions();
+  const competitions = await getCompetitionsCached();
 
   let activeCompetition = searchParams.competition
     ? competitions.find((c) => c.slug === searchParams.competition) ?? null

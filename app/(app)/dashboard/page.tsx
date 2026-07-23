@@ -18,7 +18,7 @@ import { getUpcomingMatches, getRecentResultsByTeam } from "@/lib/services/match
 import { getCurrentUserProfile } from "@/lib/services/user-group";
 import { getFollowedTeamIds } from "@/lib/services/follows";
 import { getHeroArticle } from "@/lib/services/news";
-import { getTeamsByIds } from "@/lib/services/teams";
+import { getTeamsByIdsCached } from "@/lib/services/reference-cache";
 import Link from "next/link";
 
 function GuestBanner() {
@@ -110,7 +110,7 @@ export default async function DashboardPage({
   const followedTeamIds = await getFollowedTeamIds(userProfile.id);
   const followedTeamIdList = Array.from(followedTeamIds);
   const [followedTeams, resultsByTeam, heroArticle] = await Promise.all([
-    getTeamsByIds(followedTeamIdList),
+    getTeamsByIdsCached(followedTeamIdList),
     getRecentResultsByTeam(followedTeamIdList, 5),
     getHeroArticle(userProfile.id),
   ]);

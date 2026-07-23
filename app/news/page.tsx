@@ -7,7 +7,7 @@ import { EmptyState } from "@/components/ui/empty-state";
 import { createClient } from "@/lib/supabase/server";
 import { getFollowedCompetitionIds, getFollowedTeamIds } from "@/lib/services/follows";
 import { getFollowedCompetitionIdsViaCountry } from "@/lib/services/countries";
-import { getCompetitions } from "@/lib/services/competitions";
+import { getCompetitionsCached } from "@/lib/services/reference-cache";
 import { getMatchVoteState } from "@/lib/services/community-vote";
 import { relativeTime } from "@/lib/relative-time";
 import { StoryRingRail } from "@/components/news/story-ring-rail";
@@ -146,7 +146,7 @@ export default async function NewsPage({
 
   const [{ data: sourceRows }, competitions, mvpTeaser] = await Promise.all([
     sb.from("news_sources").select("id, name"),
-    getCompetitions(),
+    getCompetitionsCached(),
     getMvpTeaser(sb, userId),
   ]);
   const sourceNames = new Map(((sourceRows ?? []) as Array<{ id: string; name: string }>).map((s) => [s.id, s.name]));

@@ -3,6 +3,7 @@ import { ChevronRight } from "lucide-react";
 import { FlagBadge } from "@/components/ui/FlagBadge";
 import { serverT, interpolate } from "@/lib/server-locale";
 import { getCompetitions, WORLD_CUP_SLUG } from "@/lib/services/competitions";
+import { getCompetitionsCached } from "@/lib/services/reference-cache";
 import { getFollowedCompetitionIds } from "@/lib/services/follows";
 import { getStandings } from "@/lib/services/standings";
 import { getAllMatches } from "@/lib/services/matches";
@@ -19,7 +20,7 @@ type SnapshotCard =
 // they've joined anything. Reuses getAllMatches/getStandings; no new queries.
 export async function ScoresSnapshotSection({ userId }: { userId: string | null }) {
   const [competitions, followedCompetitionIds] = await Promise.all([
-    getCompetitions(),
+    getCompetitionsCached(),
     getFollowedCompetitionIds(userId),
   ]);
   if (competitions.length === 0) return null;

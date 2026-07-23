@@ -7,7 +7,7 @@ import { ScheduleClient }      from "@/components/schedule/schedule-client";
 import { GroupPersistRedirect } from "@/components/app/group-persist-redirect";
 import { GroupSwipeSelector }   from "@/components/groups/group-swipe-selector";
 import { getScheduleWindowBundle } from "@/lib/services/schedule-data";
-import { getCompetitions }       from "@/lib/services/competitions";
+import { getCompetitionsCached } from "@/lib/services/reference-cache";
 import { getContinentalInvolvement } from "@/lib/services/matches";
 import { ContinentalWatchCard } from "@/components/schedule/continental-watch-card";
 import { getFollowedTeamIds, getFollowedCompetitionIds } from "@/lib/services/follows";
@@ -65,7 +65,7 @@ export default async function SchedulePage({
   const { fromISO, toISO } = scheduleWindow();
   const [scheduleBundle, competitions, followedTeamIds, followedCompetitionIdsOwn, followedCompetitionIdsViaCountry] = await Promise.all([
     getScheduleWindowBundle(fromISO, toISO),
-    getCompetitions(),
+    getCompetitionsCached(),
     getFollowedTeamIds(user?.id ?? null),
     getFollowedCompetitionIds(user?.id ?? null),
     getFollowedCompetitionIdsViaCountry(user?.id ?? null),
