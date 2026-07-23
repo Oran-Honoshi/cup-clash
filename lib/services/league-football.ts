@@ -2,7 +2,9 @@
 // in TRACKED_LEAGUES below (Premier League, La Liga, Serie A, Bundesliga,
 // Ligue 1, UEFA Champions League, UEFA Europa League, UEFA Europa
 // Conference League, Copa Libertadores, Copa Sudamericana, MLS, Brazil
-// Serie A, Ligat Ha'al) from API-Football and caches them to Supabase.
+// Serie A, Ligat Ha'al, FA Cup, League Cup, Copa del Rey, Coppa Italia,
+// DFB-Pokal, Coupe de France, Israel State Cup, Copa do Brasil, US Open
+// Cup) from API-Football and caches them to Supabase.
 //
 // Deliberately separate from app/api/scores/route.ts (the World Cup live
 // pipeline) — same conventions, but zero shared code path, so nothing here
@@ -36,6 +38,15 @@ const TRACKED_LEAGUES: Array<{ name: string; apiLeagueId: number }> = [
   { name: "MLS",                     apiLeagueId: 253 },
   { name: "Brazil Serie A",          apiLeagueId: 71  },
   { name: "Ligat Ha'al",             apiLeagueId: 383 },
+  { name: "FA Cup",                  apiLeagueId: 45  },
+  { name: "League Cup",              apiLeagueId: 48  },
+  { name: "Copa del Rey",            apiLeagueId: 143 },
+  { name: "Coppa Italia",            apiLeagueId: 137 },
+  { name: "DFB-Pokal",               apiLeagueId: 81  },
+  { name: "Coupe de France",         apiLeagueId: 66  },
+  { name: "Israel State Cup",        apiLeagueId: 384 },
+  { name: "Copa do Brasil",          apiLeagueId: 73  },
+  { name: "US Open Cup",             apiLeagueId: 257 },
 ];
 
 function apiHeaders(): Record<string, string> {
@@ -115,8 +126,76 @@ const UEFA_STAGE_PREFIX: Record<string, string> = {
   "UEFA Europa Conference League": "UECL",
 };
 
+// Single-country knockout cups namespace their stage the same way UEFA does
+// above ("FA QF" not "QF") — bare "QF"/"SF"/"Final" collide with the World
+// Cup's own stage vocabulary (see WORLD_CUP_STAGE_LIST in lib/schedule.ts)
+// and would get misread as WC bracket matches by matchInGroupScope()'s
+// no-competition-id fallback.
+const CUP_STAGE_PREFIX: Record<string, string> = {
+  "FA Cup": "FA",
+  "League Cup": "LC",
+  "Copa del Rey": "CDR",
+  "Coppa Italia": "CI",
+  "DFB-Pokal": "DFB",
+  "Coupe de France": "CDF",
+  "Israel State Cup": "ISC",
+  "Copa do Brasil": "CDB",
+  "US Open Cup": "USOC",
+};
+
+// Generic knockout-cup round decoder, shared by every CUP_STAGE_PREFIX
+// competition above rather than special-cased per competition. Verified
+// against real API-Football round strings from FA Cup, Copa del Rey,
+// Coppa Italia, Coupe de France, Israel State Cup and Copa do Brasil on
+// 2026-07-23 — those cups mix two different naming conventions for the
+// same round ("Round of 128" and "1/128-finals" both occur, sometimes in
+// the same season) plus various qualifying/preliminary rounds, none of
+// which should fall through to the numeric "Matchday N" guess below (that
+// guess would misread "Round of 128" as "Matchday 128").
+function mapGenericCupRound(apiRound: string): { phase: string; roundLabel: string } {
+  const raw = apiRound.trim();
+  const r = raw.toLowerCase();
+
+  // Fractional format: "1/128-finals", "1/16-finals", etc.
+  const fractional = r.match(/^1\/(\d+)-finals?$/);
+  if (fractional) {
+    const n = Number(fractional[1]);
+    if (n === 2) return { phase: "Final", roundLabel: "Final" };
+    if (n === 4) return { phase: "SF", roundLabel: "Semi-finals" };
+    if (n === 8) return { phase: "QF", roundLabel: "Quarter-finals" };
+    return { phase: `R${n}`, roundLabel: `Round of ${n}` };
+  }
+
+  if (r === "final") return { phase: "Final", roundLabel: "Final" };
+  if (r.includes("semi")) return { phase: "SF", roundLabel: "Semi-finals" };
+  if (r.includes("quarter")) return { phase: "QF", roundLabel: "Quarter-finals" };
+
+  const roundOf = r.match(/round of (\d+)/);
+  if (roundOf) {
+    const n = Number(roundOf[1]);
+    return { phase: `R${n}`, roundLabel: `Round of ${n}` };
+  }
+
+  // Qualifying/preliminary rounds (and their replay legs) — keep the API's
+  // own label ("1st Round Qualifying", "Extra Preliminary Round Replays")
+  // instead of guessing, since these aren't league matchdays.
+  if (r.includes("qualifying") || r.includes("preliminary")) {
+    const ordinal = r.match(/(\d+)(?:st|nd|rd|th)?\s+round/);
+    const replay = r.includes("replay") ? "R" : "";
+    const phase = ordinal ? `Q${ordinal[1]}${replay}` : `${r.includes("extra") ? "PRX" : "PR"}${replay}`;
+    return { phase, roundLabel: raw };
+  }
+
+  return { phase: "Other", roundLabel: raw };
+}
+
 function mapRound(competitionName: string, apiRound: string): { stage: string; roundLabel: string } {
   const r = apiRound.toLowerCase();
+  const cupPrefix = CUP_STAGE_PREFIX[competitionName];
+  if (cupPrefix) {
+    const { phase, roundLabel } = mapGenericCupRound(apiRound);
+    return { stage: `${cupPrefix} ${phase}`, roundLabel };
+  }
   const prefix = UEFA_STAGE_PREFIX[competitionName];
   if (prefix) {
     if (r.includes("final") && !r.includes("semi") && !r.includes("quarter")) {
