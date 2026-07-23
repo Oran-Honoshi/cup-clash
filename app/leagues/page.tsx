@@ -6,10 +6,9 @@ import { CountryPicker } from "@/components/leagues/country-picker";
 import { ConsumeFollowParam } from "@/components/leagues/consume-follow-param";
 import { LeaguesTabs } from "@/components/leagues/leagues-tabs";
 import { TeamPicker } from "@/components/teams/team-picker";
-import { getCompetitions } from "@/lib/services/competitions";
-import { getCountries } from "@/lib/services/countries";
 import { getFollowedCompetitionIds, getFollowedCountryIds, getFollowedTeamIds } from "@/lib/services/follows";
 import { getTeamsByCompetition } from "@/lib/services/teams";
+import { getCompetitionsCached, getCountriesCached } from "@/lib/services/reference-cache";
 
 export default async function LeaguesPage({
   searchParams,
@@ -22,19 +21,20 @@ export default async function LeaguesPage({
   const activeTab = searchParams.tab === "teams" ? "teams" : searchParams.tab === "countries" ? "countries" : "competitions";
 
   const [competitions, followedCompetitionIds, teamGroups, followedTeamIds, countries, followedCountryIds] = await Promise.all([
-    getCompetitions(),
+    getCompetitionsCached(),
     getFollowedCompetitionIds(userId),
     activeTab === "teams" ? getTeamsByCompetition() : Promise.resolve([]),
     activeTab === "teams" ? getFollowedTeamIds(userId) : Promise.resolve(new Set<string>()),
-    activeTab === "countries" ? getCountries() : Promise.resolve([]),
+    activeTab === "countries" ? getCountriesCached() : Promise.resolve([]),
     activeTab === "countries" ? getFollowedCountryIds(userId) : Promise.resolve(new Set<string>()),
   ]);
 
-  // Country name -> tracked domestic league, for the "Also follow
-  // [country]'s major league?" suggestion chip in CountryPicker.
-  const countryLeagues: Record<string, { id: string; name: string }> = {};
+  // Country name -> all tracked competitions from that country, for the
+  // "Also follow [country]'s other competitions?" suggestion chip in
+  // CountryPicker (most tracked countries now have 2-3: a league + cup(s)).
+  const countryLeagues: Record<string, { id: string; name: string }[]> = {};
   for (const c of competitions) {
-    if (c.country) countryLeagues[c.country] = { id: c.id, name: c.name };
+    if (c.country) (countryLeagues[c.country] ??= []).push({ id: c.id, name: c.name });
   }
 
   return (

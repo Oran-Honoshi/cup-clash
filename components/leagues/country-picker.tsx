@@ -13,14 +13,18 @@ interface SuggestedLeague {
   name: string;
 }
 
+// Cap how many suggestions show at once so a country with several tracked
+// competitions (e.g. England: league + 2 cups) doesn't overwhelm the chip.
+const MAX_SUGGESTIONS = 4;
+
 interface CountryPickerProps {
   countries: CountryRow[];
   userId: string | null;
   followedCountryIds: Set<string>;
-  // Country name -> that country's tracked domestic league, for the
-  // "Also follow [country]'s major league?" one-tap suggestion. Only
-  // countries with a currently-tracked league appear as keys.
-  countryLeagues: Record<string, SuggestedLeague>;
+  // Country name -> that country's tracked competitions, for the "Also
+  // follow [country]'s other competitions?" one-tap suggestion. Only
+  // countries with at least one currently-tracked competition appear as keys.
+  countryLeagues: Record<string, SuggestedLeague[]>;
   followedCompetitionIds: Set<string>;
 }
 
@@ -74,9 +78,9 @@ export function CountryPicker({
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
         {filtered.map((c) => {
-          const league = countryLeagues[c.name];
-          const showSuggestion =
-            suggestForId === c.id && !!league && !followedLeagueIds.has(league.id) && !dismissedIds.has(c.id);
+          const leagues = countryLeagues[c.name] ?? [];
+          const suggestable = leagues.filter((l) => !followedLeagueIds.has(l.id)).slice(0, MAX_SUGGESTIONS);
+          const showSuggestion = suggestForId === c.id && suggestable.length > 0 && !dismissedIds.has(c.id);
 
           return (
             <div key={c.id} className="space-y-2">
@@ -100,34 +104,21 @@ export function CountryPicker({
                   initialFollowing={followedCountryIds.has(c.id)}
                   compact
                   onFollowChange={(following) => {
-                    if (following && league) setSuggestForId(c.id);
+                    if (following && leagues.length > 0) setSuggestForId(c.id);
                     else if (suggestForId === c.id) setSuggestForId(null);
                   }}
                 />
               </div>
 
-              {showSuggestion && league && (
+              {showSuggestion && (
                 <div
-                  className="flex items-center justify-between gap-3 p-3"
+                  className="space-y-2 p-3"
                   style={{ background: "var(--ip)", border: "1px solid var(--br)", borderRadius: "var(--hr)" }}
                 >
-                  <div style={{ fontFamily: "var(--font-ui)", fontSize: 12, fontWeight: 600, color: "var(--tx)" }}>
-                    {interpolate(t("cf_suggest_prompt"), { league: league.name, country: c.name })}
-                  </div>
-                  <div className="flex items-center gap-2 shrink-0">
-                    <FollowButton
-                      type="competition"
-                      id={league.id}
-                      userId={userId}
-                      initialFollowing={followedLeagueIds.has(league.id)}
-                      compact
-                      onFollowChange={(following) => {
-                        if (following) {
-                          setFollowedLeagueIds((prev) => new Set(prev).add(league.id));
-                          setSuggestForId(null);
-                        }
-                      }}
-                    />
+                  <div className="flex items-center justify-between gap-2">
+                    <div style={{ fontFamily: "var(--font-ui)", fontSize: 12, fontWeight: 600, color: "var(--tx)" }}>
+                      {interpolate(t("cf_suggest_prompt"), { country: c.name })}
+                    </div>
                     <button
                       type="button"
                       onClick={() => setDismissedIds((prev) => new Set(prev).add(c.id))}
@@ -140,10 +131,33 @@ export function CountryPicker({
                         border: "none",
                         cursor: "pointer",
                         whiteSpace: "nowrap",
+                        flexShrink: 0,
                       }}
                     >
                       {t("cf_suggest_dismiss")}
                     </button>
+                  </div>
+                  <div className="space-y-1.5">
+                    {suggestable.map((league) => (
+                      <div key={league.id} className="flex items-center justify-between gap-3">
+                        <div
+                          className="truncate"
+                          style={{ fontFamily: "var(--font-ui)", fontSize: 13, color: "var(--tx)" }}
+                        >
+                          {league.name}
+                        </div>
+                        <FollowButton
+                          type="competition"
+                          id={league.id}
+                          userId={userId}
+                          initialFollowing={followedLeagueIds.has(league.id)}
+                          compact
+                          onFollowChange={(following) => {
+                            if (following) setFollowedLeagueIds((prev) => new Set(prev).add(league.id));
+                          }}
+                        />
+                      </div>
+                    ))}
                   </div>
                 </div>
               )}

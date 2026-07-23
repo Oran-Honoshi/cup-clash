@@ -713,11 +713,16 @@ export interface Translations {
   lg_tab_teams:        string;
   lg_tab_countries:    string;
 
-  // Country-follow picker + "also follow the major league" suggestion chip
+  // Country-follow picker + "also follow other competitions" suggestion
+  // chip. cf_suggest_prompt/cf_suggest_dismiss are shared with
+  // CompetitionPicker's cards variant (same suggestion, other trigger).
   cf_search_placeholder: string;
   cf_no_match:            string;
   cf_suggest_prompt:      string;
   cf_suggest_dismiss:     string;
+
+  // Team picker — "also follow other teams in this competition" suggestion
+  tps_suggest_header: string;
 
   // Schedule — Continental Watch card
   cw_title: string;
@@ -1359,8 +1364,10 @@ const en: Translations = {
 
   cf_search_placeholder: "Search countries…",
   cf_no_match:            "No countries match \"{query}\".",
-  cf_suggest_prompt:      "Also follow {league} — {country}'s major league?",
+  cf_suggest_prompt:      "Also follow {country}'s other competitions?",
   cf_suggest_dismiss:     "No thanks",
+
+  tps_suggest_header: "Also follow other {competition} teams?",
 
   cw_title: "Continental Watch",
   cw_vs:    "vs",
@@ -2001,8 +2008,10 @@ const fr: Translations = {
 
   cf_search_placeholder: "Rechercher un pays…",
   cf_no_match:            "Aucun pays ne correspond à « {query} ».",
-  cf_suggest_prompt:      "Suivre aussi {league}, le championnat majeur de {country} ?",
+  cf_suggest_prompt:      "Suivre aussi les autres compétitions de {country} ?",
   cf_suggest_dismiss:     "Non merci",
+
+  tps_suggest_header: "Suivre aussi d'autres équipes de {competition} ?",
 
   cw_title: "Suivi continental",
   cw_vs:    "contre",
@@ -2643,8 +2652,10 @@ const de: Translations = {
 
   cf_search_placeholder: "Länder suchen…",
   cf_no_match:            "Keine Länder stimmen mit „{query}“ überein.",
-  cf_suggest_prompt:      "Auch {league} folgen — die höchste Liga von {country}?",
+  cf_suggest_prompt:      "Auch andere Wettbewerbe aus {country} folgen?",
   cf_suggest_dismiss:     "Nein danke",
+
+  tps_suggest_header: "Auch andere {competition}-Teams folgen?",
 
   cw_title: "Kontinental-Watch",
   cw_vs:    "gegen",
@@ -3285,8 +3296,10 @@ const nl: Translations = {
 
   cf_search_placeholder: "Zoek landen…",
   cf_no_match:            "Geen landen komen overeen met \"{query}\".",
-  cf_suggest_prompt:      "Ook {league} volgen — de topcompetitie van {country}?",
+  cf_suggest_prompt:      "Ook andere competities uit {country} volgen?",
   cf_suggest_dismiss:     "Nee bedankt",
+
+  tps_suggest_header: "Ook andere teams uit {competition} volgen?",
 
   cw_title: "Continentaal overzicht",
   cw_vs:    "tegen",
@@ -3927,8 +3940,10 @@ const es: Translations = {
 
   cf_search_placeholder: "Buscar países…",
   cf_no_match:            "Ningún país coincide con «{query}».",
-  cf_suggest_prompt:      "¿Seguir también {league}, la liga principal de {country}?",
+  cf_suggest_prompt:      "¿Seguir también otras competiciones de {country}?",
   cf_suggest_dismiss:     "No, gracias",
+
+  tps_suggest_header: "¿Seguir también a otros equipos de {competition}?",
 
   cw_title: "Vigilancia continental",
   cw_vs:    "vs",
@@ -4569,8 +4584,10 @@ const pt: Translations = {
 
   cf_search_placeholder: "Buscar países…",
   cf_no_match:            "Nenhum país corresponde a \"{query}\".",
-  cf_suggest_prompt:      "Seguir também {league}, a principal liga de {country}?",
+  cf_suggest_prompt:      "Seguir também outras competições de {country}?",
   cf_suggest_dismiss:     "Não, obrigado",
+
+  tps_suggest_header: "Seguir também outras equipes de {competition}?",
 
   cw_title: "Vigilância continental",
   cw_vs:    "vs",
@@ -5211,8 +5228,10 @@ const he: Translations = {
 
   cf_search_placeholder: "חיפוש מדינות…",
   cf_no_match:            "לא נמצאו מדינות התואמות ל-\"{query}\".",
-  cf_suggest_prompt:      "לעקוב גם אחרי {league} — הליגה המובילה של {country}?",
+  cf_suggest_prompt:      "לעקוב גם אחרי תחרויות נוספות של {country}?",
   cf_suggest_dismiss:     "לא תודה",
+
+  tps_suggest_header: "לעקוב גם אחרי קבוצות נוספות מ-{competition}?",
 
   cw_title: "מעקב קונטיננטלי",
   cw_vs:    "נגד",
@@ -5853,8 +5872,10 @@ const ar: Translations = {
 
   cf_search_placeholder: "ابحث عن الدول…",
   cf_no_match:            "لا توجد دول تطابق \"{query}\".",
-  cf_suggest_prompt:      "هل تريد متابعة {league} أيضًا — الدوري الأبرز في {country}؟",
+  cf_suggest_prompt:      "هل تريد متابعة بطولات أخرى من {country} أيضًا؟",
   cf_suggest_dismiss:     "لا شكرًا",
+
+  tps_suggest_header: "هل تريد متابعة فرق أخرى من {competition} أيضًا؟",
 
   cw_title: "المتابعة القارية",
   cw_vs:    "ضد",
