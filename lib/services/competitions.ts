@@ -10,7 +10,7 @@ function sb() {
 export interface CompetitionRow {
   id: string;
   name: string;
-  type: "league" | "cup" | "tournament";
+  type: "league" | "cup" | "tournament" | "friendly";
   confederation: string | null;
   logoUrl: string | null;
   slug: string;

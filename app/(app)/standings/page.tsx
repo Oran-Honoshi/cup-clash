@@ -1,13 +1,14 @@
 export const dynamic = "force-dynamic";
 
-import { BarChart2 } from "lucide-react";
+import { BarChart2, Globe } from "lucide-react";
 import { GroupStandings } from "@/components/dashboard/group-standings";
 import { LeagueTable } from "@/components/leagues/league-table";
 import { CompetitionPicker } from "@/components/leagues/competition-picker";
 import { ConsumeFollowParam } from "@/components/leagues/consume-follow-param";
 import { EmptyState } from "@/components/ui/empty-state";
 import { getCurrentUserGroup } from "@/lib/services/user-group";
-import { getCompetitions, WORLD_CUP_SLUG } from "@/lib/services/competitions";
+import { WORLD_CUP_SLUG } from "@/lib/services/competitions";
+import { getCompetitionsCached } from "@/lib/services/reference-cache";
 import { getFollowedCompetitionIds } from "@/lib/services/follows";
 import { getStandings } from "@/lib/services/standings";
 
@@ -19,7 +20,7 @@ export default async function StandingsPage({
   const { groupId, userId } = await getCurrentUserGroup();
 
   const [competitions, followedCompetitionIds] = await Promise.all([
-    getCompetitions(),
+    getCompetitionsCached(),
     getFollowedCompetitionIds(userId),
   ]);
 
@@ -27,7 +28,9 @@ export default async function StandingsPage({
   const activeCompetition = competitions.find((c) => c.slug === activeSlug) ?? competitions[0];
 
   const standingsRows =
-    activeSlug !== WORLD_CUP_SLUG && activeCompetition ? await getStandings(activeCompetition.id) : [];
+    activeSlug !== WORLD_CUP_SLUG && activeCompetition && activeCompetition.type !== "friendly"
+      ? await getStandings(activeCompetition.id)
+      : [];
 
   return (
     <div className="space-y-6">
@@ -55,6 +58,13 @@ export default async function StandingsPage({
 
       {activeSlug === WORLD_CUP_SLUG ? (
         <GroupStandings groupId={groupId ?? "none"} />
+      ) : activeCompetition?.type === "friendly" ? (
+        <EmptyState
+          icon={<Globe size={28} style={{ color: "#00D4FF" }} />}
+          title="No table for friendlies"
+          body="Friendlies don't have a league table — every match stands on its own. Head to Schedule to see upcoming and recent fixtures."
+          cta={{ label: "Go to Schedule", href: "/schedule" }}
+        />
       ) : standingsRows.length > 0 ? (
         <LeagueTable rows={standingsRows} />
       ) : (

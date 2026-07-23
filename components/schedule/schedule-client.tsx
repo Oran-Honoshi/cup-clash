@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useGroupContext } from "@/lib/contexts/group-context";
 import {
   Calendar, Lock, Search, X as XIcon,
-  Users, Zap, Trophy,
+  Users, Zap, Trophy, Globe,
 } from "lucide-react";
 import { CopyPredictionSheet } from "@/components/predictions/copy-prediction-sheet";
 import { upsertGroupPrediction } from "@/lib/services/predictions-client";
@@ -808,6 +808,18 @@ export function ScheduleClient({
     [competitions]
   );
 
+  // Friendlies are real bursty by nature (FIFA windows only, empty
+  // otherwise) — when the viewer has filtered down to just this
+  // competition and the window has zero matches, that's an expected dry
+  // spell, not a broken feed. Used below to swap in a dedicated empty
+  // state instead of the generic "No matches found".
+  const activeFriendlyCompetition = useMemo(
+    () => (competitionFilter !== "all" && competitionFilter !== null
+      ? competitions.find(c => c.id === competitionFilter && c.type === "friendly") ?? null
+      : null),
+    [competitions, competitionFilter]
+  );
+
   function effectiveCompetitionId(m: ScheduleMatch): string | null {
     return m.competitionId ?? (isWorldCupStage(m.stage) ? worldCupCompetitionId : null);
   }
@@ -1185,9 +1197,23 @@ export function ScheduleClient({
 
           {/* ── Match list grouped by date ────────────────────────────── */}
           {groupedDates.length === 0 ? (
-            <div className="text-center py-20 text-sm" style={{ color: "var(--ft)" }}>
-              No matches found
-            </div>
+            activeFriendlyCompetition ? (
+              <div className="flex flex-col items-center text-center py-16 px-6">
+                <Globe size={28} style={{ color: "var(--ft)", marginBottom: 12 }} />
+                <div className="font-bold mb-1" style={{ fontFamily: "var(--font-ui)", fontSize: 15, color: "var(--tx)" }}>
+                  No friendlies in this window
+                </div>
+                <p className="text-sm" style={{ color: "var(--ft)", maxWidth: 320 }}>
+                  International sides only play friendlies during FIFA windows —
+                  March, June, September, October and November. Check back then,
+                  or browse another competition above.
+                </p>
+              </div>
+            ) : (
+              <div className="text-center py-20 text-sm" style={{ color: "var(--ft)" }}>
+                No matches found
+              </div>
+            )
           ) : (
             <div className="space-y-6 pb-2">
               {groupedDates.map(([date, matches]) => {

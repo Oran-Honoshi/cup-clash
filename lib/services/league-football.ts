@@ -4,7 +4,9 @@
 // Conference League, Copa Libertadores, Copa Sudamericana, MLS, Brazil
 // Serie A, Ligat Ha'al, FA Cup, League Cup, Copa del Rey, Coppa Italia,
 // DFB-Pokal, Coupe de France, Israel State Cup, Copa do Brasil, US Open
-// Cup) from API-Football and caches them to Supabase.
+// Cup), plus International Friendlies (fetched separately, per-team — see
+// TRACKED_FRIENDLY_TEAMS below), from API-Football and caches them to
+// Supabase.
 //
 // Deliberately separate from app/api/scores/route.ts (the World Cup live
 // pipeline) — same conventions, but zero shared code path, so nothing here
@@ -47,6 +49,32 @@ const TRACKED_LEAGUES: Array<{ name: string; apiLeagueId: number }> = [
   { name: "Israel State Cup",        apiLeagueId: 384 },
   { name: "Copa do Brasil",          apiLeagueId: 73  },
   { name: "US Open Cup",             apiLeagueId: 257 },
+];
+
+// International friendlies live under a single API-Football league id (10,
+// "Friendlies") shared by every national team in the world — there's no
+// per-competition fixture list to fetch the way TRACKED_LEAGUES above
+// works. The only way to pull them is one call per national team
+// (team={id}&league=10&season=Y), so they get their own name/id constant
+// and a dedicated fetch path (refreshFriendliesFixtures) instead of a
+// TRACKED_LEAGUES entry.
+const FRIENDLIES_LEAGUE_ID = 10;
+const FRIENDLIES_COMPETITION_NAME = "International Friendlies";
+
+// Senior national-team API-Football team ids for the initial per-team
+// allowlist — one entry per already-tracked country. Confirmed real,
+// bursty fixture data 2026-07-23 (clustered around FIFA windows: March,
+// June, September, October, November; empty otherwise) for all 8 via a
+// direct /fixtures?team=X&league=10&season=2026 check.
+const TRACKED_FRIENDLY_TEAMS: Array<{ country: string; apiTeamId: number }> = [
+  { country: "England", apiTeamId: 10   },
+  { country: "Spain",   apiTeamId: 9    },
+  { country: "Italy",   apiTeamId: 768  },
+  { country: "Germany", apiTeamId: 25   },
+  { country: "France",  apiTeamId: 2    },
+  { country: "Israel",  apiTeamId: 1116 },
+  { country: "Brazil",  apiTeamId: 6    },
+  { country: "USA",     apiTeamId: 2384 },
 ];
 
 function apiHeaders(): Record<string, string> {
@@ -191,6 +219,14 @@ function mapGenericCupRound(apiRound: string): { phase: string; roundLabel: stri
 
 function mapRound(competitionName: string, apiRound: string): { stage: string; roundLabel: string } {
   const r = apiRound.toLowerCase();
+  // Friendlies carry a single fixed round string ("Friendly International")
+  // for every fixture — no numbered matchdays, no knockout structure to
+  // decode. Bare "Friendly" is safe unnamespaced: it doesn't appear in
+  // WORLD_CUP_STAGE_LIST (lib/schedule.ts) so matchInGroupScope()'s
+  // no-competition-id fallback can never mistake it for a WC match.
+  if (competitionName === FRIENDLIES_COMPETITION_NAME) {
+    return { stage: "Friendly", roundLabel: "International Friendly" };
+  }
   const cupPrefix = CUP_STAGE_PREFIX[competitionName];
   if (cupPrefix) {
     const { phase, roundLabel } = mapGenericCupRound(apiRound);
@@ -232,8 +268,7 @@ async function resolveCurrentSeasonYear(apiLeagueId: number): Promise<number | n
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function resolveSeasonRow(sb: any, competitionId: string, year: number): Promise<string> {
-  const label = seasonLabel(year);
+async function resolveSeasonRow(sb: any, competitionId: string, label: string): Promise<string> {
   const { data: existing } = await sb
     .from("seasons").select("id").eq("competition_id", competitionId).eq("label", label).maybeSingle();
   if (existing) return existing.id;
@@ -307,7 +342,7 @@ function toDbStatus(apiStatusShort: string): "upcoming" | "live" | "finished" {
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function refreshCompetitionFixtures(sb: any, competitionId: string, competitionName: string, apiLeagueId: number, year: number, teamCache: Map<number, string>) {
-  const seasonId = await resolveSeasonRow(sb, competitionId, year);
+  const seasonId = await resolveSeasonRow(sb, competitionId, seasonLabel(year));
   const data = await apiFetch<APIFixturesResponse>(`/fixtures?league=${apiLeagueId}&season=${year}`);
   const fixtures = data.response ?? [];
   if (fixtures.length === 0) return { fixturesUpserted: 0, seasonId };
@@ -320,6 +355,66 @@ async function refreshCompetitionFixtures(sb: any, competitionId: string, compet
   // TRACKED_LEAGUES (see runLeagueScoresCron).
   const payloads = fixtures.map(f => {
     const { stage, roundLabel } = mapRound(competitionName, f.league.round);
+    return {
+      id: `lg-${f.fixture.id}`,
+      home: f.teams.home.name,
+      away: f.teams.away.name,
+      home_flag: f.teams.home.logo,
+      away_flag: f.teams.away.logo,
+      kickoff_at: f.fixture.date,
+      stage,
+      round_label: roundLabel,
+      stadium: f.fixture.venue.name,
+      city: f.fixture.venue.city,
+      home_score: f.goals.home,
+      away_score: f.goals.away,
+      status: toDbStatus(f.fixture.status.short),
+      minute: f.fixture.status.elapsed,
+      api_fixture_id: f.fixture.id,
+      competition_id: competitionId,
+      season_id: seasonId,
+      home_team_id: teamCache.get(f.teams.home.id)!,
+      away_team_id: teamCache.get(f.teams.away.id)!,
+      time_confirmed: true,
+    };
+  });
+
+  const { error } = await sb.from("matches").upsert(payloads, { onConflict: "id" });
+  if (error) throw error;
+
+  return { fixturesUpserted: payloads.length, seasonId };
+}
+
+// ── Friendlies refresh (per-team fetch, single pseudo-competition) ─────
+// No standings call for this one — friendlies have no table, only a
+// fixtures upsert (see runLeagueScoresCron). Season label is the bare
+// calendar year ("2026"), not the cross-year "2026/27" format the rest of
+// this file uses, since API-Football's own friendlies "season" already is
+// a calendar year (see /leagues?id=10 coverage: start 2026-01-01, end
+// 2026-11-15).
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function refreshFriendliesFixtures(sb: any, competitionId: string, year: number, teamCache: Map<number, string>) {
+  const seasonId = await resolveSeasonRow(sb, competitionId, String(year));
+
+  // Two allowlisted teams can play each other (e.g. USA vs Germany) — that
+  // fixture then comes back from both teams' calls with the same
+  // fixture.id. Dedupe here rather than relying solely on the upsert's
+  // onConflict, so resolveTeamIds/payload-building below doesn't do the
+  // work twice.
+  const fixturesById = new Map<number, APIFixture>();
+  for (const team of TRACKED_FRIENDLY_TEAMS) {
+    const data = await apiFetch<APIFixturesResponse>(
+      `/fixtures?team=${team.apiTeamId}&league=${FRIENDLIES_LEAGUE_ID}&season=${year}`
+    );
+    for (const f of data.response ?? []) fixturesById.set(f.fixture.id, f);
+  }
+  const fixtures = [...fixturesById.values()];
+  if (fixtures.length === 0) return { fixturesUpserted: 0, seasonId };
+
+  await resolveTeamIds(sb, teamCache, fixtures.flatMap(f => [f.teams.home, f.teams.away]));
+
+  const payloads = fixtures.map(f => {
+    const { stage, roundLabel } = mapRound(FRIENDLIES_COMPETITION_NAME, f.league.round);
     return {
       id: `lg-${f.fixture.id}`,
       home: f.teams.home.name,
@@ -418,7 +513,12 @@ async function fetchLiveUpdates(sb: any, competitionIdByApiLeagueId: Map<number,
   if (!inWindow || inWindow.length === 0) return { checked: true, updated: 0 };
 
   const data = await apiFetch<APIFixturesResponse>(`/fixtures?live=all`);
-  const trackedApiLeagueIds = new Set(TRACKED_LEAGUES.map(l => l.apiLeagueId));
+  // League 10 covers every national team's friendlies worldwide, not just
+  // TRACKED_FRIENDLY_TEAMS' 8 — a live fixture between two non-allowlisted
+  // teams matches this filter but was never inserted, so the per-fixture
+  // update below just no-ops on it (id lookup miss), same as any other
+  // untracked match would.
+  const trackedApiLeagueIds = new Set([...TRACKED_LEAGUES.map(l => l.apiLeagueId), FRIENDLIES_LEAGUE_ID]);
   const relevant = (data.response ?? []).filter(f => trackedApiLeagueIds.has(f.league.id));
 
   let updated = 0;
@@ -459,7 +559,7 @@ export async function runLeagueScoresCron(): Promise<LeagueScoresResult> {
   const { data: competitions } = await sb
     .from("competitions")
     .select("id, name")
-    .in("name", TRACKED_LEAGUES.map(l => l.name));
+    .in("name", [...TRACKED_LEAGUES.map(l => l.name), FRIENDLIES_COMPETITION_NAME]);
 
   const competitionByName = new Map<string, string>((competitions ?? []).map((c: { id: string; name: string }) => [c.name, c.id]));
   const competitionIdByApiLeagueId = new Map<number, string>();
@@ -467,6 +567,8 @@ export async function runLeagueScoresCron(): Promise<LeagueScoresResult> {
     const id = competitionByName.get(l.name);
     if (id) competitionIdByApiLeagueId.set(l.apiLeagueId, id);
   }
+  const friendliesCompetitionId = competitionByName.get(FRIENDLIES_COMPETITION_NAME);
+  if (friendliesCompetitionId) competitionIdByApiLeagueId.set(FRIENDLIES_LEAGUE_ID, friendliesCompetitionId);
 
   const teamCache = new Map<number, string>();
 
@@ -492,6 +594,21 @@ export async function runLeagueScoresCron(): Promise<LeagueScoresResult> {
         result.competitionsProcessed++;
       } catch (err) {
         result.errors.push({ competition: league.name, error: err instanceof Error ? err.message : String(err) });
+      }
+    }
+
+    // Friendlies get no standings call (no table to fetch) and use the
+    // per-team fetch path instead of refreshCompetitionFixtures.
+    if (friendliesCompetitionId) {
+      try {
+        const year = await resolveCurrentSeasonYear(FRIENDLIES_LEAGUE_ID);
+        if (year != null) {
+          const { fixturesUpserted } = await refreshFriendliesFixtures(sb, friendliesCompetitionId, year, teamCache);
+          result.fixturesUpserted += fixturesUpserted;
+        }
+        result.competitionsProcessed++;
+      } catch (err) {
+        result.errors.push({ competition: FRIENDLIES_COMPETITION_NAME, error: err instanceof Error ? err.message : String(err) });
       }
     }
   }
