@@ -534,6 +534,10 @@ export interface Translations {
   mc_stats_loading:      string;
   mc_stats_empty:        string;
   mc_stats_error:        string;
+  mc_recap_heading:      string;
+  mc_recap_loading:      string;
+  mc_recap_empty:        string;
+  mc_related_heading:    string;
   mc_h2h_heading:        string;
   mc_h2h_loading:        string;
   mc_h2h_empty:          string;
@@ -1208,6 +1212,10 @@ const en: Translations = {
   mc_stats_loading:      "Loading season stats…",
   mc_stats_empty:        "Season stats not available for this match",
   mc_stats_error:        "Couldn't load season stats",
+  mc_recap_heading:      "Match Recap",
+  mc_recap_loading:      "Loading recap…",
+  mc_recap_empty:        "Recap not available yet",
+  mc_related_heading:    "Related Coverage",
   mc_h2h_heading:        "Head-to-Head",
   mc_h2h_loading:        "Loading head-to-head…",
   mc_h2h_empty:          "No previous meetings found",
@@ -1852,6 +1860,10 @@ const fr: Translations = {
   mc_stats_loading:      "Chargement des stats de la saison…",
   mc_stats_empty:        "Stats de la saison indisponibles pour ce match",
   mc_stats_error:        "Impossible de charger les stats de la saison",
+  mc_recap_heading:      "Résumé du match",
+  mc_recap_loading:      "Chargement du résumé…",
+  mc_recap_empty:        "Résumé pas encore disponible",
+  mc_related_heading:    "Articles liés",
   mc_h2h_heading:        "Confrontations directes",
   mc_h2h_loading:        "Chargement des confrontations…",
   mc_h2h_empty:          "Aucune confrontation précédente trouvée",
@@ -2496,6 +2508,10 @@ const de: Translations = {
   mc_stats_loading:      "Saisonstatistik wird geladen…",
   mc_stats_empty:        "Für dieses Spiel sind keine Saisonstatistiken verfügbar",
   mc_stats_error:        "Saisonstatistik konnte nicht geladen werden",
+  mc_recap_heading:      "Spielzusammenfassung",
+  mc_recap_loading:      "Zusammenfassung wird geladen…",
+  mc_recap_empty:        "Zusammenfassung noch nicht verfügbar",
+  mc_related_heading:    "Weitere Berichte",
   mc_h2h_heading:        "Direkter Vergleich",
   mc_h2h_loading:        "Direktvergleich wird geladen…",
   mc_h2h_empty:          "Keine bisherigen Begegnungen gefunden",
@@ -3140,6 +3156,10 @@ const nl: Translations = {
   mc_stats_loading:      "Seizoensstatistieken laden…",
   mc_stats_empty:        "Geen seizoensstatistieken beschikbaar voor deze wedstrijd",
   mc_stats_error:        "Seizoensstatistieken laden mislukt",
+  mc_recap_heading:      "Wedstrijdsamenvatting",
+  mc_recap_loading:      "Samenvatting wordt geladen…",
+  mc_recap_empty:        "Samenvatting nog niet beschikbaar",
+  mc_related_heading:    "Gerelateerde berichtgeving",
   mc_h2h_heading:        "Onderling record",
   mc_h2h_loading:        "Onderling record laden…",
   mc_h2h_empty:          "Geen eerdere ontmoetingen gevonden",
@@ -3784,6 +3804,10 @@ const es: Translations = {
   mc_stats_loading:      "Cargando estadísticas de temporada…",
   mc_stats_empty:        "No hay estadísticas de temporada para este partido",
   mc_stats_error:        "No se pudieron cargar las estadísticas de temporada",
+  mc_recap_heading:      "Resumen del partido",
+  mc_recap_loading:      "Cargando resumen…",
+  mc_recap_empty:        "Resumen aún no disponible",
+  mc_related_heading:    "Cobertura relacionada",
   mc_h2h_heading:        "Cara a cara",
   mc_h2h_loading:        "Cargando historial de enfrentamientos…",
   mc_h2h_empty:          "No se encontraron enfrentamientos anteriores",
@@ -4428,6 +4452,10 @@ const pt: Translations = {
   mc_stats_loading:      "Carregando estatísticas da temporada…",
   mc_stats_empty:        "Estatísticas da temporada indisponíveis para esta partida",
   mc_stats_error:        "Não foi possível carregar as estatísticas da temporada",
+  mc_recap_heading:      "Resumo da partida",
+  mc_recap_loading:      "Carregando resumo…",
+  mc_recap_empty:        "Resumo ainda não disponível",
+  mc_related_heading:    "Cobertura relacionada",
   mc_h2h_heading:        "Confronto direto",
   mc_h2h_loading:        "Carregando confrontos anteriores…",
   mc_h2h_empty:          "Nenhum confronto anterior encontrado",
@@ -5072,6 +5100,10 @@ const he: Translations = {
   mc_stats_loading:      "טוען סטטיסטיקת עונה…",
   mc_stats_empty:        "אין סטטיסטיקת עונה זמינה למשחק זה",
   mc_stats_error:        "טעינת סטטיסטיקת העונה נכשלה",
+  mc_recap_heading:      "סיכום המשחק",
+  mc_recap_loading:      "טוען סיכום…",
+  mc_recap_empty:        "הסיכום עדיין לא זמין",
+  mc_related_heading:    "כתבות קשורות",
   mc_h2h_heading:        "עימותים היסטוריים",
   mc_h2h_loading:        "טוען עימותים קודמים…",
   mc_h2h_empty:          "לא נמצאו עימותים קודמים",
@@ -5716,6 +5748,10 @@ const ar: Translations = {
   mc_stats_loading:      "جارٍ تحميل إحصاءات الموسم…",
   mc_stats_empty:        "لا تتوفر إحصاءات موسم لهذه المباراة",
   mc_stats_error:        "تعذّر تحميل إحصاءات الموسم",
+  mc_recap_heading:      "ملخص المباراة",
+  mc_recap_loading:      "جارٍ تحميل الملخص…",
+  mc_recap_empty:        "الملخص غير متاح بعد",
+  mc_related_heading:    "تغطية ذات صلة",
   mc_h2h_heading:        "المواجهات المباشرة",
   mc_h2h_loading:        "جارٍ تحميل المواجهات السابقة…",
   mc_h2h_empty:          "لم يتم العثور على مواجهات سابقة",

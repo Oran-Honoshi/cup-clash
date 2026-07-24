@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
-import { X, Clock, MapPin, RefreshCw, Activity, Target, ChevronDown, Shirt, Swords } from "lucide-react";
+import { X, Clock, MapPin, RefreshCw, Activity, Target, ChevronDown, Shirt, Swords, FileText, Newspaper } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { FlagBadge } from "@/components/ui/FlagBadge";
 import { MvpVotePanel } from "@/components/match/mvp-vote-panel";
@@ -88,6 +88,16 @@ interface H2HMatch {
   homeScore:    number | null;
   awayScore:    number | null;
   penalties:    boolean;
+}
+
+// Mirrors /api/match-center/recap's JSON shape (lib/services/match-recaps.ts /
+// lib/services/news.ts's RelatedArticle).
+interface RelatedArticle {
+  id:          string;
+  title:       string;
+  linkUrl:     string;
+  sourceName:  string;
+  publishedAt: string | null;
 }
 
 interface LineupPlayerRef { apiPlayerId: number; name: string; number: number | null; position: string | null; grid: string | null }
@@ -361,6 +371,15 @@ export function LiveMatchHub({
   const { t } = useLocale();
   const prevScore = useRef<{ h: number; a: number } | null>(null);
 
+  // ── Recap + related coverage (Overview tab) — only meaningful once the
+  // match has actually finished, so unlike h2h this doesn't fetch on open;
+  // it waits for `finished` (derived below) to flip true, whether that's
+  // already the case on open or arrives later via the realtime subscription.
+  const [recapText,       setRecapText]       = useState<string | null>(null);
+  const [recapLoading,    setRecapLoading]    = useState(false);
+  const [relatedArticles, setRelatedArticles] = useState<RelatedArticle[]>([]);
+  const recapFetched = useRef(false);
+
   // ── Head-to-head (Overview tab) — fetched once, lazily, the first time
   // the tab is active (which for the default "overview" tab means as soon
   // as the modal opens, matching "fetch when the user opens this tab").
@@ -445,6 +464,24 @@ export function LiveMatchHub({
       .subscribe();
     return () => { sb.removeChannel(channel); };
   }, [matchId]);
+
+  // Recap + related coverage — on-demand, only once the match is finished
+  // and the Overview tab is shown. Gated on data?.status (not a fetch-once
+  // ref alone) so a match that finishes while the hub is already open picks
+  // this up as soon as the realtime subscription above flips its status.
+  useEffect(() => {
+    if (tab !== "overview" || data?.status !== "finished" || recapFetched.current) return;
+    recapFetched.current = true;
+    setRecapLoading(true);
+    fetch(`/api/match-center/recap?matchId=${encodeURIComponent(matchId)}`)
+      .then(res => { if (!res.ok) throw new Error(String(res.status)); return res.json(); })
+      .then((body: { recapText: string | null; relatedArticles: RelatedArticle[] }) => {
+        setRecapText(body.recapText);
+        setRelatedArticles(body.relatedArticles);
+      })
+      .catch(() => { /* enrichment only — fail silently, section just stays empty */ })
+      .finally(() => setRecapLoading(false));
+  }, [tab, matchId, data?.status]);
 
   // Head-to-head — on-demand, only when the Overview tab is actually shown.
   useEffect(() => {
@@ -645,6 +682,49 @@ export function LiveMatchHub({
               ) : groupId ? (
                 <div className="text-center py-3 text-sm" style={{ color: "var(--mt)" }}>No prediction saved for this match</div>
               ) : null}
+
+              {/* Recap + related coverage — finished matches only. The recap
+                  cron ticks every ~15 min, so a match that just went final
+                  may briefly show the "not available yet" state below. */}
+              {finished && recapLoading && (
+                <div className="rounded-2xl p-4 text-center text-sm" style={{ background: "var(--sf)", border: "1px solid var(--br)", color: "var(--mt)" }}>
+                  {t("mc_recap_loading")}
+                </div>
+              )}
+              {finished && !recapLoading && (
+                <div className="rounded-2xl p-4 space-y-2" style={{ background: "var(--sf)", border: "1px solid var(--br)" }}>
+                  <div className="flex items-center gap-1.5 ta-section-label">
+                    <FileText size={11} /> {t("mc_recap_heading")}
+                  </div>
+                  {recapText ? (
+                    <p className="text-sm leading-relaxed" style={{ color: "var(--tx)" }}>{recapText}</p>
+                  ) : (
+                    <div className="py-1 text-xs" style={{ color: "var(--mt)" }}>{t("mc_recap_empty")}</div>
+                  )}
+                </div>
+              )}
+              {finished && relatedArticles.length > 0 && (
+                <div className="rounded-2xl p-4 space-y-2" style={{ background: "var(--sf)", border: "1px solid var(--br)" }}>
+                  <div className="flex items-center gap-1.5 ta-section-label">
+                    <Newspaper size={11} /> {t("mc_related_heading")}
+                  </div>
+                  <div className="space-y-1.5">
+                    {relatedArticles.map(article => (
+                      <a
+                        key={article.id}
+                        href={article.linkUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="block text-xs py-1 truncate"
+                        style={{ color: "var(--tx)" }}
+                      >
+                        <span className="font-medium">{article.title}</span>
+                        <span style={{ color: "var(--mt)" }}> — {article.sourceName}</span>
+                      </a>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* Head-to-head — last 5-10 meetings across every competition, scores only */}
               <div className="rounded-2xl p-4 space-y-2.5" style={{ background: "var(--sf)", border: "1px solid var(--br)" }}>
