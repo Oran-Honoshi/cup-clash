@@ -1,0 +1,25 @@
+name: Match recap cron
+
+# Matches finish at scattered times throughout the day, so this polls every
+# 15 min rather than the Oracle's 45-min cadence (knockout fixtures are
+# sparse; finished matches needing a recap are not). Reuses the same repo
+# secrets as scores-cron.yml (SCORES_APP_URL, CRON_SECRET). Deliberately a
+# separate workflow from oracle-cron.yml — recap generation is a distinct
+# concern (summarizing what happened, not predicting what will).
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch: {}
+
+jobs:
+  generate-match-recaps:
+    runs-on: ubuntu-latest
+    steps:
+      - name: POST /api/recaps
+        run: |
+          curl -sf -X POST "${SCORES_APP_URL}/api/recaps" \
+            -H "Authorization: Bearer ${CRON_SECRET}" \
+            -o - -w "\nHTTP %{http_code}\n"
+        env:
+          SCORES_APP_URL: ${{ secrets.SCORES_APP_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
