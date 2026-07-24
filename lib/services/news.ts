@@ -275,3 +275,75 @@ export async function getHeroArticle(userId: string | null): Promise<HeroArticle
     sourceName: (sourceRow as { name: string } | null)?.name ?? "Source",
   };
 }
+
+// ── Related coverage (Match Center Overview tab) ─────────────────────────
+
+export interface RelatedArticle {
+  id: string;
+  title: string;
+  linkUrl: string;
+  sourceName: string;
+  publishedAt: string | null;
+}
+
+const RELATED_WINDOW_MS = 3 * 24 * 60 * 60 * 1000; // 3 days either side
+const RELATED_ARTICLE_LIMIT = 5;
+
+// Articles already in the news pipeline that plausibly cover this specific
+// match — matched by team NAME text (not team_ids) against title/summary,
+// deliberately: matches.home_team_id/away_team_id is null for WC bracket
+// SF/3rd/Final placeholders (and any match whose team FK never resolved),
+// while matches.home/away text is always populated. Same case-insensitive
+// substring convention as fetchAndStoreNews's own tag() above, just applied
+// at read time against a single match's two team names instead of at
+// ingest time against every team in the league.
+export async function getRelatedArticles(
+  home: string,
+  away: string,
+  kickoffAt: string,
+  finishedAt: string | null
+): Promise<RelatedArticle[]> {
+  const sb = sbAdmin();
+
+  const windowStart = new Date(new Date(kickoffAt).getTime() - RELATED_WINDOW_MS).toISOString();
+  const windowEnd = new Date(new Date(finishedAt ?? kickoffAt).getTime() + RELATED_WINDOW_MS).toISOString();
+
+  const { data } = await sb
+    .from("news_articles")
+    .select("id, title, summary, link_url, published_at, source_id")
+    .gte("published_at", windowStart)
+    .lte("published_at", windowEnd)
+    .order("published_at", { ascending: false, nullsFirst: false });
+
+  const rows = (data ?? []) as Array<{
+    id: string; title: string; summary: string | null; link_url: string;
+    published_at: string | null; source_id: string;
+  }>;
+  if (!rows.length) return [];
+
+  const homeLower = home.toLowerCase();
+  const awayLower = away.toLowerCase();
+  const matched = rows
+    .filter(r => {
+      const haystack = `${r.title} ${r.summary ?? ""}`.toLowerCase();
+      return haystack.includes(homeLower) || haystack.includes(awayLower);
+    })
+    .slice(0, RELATED_ARTICLE_LIMIT);
+  if (!matched.length) return [];
+
+  const { data: sources } = await sb
+    .from("news_sources")
+    .select("id, name")
+    .in("id", Array.from(new Set(matched.map(r => r.source_id))));
+  const sourceNameById = new Map(
+    ((sources ?? []) as Array<{ id: string; name: string }>).map(s => [s.id, s.name])
+  );
+
+  return matched.map(r => ({
+    id: r.id,
+    title: r.title,
+    linkUrl: r.link_url,
+    sourceName: sourceNameById.get(r.source_id) ?? "Source",
+    publishedAt: r.published_at,
+  }));
+}
