@@ -17,7 +17,6 @@ import { DailyChallengeTeaser } from "@/components/home/daily-challenge-teaser";
 import { OracleTeaser } from "@/components/home/oracle-teaser";
 import { getNextOracleMatch, getUserOraclePicks } from "@/lib/services/oracle";
 import { GroupNudgeCard } from "@/components/home/group-nudge-card";
-import { ZoneJumpGrid } from "@/components/home/zone-jump-grid";
 import { TournamentPicksNag } from "@/components/reminders/tournament-picks-nag";
 import { zoneFontVars } from "@/lib/fonts/zone-fonts";
 
@@ -38,7 +37,6 @@ export default async function HomePage() {
         <DailyChallengeTeaser gameType={gameType} />
         {oracleMatch && <OracleTeaser match={oracleMatch.match} prediction={oracleMatch.prediction} userPrediction={null} />}
         <GroupNudgeCard />
-        <ZoneJumpGrid />
       </div>
     );
   }
@@ -100,7 +98,6 @@ export default async function HomePage() {
         <OracleTeaser match={oracleMatch.match} prediction={oracleMatch.prediction} userPrediction={oracleUserPrediction} />
       )}
       {!hasGroup && <GroupNudgeCard />}
-      <ZoneJumpGrid />
     </div>
   );
 }
