@@ -123,13 +123,15 @@ async function fetchAndParseFeed(rssUrl: string): Promise<ParsedItem[]> {
 }
 
 interface Taggables {
-  teams: Array<{ id: string; name: string }>;
+  teams: Array<{ id: string; name: string; hebrew_name: string | null }>;
   competitions: Array<{ id: string; name: string }>;
 }
 
 function tag(text: string, taggables: Taggables) {
   const haystack = text.toLowerCase();
-  const teamIds = taggables.teams.filter((t) => haystack.includes(t.name.toLowerCase())).map((t) => t.id);
+  const teamIds = taggables.teams
+    .filter((t) => haystack.includes(t.name.toLowerCase()) || (t.hebrew_name && haystack.includes(t.hebrew_name.toLowerCase())))
+    .map((t) => t.id);
   const competitionIds = taggables.competitions.filter((c) => haystack.includes(c.name.toLowerCase())).map((c) => c.id);
   return { teamIds, competitionIds };
 }
@@ -146,12 +148,12 @@ export async function fetchAndStoreNews(): Promise<NewsFetchResult> {
 
   const [{ data: sources }, { data: teams }, { data: competitions }] = await Promise.all([
     sb.from("news_sources").select("id, name, rss_url").eq("enabled", true),
-    sb.from("teams").select("id, name"),
+    sb.from("teams").select("id, name, hebrew_name"),
     sb.from("competitions").select("id, name"),
   ]);
 
   const taggables: Taggables = {
-    teams: (teams ?? []) as Array<{ id: string; name: string }>,
+    teams: (teams ?? []) as Array<{ id: string; name: string; hebrew_name: string | null }>,
     competitions: (competitions ?? []) as Array<{ id: string; name: string }>,
   };
 
@@ -308,12 +310,15 @@ export async function getRelatedArticles(
   const windowStart = new Date(new Date(kickoffAt).getTime() - RELATED_WINDOW_MS).toISOString();
   const windowEnd = new Date(new Date(finishedAt ?? kickoffAt).getTime() + RELATED_WINDOW_MS).toISOString();
 
-  const { data } = await sb
-    .from("news_articles")
-    .select("id, title, summary, link_url, published_at, source_id")
-    .gte("published_at", windowStart)
-    .lte("published_at", windowEnd)
-    .order("published_at", { ascending: false, nullsFirst: false });
+  const [{ data }, { data: teamRows }] = await Promise.all([
+    sb
+      .from("news_articles")
+      .select("id, title, summary, link_url, published_at, source_id")
+      .gte("published_at", windowStart)
+      .lte("published_at", windowEnd)
+      .order("published_at", { ascending: false, nullsFirst: false }),
+    sb.from("teams").select("name, hebrew_name").in("name", [home, away]),
+  ]);
 
   const rows = (data ?? []) as Array<{
     id: string; title: string; summary: string | null; link_url: string;
@@ -321,12 +326,15 @@ export async function getRelatedArticles(
   }>;
   if (!rows.length) return [];
 
-  const homeLower = home.toLowerCase();
-  const awayLower = away.toLowerCase();
+  const hebrewNames = ((teamRows ?? []) as Array<{ name: string; hebrew_name: string | null }>)
+    .map(t => t.hebrew_name)
+    .filter((n): n is string => Boolean(n))
+    .map(n => n.toLowerCase());
+  const needles = [home.toLowerCase(), away.toLowerCase(), ...hebrewNames];
   const matched = rows
     .filter(r => {
       const haystack = `${r.title} ${r.summary ?? ""}`.toLowerCase();
-      return haystack.includes(homeLower) || haystack.includes(awayLower);
+      return needles.some(n => haystack.includes(n));
     })
     .slice(0, RELATED_ARTICLE_LIMIT);
   if (!matched.length) return [];
