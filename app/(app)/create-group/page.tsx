@@ -3,7 +3,7 @@
 import { useState, useEffect, Suspense } from "react";
 import {
   Users, Trophy, AlertCircle, Copy, Check,
-  ArrowRight, Zap, ChevronDown, Settings, Building2, UserCheck, GraduationCap,
+  ArrowRight, Zap, ChevronDown, Settings, Building2, UserCheck, GraduationCap, Rocket,
 } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { useSearchParams } from "next/navigation";
@@ -12,6 +12,14 @@ import { Chip } from "@/components/ui/chip";
 import { BallLoader } from "@/components/ui/BallLoader";
 import { useLocale } from "@/components/i18n/locale-provider";
 import { getCompetitions, WORLD_CUP_SLUG, type CompetitionRow } from "@/lib/services/competitions";
+
+interface FastMatchOption {
+  id: string;
+  home: string;
+  away: string;
+  time: string;
+  competitionId: string | null;
+}
 
 const inputStyle = {
   width: "100%",
@@ -152,7 +160,7 @@ const WINNER_MESSAGE_PRESETS = [
   "Custom...",
 ];
 
-type RulesMode = "house_rules" | "customizable";
+type RulesMode = "house_rules" | "customizable" | "quick_match";
 
 function CreateGroupInner() {
   const { t } = useLocale();
@@ -198,6 +206,32 @@ function CreateGroupInner() {
   const [competitionSlug,  setCompetitionSlug]  = useState<string>(WORLD_CUP_SLUG);
 
   useEffect(() => { getCompetitions().then(setCompetitions).catch(() => {}); }, []);
+
+  // ── Quick Match (Fast Group) ─────────────────────────────────────────────
+  const [fastMatchOptions,   setFastMatchOptions]   = useState<FastMatchOption[]>([]);
+  const [fastMatchLoading,   setFastMatchLoading]   = useState(false);
+  const [selectedFastMatch,  setSelectedFastMatch]  = useState<FastMatchOption | null>(null);
+  const [showFastMatchPicker, setShowFastMatchPicker] = useState(false);
+  const [fastGroupNameEdited, setFastGroupNameEdited] = useState(false);
+
+  useEffect(() => {
+    if (rulesMode !== "quick_match" || fastMatchOptions.length || fastMatchLoading) return;
+    setFastMatchLoading(true);
+    fetch("/api/fast-group/match-options")
+      .then(res => res.json())
+      .then((data: { popular: FastMatchOption | null; options: FastMatchOption[] }) => {
+        setFastMatchOptions(data.options ?? []);
+        if (data.popular) setSelectedFastMatch(data.popular);
+      })
+      .catch(() => {})
+      .finally(() => setFastMatchLoading(false));
+  }, [rulesMode, fastMatchOptions.length, fastMatchLoading]);
+
+  useEffect(() => {
+    if (selectedFastMatch && !fastGroupNameEdited) {
+      setGroupName(`Match Night: ${selectedFastMatch.home} vs ${selectedFastMatch.away}`);
+    }
+  }, [selectedFastMatch, fastGroupNameEdited]);
 
   // Single-match groups are a World Cup bracket concept — the featured-match
   // list has no per-competition data source yet (fast-follow), so switching
@@ -269,6 +303,98 @@ function CreateGroupInner() {
     ? (customWinnerMsg.trim() || "You are the Champion!")
     : winnerMsgPreset;
   const currencySymbol = currency === "Other" ? (otherSymbol.trim() || "$") : CURRENCIES.find(c => c.code === currency)?.symbol ?? "$";
+
+  // Quick Match — a single-match group with none of the tournament-wide
+  // scoring config (no KO advancement, no winner/scorer/assister bonuses).
+  // Same insert shape as house_rules (free, 100 members, no prizes) but
+  // group_type/single_match_id/competition_id point at the one picked match.
+  const handleCreateFastGroup = async () => {
+    if (!selectedFastMatch) { setError("Pick a match first"); return; }
+    setLoading(true); setError(null);
+    const sb = createClient();
+    const { data: { user } } = await sb.auth.getUser();
+    if (!user) { setError("You must be signed in"); setLoading(false); return; }
+
+    const { data: groupData, error: groupErr } = await sb
+      .from("groups")
+      .insert({
+        name:                 groupName.trim(),
+        admin_id:             user.id,
+        buy_in_amount:        0,
+        payout_first:         0,
+        payout_second:        0,
+        payout_third:         0,
+        max_members:          100,
+        is_public:            isPublic,
+        group_type:           "single_match",
+        single_match_id:      selectedFastMatch.id,
+        competition_id:       selectedFastMatch.competitionId,
+        enrollment_fee_cents: 0,
+        rules_mode:           "house_rules",
+        is_corporate_paid:    false,
+        corporate_prize:      null,
+        currency:             "USD",
+        currency_symbol:      "$",
+        payment_link:         null,
+        enable_group_stage_prize: false,
+        group_stage_prize_amount: null,
+        group_stage_prize_label:  null,
+        winner_message:           null,
+        show_prize_split:         false,
+        show_entry_fee:           false,
+        show_prize_pot:           false,
+        show_buy_in_tracker:      false,
+        show_payment_link:        false,
+      } as Record<string, unknown>)
+      .select("id, passkey")
+      .single();
+
+    if (groupErr || !groupData) {
+      setError(groupErr?.message ?? "Failed to create group");
+      setLoading(false); return;
+    }
+
+    const { id: gId, passkey: gPasskey } = groupData as { id: string; passkey: string };
+
+    await sb.from("group_members").upsert({
+      group_id:       gId,
+      user_id:        user.id,
+      payment_status: "free",
+      can_predict:    true,
+      joined_at:      new Date().toISOString(),
+    } as Record<string, unknown>, { onConflict: "user_id,group_id" });
+
+    // Only the two per-match rules apply — everything tournament-wide
+    // (KO advancement, winner/scorer/assister bonuses) is disabled/zeroed.
+    await sb.from("scoring_rules").upsert({
+      group_id:              gId,
+      correct_outcome:       10,
+      exact_score:           25,
+      ko_advancement:        0,
+      tournament_winner:     0,
+      top_scorer:            0,
+      top_assister:          0,
+      second_place:          0,
+      third_place:           0,
+      best_third:            0,
+      enable_outcome:        true,
+      enable_exact:          true,
+      enable_ko_advancement: false,
+      enable_winner:         false,
+      enable_scorer:         false,
+      enable_assister:       false,
+      enable_second:         false,
+      enable_third:          false,
+      enable_best_third:     false,
+      knockout_policy:       "regular_90",
+      use_progressive_scoring: false,
+    } as Record<string, unknown>, { onConflict: "group_id" });
+
+    setCreatedName(groupName.trim());
+    setPasskey(gPasskey);
+    setGroupId(gId);
+    setLoading(false);
+  };
 
   const handleCreate = async () => {
     setLoading(true); setError(null);
@@ -493,7 +619,7 @@ function CreateGroupInner() {
             <p style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", marginTop: 6, fontFamily: "var(--font-ui)" }}>
               {isCorporate
                 ? "Your corporate group is ready. Go to the group to unlock team invites."
-                : isFriendly || rulesMode === "house_rules"
+                : isFriendly || rulesMode === "house_rules" || rulesMode === "quick_match"
                 ? "Share the passkey — anyone can join for free!"
                 : "Share the passkey: members pay $2 to join."}
             </p>
@@ -649,6 +775,37 @@ function CreateGroupInner() {
                   </p>
                 </div>
                 <ArrowRight size={18} style={{ color: "#00D4FF", flexShrink: 0, alignSelf: "center" }} />
+              </div>
+            </div>
+          </button>
+
+          {/* Quick Match — one match, no tournament, fewest steps */}
+          <button
+            onClick={() => { setRulesMode("quick_match"); setStep(1); }}
+            className="w-full text-left transition-all hover:-translate-y-0.5"
+            style={{ ...glassCard, padding: 0, overflow: "hidden", cursor: "pointer", display: "block" }}>
+            <NeonBar gradient="linear-gradient(90deg,#fbbf24,#00FF88)" />
+            <div style={{ padding: 20 }}>
+              <div style={{ display: "flex", alignItems: "flex-start", gap: 14 }}>
+                <div style={{
+                  width: 48, height: 48, borderRadius: 14, flexShrink: 0,
+                  display: "flex", alignItems: "center", justifyContent: "center",
+                  background: "rgba(251,191,36,0.1)", border: "1px solid rgba(251,191,36,0.2)",
+                }}>
+                  <Rocket size={22} style={{ color: "#fbbf24" }} />
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6, flexWrap: "wrap" }}>
+                    <span style={{ fontFamily: "var(--font-display)", fontWeight: 800, fontSize: 18, color: "white", textTransform: "uppercase" }}>
+                      Quick Match
+                    </span>
+                    <Chip label="One screen" color="#fbbf24" />
+                  </div>
+                  <p style={{ fontSize: 13, color: "rgba(255,255,255,0.5)", fontFamily: "var(--font-ui)", lineHeight: 1.45, margin: 0 }}>
+                    One match, no tournament setup. Pick a match (or let us auto-pick today&apos;s most popular one), name it, done.
+                  </p>
+                </div>
+                <ArrowRight size={18} style={{ color: "#fbbf24", flexShrink: 0, alignSelf: "center" }} />
               </div>
             </div>
           </button>
@@ -929,6 +1086,91 @@ function CreateGroupInner() {
               boxShadow: "0 0 20px rgba(0,255,136,0.25)",
             }}>
             {loading ? <><BallLoader size="inline" label={null} /> Creating your league...</> : <>Create Group <ArrowRight size={16} /></>}
+          </button>
+        </div>
+      )}
+
+      {/* ── STEP 1 (Quick Match) — match picker + name, done ──────────────────── */}
+      {step === 1 && rulesMode === "quick_match" && (
+        <div className="space-y-4">
+          <div style={{ ...glassCard, padding: 20 }} className="space-y-4">
+            <div>
+              <label style={labelStyle}>Match</label>
+              {fastMatchLoading ? (
+                <div className="flex items-center gap-2" style={{ color: "rgba(255,255,255,0.5)", fontSize: 13, fontFamily: "var(--font-ui)" }}>
+                  <BallLoader size="inline" label={null} /> Finding today&apos;s most popular match...
+                </div>
+              ) : (
+                <>
+                  <button type="button" onClick={() => setShowFastMatchPicker(v => !v)}
+                    className="w-full flex items-center justify-between"
+                    style={{ ...inputStyle, padding: "12px 16px", cursor: "pointer" }}>
+                    {selectedFastMatch ? (
+                      <span style={{ color: "rgba(255,255,255,0.9)", fontSize: 14 }}>
+                        {selectedFastMatch.home} vs {selectedFastMatch.away}
+                        <span style={{ color: "rgba(255,255,255,0.4)", marginLeft: 8, fontSize: 12 }}>
+                          {new Date(selectedFastMatch.time).toLocaleDateString("en-GB", { day: "numeric", month: "short" })}
+                        </span>
+                      </span>
+                    ) : (
+                      <span style={{ color: "rgba(255,255,255,0.4)", fontSize: 14 }}>No upcoming matches found</span>
+                    )}
+                    <ChevronDown size={16} style={{ color: "rgba(255,255,255,0.4)", transform: showFastMatchPicker ? "rotate(180deg)" : "none", transition: "transform 0.15s" }} />
+                  </button>
+                  {selectedFastMatch && (
+                    <div style={{ fontSize: 11, color: "#fbbf24", fontFamily: "var(--font-ui)", marginTop: 6 }}>
+                      Auto-picked as today&apos;s most popular match — tap to change.
+                    </div>
+                  )}
+                  {showFastMatchPicker && (
+                    <div className="space-y-1 mt-2" style={{ maxHeight: 260, overflowY: "auto" }}>
+                      {fastMatchOptions.map(m => (
+                        <button key={m.id} type="button"
+                          onClick={() => { setSelectedFastMatch(m); setShowFastMatchPicker(false); }}
+                          className="w-full text-left px-3 py-2.5 rounded-lg border-b transition-all"
+                          style={{ borderColor: "rgba(255,255,255,0.07)", color: selectedFastMatch?.id === m.id ? "#00D4FF" : "rgba(255,255,255,0.6)", background: "transparent" }}>
+                          <div style={{ fontSize: 13 }}>{m.home} vs {m.away}</div>
+                          <div style={{ fontSize: 11, color: "rgba(255,255,255,0.35)" }}>
+                            {new Date(m.time).toLocaleDateString("en-GB", { day: "numeric", month: "short" })} · {new Date(m.time).toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" })}
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+
+            <div>
+              <label style={labelStyle}>{t("cg_group_name")} *</label>
+              <div className="relative">
+                <Users size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: "rgba(255,255,255,0.35)" }} />
+                <input type="text"
+                  placeholder="e.g. Sunday Squad"
+                  value={groupName}
+                  onChange={(e: { target: HTMLInputElement }) => { setGroupName(e.target.value); setFastGroupNameEdited(true); }}
+                  onFocus={(e: { target: HTMLInputElement }) => { e.target.style.borderColor = "rgba(0,255,136,0.5)"; e.target.style.boxShadow = "0 0 0 3px rgba(0,255,136,0.1)"; }}
+                  onBlur={(e: { target: HTMLInputElement }) => { e.target.style.borderColor = "rgba(255,255,255,0.12)"; e.target.style.boxShadow = "none"; }}
+                  className="placeholder:text-[rgba(255,255,255,0.3)]"
+                  style={{ ...inputStyle, padding: "12px 16px 12px 40px" }} />
+              </div>
+            </div>
+          </div>
+
+          <button type="button" disabled={loading || !selectedFastMatch} onClick={() => {
+            if (!groupName.trim()) { setError("Group name is required"); return; }
+            setError(null);
+            handleCreateFastGroup();
+          }} className="w-full flex items-center justify-center gap-2 transition-all disabled:opacity-50 hover:-translate-y-0.5"
+            style={{
+              padding: "13px", borderRadius: 12, border: "none",
+              background: "linear-gradient(135deg, #fbbf24, #00FF88)", color: "#0B141B",
+              fontWeight: 700, fontFamily: "var(--font-ui)", fontSize: 14,
+              textTransform: "uppercase", letterSpacing: "0.06em",
+              cursor: loading ? "not-allowed" : "pointer",
+              boxShadow: "0 0 20px rgba(251,191,36,0.25)",
+            }}>
+            {loading ? <><BallLoader size="inline" label={null} /> Creating your group...</> : <>Create Group <ArrowRight size={16} /></>}
           </button>
         </div>
       )}

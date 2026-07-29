@@ -40,7 +40,7 @@ export type SubSector = "predictions" | "leaderboard" | "group-predictions" | "b
 type LeaderboardSubTab = "picks" | "scorers" | "assisters" | "trivia";
 
 interface GroupDetailClientProps {
-  group: { id: string; name: string; passkey: string; admin_id: string; buy_in_amount: number; payout_first: number; payout_second: number; payout_third: number; max_members: number; is_corporate_paid?: boolean; corporate_prize?: string | null; currency_symbol?: string | null; payment_link?: string | null; enable_group_stage_prize?: boolean | null; group_stage_prize_amount?: number | null; group_stage_prize_label?: string | null; show_prize_split?: boolean | null; show_entry_fee?: boolean | null; show_prize_pot?: boolean | null; show_buy_in_tracker?: boolean | null; show_payment_link?: boolean | null; group_mode?: string | null; winner_message?: string | null; competition_id?: string | null; competitions?: { name: string } | null };
+  group: { id: string; name: string; passkey: string; admin_id: string; buy_in_amount: number; payout_first: number; payout_second: number; payout_third: number; max_members: number; is_corporate_paid?: boolean; corporate_prize?: string | null; currency_symbol?: string | null; payment_link?: string | null; enable_group_stage_prize?: boolean | null; group_stage_prize_amount?: number | null; group_stage_prize_label?: string | null; show_prize_split?: boolean | null; show_entry_fee?: boolean | null; show_prize_pot?: boolean | null; show_buy_in_tracker?: boolean | null; show_payment_link?: boolean | null; group_mode?: string | null; winner_message?: string | null; competition_id?: string | null; competitions?: { name: string } | null; single_match_id?: string | null };
   rules: Record<string, number | boolean> | null;
   members: Array<{ user_id: string; payment_status: string; can_predict: boolean; paid: boolean; is_ad_free: boolean; profiles: { name: string; country: string | null; avatar_url: string | null } | null }>;
   leaderboardMembers: LeaderboardMember[];
@@ -163,6 +163,7 @@ export function GroupDetailClient({
             isCorporate={isCorporate}
             allMatches={allMatches}
             showNextMatchHero
+            singleMatchId={group.single_match_id ?? null}
           />
         </div>
       )}

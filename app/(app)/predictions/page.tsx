@@ -73,18 +73,18 @@ export default async function PredictionsPage({
   // Get all groups this user belongs to
   const { data: memberships } = await sbAdmin()
     .from("group_members")
-    .select("group_id, groups(id, name, passkey, competition_id)")
+    .select("group_id, groups(id, name, passkey, competition_id, single_match_id)")
     .eq("user_id", user.id);
 
   const groups = (memberships ?? [])
     .map((m: unknown) => {
       const row = m as {
         group_id: string;
-        groups: { id: string; name: string; passkey: string; competition_id: string | null } | null;
+        groups: { id: string; name: string; passkey: string; competition_id: string | null; single_match_id: string | null } | null;
       };
       return row.groups;
     })
-    .filter(Boolean) as Array<{ id: string; name: string; passkey: string; competition_id: string | null }>;
+    .filter(Boolean) as Array<{ id: string; name: string; passkey: string; competition_id: string | null; single_match_id: string | null }>;
 
   // Solo user: no groups yet, allow solo predictions
   if (!groups.length) {
@@ -144,6 +144,7 @@ export default async function PredictionsPage({
         isAdFree={isAdFree}
         isCorporate={isCorporate}
         allMatches={allMatches.filter(m => matchInGroupScope(m.stage, m.competitionId, activeGroup.competition_id))}
+        singleMatchId={activeGroup.single_match_id}
       />
       <AdBanner isAdFree={isAdFree} isCorporate={isCorporate} />
     </div>

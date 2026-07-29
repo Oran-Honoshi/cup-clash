@@ -2,6 +2,8 @@ import type { Match } from "@/lib/types";
 import { WC2026_MATCHES, matchInGroupScope } from "@/lib/schedule";
 import type { ScheduleMatch } from "@/lib/schedule";
 import { sbAnon as sb } from "@/lib/supabase/anon";
+import { sbAdmin } from "@/lib/supabase/admin";
+import { isMatchLocked } from "@/lib/isMatchLocked";
 
 // ── Upcoming matches ─────────────────────────────────────────────────────────
 // Primary: Supabase matches table (seeded from seed.sql)
@@ -79,6 +81,109 @@ export async function getUpcomingMatches(limit: number, groupCompetitionId: stri
 export async function getNextMatch(groupCompetitionId: string | null): Promise<Match | null> {
   const upcoming = await getUpcomingMatches(1, groupCompetitionId);
   return upcoming[0] ?? null;
+}
+
+// ── Cross-competition match picker (Fast Group creation) ────────────────
+// Deliberately unscoped by competition_id, unlike getUpcomingMatches — this
+// backs the Fast Group match picker, which by design lets a group form
+// around ANY match from ANY tracked competition, not one competition's
+// fixtures. Not a violation of the matchInGroupScope() convention (that
+// rule is for lookups scoped TO an existing group's own competition); this
+// query has no group yet, so there's nothing to scope against.
+export interface FastGroupMatchOption extends Match {
+  competitionId: string | null;
+}
+
+async function getUpcomingMatchesAllCompetitions(withinDays: number, limit: number): Promise<FastGroupMatchOption[]> {
+  const windowEnd = new Date(Date.now() + withinDays * 24 * 60 * 60 * 1000).toISOString();
+  const { data } = await sb()
+    .from("matches")
+    .select("id, home, away, home_flag, away_flag, kickoff_at, stage, group_letter, stadium, city, time_confirmed, competition_id")
+    .gt("kickoff_at", new Date().toISOString())
+    .lte("kickoff_at", windowEnd)
+    .neq("home", "TBD")
+    .neq("away", "TBD")
+    .order("kickoff_at", { ascending: true })
+    .limit(limit);
+
+  return ((data ?? []) as Array<{
+    id: string; home: string; away: string;
+    home_flag: string | null; away_flag: string | null;
+    kickoff_at: string; stage: string;
+    group_letter: string | null;
+    stadium: string | null; city: string | null;
+    time_confirmed: boolean | null;
+    competition_id: string | null;
+  }>)
+    .filter(m => !isMatchLocked(m.kickoff_at))
+    .map(m => ({
+      id:          m.id,
+      home:        m.home,
+      away:        m.away,
+      homeFlagCode:m.home_flag  ?? undefined,
+      awayFlagCode:m.away_flag  ?? undefined,
+      time:        m.kickoff_at,
+      utcTime:     m.kickoff_at,
+      stage:       m.stage as Match["stage"],
+      group:       m.group_letter ?? undefined,
+      stadium:     m.stadium ?? undefined,
+      city:        m.city    ?? undefined,
+      timeConfirmed: m.time_confirmed ?? true,
+      competitionId: m.competition_id,
+    }));
+}
+
+// Real match list for the Fast Group picker's manual-override search —
+// widens to 14 days so there's always something to pick even on a sparse
+// fixture day.
+export async function getFastGroupMatchOptions(limit = 40): Promise<FastGroupMatchOption[]> {
+  return getUpcomingMatchesAllCompetitions(14, limit);
+}
+
+const STAGE_TIER: Record<string, number> = {
+  Final: 100, SF: 80, "3rd": 70, QF: 60, R16: 50, R32: 40, Group: 10,
+};
+const SPARSE_VOLUME_THRESHOLD = 5;
+
+// "Today's most popular match" for the Fast Group auto-pick default — ranks
+// by real group_predictions volume (same crowd signal as
+// getFeaturedOracleDuelMatch in oracle-duels.ts) and only falls back to a
+// static stage-importance tier when no candidate has enough volume yet to
+// trust. Unlike the Oracle version, the candidate pool here is every
+// upcoming match across every tracked competition, not just Oracle's own
+// WC-knockout picks — so most candidates will have no `stage` tier at all
+// (non-WC league fixtures), which is fine: they simply fall back to the
+// kickoff-time tiebreak.
+export async function getMostPopularUpcomingMatch(): Promise<FastGroupMatchOption | null> {
+  let candidates = await getUpcomingMatchesAllCompetitions(3, 60);
+  if (!candidates.length) candidates = await getUpcomingMatchesAllCompetitions(14, 60);
+  if (!candidates.length) return null;
+  if (candidates.length === 1) return candidates[0];
+
+  const matchIds = candidates.map(c => c.id);
+  const { data } = await sbAdmin()
+    .from("group_predictions")
+    .select("match_id")
+    .in("match_id", matchIds);
+
+  const volumeByMatchId = new Map<string, number>();
+  for (const row of (data ?? []) as Array<{ match_id: string }>) {
+    volumeByMatchId.set(row.match_id, (volumeByMatchId.get(row.match_id) ?? 0) + 1);
+  }
+  const volumeOf = (matchId: string) => volumeByMatchId.get(matchId) ?? 0;
+  const useVolume = candidates.some(c => volumeOf(c.id) >= SPARSE_VOLUME_THRESHOLD);
+
+  const ranked = [...candidates].sort((a, b) => {
+    if (useVolume) {
+      const volDiff = volumeOf(b.id) - volumeOf(a.id);
+      if (volDiff !== 0) return volDiff;
+    }
+    const tierDiff = (STAGE_TIER[b.stage] ?? 0) - (STAGE_TIER[a.stage] ?? 0);
+    if (tierDiff !== 0) return tierDiff;
+    return new Date(a.time).getTime() - new Date(b.time).getTime();
+  });
+
+  return ranked[0];
 }
 
 // ── Match by ID ──────────────────────────────────────────────────────────────

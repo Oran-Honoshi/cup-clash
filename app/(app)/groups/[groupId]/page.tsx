@@ -12,7 +12,7 @@ import type { Group as AdminGroup, Member as LeaderboardMember } from "@/lib/typ
 async function getGroupDetail(groupId: string) {
   const { data } = await sbAdmin()
     .from("groups")
-    .select("id, name, passkey, admin_id, buy_in_amount, payout_first, payout_second, payout_third, max_members, enrollment_fee_cents, is_corporate_paid, max_group_capacity, payment_model, corporate_prize, currency_symbol, payment_link, enable_group_stage_prize, group_stage_prize_amount, group_stage_prize_label, show_prize_split, show_entry_fee, show_prize_pot, show_buy_in_tracker, show_payment_link, group_mode, winner_message, competition_id, competitions(name)")
+    .select("id, name, passkey, admin_id, buy_in_amount, payout_first, payout_second, payout_third, max_members, enrollment_fee_cents, is_corporate_paid, max_group_capacity, payment_model, corporate_prize, currency_symbol, payment_link, enable_group_stage_prize, group_stage_prize_amount, group_stage_prize_label, show_prize_split, show_entry_fee, show_prize_pot, show_buy_in_tracker, show_payment_link, group_mode, winner_message, competition_id, competitions(name), single_match_id")
     .eq("id", groupId)
     .single();
   return data as unknown as {
@@ -34,6 +34,7 @@ async function getGroupDetail(groupId: string) {
     winner_message: string | null;
     competition_id: string | null;
     competitions: { name: string } | null;
+    single_match_id: string | null;
   } | null;
 }
 

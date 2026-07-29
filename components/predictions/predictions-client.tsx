@@ -34,9 +34,13 @@ interface PredictionsClientProps {
   // Detail's Predictions sub-sector) — not the standalone solo/guest
   // predictions flows, which use a placeholder groupId or no auth session.
   showNextMatchHero?: boolean;
+  // Fast Group: scopes the whole screen to this one match, replacing the
+  // full WC/league tab set (Tournament Picks and Bonus Questions are
+  // tournament-wide concepts that don't apply to a single-match group).
+  singleMatchId?:     string | null;
 }
 
-type SectionKey = "group" | "knockout" | "league" | "tournament" | "bonus";
+type SectionKey = "group" | "knockout" | "league" | "tournament" | "bonus" | "match";
 
 const WC_TABS: { key: SectionKey; label: string }[] = [
   { key: "group",      label: "GROUP STAGE" },
@@ -53,34 +57,46 @@ const LEAGUE_TABS: { key: SectionKey; label: string }[] = [
   { key: "bonus",      label: "BONUS QUESTIONS" },
 ];
 
+const SINGLE_MATCH_TABS: { key: SectionKey; label: string }[] = [
+  { key: "match", label: "MATCH" },
+];
+
 export function PredictionsClient({
   groupId, groupName, groupCompetitionId = null, groupCompetitionName = null, allGroups, userId, isPaid, migrateGuestPicks = false, isAdFree, isCorporate, allMatches = [],
-  showNextMatchHero = false,
+  showNextMatchHero = false, singleMatchId = null,
 }: PredictionsClientProps) {
   void isPaid; void allGroups;
 
   const { predictions: ctxPredictions, refreshPredictions, setActiveUserId } = useGroupContext();
 
+  const isSingleMatch = Boolean(singleMatchId);
   const isLeagueFormat = Boolean(groupCompetitionId);
-  const TABS = isLeagueFormat ? LEAGUE_TABS : WC_TABS;
+  const TABS = isSingleMatch ? SINGLE_MATCH_TABS : isLeagueFormat ? LEAGUE_TABS : WC_TABS;
 
   const [activeTab, setActiveTab] = useState<SectionKey>(TABS[0].key);
   const [migrated,  setMigrated]  = useState(false);
   const [openMatchId, setOpenMatchId] = useState<string | null>(null);
 
+  const singleMatchList = useMemo(
+    () => isSingleMatch ? allMatches.filter(m => m.id === singleMatchId) : allMatches,
+    [isSingleMatch, allMatches, singleMatchId]
+  );
+
   // WC groups track "Group Stage predicted" specifically (the counter next
   // to the tab pills); a league-format group has no such distinction, so it
   // counts every predictable match instead.
-  const trackedMatchIds = isLeagueFormat
+  const trackedMatchIds = isSingleMatch
+    ? singleMatchList.map(m => m.id)
+    : isLeagueFormat
     ? allMatches.filter(m => m.status !== "finished").map(m => m.id)
     : allMatches.filter(m => m.stage === "Group").map(m => m.id);
   const predictedCount = trackedMatchIds.filter(id => ctxPredictions[id] != null).length;
 
   const nextMatch = useMemo(() => {
-    if (!showNextMatchHero) return null;
+    if (!showNextMatchHero || isSingleMatch) return null;
     const next = getNextScheduleMatch(allMatches, groupCompetitionId);
     return next ? toMatchType(next) : null;
-  }, [showNextMatchHero, allMatches, groupCompetitionId]);
+  }, [showNextMatchHero, isSingleMatch, allMatches, groupCompetitionId]);
 
   const carouselRef  = useRef<HTMLDivElement>(null);
   const sectionRefs  = useRef<(HTMLDivElement | null)[]>(TABS.map(() => null));
@@ -265,7 +281,20 @@ export function PredictionsClient({
         }}
       >
 
-        {isLeagueFormat ? (
+        {isSingleMatch ? (
+          /* ── Section: MATCH (Fast Group — one match, no tabs) ────── */
+          <div ref={el => { sectionRefs.current[TABS.findIndex(t => t.key === "match")] = el; }} className="cc-elevated" style={cardStyle}>
+            <div className="flex items-center justify-between mb-3">
+              <span className="ta-match-label" style={{ color: "var(--tx)" }}>
+                Match
+              </span>
+              <span className="ta-meta">
+                {predictedCount}/{trackedMatchIds.length} PREDICTED
+              </span>
+            </div>
+            <LeaguePredictions key={groupId} groupId={groupId} userId={userId} allMatches={singleMatchList} />
+          </div>
+        ) : isLeagueFormat ? (
           /* ── Section: MATCHES (league-format competitions) ─────── */
           <div ref={el => { sectionRefs.current[TABS.findIndex(t => t.key === "league")] = el; }} className="cc-elevated" style={cardStyle}>
             <div className="flex items-center justify-between mb-3">
@@ -313,25 +342,29 @@ export function PredictionsClient({
           </>
         )}
 
-        {/* ── Section: TOURNAMENT PICKS ───────────────────────── */}
-        <div ref={el => { sectionRefs.current[TABS.findIndex(t => t.key === "tournament")] = el; }} className="cc-elevated" style={cardStyle}>
-          <div className="mb-3">
-            <span className="ta-match-label" style={{ color: "var(--tx)" }}>
-              Tournament Picks
-            </span>
-          </div>
-          <TournamentPicks key={groupId} groupId={groupId} userId={userId} locked={false} isLeagueFormat={isLeagueFormat} competitionId={groupCompetitionId} competitionName={groupCompetitionName} />
-        </div>
+        {!isSingleMatch && (
+          <>
+            {/* ── Section: TOURNAMENT PICKS ───────────────────────── */}
+            <div ref={el => { sectionRefs.current[TABS.findIndex(t => t.key === "tournament")] = el; }} className="cc-elevated" style={cardStyle}>
+              <div className="mb-3">
+                <span className="ta-match-label" style={{ color: "var(--tx)" }}>
+                  Tournament Picks
+                </span>
+              </div>
+              <TournamentPicks key={groupId} groupId={groupId} userId={userId} locked={false} isLeagueFormat={isLeagueFormat} competitionId={groupCompetitionId} competitionName={groupCompetitionName} />
+            </div>
 
-        {/* ── Section: BONUS QUESTIONS ────────────────────────── */}
-        <div ref={el => { sectionRefs.current[TABS.findIndex(t => t.key === "bonus")] = el; }} className="cc-elevated" style={cardStyle}>
-          <div className="mb-3">
-            <span className="ta-match-label" style={{ color: "var(--tx)" }}>
-              Bonus Questions
-            </span>
-          </div>
-          <BonusQuestions key={groupId} groupId={groupId} userId={userId} />
-        </div>
+            {/* ── Section: BONUS QUESTIONS ────────────────────────── */}
+            <div ref={el => { sectionRefs.current[TABS.findIndex(t => t.key === "bonus")] = el; }} className="cc-elevated" style={cardStyle}>
+              <div className="mb-3">
+                <span className="ta-match-label" style={{ color: "var(--tx)" }}>
+                  Bonus Questions
+                </span>
+              </div>
+              <BonusQuestions key={groupId} groupId={groupId} userId={userId} />
+            </div>
+          </>
+        )}
 
       </div>
     </div>
