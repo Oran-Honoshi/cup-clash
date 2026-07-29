@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { createPortal } from "react-dom";
-import { X, Clock, MapPin, RefreshCw, Activity, Target, ChevronDown, Shirt, Swords, FileText, Newspaper } from "lucide-react";
+import { X, Clock, MapPin, RefreshCw, Activity, Target, ChevronDown, Shirt, Swords, FileText, Newspaper, Play } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { FlagBadge } from "@/components/ui/FlagBadge";
 import { MvpVotePanel } from "@/components/match/mvp-vote-panel";
@@ -98,6 +98,14 @@ interface RelatedArticle {
   linkUrl:     string;
   sourceName:  string;
   publishedAt: string | null;
+}
+
+// Mirrors /api/match-center/highlights's JSON shape (lib/services/highlights.ts).
+interface MatchHighlight {
+  title:        string;
+  videoUrl:     string;
+  thumbnailUrl: string | null;
+  source:       string;
 }
 
 interface LineupPlayerRef { apiPlayerId: number; name: string; number: number | null; position: string | null; grid: string | null }
@@ -380,6 +388,12 @@ export function LiveMatchHub({
   const [relatedArticles, setRelatedArticles] = useState<RelatedArticle[]>([]);
   const recapFetched = useRef(false);
 
+  // ── Highlights (Overview tab) — same on-demand/finished-only gating as
+  // the recap above, fetched independently so a slow/failed Highlightly
+  // lookup never blocks the recap or related-coverage sections.
+  const [highlight, setHighlight] = useState<MatchHighlight | null>(null);
+  const highlightFetched = useRef(false);
+
   // ── Head-to-head (Overview tab) — fetched once, lazily, the first time
   // the tab is active (which for the default "overview" tab means as soon
   // as the modal opens, matching "fetch when the user opens this tab").
@@ -481,6 +495,19 @@ export function LiveMatchHub({
       })
       .catch(() => { /* enrichment only — fail silently, section just stays empty */ })
       .finally(() => setRecapLoading(false));
+  }, [tab, matchId, data?.status]);
+
+  // Highlights — on-demand, only once the match is finished and the
+  // Overview tab is shown. No loading state is rendered: a gated/empty
+  // Highlightly result must look identical to "no request made yet",
+  // never a broken/empty video player.
+  useEffect(() => {
+    if (tab !== "overview" || data?.status !== "finished" || highlightFetched.current) return;
+    highlightFetched.current = true;
+    fetch(`/api/match-center/highlights?matchId=${encodeURIComponent(matchId)}`)
+      .then(res => { if (!res.ok) throw new Error(String(res.status)); return res.json(); })
+      .then((body: { highlight: MatchHighlight | null }) => setHighlight(body.highlight))
+      .catch(() => { /* enrichment only — fail silently, section just stays empty */ });
   }, [tab, matchId, data?.status]);
 
   // Head-to-head — on-demand, only when the Overview tab is actually shown.
@@ -703,6 +730,44 @@ export function LiveMatchHub({
                   )}
                 </div>
               )}
+              {/* Highlights — only rendered when a confirmed video exists; a
+                  gated (empty) or no-confident-match result renders nothing,
+                  same principle as the lineups "not available yet" state. */}
+              {finished && highlight && (
+                <div className="rounded-2xl overflow-hidden" style={{ background: "var(--sf)", border: "1px solid var(--br)" }}>
+                  <div className="flex items-center gap-1.5 ta-section-label p-4 pb-2">
+                    <Play size={11} /> {t("mc_highlights_heading")}
+                  </div>
+                  <a
+                    href={highlight.videoUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="relative block w-full aspect-video"
+                    style={{ background: "var(--ip)" }}
+                  >
+                    {highlight.thumbnailUrl && (
+                      <img
+                        src={highlight.thumbnailUrl}
+                        alt={highlight.title}
+                        className="absolute inset-0 w-full h-full object-cover"
+                      />
+                    )}
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div
+                        className="flex items-center justify-center rounded-full"
+                        style={{ width: 48, height: 48, background: "rgba(0,0,0,0.55)" }}
+                      >
+                        <Play size={20} style={{ color: "#fff" }} fill="#fff" />
+                      </div>
+                    </div>
+                  </a>
+                  <div className="p-4 pt-2 space-y-0.5">
+                    <p className="text-sm font-bold leading-snug" style={{ color: "var(--tx)" }}>{highlight.title}</p>
+                    <p className="ta-meta">{highlight.source}</p>
+                  </div>
+                </div>
+              )}
+
               {finished && relatedArticles.length > 0 && (
                 <div className="rounded-2xl p-4 space-y-2" style={{ background: "var(--sf)", border: "1px solid var(--br)" }}>
                   <div className="flex items-center gap-1.5 ta-section-label">

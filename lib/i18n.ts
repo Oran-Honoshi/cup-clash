@@ -538,6 +538,7 @@ export interface Translations {
   mc_recap_loading:      string;
   mc_recap_empty:        string;
   mc_related_heading:    string;
+  mc_highlights_heading: string;
   mc_h2h_heading:        string;
   mc_h2h_loading:        string;
   mc_h2h_empty:          string;
@@ -1216,6 +1217,7 @@ const en: Translations = {
   mc_recap_loading:      "Loading recap…",
   mc_recap_empty:        "Recap not available yet",
   mc_related_heading:    "Related Coverage",
+  mc_highlights_heading: "Highlights",
   mc_h2h_heading:        "Head-to-Head",
   mc_h2h_loading:        "Loading head-to-head…",
   mc_h2h_empty:          "No previous meetings found",
@@ -1864,6 +1866,7 @@ const fr: Translations = {
   mc_recap_loading:      "Chargement du résumé…",
   mc_recap_empty:        "Résumé pas encore disponible",
   mc_related_heading:    "Articles liés",
+  mc_highlights_heading: "Temps forts",
   mc_h2h_heading:        "Confrontations directes",
   mc_h2h_loading:        "Chargement des confrontations…",
   mc_h2h_empty:          "Aucune confrontation précédente trouvée",
@@ -2512,6 +2515,7 @@ const de: Translations = {
   mc_recap_loading:      "Zusammenfassung wird geladen…",
   mc_recap_empty:        "Zusammenfassung noch nicht verfügbar",
   mc_related_heading:    "Weitere Berichte",
+  mc_highlights_heading: "Höhepunkte",
   mc_h2h_heading:        "Direkter Vergleich",
   mc_h2h_loading:        "Direktvergleich wird geladen…",
   mc_h2h_empty:          "Keine bisherigen Begegnungen gefunden",
@@ -3160,6 +3164,7 @@ const nl: Translations = {
   mc_recap_loading:      "Samenvatting wordt geladen…",
   mc_recap_empty:        "Samenvatting nog niet beschikbaar",
   mc_related_heading:    "Gerelateerde berichtgeving",
+  mc_highlights_heading: "Hoogtepunten",
   mc_h2h_heading:        "Onderling record",
   mc_h2h_loading:        "Onderling record laden…",
   mc_h2h_empty:          "Geen eerdere ontmoetingen gevonden",
@@ -3808,6 +3813,7 @@ const es: Translations = {
   mc_recap_loading:      "Cargando resumen…",
   mc_recap_empty:        "Resumen aún no disponible",
   mc_related_heading:    "Cobertura relacionada",
+  mc_highlights_heading: "Momentos destacados",
   mc_h2h_heading:        "Cara a cara",
   mc_h2h_loading:        "Cargando historial de enfrentamientos…",
   mc_h2h_empty:          "No se encontraron enfrentamientos anteriores",
@@ -4456,6 +4462,7 @@ const pt: Translations = {
   mc_recap_loading:      "Carregando resumo…",
   mc_recap_empty:        "Resumo ainda não disponível",
   mc_related_heading:    "Cobertura relacionada",
+  mc_highlights_heading: "Melhores momentos",
   mc_h2h_heading:        "Confronto direto",
   mc_h2h_loading:        "Carregando confrontos anteriores…",
   mc_h2h_empty:          "Nenhum confronto anterior encontrado",
@@ -5104,6 +5111,7 @@ const he: Translations = {
   mc_recap_loading:      "טוען סיכום…",
   mc_recap_empty:        "הסיכום עדיין לא זמין",
   mc_related_heading:    "כתבות קשורות",
+  mc_highlights_heading: "רגעים מכריעים",
   mc_h2h_heading:        "עימותים היסטוריים",
   mc_h2h_loading:        "טוען עימותים קודמים…",
   mc_h2h_empty:          "לא נמצאו עימותים קודמים",
@@ -5752,6 +5760,7 @@ const ar: Translations = {
   mc_recap_loading:      "جارٍ تحميل الملخص…",
   mc_recap_empty:        "الملخص غير متاح بعد",
   mc_related_heading:    "تغطية ذات صلة",
+  mc_highlights_heading: "أبرز اللقطات",
   mc_h2h_heading:        "المواجهات المباشرة",
   mc_h2h_loading:        "جارٍ تحميل المواجهات السابقة…",
   mc_h2h_empty:          "لم يتم العثور على مواجهات سابقة",
