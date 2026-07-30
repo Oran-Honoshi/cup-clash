@@ -6,6 +6,7 @@ import { AppInstallBanner } from "@/components/app/install-banner";
 import { JoinPromptModal } from "@/components/join/join-prompt-modal";
 import { MatchReminderSheet } from "@/components/reminders/match-reminder-sheet";
 import { OracleDuelCelebrationTrigger } from "@/components/game/oracle-duel-celebration-trigger";
+import { OracleCaptainCelebrationTrigger } from "@/components/fantasy/oracle-captain-celebration-trigger";
 import { NudgeCoordinator } from "@/components/nudges/nudge-coordinator";
 import { GroupProvider } from "@/lib/contexts/group-context";
 import { NavModeProvider } from "@/lib/contexts/nav-mode-context";
@@ -42,6 +43,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       <NudgeCoordinator />
       <MatchReminderSheet />
       <OracleDuelCelebrationTrigger />
+      <OracleCaptainCelebrationTrigger />
     </div>
     </GroupProvider>
     </NavModeProvider>

@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import dynamic from "next/dynamic";
-import { Shield, MessageCircle, Users, ArrowRight, ArrowLeft } from "lucide-react";
+import { Shield, MessageCircle, Users, ArrowRight, ArrowLeft, Crown } from "lucide-react";
 import { createClient } from "@/lib/supabase/client";
 import { BallLoader } from "@/components/ui/BallLoader";
 import {
@@ -12,6 +12,7 @@ import {
   SQUAD_BUDGET_CREDITS, SQUAD_SIZE, POSITION_ORDER,
   type FantasyPlayerRow, type FantasyPosition,
 } from "@/lib/services/fantasy";
+import { GameweekPicksPanel } from "@/components/fantasy/gameweek-picks-panel";
 
 // League home view: squad summary + chat, mirroring the pattern established
 // by group-detail-client.tsx's tab bar (predictions/leaderboard/.../chat) —
@@ -32,18 +33,19 @@ const glassCard = {
   borderRadius: 22,
 };
 
-interface LeagueInfo { id: string; name: string; memberCount: number; }
+interface LeagueInfo { id: string; name: string; competitionId: string; memberCount: number; }
 
 export default function FantasyLeagueHomePage() {
   const params = useParams();
   const leagueId = params.leagueId as string;
 
-  const [tab, setTab] = useState<"squad" | "chat">("squad");
+  const [tab, setTab] = useState<"squad" | "gameweek" | "chat">("squad");
   const [loading, setLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [league, setLeague] = useState<LeagueInfo | null>(null);
   const [userId, setUserId] = useState<string | null>(null);
   const [userName, setUserName] = useState("");
+  const [squadId, setSquadId] = useState<string | null>(null);
   const [players, setPlayers] = useState<FantasyPlayerRow[] | null>(null); // null = no squad saved yet
 
   useEffect(() => {
@@ -60,18 +62,18 @@ export default function FantasyLeagueHomePage() {
 
       const { data: leagueRow, error: leagueErr } = await sb
         .from("fantasy_leagues")
-        .select("id, name")
+        .select("id, name, competition_id")
         .eq("id", leagueId)
         .single();
       if (leagueErr || !leagueRow) { setLoadError("Fantasy league not found"); setLoading(false); return; }
-      const l = leagueRow as { id: string; name: string };
+      const l = leagueRow as { id: string; name: string; competition_id: string };
 
       const { count: memberCount } = await sb
         .from("fantasy_league_members")
         .select("id", { count: "exact", head: true })
         .eq("fantasy_league_id", leagueId);
 
-      setLeague({ id: l.id, name: l.name, memberCount: memberCount ?? 0 });
+      setLeague({ id: l.id, name: l.name, competitionId: l.competition_id, memberCount: memberCount ?? 0 });
 
       const { data: squadRow } = await sb
         .from("fantasy_squads")
@@ -82,6 +84,7 @@ export default function FantasyLeagueHomePage() {
       const sq = squadRow as { id: string } | null;
 
       if (sq) {
+        setSquadId(sq.id);
         const { data: squadPlayerRows } = await sb
           .from("fantasy_squad_players")
           .select("fantasy_players ( id, competition_id, api_player_id, api_team_id, full_name, team_name, position, photo, credit_cost )")
@@ -124,8 +127,9 @@ export default function FantasyLeagueHomePage() {
 
       <div className="flex gap-2">
         {[
-          { id: "squad" as const, label: "Squad", icon: Shield },
-          { id: "chat"  as const, label: "Chat",  icon: MessageCircle },
+          { id: "squad"    as const, label: "Squad",    icon: Shield },
+          { id: "gameweek" as const, label: "Gameweek", icon: Crown  },
+          { id: "chat"     as const, label: "Chat",      icon: MessageCircle },
         ].map(t => {
           const active = tab === t.id;
           return (
@@ -187,6 +191,10 @@ export default function FantasyLeagueHomePage() {
             </>
           )}
         </div>
+      )}
+
+      {tab === "gameweek" && (
+        <GameweekPicksPanel competitionId={league.competitionId} squadId={squadId} players={players} />
       )}
 
       {tab === "chat" && (

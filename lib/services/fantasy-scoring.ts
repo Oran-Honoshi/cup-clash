@@ -252,6 +252,9 @@ export async function scoreGameweek(gameweekId: string): Promise<ScoreGameweekRe
 
       let basePointsSum = 0;
       const involvedMatchIds = new Set<string>();
+      let captainBasePoints: number | null = null;
+      let captainMultiplier: number | null = null;
+      let captainMatchId: string | null = null;
 
       for (const player of activePlayers) {
         const contribution = byApiPlayerId.get(player.api_player_id);
@@ -268,6 +271,9 @@ export async function scoreGameweek(gameweekId: string): Promise<ScoreGameweekRe
             const actualWinner = match.home_score > match.away_score ? "home" : match.home_score < match.away_score ? "away" : "draw";
             if (oracleByMatchId.get(contribution.matchId) === actualWinner) multiplier = ORACLE_CAPTAIN_MULTIPLIER;
           }
+          captainBasePoints = basePts;
+          captainMultiplier = multiplier;
+          captainMatchId = contribution.matchId;
         }
 
         basePointsSum += basePts * multiplier;
@@ -290,7 +296,14 @@ export async function scoreGameweek(gameweekId: string): Promise<ScoreGameweekRe
       const { error: upsertErr } = await sb
         .from("fantasy_gameweek_scores")
         .upsert(
-          { fantasy_squad_id: squad.id, gameweek_id: gameweekId, points: totalPoints, scored_at: new Date().toISOString() },
+          {
+            fantasy_squad_id: squad.id, gameweek_id: gameweekId, points: totalPoints, scored_at: new Date().toISOString(),
+            captain_fantasy_player_id: pick?.captain_fantasy_player_id ?? null,
+            captain_oracle_active: pick?.oracle_captain_active ?? false,
+            captain_base_points: captainBasePoints,
+            captain_multiplier: captainMultiplier,
+            captain_match_id: captainMatchId,
+          },
           { onConflict: "fantasy_squad_id,gameweek_id" }
         );
       if (upsertErr) { result.errors.push(`squad ${squad.id}: ${upsertErr.message}`); continue; }
