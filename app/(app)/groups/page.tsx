@@ -5,10 +5,39 @@ import { getCurrentUserProfile } from "@/lib/services/user-group";
 import { EmptyState } from "@/components/ui/empty-state";
 import { GroupCard } from "@/components/groups/group-card";
 import { GroupsHeaderActions } from "@/components/groups/groups-header-actions";
-import { Trophy, Plus, LogIn } from "lucide-react";
+import { Trophy, Plus, LogIn, Shield, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { serverT } from "@/lib/server-locale";
 import { ENABLE_BETA_FEATURES } from "@/lib/feature-flags";
+import { ZONES } from "@/lib/zones";
+
+// Social zone's real entry point into Fantasy League — mirrors the Game
+// zone's tile-grid pattern (app/(app)/game/page.tsx) for a single feature
+// tile, so /fantasy/create is reachable without knowing the URL by heart.
+function FantasyLeagueTile() {
+  const zone = ZONES.find(z => z.key === "social")!;
+  return (
+    <div className="p-4" style={{ background: "var(--sf)", border: "1px solid var(--br)", borderRadius: 22 }}>
+      <Link
+        href="/fantasy/create"
+        className="flex items-center gap-3 transition-transform hover:-translate-y-0.5"
+        style={{ textDecoration: "none" }}
+      >
+        <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0" style={{ background: `color-mix(in srgb, ${zone.accent} 15%, transparent)` }}>
+          <Shield size={18} style={{ color: zone.accent }} />
+        </div>
+        <div className="flex-1 min-w-0">
+          <div style={{ fontFamily: "var(--font-display)", fontSize: 15, fontWeight: 800, color: "var(--tx)" }}>Fantasy League</div>
+          <p style={{ fontFamily: "var(--font-ui)", fontSize: 11, color: "var(--t2)", margin: 0 }}>Draft an 11, compete with friends every gameweek.</p>
+        </div>
+        <ArrowRight size={16} style={{ color: zone.accent }} />
+      </Link>
+      <Link href="/fantasy/search" className="text-[11px] font-bold inline-block mt-2" style={{ color: zone.accent }}>
+        Or find a public league →
+      </Link>
+    </div>
+  );
+}
 
 export default async function GroupsPage() {
   const userProfile = await getCurrentUserProfile();
@@ -25,6 +54,7 @@ export default async function GroupsPage() {
           title={serverT("grp_compete")}
           body={serverT("grp_create_or")}
         />
+        <FantasyLeagueTile />
         <div className="flex flex-col sm:flex-row gap-3">
           <Link href="/signup?next=/create-group">
             <button
@@ -88,6 +118,8 @@ export default async function GroupsPage() {
         </div>
         <GroupsHeaderActions />
       </div>
+
+      <FantasyLeagueTile />
 
       {groups.length === 0 ? (
         <EmptyState
