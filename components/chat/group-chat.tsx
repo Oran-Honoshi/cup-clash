@@ -99,14 +99,15 @@ interface GifResult {
 }
 
 interface GroupChatProps {
-  groupId:         string;
+  groupId?:         string;
+  fantasyLeagueId?: string;
   currentUserId:   string;
   currentUserName: string;
   isPaid:          boolean;
   inline?:         boolean;
 }
 
-export function GroupChat({ groupId, currentUserId, currentUserName, isPaid, inline = false }: GroupChatProps) {
+export function GroupChat({ groupId, fantasyLeagueId, currentUserId, currentUserName, isPaid, inline = false }: GroupChatProps) {
   const { t } = useLocale();
   const [messages,   setMessages]   = useState<ChatMessage[]>([]);
   const [input,      setInput]      = useState("");
@@ -154,7 +155,7 @@ export function GroupChat({ groupId, currentUserId, currentUserName, isPaid, inl
 
     sb.from("chat_messages")
       .select("*, profiles(name, country, avatar_url)")
-      .eq("group_id", groupId)
+      .eq(groupId ? "group_id" : "fantasy_league_id", groupId ?? fantasyLeagueId)
       .order("created_at", { ascending: true })
       .limit(100)
       .then(async ({ data, error }) => {
@@ -178,12 +179,12 @@ export function GroupChat({ groupId, currentUserId, currentUserName, isPaid, inl
       });
 
     const channel = sb
-      .channel(`chat:${groupId}`)
+      .channel(`chat:${groupId ?? fantasyLeagueId}`)
       .on("postgres_changes", {
         event:  "INSERT",
         schema: "public",
         table:  "chat_messages",
-        filter: `group_id=eq.${groupId}`,
+        filter: `${groupId ? "group_id" : "fantasy_league_id"}=eq.${groupId ?? fantasyLeagueId}`,
       }, async (payload) => {
         const { data } = await sb
           .from("chat_messages")
@@ -200,7 +201,7 @@ export function GroupChat({ groupId, currentUserId, currentUserName, isPaid, inl
         event:  "INSERT",
         schema: "public",
         table:  "message_reactions",
-        filter: `group_id=eq.${groupId}`,
+        filter: `${groupId ? "group_id" : "fantasy_league_id"}=eq.${groupId ?? fantasyLeagueId}`,
       }, (payload) => {
         const row = payload.new as { message_id: string; emoji: string; user_id: string };
         addReaction(row.message_id, row.emoji, row.user_id);
@@ -209,7 +210,7 @@ export function GroupChat({ groupId, currentUserId, currentUserName, isPaid, inl
         event:  "DELETE",
         schema: "public",
         table:  "message_reactions",
-        filter: `group_id=eq.${groupId}`,
+        filter: `${groupId ? "group_id" : "fantasy_league_id"}=eq.${groupId ?? fantasyLeagueId}`,
       }, (payload) => {
         const row = payload.old as { message_id: string; emoji: string; user_id: string };
         removeReaction(row.message_id, row.emoji, row.user_id);
@@ -217,7 +218,7 @@ export function GroupChat({ groupId, currentUserId, currentUserName, isPaid, inl
       .subscribe();
 
     return () => { sb.removeChannel(channel); };
-  }, [groupId, scrollToBottom, addReaction, removeReaction]);
+  }, [groupId, fantasyLeagueId, scrollToBottom, addReaction, removeReaction]);
 
   const toggleReaction = useCallback(async (messageId: string, emoji: string) => {
     const sb = createClient();
@@ -236,11 +237,13 @@ export function GroupChat({ groupId, currentUserId, currentUserName, isPaid, inl
     } else {
       addReaction(messageId, emoji, user.id); // optimistic
       const { error } = await sb.from("message_reactions").insert({
-        message_id: messageId, group_id: groupId, user_id: user.id, emoji,
+        message_id: messageId,
+        ...(groupId ? { group_id: groupId } : { fantasy_league_id: fantasyLeagueId }),
+        user_id: user.id, emoji,
       });
       if (error) removeReaction(messageId, emoji, user.id); // revert
     }
-  }, [groupId, reactions, addReaction, removeReaction]);
+  }, [groupId, fantasyLeagueId, reactions, addReaction, removeReaction]);
 
   useEffect(() => {
     if (isOpen) {
@@ -267,7 +270,7 @@ export function GroupChat({ groupId, currentUserId, currentUserName, isPaid, inl
     }
 
     const { error } = await sb.from("chat_messages").insert({
-      group_id: groupId,
+      ...(groupId ? { group_id: groupId } : { fantasy_league_id: fantasyLeagueId }),
       user_id:  user.id, // use verified user.id, not prop
       content:  content.trim() || "GIF",
       type,
