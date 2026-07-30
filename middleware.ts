@@ -26,6 +26,7 @@ const PROTECTED_PREFIXES = [
   "/profile",
   "/testing",
   "/notifications",
+  "/fantasy",
 ];
 
 const AUTH_ROUTES = ["/signin", "/signup"];
