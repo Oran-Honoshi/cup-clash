@@ -345,7 +345,7 @@ async function refreshCompetitionFixtures(sb: any, competitionId: string, compet
   const seasonId = await resolveSeasonRow(sb, competitionId, seasonLabel(year));
   const data = await apiFetch<APIFixturesResponse>(`/fixtures?league=${apiLeagueId}&season=${year}`);
   const fixtures = data.response ?? [];
-  if (fixtures.length === 0) return { fixturesUpserted: 0, seasonId };
+  if (fixtures.length === 0) return { fixturesUpserted: 0, seasonId, fixtures };
 
   await resolveTeamIds(sb, teamCache, fixtures.flatMap(f => [f.teams.home, f.teams.away]));
 
@@ -382,7 +382,52 @@ async function refreshCompetitionFixtures(sb: any, competitionId: string, compet
   const { error } = await sb.from("matches").upsert(payloads, { onConflict: "id" });
   if (error) throw error;
 
-  return { fixturesUpserted: payloads.length, seasonId };
+  return { fixturesUpserted: payloads.length, seasonId, fixtures };
+}
+
+// ── Gameweek population (Premier League only, Fantasy League feature) ──
+// Nothing populated `gameweeks` before this — extends the Premier League
+// fixtures refresh above (not a separate cron) to upsert one gameweeks row
+// per distinct matchday number seen and backfill matches.gameweek_id on
+// the same payload, per migration 076/077's Fantasy League scoring needs.
+// deadline_at/start_at are frozen at creation (migration 076 comment): once
+// a (competition_id, number) row exists, this never updates it — only
+// backfills gameweek_id onto matches, which is safe to repeat every run.
+function extractGameweekNumber(apiRound: string): number | null {
+  const m = apiRound.match(/(\d+)/);
+  return m ? Number(m[1]) : null;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function populatePremierLeagueGameweeks(sb: any, competitionId: string, fixtures: APIFixture[]): Promise<void> {
+  const byNumber = new Map<number, APIFixture[]>();
+  for (const f of fixtures) {
+    const n = extractGameweekNumber(f.league.round);
+    if (n == null) continue;
+    const list = byNumber.get(n);
+    if (list) list.push(f); else byNumber.set(n, [f]);
+  }
+
+  for (const [number, group] of byNumber) {
+    const { data: existing } = await sb
+      .from("gameweeks").select("id").eq("competition_id", competitionId).eq("number", number).maybeSingle();
+
+    let gameweekId: string | undefined = existing?.id;
+    if (!gameweekId) {
+      const kickoffs = group.map(f => new Date(f.fixture.date).getTime());
+      const earliest = new Date(Math.min(...kickoffs)).toISOString();
+      const latest = new Date(Math.max(...kickoffs)).toISOString();
+      const { data: inserted, error } = await sb
+        .from("gameweeks")
+        .insert({ competition_id: competitionId, number, deadline_at: earliest, start_at: earliest, end_at: latest })
+        .select("id").single();
+      if (error) throw error;
+      gameweekId = inserted.id;
+    }
+
+    const matchIds = group.map(f => `lg-${f.fixture.id}`);
+    await sb.from("matches").update({ gameweek_id: gameweekId }).in("id", matchIds);
+  }
 }
 
 // ── Friendlies refresh (per-team fetch, single pseudo-competition) ─────
@@ -587,9 +632,12 @@ export async function runLeagueScoresCron(): Promise<LeagueScoresResult> {
       try {
         const year = await resolveCurrentSeasonYear(league.apiLeagueId);
         if (year != null) {
-          const { fixturesUpserted, seasonId } = await refreshCompetitionFixtures(sb, competitionId, league.name, league.apiLeagueId, year, teamCache);
+          const { fixturesUpserted, seasonId, fixtures } = await refreshCompetitionFixtures(sb, competitionId, league.name, league.apiLeagueId, year, teamCache);
           result.fixturesUpserted += fixturesUpserted;
           result.standingsUpserted += await refreshCompetitionStandings(sb, competitionId, seasonId, league.apiLeagueId, year, teamCache);
+          if (league.name === "Premier League" && fixtures.length) {
+            await populatePremierLeagueGameweeks(sb, competitionId, fixtures);
+          }
         }
         result.competitionsProcessed++;
       } catch (err) {

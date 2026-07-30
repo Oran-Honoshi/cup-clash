@@ -1,0 +1,25 @@
+name: Fantasy scoring cron
+
+# Scores Fantasy League gameweeks (goals/assists/clean sheets/cards,
+# CupClash Prediction Bonus, captain + Oracle Captain multipliers) —
+# see lib/services/fantasy-scoring.ts. Same 15-min cadence and
+# SCORES_APP_URL/CRON_SECRET pattern as scores-cron.yml; deliberately a
+# separate workflow since scoring is a distinct concern from the live
+# fixtures/standings pipeline.
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch: {}
+
+jobs:
+  run-fantasy-scoring:
+    runs-on: ubuntu-latest
+    steps:
+      - name: POST /api/fantasy/scoring
+        run: |
+          curl -sf -X POST "${SCORES_APP_URL}/api/fantasy/scoring" \
+            -H "Authorization: Bearer ${CRON_SECRET}" \
+            -o - -w "\nHTTP %{http_code}\n"
+        env:
+          SCORES_APP_URL: ${{ secrets.SCORES_APP_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
