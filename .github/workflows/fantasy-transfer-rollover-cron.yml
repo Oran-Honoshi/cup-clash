@@ -1,0 +1,23 @@
+name: Fantasy transfer rollover cron
+
+# Weekly free-transfer rollover for Fantasy League squads (1 free transfer
+# banked per week, capped at 2 — see app/api/fantasy/transfer-rollover/route.ts).
+# Runs Monday 03:00 UTC, ahead of the week's fixtures. Requires repo secrets
+# SCORES_APP_URL and CRON_SECRET (shared with the other cron workflows).
+on:
+  schedule:
+    - cron: "0 3 * * 1"
+  workflow_dispatch: {}
+
+jobs:
+  ping-fantasy-transfer-rollover:
+    runs-on: ubuntu-latest
+    steps:
+      - name: POST /api/fantasy/transfer-rollover
+        run: |
+          curl -sf -X POST "${SCORES_APP_URL}/api/fantasy/transfer-rollover" \
+            -H "Authorization: Bearer ${CRON_SECRET}" \
+            -o - -w "\nHTTP %{http_code}\n"
+        env:
+          SCORES_APP_URL: ${{ secrets.SCORES_APP_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
