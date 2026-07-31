@@ -1,10 +1,11 @@
 name: Oracle predictions cron
 
-# Knockout fixtures are sparse and don't change often, so this polls every
-# 45 min instead of the 5-min live-scores cadence. Reuses the same repo
-# secrets as scores-cron.yml (SCORES_APP_URL, CRON_SECRET). Deliberately a
-# separate workflow from scores-cron.yml — generation calls the Anthropic
-# API and is a distinct concern from the live-scores pipeline.
+# WC knockout fixtures are sparse and Premier League gameweeks land in
+# batches, so this polls every 45 min instead of the 5-min live-scores
+# cadence. Reuses the same repo secrets as scores-cron.yml (SCORES_APP_URL,
+# CRON_SECRET). Deliberately a separate workflow from scores-cron.yml —
+# generation calls the Anthropic API and is a distinct concern from the
+# live-scores pipeline.
 on:
   schedule:
     - cron: "*/45 * * * *"

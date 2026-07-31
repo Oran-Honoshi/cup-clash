@@ -1,19 +1,25 @@
 // Oracle predictions cron — generates AI pre-match predictions for World Cup
-// knockout fixtures via the Anthropic API and caches them to Supabase.
+// knockout fixtures and Premier League fixtures via the Anthropic API and
+// caches them to Supabase.
 //
 // Plain fetch() to /v1/messages, no SDK dependency — same convention as
 // league-football.ts's API-Football calls. Deliberately a separate service
 // (and cron: app/api/oracle/route.ts) from the score/fixture pipelines —
 // generation is a distinct concern with its own external dependency.
 //
-// Trigger guard: WC bracket rows for R32/R16/QF get home_team_id/away_team_id
-// resolved once group standings settle, but SF/3rd/Final never do — those
-// rows only ever get real team *names* (see migration history; verified live
-// against the production matches table). Gating on home_team_id/away_team_id
-// non-null would therefore permanently exclude semi-finals and the final, so
-// eligibility instead checks the home/away text isn't a TBD bracket
-// placeholder ("W(SF1)", "L(QF2)", etc.) — team context for the prompt is
-// resolved by name, not by the FK.
+// Trigger guard (World Cup): WC bracket rows for R32/R16/QF get
+// home_team_id/away_team_id resolved once group standings settle, but
+// SF/3rd/Final never do — those rows only ever get real team *names* (see
+// migration history; verified live against the production matches table).
+// Gating on home_team_id/away_team_id non-null would therefore permanently
+// exclude semi-finals and the final, so eligibility instead checks the
+// home/away text isn't a TBD bracket placeholder ("W(SF1)", "L(QF2)", etc.)
+// — team context for the prompt is resolved by name, not by the FK.
+//
+// Premier League fixtures are scoped by competition_id (not just
+// stage="League" — every tracked league shares that bare stage string, see
+// league-football.ts's mapRound()) so this only ever picks up PL matches,
+// not La Liga/Serie A/etc.
 
 import { sbAdmin } from "@/lib/supabase/admin";
 import { sbAnon as sbPublic } from "@/lib/supabase/anon";
@@ -23,12 +29,14 @@ const ORACLE_MODEL = "claude-opus-4-8";
 
 const KNOCKOUT_STAGES = ["R32", "R16", "QF", "SF", "3rd", "Final"];
 const PLACEHOLDER_PATTERN = /[()]/; // matches "W(SF1)", "L(QF2)", etc.
+const PREMIER_LEAGUE_COMPETITION_NAME = "Premier League";
+const LEAGUE_STAGE = "League";
 
 const ORACLE_SYSTEM_PROMPT =
   `You are "The Oracle," a bold, confident football (soccer) prediction ` +
-  `mascot for a World Cup 2026 fan app called Cup Clash. Given two teams' ` +
-  `actual tournament results, predict the outcome of their upcoming ` +
-  `knockout match. Ground every claim in the match history provided — ` +
+  `mascot for the Cup Clash app (World Cup 2026 and Premier League). ` +
+  `Given two teams' actual match history, predict the outcome of their ` +
+  `upcoming match. Ground every claim in the match history provided — ` +
   `never invent results, injuries, or stats not given to you. Keep the ` +
   `reasoning blurb punchy and fan-facing, not analytical jargon.`;
 
@@ -51,6 +59,8 @@ const PREDICTION_SCHEMA = {
   additionalProperties: false,
 };
 
+type OracleMatchKind = "knockout" | "league";
+
 interface EligibleMatch {
   id: string;
   home: string;
@@ -60,6 +70,7 @@ interface EligibleMatch {
   kickoff_at: string;
   stadium: string | null;
   city: string | null;
+  kind: OracleMatchKind;
 }
 
 interface OraclePredictionOutput {
@@ -76,19 +87,46 @@ function getSupabase() {
 
 // ── Eligibility ─────────────────────────────────────────────────────────
 
+const ELIGIBILITY_MATCH_COLS = "id, home, away, stage, round_label, kickoff_at, stadium, city";
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+async function findPremierLeagueCompetitionId(sb: any): Promise<string | null> {
+  const { data } = await sb
+    .from("competitions")
+    .select("id")
+    .eq("name", PREMIER_LEAGUE_COMPETITION_NAME)
+    .maybeSingle();
+  return data?.id ?? null;
+}
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 async function findEligibleMatches(sb: any): Promise<EligibleMatch[]> {
   const { data: existing } = await sb.from("oracle_predictions").select("match_id");
   const alreadyGenerated = new Set((existing ?? []).map((r: { match_id: string }) => r.match_id));
 
-  const { data: matches, error } = await sb
+  const { data: wcMatches, error: wcError } = await sb
     .from("matches")
-    .select("id, home, away, stage, round_label, kickoff_at, stadium, city")
+    .select(ELIGIBILITY_MATCH_COLS)
     .in("stage", KNOCKOUT_STAGES)
     .eq("status", "upcoming");
-  if (error) throw error;
+  if (wcError) throw wcError;
 
-  return (matches ?? []).filter(
+  const plCompetitionId = await findPremierLeagueCompetitionId(sb);
+  let plMatches: EligibleMatch[] = [];
+  if (plCompetitionId) {
+    const { data, error } = await sb
+      .from("matches")
+      .select(ELIGIBILITY_MATCH_COLS)
+      .eq("competition_id", plCompetitionId)
+      .eq("stage", LEAGUE_STAGE)
+      .eq("status", "upcoming");
+    if (error) throw error;
+    plMatches = (data ?? []).map((m: Omit<EligibleMatch, "kind">) => ({ ...m, kind: "league" as const }));
+  }
+
+  const wcEligible = (wcMatches ?? []).map((m: Omit<EligibleMatch, "kind">) => ({ ...m, kind: "knockout" as const }));
+
+  return [...wcEligible, ...plMatches].filter(
     (m: EligibleMatch) =>
       !alreadyGenerated.has(m.id) &&
       !PLACEHOLDER_PATTERN.test(m.home) &&
@@ -109,7 +147,7 @@ interface FinishedMatchRow {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-async function gatherTeamRecord(sb: any, teamName: string): Promise<string> {
+async function gatherTeamRecord(sb: any, teamName: string, periodLabel: string): Promise<string> {
   const cols = "home, away, stage, home_score, away_score, penalty_winner, kickoff_at";
   const [homeRes, awayRes] = await Promise.all([
     sb.from("matches").select(cols).eq("status", "finished").eq("home", teamName),
@@ -120,7 +158,7 @@ async function gatherTeamRecord(sb: any, teamName: string): Promise<string> {
     (a, b) => a.kickoff_at.localeCompare(b.kickoff_at)
   );
 
-  if (rows.length === 0) return `${teamName}: no completed matches on record this tournament.`;
+  if (rows.length === 0) return `${teamName}: no completed matches on record ${periodLabel}.`;
 
   let wins = 0;
   const lines = rows.map((m) => {
@@ -139,13 +177,29 @@ async function gatherTeamRecord(sb: any, teamName: string): Promise<string> {
     return `${m.stage}: ${outcome} ${gf}-${ga} vs ${opponent}`;
   });
 
-  return `${teamName} record this tournament (${wins}/${rows.length} wins): ${lines.join("; ")}`;
+  return `${teamName} record ${periodLabel} (${wins}/${rows.length} wins): ${lines.join("; ")}`;
 }
 
 // ── Prompt + model call ────────────────────────────────────────────────
 
 function buildPrompt(match: EligibleMatch, homeRecord: string, awayRecord: string): string {
   const venue = match.stadium ? `\nVenue: ${match.stadium}${match.city ? `, ${match.city}` : ""}` : "";
+
+  if (match.kind === "league") {
+    return (
+      `Upcoming Premier League fixture:\n` +
+      `${match.home} vs ${match.away}\n` +
+      `${match.round_label ?? "Matchday"}\n` +
+      `Kickoff: ${match.kickoff_at}${venue}\n\n` +
+      `${homeRecord}\n\n` +
+      `${awayRecord}\n\n` +
+      `Predict the final score, the winner, and your confidence. Write a ` +
+      `short (2-3 sentence) reasoning blurb grounded in each team's actual ` +
+      `recent form shown above, suitable for display to fans in a ` +
+      `prediction app. Do not hedge excessively — give a real, specific pick.`
+    );
+  }
+
   const round = match.round_label ? ` (${match.round_label})` : "";
   return (
     `Upcoming World Cup 2026 knockout match:\n` +
@@ -255,9 +309,10 @@ export async function runOracleCron(): Promise<OracleCronResult> {
 
   for (const match of eligible) {
     try {
+      const periodLabel = match.kind === "league" ? "this season" : "this tournament";
       const [homeRecord, awayRecord] = await Promise.all([
-        gatherTeamRecord(sb, match.home),
-        gatherTeamRecord(sb, match.away),
+        gatherTeamRecord(sb, match.home, periodLabel),
+        gatherTeamRecord(sb, match.away, periodLabel),
       ]);
       const prompt = buildPrompt(match, homeRecord, awayRecord);
       const prediction = validatePrediction(await callOracleModel(prompt));

@@ -1,5 +1,6 @@
 // Oracle predictions cron — generates AI pre-match predictions for World Cup
-// knockout fixtures. See lib/services/oracle.ts for the generation logic.
+// knockout fixtures and Premier League fixtures. See lib/services/oracle.ts
+// for the generation logic.
 
 import { NextRequest, NextResponse } from "next/server";
 import { runOracleCron } from "@/lib/services/oracle";
